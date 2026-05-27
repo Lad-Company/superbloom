@@ -1,3 +1,5 @@
+@import /Users/pete/Code/.agent/conventions.md
+
 # Superbloom House — Agent Instructions
 
 Website redesign and rebuild for SuperBloom House (superbloomhouse.com).

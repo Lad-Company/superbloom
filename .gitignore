@@ -1,7 +1,3 @@
-# Memory: exclude ephemeral logs and working state, keep semantic knowledge tracked
-.agent/memory/episodic/
-.agent/memory/working/
-
 # OS
 .DS_Store
 
