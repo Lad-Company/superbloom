@@ -2,31 +2,23 @@
 
 # Superbloom House — Agent Instructions
 
-Website redesign and rebuild for SuperBloom House (superbloomhouse.com).
+Website redesign and rebuild for SuperBloom House (superbloomhouse.com) via Lad Company.
 
-## Status
-Signing Monday 2026-04-27. Arietta (Lad) building full Figma design with interaction notes. Pete onboards after signing.
+# Stakeholders
+Pete (Tool, tool.nyc) - Principal Developer
+Arietta (Lad Company, lad.company) - Designer, Creative Director
+Lauren (Lad Company, lad.company) - Principal, Owner
+Daniella (Lad Company, lad.company) - 
 
-## Project
-- **Client:** SuperBloom House (independent media content & production company, Brooklyn + LA)
-- **Referral:** Lad Company (lad.company) — Arietta Tetreault, Daniella Bloch
-- **Scope:** Migrate from Nuxt.js/Vue + headless WordPress to new stack. Shopify integration (staying). Video delivery optimization.
-- **Role:** Arietta (Lad) leads design in Figma. Pete handles dev implementation.
+# Files 
+Figma design file: https://www.figma.com/design/KlL81B7rTYZUbwSeSlgrZD/-i--Superbloom---R1 (there are many pages)
 
-## Stack (recommended, not yet decided)
-- **Option A:** Next.js (App Router) + Sanity + Shopify Storefront API + Mux/Bunny.net + Vercel
-- **Option B:** Nuxt 3 + Sanity + Shopify Storefront API + Bunny.net + Vercel/Cloudflare
-- **Option C:** Next.js + WordPress (keep) + Shopify Storefront API + Mux + Vercel
+# Knowledge base
 
-## Design Workflow
-- **Source:** Figma — Arietta building full page designs with interaction/animation notes
-- **Process:** Arietta designs -> Pete reviews in Figma -> implement -> iterate
+KB is used for file I/O that is more designed for client/human consumption than docs folder in repo
+KB (knowledge base location): 
+/Users/pete/Dropbox/Notes/Obsidian/Clients/Lad Company/superbloom
 
-## Risks
-- Large scope for solo dev (93 pages, shop, creator directory, video, animations)
-- High animation bar set by current site (scroll-driven, custom video player)
-- Content migration from WordPress (2-3 weeks if moving to Sanity)
-- Lad Company is brand new — processes may be undefined
 
 ## Agent skills
 
