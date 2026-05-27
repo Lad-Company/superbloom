@@ -27,3 +27,17 @@ Signing Monday 2026-04-27. Arietta (Lad) building full Figma design with interac
 - High animation bar set by current site (scroll-driven, custom video player)
 - Content migration from WordPress (2-3 weeks if moving to Sanity)
 - Lad Company is brand new — processes may be undefined
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues (github.com/Lad-Company/superbloom). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical states: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
