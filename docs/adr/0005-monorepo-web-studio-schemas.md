@@ -8,6 +8,6 @@ apps/studio/    — Sanity Studio, deployed via `sanity deploy` to superbloom.sa
 packages/schemas/  — shared TypeScript schema definitions
 ```
 
-Sanity Studio is a separate deployment from the Astro app — not bundled into it. `packages/schemas/` is the single source of truth for content types: the Studio imports it to render editing UI, the Astro app imports it for TypeScript autocomplete on query results.
+Sanity Studio is a separate deployment from the Astro app — not bundled into it. `packages/schemas/` is the single source of truth for content types: the Studio imports it to render editing UI, and `sanity-typegen` (official) generates `.d.ts` files from the schema definitions plus the GROQ queries used in `apps/web` so query results are typed without hand-maintained type duplication.
 
 **Why not bundle Studio into the Astro app**: Separate deployments keep Studio concerns isolated and allow independent deploy cadences. Studio can be hosted for free via `sanity deploy`; bundling it adds build complexity for no benefit.

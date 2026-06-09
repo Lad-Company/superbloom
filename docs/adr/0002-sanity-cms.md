@@ -5,3 +5,5 @@ Sanity is the content platform for all editorial content, image assets, and the 
 **Considered options**: Sanity, Directus, Payload CMS, Contentful
 **Why not Directus**: Simpler mental model for devs but worse for editors and has no first-party Shopify or Mux integration.
 **Data sovereignty**: Sanity Content Lake is AWS-backed multi-region SaaS. Confirmed acceptable (SOC2-to-SOC2 vendor delegation).
+
+**Datasets**: A single `production` dataset with Sanity's built-in drafts. Vercel preview deployments read drafts via a cookie-flipped preview endpoint (Sanity's Visual Editing pattern). No `staging` dataset — the editor experimentation surface is drafts, not a parallel dataset.
