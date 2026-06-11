@@ -14,6 +14,7 @@ export const caseStudyBySlugQuery = defineQuery(`
     "slug": slug.current,
     client,
     summary,
+    "videoPlaybackId": heroVideo.asset->playbackId,
     capabilities[]->{
       title,
       "slug": slug.current

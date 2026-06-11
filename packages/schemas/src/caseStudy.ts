@@ -31,5 +31,10 @@ export const caseStudy = defineType({
       of: [{type: 'reference', to: [{type: 'capability'}]}],
       validation: (rule) => rule.min(1),
     }),
+    defineField({
+      name: 'heroVideo',
+      title: 'Hero Video',
+      type: 'mux.video',
+    }),
   ],
 })

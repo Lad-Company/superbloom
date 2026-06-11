@@ -1,0 +1,22 @@
+---
+interface Props {
+  playbackId: string;
+  title?: string;
+}
+
+const { playbackId, title } = Astro.props;
+---
+
+<mux-player
+  playback-id={playbackId}
+  metadata-video-title={title}
+  stream-type="on-demand"
+  autoplay="muted"
+  muted
+  loop
+  default-hidden-captions
+/>
+
+<script>
+  import '@mux/mux-player';
+</script>

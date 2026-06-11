@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@astrojs/vercel": "^10.0.8",
+    "@mux/mux-player": "^3.13.0",
     "@sanity/client": "^7.22.1",
     "astro": "^6.4.6",
     "groq": "^5.31.1"

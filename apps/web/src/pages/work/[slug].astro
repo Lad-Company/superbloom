@@ -2,6 +2,7 @@
 import { sanityClient } from '../../lib/sanity';
 import { caseStudyBySlugQuery } from '../../lib/queries';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
+import Video from '../../components/Video.astro';
 
 const { slug } = Astro.params;
 const caseStudy: CaseStudyBySlugQueryResult = await sanityClient.fetch(caseStudyBySlugQuery, {
@@ -22,6 +23,11 @@ if (!caseStudy) {
   <body>
     <a href="/work">← Work</a>
     <h1>{caseStudy.title}</h1>
+    {
+      caseStudy.videoPlaybackId && (
+        <Video playbackId={caseStudy.videoPlaybackId} title={caseStudy.title ?? undefined} />
+      )
+    }
     {caseStudy.client && <p>Client: {caseStudy.client}</p>}
     {caseStudy.summary && <p>{caseStudy.summary}</p>}
     {
