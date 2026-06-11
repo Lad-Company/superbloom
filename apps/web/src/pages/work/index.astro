@@ -1,0 +1,28 @@
+---
+import { sanityClient } from '../../lib/sanity';
+import { caseStudiesQuery } from '../../lib/queries';
+import type { CaseStudiesQueryResult } from '../../sanity.types';
+
+const caseStudies: CaseStudiesQueryResult = await sanityClient.fetch(caseStudiesQuery);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Work — Superbloom</title>
+  </head>
+  <body>
+    <h1>Work</h1>
+    <ul>
+      {
+        caseStudies.map((cs) => (
+          <li>
+            <a href={`/work/${cs.slug}`}>{cs.title}</a>
+            {cs.client && <span> — {cs.client}</span>}
+          </li>
+        ))
+      }
+    </ul>
+  </body>
+</html>

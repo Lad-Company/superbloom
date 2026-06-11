@@ -4,3 +4,10 @@
 # Environment (should not exist per conventions, but just in case)
 .env
 .env.*
+
+# Dependencies and build output
+node_modules/
+dist/
+.astro/
+.vercel/
+*.log

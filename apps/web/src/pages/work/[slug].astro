@@ -1,0 +1,37 @@
+---
+import { sanityClient } from '../../lib/sanity';
+import { caseStudyBySlugQuery } from '../../lib/queries';
+import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
+
+const { slug } = Astro.params;
+const caseStudy: CaseStudyBySlugQueryResult = await sanityClient.fetch(caseStudyBySlugQuery, {
+  slug,
+});
+
+if (!caseStudy) {
+  return new Response(null, { status: 404, statusText: 'Not Found' });
+}
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{caseStudy.title} — Superbloom</title>
+  </head>
+  <body>
+    <a href="/work">← Work</a>
+    <h1>{caseStudy.title}</h1>
+    {caseStudy.client && <p>Client: {caseStudy.client}</p>}
+    {caseStudy.summary && <p>{caseStudy.summary}</p>}
+    {
+      caseStudy.capabilities && (
+        <ul>
+          {caseStudy.capabilities.map((cap) => (
+            <li>{cap.title}</li>
+          ))}
+        </ul>
+      )
+    }
+  </body>
+</html>
