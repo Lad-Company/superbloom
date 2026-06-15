@@ -17,6 +17,7 @@
     "@sanity/client": "^7.22.1",
     "@unocss/astro": "^66.7.2",
     "astro": "^6.4.6",
+    "astro-portabletext": "^0.13.0",
     "groq": "^5.31.1",
     "gsap": "^3.15.0",
     "unocss": "^66.7.2"

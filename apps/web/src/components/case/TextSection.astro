@@ -1,0 +1,43 @@
+---
+import PortableText from '../PortableText.astro';
+import type { TypedObject } from 'astro-portabletext/types';
+
+interface Props {
+  eyebrow?: string | null;
+  body?: TypedObject[] | null;
+}
+
+const { eyebrow, body } = Astro.props;
+---
+
+<div class="text-section">
+  <div class="inner">
+    <div class="meta">
+      {eyebrow && <p class="type-eyebrow eyebrow">{eyebrow}</p>}
+    </div>
+    <div class="content">
+      {body && body.length > 0 && (
+        <PortableText value={body} class="type-body" />
+      )}
+    </div>
+  </div>
+</div>
+
+<style>
+  .text-section {
+    padding: var(--space-2xl) var(--space-xs);
+  }
+  .inner {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: var(--page-gutter);
+    align-items: start;
+  }
+  .eyebrow {
+    margin: 0;
+    color: var(--fg-60);
+  }
+  .content {
+    max-width: 52ch;
+  }
+</style>

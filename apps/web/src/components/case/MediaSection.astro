@@ -1,0 +1,124 @@
+---
+import Video from '../Video.astro';
+import PortableText from '../PortableText.astro';
+import type { TypedObject } from 'astro-portabletext/types';
+
+type Layout = 'fullBleed16x9' | 'pairedSquare' | 'textAndMedia';
+
+interface MediaItem {
+  _type: 'mux.video' | 'image';
+  _key: string;
+  playbackId?: string | null;
+  url?: string | null;
+  width?: number | null;
+  height?: number | null;
+  alt?: string | null;
+}
+
+interface Props {
+  layout?: Layout | null;
+  media?: MediaItem[] | null;
+  text?: TypedObject[] | null;
+}
+
+const { layout = 'fullBleed16x9', media, text } = Astro.props;
+
+const items = media ?? [];
+---
+
+{layout === 'fullBleed16x9' && (
+  <div class="full-bleed">
+    {items[0]?._type === 'mux.video' && items[0].playbackId && (
+      <Video playbackId={items[0].playbackId} />
+    )}
+    {items[0]?._type === 'image' && items[0].url && (
+      <img src={items[0].url} alt={items[0].alt ?? ''} width={items[0].width ?? undefined} height={items[0].height ?? undefined} />
+    )}
+  </div>
+)}
+
+{layout === 'pairedSquare' && (
+  <div class="paired">
+    {items.map((item) => (
+      <div class="pair-item">
+        {item._type === 'mux.video' && item.playbackId && (
+          <Video playbackId={item.playbackId} />
+        )}
+        {item._type === 'image' && item.url && (
+          <img src={item.url} alt={item.alt ?? ''} width={item.width ?? undefined} height={item.height ?? undefined} />
+        )}
+      </div>
+    ))}
+  </div>
+)}
+
+{layout === 'textAndMedia' && (
+  <div class="text-and-media">
+    <div class="tam-text">
+      {text && text.length > 0 && <PortableText value={text} class="type-body" />}
+    </div>
+    <div class="tam-media">
+      {items.map((item) => (
+        <div class="tam-item">
+          {item._type === 'mux.video' && item.playbackId && (
+            <Video playbackId={item.playbackId} />
+          )}
+          {item._type === 'image' && item.url && (
+            <img src={item.url} alt={item.alt ?? ''} width={item.width ?? undefined} height={item.height ?? undefined} />
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+<style>
+  .full-bleed {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+  .full-bleed img,
+  .full-bleed :global(mux-player) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    --media-object-fit: cover;
+  }
+
+  .paired {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--page-gutter);
+    padding: 0 var(--space-xs);
+  }
+  .pair-item {
+    aspect-ratio: 1;
+    overflow: hidden;
+  }
+  .pair-item img,
+  .pair-item :global(mux-player) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    --media-object-fit: cover;
+  }
+
+  .text-and-media {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--page-gutter);
+    padding: var(--space-2xl) var(--space-xs);
+    align-items: center;
+  }
+  .tam-item {
+    overflow: hidden;
+    border-radius: var(--radius-s);
+  }
+  .tam-item img,
+  .tam-item :global(mux-player) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    --media-object-fit: cover;
+  }
+</style>

@@ -46,6 +46,9 @@ importers:
       astro:
         specifier: ^6.4.6
         version: 6.4.6(@types/node@25.9.3)(@vercel/functions@3.7.0)(jiti@2.7.0)(rollup@4.61.1)(yaml@2.9.0)
+      astro-portabletext:
+        specifier: ^0.13.0
+        version: 0.13.0(astro@6.4.6(@types/node@25.9.3)(@vercel/functions@3.7.0)(jiti@2.7.0)(rollup@4.61.1)(yaml@2.9.0))
       groq:
         specifier: ^5.31.1
         version: 5.31.1
@@ -2822,6 +2825,12 @@ packages:
   arrify@2.0.1:
     resolution: {integrity: sha512-3duEwti880xqi4eAMN8AyR4a0ByT90zoYdLlevfrvU43vb0YZwZVfxOgxWrLXXXpyugL0hNZc9G6BiB5B3nUug==}
     engines: {node: '>=8'}
+
+  astro-portabletext@0.13.0:
+    resolution: {integrity: sha512-Z9N32H7eRP8tuSavnJqUm4vKqHj59oYEyhqq4YiwsAcFnwDbepbb6cmIRGG5S+eejvHibrjyAKdQxhVINYXCbA==}
+    engines: {node: '>=20.19 <22 || >=22.12'}
+    peerDependencies:
+      astro: '>=4.6.0'
 
   astro@6.4.6:
     resolution: {integrity: sha512-48OBTBKR9ctbf+DQxpOuxGl8ebfn59zTuNQMBzptmG/Mi/H8IdfMSbJgGuX1I/4U6g9yazG1p4BHlf4+2hWU4Q==}
@@ -9511,6 +9520,12 @@ snapshots:
   arrify@1.0.1: {}
 
   arrify@2.0.1: {}
+
+  astro-portabletext@0.13.0(astro@6.4.6(@types/node@25.9.3)(@vercel/functions@3.7.0)(jiti@2.7.0)(rollup@4.61.1)(yaml@2.9.0)):
+    dependencies:
+      '@portabletext/toolkit': 5.0.2
+      '@portabletext/types': 4.0.2
+      astro: 6.4.6(@types/node@25.9.3)(@vercel/functions@3.7.0)(jiti@2.7.0)(rollup@4.61.1)(yaml@2.9.0)
 
   astro@6.4.6(@types/node@25.9.3)(@vercel/functions@3.7.0)(jiti@2.7.0)(rollup@4.61.1)(yaml@2.9.0):
     dependencies:

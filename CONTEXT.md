@@ -39,8 +39,20 @@ The portfolio section of the site. Work is composed of Case Studies.
 _Avoid_: Projects, Portfolio, Campaign archive
 
 **Case Study**:
-A documented work engagement. A Case Study belongs to one or more Capabilities and may reference Creators who contributed.
+A documented work engagement. A Case Study belongs to one or more Capabilities and may reference Creators who contributed. Its narrative anatomy is a fixed spine: Highlights, Challenge, Solution, Outcomes, Press, and Related Work.
 _Avoid_: Project, campaign, post (when referring to Work content)
+
+**Outcomes**:
+The measurable results of a Case Study (e.g., sales lift, reach), shown as a distinct emphasized section. Distinct from Highlights, which is the headline framing of the engagement.
+_Avoid_: Results, metrics, KPIs (when referring to the Case Study section)
+
+**Deliverables**:
+The categories of work Superbloom produced for an engagement (e.g., Campaign Strategy, Production), listed in a Case Study's header metadata.
+_Avoid_: Services, scope, outputs
+
+**Related Work**:
+Other Case Studies surfaced at the foot of a Case Study.
+_Avoid_: More projects, see also, recommendations
 
 **Zine**:
 Superbloom's editorial publication, organized into Issues.
@@ -59,6 +71,20 @@ _Avoid_: Blog, posts (when referring to News content)
 **Form Submission**:
 A contact or inquiry entry submitted by a site visitor, mirrored to Sanity as a permanent record and routed via Mailchimp.
 _Avoid_: Lead, contact, inquiry (when referring to the stored record)
+
+### Brand and Theming
+
+**Brand Colors (Primary / Secondary)**:
+A client brand's two accent colors, chosen per Case Study, used to theme that Case Study's colored sections (e.g., the hero takes Primary, Outcomes takes Secondary). These are the brand's identity colors, not a fixed Superbloom palette. Stored as hex strings in the CMS (`@sanity/color-input` was not added; a plain string field is sufficient and can be upgraded to a color picker input later).
+_Avoid_: Theme color, highlight color, swatch
+
+**Section Theme**:
+A role enum (`light`, `dark`, `primary`, `secondary`) carried on each body block. Resolved to `--bg`/`--fg` CSS custom properties by the `Section` wrapper component. `primary`/`secondary` resolve to the case study's brand colors; foreground is auto-derived by WCAG relative luminance (threshold 0.5).
+_Avoid_: Color mode, variant, style
+
+**Body Block**:
+A typed content block within a Case Study's `body[]` array. Each block has a `theme` role and optional `eyebrow` label (which also drives the scrollspy section nav). Block types: `highlightsSection`, `textSection`, `mediaSection`, `statsSection`.
+_Avoid_: Section, component, module (when referring to a body[] entry)
 
 ## Example dialogue
 

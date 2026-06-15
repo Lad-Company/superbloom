@@ -1,0 +1,29 @@
+---
+type Theme = 'light' | 'dark' | 'primary' | 'secondary';
+
+interface Props {
+  theme?: Theme;
+  id?: string;
+  class?: string;
+}
+
+const { theme = 'light', id, class: className } = Astro.props;
+
+const vars: Record<Theme, string> = {
+  light: '--bg: #ffffff; --fg: #000000; --fg-12: rgba(0,0,0,0.12); --fg-60: rgba(0,0,0,0.6);',
+  dark: '--bg: #000000; --fg: #ffffff; --fg-12: rgba(255,255,255,0.12); --fg-60: rgba(255,255,255,0.6);',
+  primary: '--bg: var(--brand-primary); --fg: var(--brand-primary-fg);',
+  secondary: '--bg: var(--brand-secondary); --fg: var(--brand-secondary-fg);',
+};
+---
+
+<section id={id} style={vars[theme]} class:list={['section', className]}>
+  <slot />
+</section>
+
+<style>
+  .section {
+    background: var(--bg);
+    color: var(--fg);
+  }
+</style>

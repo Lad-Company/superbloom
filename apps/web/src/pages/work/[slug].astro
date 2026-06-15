@@ -1,43 +1,339 @@
 ---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import Video from '../../components/Video.astro';
+import Section from '../../components/case/Section.astro';
+import HighlightsSection from '../../components/case/HighlightsSection.astro';
+import TextSection from '../../components/case/TextSection.astro';
+import MediaSection from '../../components/case/MediaSection.astro';
+import StatsSection from '../../components/case/StatsSection.astro';
 import { sanityClient } from '../../lib/sanity';
 import { caseStudyBySlugQuery } from '../../lib/queries';
+import { fgForHex } from '../../lib/luminance';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
-import Video from '../../components/Video.astro';
 
 const { slug } = Astro.params;
-const caseStudy: CaseStudyBySlugQueryResult = await sanityClient.fetch(caseStudyBySlugQuery, {
-  slug,
-});
+const cs: CaseStudyBySlugQueryResult = await sanityClient.fetch(caseStudyBySlugQuery, { slug });
 
-if (!caseStudy) {
+if (!cs) {
   return new Response(null, { status: 404, statusText: 'Not Found' });
 }
+
+const primaryColor = cs.primaryColor ?? '#ffffff';
+const secondaryColor = cs.secondaryColor ?? '#000000';
+const primaryFg = fgForHex(primaryColor);
+const secondaryFg = fgForHex(secondaryColor);
+const heroLuminanceHigh = primaryFg === '#000000';
+const navState = heroLuminanceHigh ? 'dark' : 'light';
+
+function slugify(s: string) {
+  return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
+const sectionNavItems = [
+  ...(cs.body ?? [])
+    .filter((b) => b.eyebrow)
+    .map((b) => ({ label: b.eyebrow!, id: slugify(b.eyebrow!) })),
+  { label: 'Press', id: 'press' },
+];
+
+const brandVars = [
+  `--brand-primary: ${primaryColor}`,
+  `--brand-primary-fg: ${primaryFg}`,
+  `--brand-secondary: ${secondaryColor}`,
+  `--brand-secondary-fg: ${secondaryFg}`,
+].join('; ');
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>{caseStudy.title} — Superbloom</title>
-  </head>
-  <body>
-    <a href="/work">← Work</a>
-    <h1>{caseStudy.title}</h1>
-    {
-      caseStudy.videoPlaybackId && (
-        <Video playbackId={caseStudy.videoPlaybackId} title={caseStudy.title ?? undefined} />
-      )
-    }
-    {caseStudy.client && <p>Client: {caseStudy.client}</p>}
-    {caseStudy.summary && <p>{caseStudy.summary}</p>}
-    {
-      caseStudy.capabilities && (
-        <ul>
-          {caseStudy.capabilities.map((cap) => (
-            <li>{cap.title}</li>
+<Layout title={`${cs.title} — Superbloom`}>
+  <div style={brandVars}>
+    <section class="hero" style={`--bg: ${primaryColor}; --fg: ${primaryFg};`}>
+      <Nav state={navState} />
+      <div class="hero-inner">
+        <h1 class="type-h1 hero-title">{cs.title}</h1>
+        <div class="meta-row type-eyebrow">
+          {cs.year && (
+            <div class="meta-item">
+              <span class="meta-label">Year</span>
+              <span class="meta-value">{cs.year}</span>
+            </div>
+          )}
+          {cs.industry && (
+            <div class="meta-item">
+              <span class="meta-label">Industry</span>
+              <span class="meta-value">{cs.industry}</span>
+            </div>
+          )}
+          {cs.deliverables && (
+            <div class="meta-item meta-wide">
+              <span class="meta-label">Deliverables</span>
+              <span class="meta-value">{cs.deliverables}</span>
+            </div>
+          )}
+          {cs.creativeCollective && (
+            <div class="meta-item meta-wide">
+              <span class="meta-label">Creative Collective</span>
+              <span class="meta-value">{cs.creativeCollective}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+
+    {cs.heroVideoPlaybackId && (
+      <div class="hero-video">
+        <Video playbackId={cs.heroVideoPlaybackId} title={cs.title ?? undefined} />
+      </div>
+    )}
+
+    <nav class="section-nav type-eyebrow" data-section-nav>
+      <ul class="section-nav-list">
+        {sectionNavItems.map((item, i) => (
+          <li>
+            <a
+              href={`#${item.id}`}
+              class:list={['section-nav-link', { 'is-active': i === 0 }]}
+              data-nav-item
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    {(cs.body ?? []).map((block) => {
+      const id = block.eyebrow ? slugify(block.eyebrow) : undefined;
+      const theme = (block.theme ?? 'light') as 'light' | 'dark' | 'primary' | 'secondary';
+
+      if (block._type === 'highlightsSection') {
+        return (
+          <Section theme={theme} id={id} data-section>
+            <HighlightsSection
+              eyebrow={block.eyebrow}
+              statement={block.statement ?? undefined}
+              stats={block.stats ?? undefined}
+            />
+          </Section>
+        );
+      }
+      if (block._type === 'textSection') {
+        return (
+          <Section theme={theme} id={id} data-section>
+            <TextSection eyebrow={block.eyebrow} body={block.body ?? undefined} />
+          </Section>
+        );
+      }
+      if (block._type === 'mediaSection') {
+        return (
+          <Section theme={theme} id={id} data-section>
+            <MediaSection
+              layout={block.layout}
+              media={block.media as any}
+              text={block.text ?? undefined}
+            />
+          </Section>
+        );
+      }
+      if (block._type === 'statsSection') {
+        return (
+          <Section theme={theme} id={id} data-section>
+            <StatsSection eyebrow={block.eyebrow} stats={block.stats ?? undefined} />
+          </Section>
+        );
+      }
+      return null;
+    })}
+
+    <Section id="press">
+      <div class="stub-section">
+        <p class="type-eyebrow stub-eyebrow">Press</p>
+        <div class="press-grid">
+          {(['Headline', 'Headline', 'Headline'] as const).map((_) => (
+            <div class="press-card">
+              <div class="press-card-img"></div>
+              <p class="type-eyebrow press-card-outlet">Publication</p>
+              <p class="type-caption press-card-headline">Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod.</p>
+            </div>
           ))}
-        </ul>
-      )
-    }
-  </body>
-</html>
+        </div>
+      </div>
+    </Section>
+
+    <Section>
+      <div class="stub-section">
+        <p class="type-eyebrow stub-eyebrow">Related Work</p>
+        <div class="related-grid">
+          {([0, 1, 2] as const).map(() => (
+            <div class="related-card">
+              <div class="related-card-img"></div>
+              <p class="type-eyebrow related-card-title">Case Study Title</p>
+              <p class="type-caption">Lorem ipsum dolor sit amet.</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+
+    <Footer />
+  </div>
+</Layout>
+
+<style>
+  .hero {
+    position: relative;
+    background: var(--bg);
+    color: var(--fg);
+    padding-bottom: var(--space-2xl);
+    overflow: clip;
+  }
+  .hero-inner {
+    padding: 0 var(--space-xs) var(--space-xs);
+    margin-top: 100px;
+  }
+  .hero-title {
+    margin: 0 0 var(--space-2xl);
+  }
+  .meta-row {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+    align-items: start;
+  }
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 120px;
+  }
+  .meta-wide {
+    min-width: 200px;
+    max-width: 260px;
+  }
+  .meta-label {
+    opacity: 0.5;
+  }
+
+  .hero-video {
+    aspect-ratio: 16 / 9;
+    background: #111;
+  }
+  .hero-video :global(mux-player) {
+    width: 100%;
+    height: 100%;
+    --controls: none;
+    --media-object-fit: cover;
+  }
+
+  .section-nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg);
+    border-bottom: 1px solid var(--fg-12);
+  }
+  .section-nav-list {
+    display: flex;
+    gap: 0;
+    padding: 0 var(--space-xs);
+  }
+  .section-nav-link {
+    display: block;
+    padding: var(--space-3xs) var(--space-2xs);
+    text-decoration: none;
+    color: var(--fg-60);
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .section-nav-link.is-active,
+  .section-nav-link:hover {
+    color: var(--fg);
+    border-bottom-color: var(--fg);
+  }
+
+  .stub-section {
+    padding: var(--space-2xl) var(--space-xs);
+  }
+  .stub-eyebrow {
+    margin: 0 0 var(--space-xs);
+    color: var(--fg-60);
+  }
+  .press-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--page-gutter);
+  }
+  .press-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+  .press-card-img {
+    background: var(--fg-12);
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-s);
+    margin-bottom: var(--space-3xs);
+  }
+  .press-card-outlet {
+    margin: 0;
+    opacity: 0.5;
+  }
+  .press-card-headline {
+    margin: 0;
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--page-gutter);
+  }
+  .related-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+  .related-card-img {
+    background: var(--fg-12);
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-s);
+    margin-bottom: var(--space-3xs);
+  }
+  .related-card-title {
+    margin: 0;
+  }
+</style>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const nav = document.querySelector<HTMLElement>('[data-section-nav]');
+  const links = nav ? Array.from(nav.querySelectorAll<HTMLAnchorElement>('[data-nav-item]')) : [];
+  const sections = Array.from(document.querySelectorAll<HTMLElement>('section[id]'));
+
+  if (nav && links.length && sections.length) {
+    const setActive = (id: string) => {
+      links.forEach((link) => {
+        const href = link.getAttribute('href') ?? '';
+        link.classList.toggle('is-active', href === `#${id}`);
+      });
+    };
+
+    const mm = gsap.matchMedia();
+
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      sections.forEach((section) => {
+        ScrollTrigger.create({
+          trigger: section,
+          start: 'top center',
+          end: 'bottom center',
+          onEnter: () => setActive(section.id),
+          onEnterBack: () => setActive(section.id),
+        });
+      });
+      return () => ScrollTrigger.getAll().forEach((t) => t.kill());
+    });
+  }
+</script>

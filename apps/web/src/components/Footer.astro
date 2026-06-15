@@ -4,6 +4,13 @@ const social = ['Instagram', 'LinkedIn', 'Vimeo', 'YouTube'];
 ---
 
 <footer class="footer type-eyebrow">
+  <div class="newsletter">
+    <p class="type-h3 nl-heading">Subscribe to our newsletter</p>
+    <form class="nl-form" onsubmit="return false">
+      <input class="nl-input type-eyebrow" type="email" placeholder="Your email" aria-label="Email address" />
+      <button class="nl-submit type-label" type="submit">Submit</button>
+    </form>
+  </div>
   <div class="cols">
     <div class="col contact">
       <a href="mailto:hello@superbloomhouse.com" class="email">hello@superbloomhouse.com</a>
@@ -35,7 +42,41 @@ const social = ['Instagram', 'LinkedIn', 'Vimeo', 'YouTube'];
   .footer {
     background: var(--fg);
     color: var(--bg);
-    padding: 300px var(--space-xs) var(--space-xs);
+    padding: 0 var(--space-xs) var(--space-xs);
+  }
+  .newsletter {
+    padding: var(--space-2xl) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    margin-bottom: var(--space-2xl);
+  }
+  .nl-heading {
+    margin: 0 0 var(--space-xs);
+    max-width: 10ch;
+    text-transform: uppercase;
+  }
+  .nl-form {
+    display: flex;
+    gap: var(--page-gutter);
+    align-items: center;
+  }
+  .nl-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-m);
+    color: var(--bg);
+    padding: var(--space-3xs) 16px;
+    min-width: 280px;
+  }
+  .nl-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+  .nl-submit {
+    background: var(--bg);
+    color: var(--fg);
+    border: none;
+    border-radius: var(--radius-s);
+    padding: var(--space-3xs) 16px;
+    cursor: pointer;
   }
   .cols {
     display: flex;

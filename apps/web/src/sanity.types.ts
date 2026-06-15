@@ -13,6 +13,112 @@
  */
 
 // Source: schema.json
+export type StatsSection = {
+  _type: "statsSection";
+  theme?: "light" | "dark" | "primary" | "secondary";
+  eyebrow?: string;
+  stats?: Array<{
+    value?: string;
+    label?: string;
+    _type: "stat";
+    _key: string;
+  }>;
+};
+
+export type MediaSection = {
+  _type: "mediaSection";
+  theme?: "light" | "dark" | "primary" | "secondary";
+  eyebrow?: string;
+  layout?: "fullBleed16x9" | "pairedSquare" | "textAndMedia";
+  media?: Array<{
+    _key: string;
+  } & MuxVideo | {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  text?: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+};
+
+export type TextSection = {
+  _type: "textSection";
+  theme?: "light" | "dark" | "primary" | "secondary";
+  eyebrow?: string;
+  body?: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+};
+
+export type HighlightsSection = {
+  _type: "highlightsSection";
+  theme?: "light" | "dark" | "primary" | "secondary";
+  eyebrow?: string;
+  statement?: Array<{
+    children?: Array<{
+      marks?: Array<string>;
+      text?: string;
+      _type: "span";
+      _key: string;
+    }>;
+    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+    listItem?: "bullet" | "number";
+    markDefs?: Array<{
+      href?: string;
+      _type: "link";
+      _key: string;
+    }>;
+    level?: number;
+    _type: "block";
+    _key: string;
+  }>;
+  stats?: Array<{
+    value?: string;
+    label?: string;
+    _type: "stat";
+    _key: string;
+  }>;
+};
+
 export type Homepage = {
   _id: string;
   _type: "homepage";
@@ -73,6 +179,37 @@ export type CaseStudy = {
     [internalGroqTypeReferenceTo]?: "capability";
   }>;
   heroVideo?: MuxVideo;
+  year?: string;
+  industry?: string;
+  deliverables?: string;
+  creativeCollective?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  body?: Array<{
+    _key: string;
+  } & HighlightsSection | {
+    _key: string;
+  } & TextSection | {
+    _key: string;
+  } & MediaSection | {
+    _key: string;
+  } & StatsSection>;
+};
+
+export type SanityImageCrop = {
+  _type: "sanity.imageCrop";
+  top?: number;
+  bottom?: number;
+  left?: number;
+  right?: number;
+};
+
+export type SanityImageHotspot = {
+  _type: "sanity.imageHotspot";
+  x?: number;
+  y?: number;
+  height?: number;
+  width?: number;
 };
 
 export type Slug = {
@@ -215,22 +352,6 @@ export type SanityImageMetadata = {
   isOpaque?: boolean;
 };
 
-export type SanityImageHotspot = {
-  _type: "sanity.imageHotspot";
-  x?: number;
-  y?: number;
-  height?: number;
-  width?: number;
-};
-
-export type SanityImageCrop = {
-  _type: "sanity.imageCrop";
-  top?: number;
-  bottom?: number;
-  left?: number;
-  right?: number;
-};
-
 export type SanityFileAsset = {
   _id: string;
   _type: "sanity.fileAsset";
@@ -290,7 +411,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = Homepage | CapesBlock | HeroBlock | MuxVideo | CaseStudy | Slug | Capability | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = StatsSection | MediaSection | TextSection | HighlightsSection | Homepage | CapesBlock | HeroBlock | MuxVideo | CaseStudy | SanityImageCrop | SanityImageHotspot | Slug | Capability | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ../web/src/lib/queries.ts
 // Variable: homepageQuery
@@ -319,16 +440,115 @@ export type CaseStudiesQueryResult = Array<{
   client: string | null;
 }>;
 // Variable: caseStudyBySlugQuery
-// Query: *[_type == "caseStudy" && slug.current == $slug][0] {    title,    "slug": slug.current,    client,    summary,    "videoPlaybackId": heroVideo.asset->playbackId,    capabilities[]->{      title,      "slug": slug.current    }  }
+// Query: *[_type == "caseStudy" && slug.current == $slug][0] {    title,    "slug": slug.current,    client,    year,    industry,    deliverables,    creativeCollective,    primaryColor,    secondaryColor,    "heroVideoPlaybackId": heroVideo.asset->playbackId,    body[]{      _type,      _key,      theme,      eyebrow,      _type == "highlightsSection" => {        statement,        stats[]{ _key, value, label }      },      _type == "textSection" => {        body      },      _type == "mediaSection" => {        layout,        text,        media[]{          _type,          _key,          _type == "mux.video" => {            "playbackId": asset->playbackId          },          _type == "image" => {            "url": asset->url,            "width": asset->metadata.dimensions.width,            "height": asset->metadata.dimensions.height,            "alt": asset->altText          }        }      },      _type == "statsSection" => {        stats[]{ _key, value, label }      }    }  }
 export type CaseStudyBySlugQueryResult = {
   title: string | null;
   slug: string | null;
   client: string | null;
-  summary: string | null;
-  videoPlaybackId: string | null;
-  capabilities: Array<{
-    title: string | null;
-    slug: string | null;
+  year: string | null;
+  industry: string | null;
+  deliverables: string | null;
+  creativeCollective: string | null;
+  primaryColor: string | null;
+  secondaryColor: string | null;
+  heroVideoPlaybackId: string | null;
+  body: Array<{
+    _type: "highlightsSection";
+    _key: string;
+    theme: "dark" | "light" | "primary" | "secondary" | null;
+    eyebrow: string | null;
+    statement: Array<{
+      children?: Array<{
+        marks?: Array<string>;
+        text?: string;
+        _type: "span";
+        _key: string;
+      }>;
+      style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+      listItem?: "bullet" | "number";
+      markDefs?: Array<{
+        href?: string;
+        _type: "link";
+        _key: string;
+      }>;
+      level?: number;
+      _type: "block";
+      _key: string;
+    }> | null;
+    stats: Array<{
+      _key: string;
+      value: string | null;
+      label: string | null;
+    }> | null;
+  } | {
+    _type: "mediaSection";
+    _key: string;
+    theme: "dark" | "light" | "primary" | "secondary" | null;
+    eyebrow: string | null;
+    layout: "fullBleed16x9" | "pairedSquare" | "textAndMedia" | null;
+    text: Array<{
+      children?: Array<{
+        marks?: Array<string>;
+        text?: string;
+        _type: "span";
+        _key: string;
+      }>;
+      style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+      listItem?: "bullet" | "number";
+      markDefs?: Array<{
+        href?: string;
+        _type: "link";
+        _key: string;
+      }>;
+      level?: number;
+      _type: "block";
+      _key: string;
+    }> | null;
+    media: Array<{
+      _type: "image";
+      _key: string;
+      url: string | null;
+      width: number | null;
+      height: number | null;
+      alt: string | null;
+    } | {
+      _type: "mux.video";
+      _key: string;
+      playbackId: string | null;
+    }> | null;
+  } | {
+    _type: "statsSection";
+    _key: string;
+    theme: "dark" | "light" | "primary" | "secondary" | null;
+    eyebrow: string | null;
+    stats: Array<{
+      _key: string;
+      value: string | null;
+      label: string | null;
+    }> | null;
+  } | {
+    _type: "textSection";
+    _key: string;
+    theme: "dark" | "light" | "primary" | "secondary" | null;
+    eyebrow: string | null;
+    body: Array<{
+      children?: Array<{
+        marks?: Array<string>;
+        text?: string;
+        _type: "span";
+        _key: string;
+      }>;
+      style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+      listItem?: "bullet" | "number";
+      markDefs?: Array<{
+        href?: string;
+        _type: "link";
+        _key: string;
+      }>;
+      level?: number;
+      _type: "block";
+      _key: string;
+    }> | null;
   }> | null;
 } | null;
 
@@ -338,6 +558,6 @@ declare module "@sanity/client" {
   interface SanityQueries {
     "\n  *[_type == \"homepage\"][0]{\n    sections[]{\n      _type,\n      _type == \"heroBlock\" => {\n        heading,\n        subheading,\n        \"videoPlaybackId\": video.asset->playbackId\n      },\n      _type == \"capesBlock\" => {\n        headline,\n        capabilities[]->{\n          title,\n          \"slug\": slug.current,\n          \"videoPlaybackId\": video.asset->playbackId\n        }\n      }\n    }\n  }\n": HomepageQueryResult;
     "\n  *[_type == \"caseStudy\"] | order(title asc) {\n    title,\n    \"slug\": slug.current,\n    client\n  }\n": CaseStudiesQueryResult;
-    "\n  *[_type == \"caseStudy\" && slug.current == $slug][0] {\n    title,\n    \"slug\": slug.current,\n    client,\n    summary,\n    \"videoPlaybackId\": heroVideo.asset->playbackId,\n    capabilities[]->{\n      title,\n      \"slug\": slug.current\n    }\n  }\n": CaseStudyBySlugQueryResult;
+    "\n  *[_type == \"caseStudy\" && slug.current == $slug][0] {\n    title,\n    \"slug\": slug.current,\n    client,\n    year,\n    industry,\n    deliverables,\n    creativeCollective,\n    primaryColor,\n    secondaryColor,\n    \"heroVideoPlaybackId\": heroVideo.asset->playbackId,\n    body[]{\n      _type,\n      _key,\n      theme,\n      eyebrow,\n      _type == \"highlightsSection\" => {\n        statement,\n        stats[]{ _key, value, label }\n      },\n      _type == \"textSection\" => {\n        body\n      },\n      _type == \"mediaSection\" => {\n        layout,\n        text,\n        media[]{\n          _type,\n          _key,\n          _type == \"mux.video\" => {\n            \"playbackId\": asset->playbackId\n          },\n          _type == \"image\" => {\n            \"url\": asset->url,\n            \"width\": asset->metadata.dimensions.width,\n            \"height\": asset->metadata.dimensions.height,\n            \"alt\": asset->altText\n          }\n        }\n      },\n      _type == \"statsSection\" => {\n        stats[]{ _key, value, label }\n      }\n    }\n  }\n": CaseStudyBySlugQueryResult;
   }
 }

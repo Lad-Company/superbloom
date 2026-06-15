@@ -34,11 +34,45 @@ export const caseStudyBySlugQuery = defineQuery(`
     title,
     "slug": slug.current,
     client,
-    summary,
-    "videoPlaybackId": heroVideo.asset->playbackId,
-    capabilities[]->{
-      title,
-      "slug": slug.current
+    year,
+    industry,
+    deliverables,
+    creativeCollective,
+    primaryColor,
+    secondaryColor,
+    "heroVideoPlaybackId": heroVideo.asset->playbackId,
+    body[]{
+      _type,
+      _key,
+      theme,
+      eyebrow,
+      _type == "highlightsSection" => {
+        statement,
+        stats[]{ _key, value, label }
+      },
+      _type == "textSection" => {
+        body
+      },
+      _type == "mediaSection" => {
+        layout,
+        text,
+        media[]{
+          _type,
+          _key,
+          _type == "mux.video" => {
+            "playbackId": asset->playbackId
+          },
+          _type == "image" => {
+            "url": asset->url,
+            "width": asset->metadata.dimensions.width,
+            "height": asset->metadata.dimensions.height,
+            "alt": asset->altText
+          }
+        }
+      },
+      _type == "statsSection" => {
+        stats[]{ _key, value, label }
+      }
     }
   }
 `);
