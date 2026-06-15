@@ -16,5 +16,16 @@ export const capability = defineType({
       options: {source: 'title'},
       validation: (rule) => rule.required(),
     }),
+    defineField({
+      name: 'subtitle',
+      title: 'Subtitle',
+      type: 'text',
+      rows: 2,
+    }),
+    defineField({
+      name: 'video',
+      title: 'Video',
+      type: 'mux.video',
+    }),
   ],
 })

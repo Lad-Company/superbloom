@@ -1,0 +1,87 @@
+---
+interface Props {
+  state?: 'light' | 'dark';
+}
+
+const { state = 'light' } = Astro.props;
+const links = ['Our Work', 'Who We Are', 'News & Press', 'Zine'];
+---
+
+<nav class:list={['nav', state]}>
+  <a href="/" class="logo type-eyebrow">Superbloom House</a>
+  <ul class="links">
+    {
+      links.map((label) => (
+        <li>
+          <a href="#" class="type-eyebrow">
+            {label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <div class="actions">
+    <a href="#" class="btn btn-secondary type-label">Let's Chat</a>
+    <a href="#" class="btn btn-tertiary type-label">Shop</a>
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: absolute;
+    inset: 0 0 auto 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--page-gutter);
+    padding: var(--space-xs);
+    width: 100%;
+  }
+  .light {
+    color: var(--bg);
+  }
+  .dark {
+    color: var(--fg);
+  }
+  .logo {
+    flex-shrink: 0;
+    text-decoration: none;
+  }
+  .links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
+  }
+  .links a {
+    text-decoration: none;
+  }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: var(--page-gutter);
+    flex-shrink: 0;
+  }
+  .btn {
+    text-decoration: none;
+    padding: var(--space-3xs) 16px;
+    border-radius: var(--radius-s);
+    backdrop-filter: blur(35px);
+    -webkit-backdrop-filter: blur(35px);
+  }
+  .btn-secondary {
+    background: var(--bg);
+    color: var(--fg);
+  }
+  .btn-tertiary {
+    background: var(--bg-20);
+    color: var(--bg);
+  }
+  .dark .btn-secondary {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .dark .btn-tertiary {
+    color: var(--fg);
+  }
+</style>

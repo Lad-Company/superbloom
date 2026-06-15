@@ -1,0 +1,63 @@
+---
+const nav = ['Our Work', 'Who We Are', 'News & Press', 'Zine', 'Shop'];
+const social = ['Instagram', 'LinkedIn', 'Vimeo', 'YouTube'];
+---
+
+<footer class="footer type-eyebrow">
+  <div class="cols">
+    <div class="col contact">
+      <a href="mailto:hello@superbloomhouse.com" class="email">hello@superbloomhouse.com</a>
+      <p>
+        <a href="https://maps.app.goo.gl/JQnEQbBXd1q9TAJu5" target="_blank" rel="noopener">
+          5768 West Adams Blvd<br />Los Angeles, CA 90016
+        </a><br />P - 310.913.5312
+      </p>
+      <p>
+        NYC<br />
+        <a href="https://goo.gl/maps/RvvdLkRkVatXafCi9" target="_blank" rel="noopener">
+          77 10th Street, Floor 3<br />Brooklyn, NY 11215
+        </a>
+      </p>
+    </div>
+    <ul class="col">
+      {nav.map((label) => <li><a href="#">{label}</a></li>)}
+    </ul>
+    <ul class="col">
+      {social.map((label) => <li><a href="#">{label}</a></li>)}
+    </ul>
+    <div class="col">
+      <p>All content ©<br />Superbloomhouse 2026</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--fg);
+    color: var(--bg);
+    padding: 300px var(--space-xs) var(--space-xs);
+  }
+  .cols {
+    display: flex;
+    gap: var(--page-gutter);
+    align-items: flex-start;
+  }
+  .col {
+    flex: 1 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+  .contact a {
+    text-decoration: none;
+  }
+  .email {
+    text-decoration: underline;
+  }
+  a {
+    text-decoration: none;
+  }
+  p {
+    margin: 0;
+  }
+</style>

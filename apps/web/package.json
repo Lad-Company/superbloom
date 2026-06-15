@@ -15,8 +15,11 @@
     "@astrojs/vercel": "^10.0.8",
     "@mux/mux-player": "^3.13.0",
     "@sanity/client": "^7.22.1",
+    "@unocss/astro": "^66.7.2",
     "astro": "^6.4.6",
-    "groq": "^5.31.1"
+    "groq": "^5.31.1",
+    "gsap": "^3.15.0",
+    "unocss": "^66.7.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",

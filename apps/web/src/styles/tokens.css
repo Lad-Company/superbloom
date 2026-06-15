@@ -1,0 +1,29 @@
+/* Design tokens transcribed from Figma R3 variables. Source of truth for the Uno theme. */
+:root {
+  /* Color */
+  --bg: #ffffff;
+  --fg: #000000;
+  --bg-20: rgba(255, 255, 255, 0.2);
+  --bg-60: rgba(255, 255, 255, 0.6);
+  --fg-12: rgba(0, 0, 0, 0.12);
+  --fg-60: rgba(0, 0, 0, 0.6);
+
+  /* Spacing (px) */
+  --space-xs-4: 8px;
+  --space-3xs: 12px;
+  --space-2xs: 24px;
+  --space-xs: 32px;
+  --space-2xl: 120px;
+  --space-4xl: 200px;
+  --page-gutter: 24px;
+
+  /* Radius */
+  --radius-s: 6px; /* buttons, labels, chips */
+  --radius-m: 8px; /* inputs */
+
+  /* Fonts (real faces first, fallbacks until Lad supplies licensed files) */
+  --font-display-tight: 'PP Neue Corp Tight', 'Arial Narrow', system-ui, sans-serif;
+  --font-display-compact: 'PP Neue Corp Compact', 'Arial Narrow', system-ui, sans-serif;
+  --font-body: 'Graphik', 'Inter', system-ui, sans-serif;
+  --font-label: 'TT Bluescreens', ui-monospace, system-ui, sans-serif;
+}

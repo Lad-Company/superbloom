@@ -13,6 +13,48 @@
  */
 
 // Source: schema.json
+export type Homepage = {
+  _id: string;
+  _type: "homepage";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  sections?: Array<{
+    _key: string;
+  } & HeroBlock | {
+    _key: string;
+  } & CapesBlock>;
+};
+
+export type CapesBlock = {
+  _type: "capesBlock";
+  headline?: string;
+  capabilities?: Array<{
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    _key: string;
+    [internalGroqTypeReferenceTo]?: "capability";
+  }>;
+};
+
+export type HeroBlock = {
+  _type: "heroBlock";
+  heading?: string;
+  subheading?: string;
+  video?: MuxVideo;
+};
+
+export type MuxVideo = {
+  _type: "mux.video";
+  asset?: {
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    [internalGroqTypeReferenceTo]?: "mux.videoAsset";
+  };
+};
+
 export type CaseStudy = {
   _id: string;
   _type: "caseStudy";
@@ -33,16 +75,6 @@ export type CaseStudy = {
   heroVideo?: MuxVideo;
 };
 
-export type MuxVideo = {
-  _type: "mux.video";
-  asset?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "mux.videoAsset";
-  };
-};
-
 export type Slug = {
   _type: "slug";
   current?: string;
@@ -57,6 +89,8 @@ export type Capability = {
   _rev: string;
   title?: string;
   slug?: Slug;
+  subtitle?: string;
+  video?: MuxVideo;
 };
 
 export type MuxVideoAsset = {
@@ -256,9 +290,27 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = CaseStudy | MuxVideo | Slug | Capability | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = Homepage | CapesBlock | HeroBlock | MuxVideo | CaseStudy | Slug | Capability | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ../web/src/lib/queries.ts
+// Variable: homepageQuery
+// Query: *[_type == "homepage"][0]{    sections[]{      _type,      _type == "heroBlock" => {        heading,        subheading,        "videoPlaybackId": video.asset->playbackId      },      _type == "capesBlock" => {        headline,        capabilities[]->{          title,          "slug": slug.current,          "videoPlaybackId": video.asset->playbackId        }      }    }  }
+export type HomepageQueryResult = {
+  sections: Array<{
+    _type: "capesBlock";
+    headline: string | null;
+    capabilities: Array<{
+      title: string | null;
+      slug: string | null;
+      videoPlaybackId: string | null;
+    }> | null;
+  } | {
+    _type: "heroBlock";
+    heading: string | null;
+    subheading: string | null;
+    videoPlaybackId: string | null;
+  }> | null;
+} | null;
 // Variable: caseStudiesQuery
 // Query: *[_type == "caseStudy"] | order(title asc) {    title,    "slug": slug.current,    client  }
 export type CaseStudiesQueryResult = Array<{
@@ -284,6 +336,7 @@ export type CaseStudyBySlugQueryResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
+    "\n  *[_type == \"homepage\"][0]{\n    sections[]{\n      _type,\n      _type == \"heroBlock\" => {\n        heading,\n        subheading,\n        \"videoPlaybackId\": video.asset->playbackId\n      },\n      _type == \"capesBlock\" => {\n        headline,\n        capabilities[]->{\n          title,\n          \"slug\": slug.current,\n          \"videoPlaybackId\": video.asset->playbackId\n        }\n      }\n    }\n  }\n": HomepageQueryResult;
     "\n  *[_type == \"caseStudy\"] | order(title asc) {\n    title,\n    \"slug\": slug.current,\n    client\n  }\n": CaseStudiesQueryResult;
     "\n  *[_type == \"caseStudy\" && slug.current == $slug][0] {\n    title,\n    \"slug\": slug.current,\n    client,\n    summary,\n    \"videoPlaybackId\": heroVideo.asset->playbackId,\n    capabilities[]->{\n      title,\n      \"slug\": slug.current\n    }\n  }\n": CaseStudyBySlugQueryResult;
   }

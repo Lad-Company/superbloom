@@ -2,8 +2,8 @@
   "name": "superbloom",
   "private": true,
   "scripts": {
-    "dev:web": "pnpm --filter web dev",
-    "dev:studio": "pnpm --filter studio dev",
+    "web": "pnpm --filter web dev",
+    "studio": "pnpm --filter studio dev",
     "typegen": "pnpm --filter studio typegen"
   },
   "packageManager": "pnpm@10.15.1"
