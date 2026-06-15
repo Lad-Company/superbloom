@@ -1,8 +1,4 @@
-/*
- * Font faces scaffolded ahead of licensed files from Lad.
- * Drop the woff2 files into /public/fonts/ and these activate automatically;
- * until then, font-display: swap renders the fallback stacks in tokens.css.
- */
+/* PP Neue Corp — converted from licensed OTF (Pangram Pangram) */
 @font-face {
   font-family: 'PP Neue Corp Tight';
   src: url('/fonts/PPNeueCorp-TightUltrabold.woff2') format('woff2');
@@ -17,6 +13,8 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* Graphik — licensed web font (Commercial Type) */
 @font-face {
   font-family: 'Graphik';
   src: url('/fonts/Graphik-Medium.woff2') format('woff2');
@@ -24,10 +22,5 @@
   font-style: normal;
   font-display: swap;
 }
-@font-face {
-  font-family: 'TT Bluescreens';
-  src: url('/fonts/TTBluescreens-ExtraBold.woff2') format('woff2');
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
+
+/* TT Bluescreens (label font) — files not yet sourced; system fallback active */
