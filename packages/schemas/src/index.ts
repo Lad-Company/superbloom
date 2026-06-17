@@ -7,6 +7,8 @@ import {highlightsSection} from './highlightsSection'
 import {textSection} from './textSection'
 import {mediaSection} from './mediaSection'
 import {statsSection} from './statsSection'
+import {formSubmission} from './formSubmission'
+import {contactBlock} from './contactBlock'
 
 export const schemaTypes = [
   capability,
@@ -18,4 +20,6 @@ export const schemaTypes = [
   textSection,
   mediaSection,
   statsSection,
+  formSubmission,
+  contactBlock,
 ]

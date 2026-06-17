@@ -13,6 +13,25 @@
  */
 
 // Source: schema.json
+export type ContactBlock = {
+  _type: "contactBlock";
+  marker?: string;
+};
+
+export type FormSubmission = {
+  _id: string;
+  _type: "formSubmission";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  inquiryType?: string;
+  name?: string;
+  email?: string;
+  hearAboutUs?: string;
+  message?: string;
+  submittedAt?: string;
+};
+
 export type StatsSection = {
   _type: "statsSection";
   theme?: "light" | "dark" | "primary" | "secondary";
@@ -129,7 +148,9 @@ export type Homepage = {
     _key: string;
   } & HeroBlock | {
     _key: string;
-  } & CapesBlock>;
+  } & CapesBlock | {
+    _key: string;
+  } & ContactBlock>;
 };
 
 export type CapesBlock = {
@@ -411,11 +432,11 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = StatsSection | MediaSection | TextSection | HighlightsSection | Homepage | CapesBlock | HeroBlock | MuxVideo | CaseStudy | SanityImageCrop | SanityImageHotspot | Slug | Capability | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = ContactBlock | FormSubmission | StatsSection | MediaSection | TextSection | HighlightsSection | Homepage | CapesBlock | HeroBlock | MuxVideo | CaseStudy | SanityImageCrop | SanityImageHotspot | Slug | Capability | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ../web/src/lib/queries.ts
 // Variable: homepageQuery
-// Query: *[_type == "homepage"][0]{    sections[]{      _type,      _type == "heroBlock" => {        heading,        subheading,        "videoPlaybackId": video.asset->playbackId      },      _type == "capesBlock" => {        headline,        capabilities[]->{          title,          "slug": slug.current,          "videoPlaybackId": video.asset->playbackId        }      }    }  }
+// Query: *[_type == "homepage"][0]{    sections[]{      _type,      _type == "heroBlock" => {        heading,        subheading,        "videoPlaybackId": video.asset->playbackId      },      _type == "capesBlock" => {        headline,        capabilities[]->{          title,          "slug": slug.current,          "videoPlaybackId": video.asset->playbackId        }      },      _type == "contactBlock" => {        _type      }    }  }
 export type HomepageQueryResult = {
   sections: Array<{
     _type: "capesBlock";
@@ -425,6 +446,8 @@ export type HomepageQueryResult = {
       slug: string | null;
       videoPlaybackId: string | null;
     }> | null;
+  } | {
+    _type: "contactBlock";
   } | {
     _type: "heroBlock";
     heading: string | null;
@@ -556,7 +579,7 @@ export type CaseStudyBySlugQueryResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "\n  *[_type == \"homepage\"][0]{\n    sections[]{\n      _type,\n      _type == \"heroBlock\" => {\n        heading,\n        subheading,\n        \"videoPlaybackId\": video.asset->playbackId\n      },\n      _type == \"capesBlock\" => {\n        headline,\n        capabilities[]->{\n          title,\n          \"slug\": slug.current,\n          \"videoPlaybackId\": video.asset->playbackId\n        }\n      }\n    }\n  }\n": HomepageQueryResult;
+    "\n  *[_type == \"homepage\"][0]{\n    sections[]{\n      _type,\n      _type == \"heroBlock\" => {\n        heading,\n        subheading,\n        \"videoPlaybackId\": video.asset->playbackId\n      },\n      _type == \"capesBlock\" => {\n        headline,\n        capabilities[]->{\n          title,\n          \"slug\": slug.current,\n          \"videoPlaybackId\": video.asset->playbackId\n        }\n      },\n      _type == \"contactBlock\" => {\n        _type\n      }\n    }\n  }\n": HomepageQueryResult;
     "\n  *[_type == \"caseStudy\"] | order(title asc) {\n    title,\n    \"slug\": slug.current,\n    client\n  }\n": CaseStudiesQueryResult;
     "\n  *[_type == \"caseStudy\" && slug.current == $slug][0] {\n    title,\n    \"slug\": slug.current,\n    client,\n    year,\n    industry,\n    deliverables,\n    creativeCollective,\n    primaryColor,\n    secondaryColor,\n    \"heroVideoPlaybackId\": heroVideo.asset->playbackId,\n    body[]{\n      _type,\n      _key,\n      theme,\n      eyebrow,\n      _type == \"highlightsSection\" => {\n        statement,\n        stats[]{ _key, value, label }\n      },\n      _type == \"textSection\" => {\n        body\n      },\n      _type == \"mediaSection\" => {\n        layout,\n        text,\n        media[]{\n          _type,\n          _key,\n          _type == \"mux.video\" => {\n            \"playbackId\": asset->playbackId\n          },\n          _type == \"image\" => {\n            \"url\": asset->url,\n            \"width\": asset->metadata.dimensions.width,\n            \"height\": asset->metadata.dimensions.height,\n            \"alt\": asset->altText\n          }\n        }\n      },\n      _type == \"statsSection\" => {\n        stats[]{ _key, value, label }\n      }\n    }\n  }\n": CaseStudyBySlugQueryResult;
   }

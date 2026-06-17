@@ -16,6 +16,9 @@ export const homepageQuery = defineQuery(`
           "slug": slug.current,
           "videoPlaybackId": video.asset->playbackId
         }
+      },
+      _type == "contactBlock" => {
+        _type
       }
     }
   }
