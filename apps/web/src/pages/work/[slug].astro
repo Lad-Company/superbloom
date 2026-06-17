@@ -4,13 +4,11 @@ import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
 import Video from '../../components/Video.astro';
 import Section from '../../components/case/Section.astro';
-import HighlightsSection from '../../components/case/HighlightsSection.astro';
-import TextSection from '../../components/case/TextSection.astro';
-import MediaSection from '../../components/case/MediaSection.astro';
-import StatsSection from '../../components/case/StatsSection.astro';
+import CaseBodyBlock from '../../components/case/CaseBodyBlock.astro';
 import { sanityClient } from '../../lib/sanity';
 import { caseStudyBySlugQuery } from '../../lib/queries';
 import { fgForHex } from '../../lib/luminance';
+import { blockId } from '../../lib/blockId';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
 
 const { slug } = Astro.params;
@@ -27,14 +25,10 @@ const secondaryFg = fgForHex(secondaryColor);
 const heroLuminanceHigh = primaryFg === '#000000';
 const navState = heroLuminanceHigh ? 'dark' : 'light';
 
-function slugify(s: string) {
-  return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-}
-
 const sectionNavItems = [
   ...(cs.body ?? [])
     .filter((b) => b.eyebrow)
-    .map((b) => ({ label: b.eyebrow!, id: slugify(b.eyebrow!) })),
+    .map((b) => ({ label: b.eyebrow!, id: blockId(b.eyebrow!) })),
   { label: 'Press', id: 'press' },
 ];
 
@@ -103,48 +97,7 @@ const brandVars = [
       </ul>
     </nav>
 
-    {(cs.body ?? []).map((block) => {
-      const id = block.eyebrow ? slugify(block.eyebrow) : undefined;
-      const theme = (block.theme ?? 'light') as 'light' | 'dark' | 'primary' | 'secondary';
-
-      if (block._type === 'highlightsSection') {
-        return (
-          <Section theme={theme} id={id} data-section>
-            <HighlightsSection
-              eyebrow={block.eyebrow}
-              statement={block.statement ?? undefined}
-              stats={block.stats ?? undefined}
-            />
-          </Section>
-        );
-      }
-      if (block._type === 'textSection') {
-        return (
-          <Section theme={theme} id={id} data-section>
-            <TextSection eyebrow={block.eyebrow} body={block.body ?? undefined} />
-          </Section>
-        );
-      }
-      if (block._type === 'mediaSection') {
-        return (
-          <Section theme={theme} id={id} data-section>
-            <MediaSection
-              layout={block.layout}
-              media={block.media as any}
-              text={block.text ?? undefined}
-            />
-          </Section>
-        );
-      }
-      if (block._type === 'statsSection') {
-        return (
-          <Section theme={theme} id={id} data-section>
-            <StatsSection eyebrow={block.eyebrow} stats={block.stats ?? undefined} />
-          </Section>
-        );
-      }
-      return null;
-    })}
+    {(cs.body ?? []).map((block) => <CaseBodyBlock block={block} />)}
 
     <Section id="press">
       <div class="stub-section">

@@ -1,0 +1,52 @@
+---
+import Section from './Section.astro';
+import HighlightsSection from './HighlightsSection.astro';
+import TextSection from './TextSection.astro';
+import MediaSection from './MediaSection.astro';
+import StatsSection from './StatsSection.astro';
+import { blockId } from '../../lib/blockId';
+import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
+
+type Block = NonNullable<NonNullable<NonNullable<CaseStudyBySlugQueryResult>['body']>[number]>;
+
+interface Props {
+  block: Block;
+}
+
+const { block } = Astro.props;
+
+const id = block.eyebrow ? blockId(block.eyebrow) : undefined;
+const theme = block.theme ?? 'light';
+---
+
+{block._type === 'highlightsSection' && (
+  <Section theme={theme} id={id} data-section>
+    <HighlightsSection
+      eyebrow={block.eyebrow}
+      statement={block.statement ?? undefined}
+      stats={block.stats ?? undefined}
+    />
+  </Section>
+)}
+
+{block._type === 'textSection' && (
+  <Section theme={theme} id={id} data-section>
+    <TextSection eyebrow={block.eyebrow} body={block.body ?? undefined} />
+  </Section>
+)}
+
+{block._type === 'mediaSection' && (
+  <Section theme={theme} id={id} data-section>
+    <MediaSection
+      layout={block.layout}
+      media={block.media as any}
+      text={block.text ?? undefined}
+    />
+  </Section>
+)}
+
+{block._type === 'statsSection' && (
+  <Section theme={theme} id={id} data-section>
+    <StatsSection eyebrow={block.eyebrow} stats={block.stats ?? undefined} />
+  </Section>
+)}
