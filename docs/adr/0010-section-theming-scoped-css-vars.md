@@ -17,3 +17,15 @@ A themeable section carries a `theme` role: `light` (default white/black), `dark
 **Why not free-form per-section color**: it removes the brand-identity framing and lets editors pick off-brand colors section by section; roles tied to two per-case pickers keep the page coherent.
 
 **Reversibility**: medium. The role enum and scoped-variable mechanism are localized to the section wrapper and schema, but `theme` values live on stored content, so changing the role vocabulary later means a content migration.
+
+## Amendment — fixed Superbloom brand colors as named roles
+
+The Home-Zine block (see `docs/design-system/home-zine.md`) is themed on a **fixed Superbloom brand color** (a green, `#99a224`) that is neither light/dark nor a per-case-study brand accent. The original `primary`/`secondary` roles are deliberately client-owned and arbitrary, so this Superbloom-owned color does not belong in that pair.
+
+**Decision**: extend the `theme` role enum with **named Superbloom brand roles** (starting with `zine`) rather than a one-off inline background. Each named role resolves to a fixed token (e.g. `--brand-zine`) and feeds the same `--bg`/`--fg` contract, with foreground still auto-derived by relative luminance. This keeps the section authored as a role (consistent with every other block) and keeps the color a first-class, reusable token.
+
+**Why not a one-off background**: an inline color reintroduces the free-form per-section coloring this ADR rejected, and hides a recurring brand color from the token set. A named role keeps it enumerable and themeable.
+
+**Distinction**: `primary`/`secondary` = the *client's* brand accents, picked per Case Study; `zine` (and any future named role) = *Superbloom's* own fixed brand colors. Both flow through the same scoped-variable mechanism.
+
+**Reversibility**: same as above (medium) — adding a role value is additive, but the value lives on stored content.
