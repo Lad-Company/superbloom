@@ -1,0 +1,49 @@
+---
+import Section from '../case/Section.astro';
+import NewsCard from '../NewsCard.astro';
+import type { HomepageQueryResult } from '../../sanity.types';
+
+type NewsBlock = Extract<
+  NonNullable<NonNullable<HomepageQueryResult>['sections']>[number],
+  { _type: 'newsBlock' }
+>;
+
+interface Props {
+  headline?: string | null;
+  items: NewsBlock['items'];
+}
+
+const { headline, items } = Astro.props;
+const [featured, ...rest] = items;
+---
+
+<Section theme="light" class="news">
+  <div class="inner">
+    {headline && <h2 class="type-h6 headline">{headline}</h2>}
+    <div class="track">
+      {featured && <NewsCard item={featured} size="large" showCopy />}
+      {rest.map((item) => (
+        <NewsCard item={item} size="small" />
+      ))}
+    </div>
+  </div>
+</Section>
+
+<style>
+  .inner {
+    padding: var(--space-2xl) 0 var(--space-2xl) var(--space-xs);
+  }
+  .headline {
+    margin: 0 0 var(--space-xs);
+  }
+  .track {
+    display: flex;
+    gap: var(--page-gutter);
+    overflow-x: auto;
+    padding-right: var(--space-xs);
+    scroll-snap-type: x proximity;
+  }
+  .track > :global(.news-card) {
+    scroll-snap-align: start;
+  }
+</style>

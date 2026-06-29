@@ -26,13 +26,18 @@ A media card linking to a news item: media with overlaid tags, a headline, and
 
 ## Implementation status / gaps
 
-Unbuilt. Recommended as a single reusable component shared by News Carousel and
-All Work, with props for size (large/small), media aspect ratio, tags, and a
-`copy` / `state` (default vs inset) toggle. Depends on a News content type
-(**decided: build it** — see [News Carousel](./news-carousel.md)).
+Built as `NewsCard.astro`, with props for `size` (large/small) and a `showCopy`
+toggle. Media renders an image or Mux video at the item's `aspectRatio`
+(`1:1`/`16:9`/`4:5`); tags overlay the media as `.d1-label` pills sourced from the
+`tag` taxonomy (referenced by `news.tags`, max 2). The card always links to the
+News detail page (`/news/[slug]`).
 
-- **Tags = dedicated field (decided).** Source is a dedicated `tags` field, shared
-  with All Work (not reused `capabilities`/`deliverables`).
-- **Card size = optionally authored, layout-derived fallback (decided).** Size is an
-  optional authored field per card; when unset, it is derived from layout position
-  (see [All Work](./all-work.md)).
+Deferred backlog (this pass was a tracer):
+
+- **`inset` state** is not implemented — only the default (flush) layout exists.
+- **Shared with All Work:** currently used only by the News Carousel. When All Work
+  is built, extract the shared card and promote the `.d1-label` styles (scoped here
+  for now) to a shared component.
+- **Card size source:** `size` is a component prop set by the carousel
+  (newest = large, rest = small). The authored/layout-derived fallback described in
+  [All Work](./all-work.md) is a Work-index concern, not built here.

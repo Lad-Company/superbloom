@@ -34,16 +34,18 @@ _Fields marked with an asterisk are required._
 
 ## Implementation status / gaps
 
-Entirely unbuilt. Notable design-model gaps:
+Built as `NewsCarousel.astro`, driven by a `newsBlock` homepage section that
+auto-resolves the latest News by `publishedAt`. The newest item renders as the
+large/featured card (with `summary` copy); the rest are small, headline-only. The
+`news` document type, the `tag` taxonomy, and the composite News model are recorded
+in ADR-0011; CONTEXT.md defines **News** and **Tag**.
 
-- **No News content type (decided: build it).** `CONTEXT.md` defines **News** (press
-  + editorial, distinct from the Zine), but there is no `news` schema and
-  `homepage.sections[]` only accepts `heroBlock`, `capesBlock`, `contactBlock`.
-  **Decided: add a News document type** plus a homepage carousel block.
-- **News Card** is shared with All Work but here shows headline only (no description
-  paragraph). Worth extracting a single News Card component with a `copy` toggle.
-- **Tags = dedicated field (decided).** Tags use the `.d1-label` translucent pill;
-  **decided: a dedicated `tags` field** is their source (not reused
-  `capabilities`/`deliverables`), shared with All Work.
-- **Auto-scroll + pause-on-hover** behavior is unimplemented (GSAP is available per
-  ADR-0007).
+Deferred backlog (this pass was a tracer):
+
+- **Auto-scroll + pause-on-hover** motion is not implemented — currently a static,
+  horizontally-scrollable row. Build with GSAP (available per ADR-0007).
+- **All Work reuse:** the News Card is not yet shared with the All Work grid; the
+  `.d1-label` pill styles are scoped inside `NewsCard.astro` and should be promoted
+  to a shared component when All Work is built.
+- **Responsive sizing** (the documented 451/335px desktop and 280/200px mobile card
+  widths, gutters, and `H7` headline steps) is approximated, not pixel-matched.

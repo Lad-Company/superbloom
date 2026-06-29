@@ -1,0 +1,124 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import Video from '../../components/Video.astro';
+import CaseBodyBlock from '../../components/case/CaseBodyBlock.astro';
+import { sanityClient } from '../../lib/sanity';
+import { newsBySlugQuery } from '../../lib/queries';
+import type { NewsBySlugQueryResult } from '../../sanity.types';
+
+const { slug } = Astro.params;
+const item: NewsBySlugQueryResult = await sanityClient.fetch(newsBySlugQuery, { slug });
+
+if (!item) {
+  return new Response(null, { status: 404, statusText: 'Not Found' });
+}
+
+const tags = item.tags ?? [];
+const externalLinks = item.externalLinks ?? [];
+const published = item.publishedAt
+  ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(
+      new Date(item.publishedAt),
+    )
+  : null;
+---
+
+<Layout title={`${item.title} — Superbloom`}>
+  <Nav state="dark" />
+  <article class="news-article">
+    <header class="header">
+      {tags.length > 0 && (
+        <ul class="tags type-label">
+          {tags.map((tag) => (
+            <li>{tag.title}</li>
+          ))}
+        </ul>
+      )}
+      <h1 class="type-h3 title">{item.title}</h1>
+      {published && <p class="type-eyebrow date">{published}</p>}
+    </header>
+
+    {item.media && (
+      <div class="media">
+        {item.media._type === 'mux.video' && item.media.playbackId && (
+          <Video playbackId={item.media.playbackId} title={item.title ?? undefined} />
+        )}
+        {item.media._type === 'image' && item.media.url && (
+          <img
+            src={item.media.url}
+            alt={item.media.alt ?? ''}
+            width={item.media.width ?? undefined}
+            height={item.media.height ?? undefined}
+          />
+        )}
+      </div>
+    )}
+
+    {(item.body ?? []).map((block) => <CaseBodyBlock block={block} />)}
+
+    {externalLinks.length > 0 && (
+      <section class="external">
+        <p class="type-eyebrow external-label">Read elsewhere</p>
+        <ul class="external-list">
+          {externalLinks.map((link) => (
+            <li>
+              <a class="type-caption" href={link.url ?? '#'} target="_blank" rel="noopener noreferrer">
+                {link.outlet}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </article>
+  <Footer />
+</Layout>
+
+<style>
+  .header {
+    padding: 140px var(--space-xs) var(--space-xs);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+  .tags {
+    display: flex;
+    gap: var(--space-xs-4);
+    color: var(--fg-60);
+  }
+  .title {
+    margin: 0;
+  }
+  .date {
+    margin: 0;
+    color: var(--fg-60);
+  }
+  .media {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--fg-12);
+  }
+  .media img,
+  .media :global(mux-player) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    --media-object-fit: cover;
+  }
+  .external {
+    padding: var(--space-2xl) var(--space-xs);
+  }
+  .external-label {
+    margin: 0 0 var(--space-xs);
+    color: var(--fg-60);
+  }
+  .external-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+  .external-list a {
+    text-decoration: underline;
+  }
+</style>

@@ -9,7 +9,7 @@ export const homepage = defineType({
       name: 'sections',
       title: 'Sections',
       type: 'array',
-      of: [{type: 'heroBlock'}, {type: 'capesBlock'}, {type: 'contactBlock'}],
+      of: [{type: 'heroBlock'}, {type: 'capesBlock'}, {type: 'newsBlock'}, {type: 'contactBlock'}],
     }),
   ],
   preview: {

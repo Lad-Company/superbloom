@@ -63,8 +63,12 @@ A single edition of the Zine. Each Issue contains one or more Zine Articles.
 _Avoid_: Volume, edition, post
 
 **News**:
-Press and editorial coverage of Superbloom — both self-published articles and external press mentions. Distinct from the Zine.
+Press and editorial coverage of Superbloom. A single News item is one unit that may combine Superbloom's own writeup and links to external coverage of the same story, presented together — so an item can be a self-published article, an external press mention, or both at once. Distinct from the Zine.
 _Avoid_: Blog, posts (when referring to News content)
+
+**Tag**:
+A free editorial label applied to content (e.g. a News item) for categorization, shown as a pill on cards. Authored as a small reusable taxonomy. Distinct from a Capability (a named service offering) and from Deliverables — a Tag is an editorial classification, not an offering.
+_Avoid_: Category, capability, keyword
 
 ### Forms
 

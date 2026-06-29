@@ -4,6 +4,7 @@ import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import Hero from '../components/blocks/Hero.astro';
 import Capes from '../components/blocks/Capes.astro';
+import NewsCarousel from '../components/blocks/NewsCarousel.astro';
 import ContactBlock from '../components/ContactBlock.astro';
 import { sanityClient } from '../lib/sanity';
 import { homepageQuery } from '../lib/queries';
@@ -28,6 +29,9 @@ const sections = homepage?.sections ?? [];
       }
       if (section._type === 'capesBlock') {
         return <Capes headline={section.headline} capabilities={section.capabilities ?? []} />;
+      }
+      if (section._type === 'newsBlock') {
+        return <NewsCarousel headline={section.headline} items={section.items ?? []} />;
       }
       if (section._type === 'contactBlock') {
         return <ContactBlock />;
