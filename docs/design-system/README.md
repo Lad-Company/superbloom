@@ -24,3 +24,4 @@ between a spec and the current code are recorded per file as a backlog.
 | [FAQ](./faq.md) | [node 6158-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6158-1279&m=dev) | none yet | Spec documented; unbuilt |
 | [FAQ Item](./faq-item.md) | [node 6161-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6161-1279&m=dev) | none yet (row in FAQ) | Spec documented; unbuilt |
 | [Home-Zine](./home-zine.md) | [node 6133-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6133-1279&m=dev) | none yet · homepage | Decided: build Zine type + named green token + shared `.d1-button` |
+| [Who We Are](./who-we-are.md) | [node 4394-1779](https://www.figma.com/design/PgQyJQIoLqIfoWnJtU0MTh/-i--Superbloom---R3?node-id=4394-1779&m=dev) | `apps/web/src/pages/who-we-are.astro` · `whoWeAre` singleton | Tracer built; content authoring pending |

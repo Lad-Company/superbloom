@@ -1,0 +1,39 @@
+---
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<div class="marquee-track" aria-hidden="true">
+  <p class="marquee-text">{text}&nbsp;&nbsp;{text}&nbsp;&nbsp;{text}</p>
+</div>
+
+<style>
+  .marquee-track {
+    overflow: hidden;
+    padding: var(--space-2xl) 0;
+  }
+  .marquee-text {
+    margin: 0;
+    font-family: var(--font-display-compact);
+    font-weight: 750;
+    font-size: clamp(80px, 13vw, 200px);
+    line-height: 0.78;
+    text-transform: uppercase;
+    color: var(--fg);
+    white-space: nowrap;
+    /* CSS marquee animation — GSAP scroll-synced version deferred */
+    animation: marquee-scroll 20s linear infinite;
+  }
+  @keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-33.333%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-text {
+      animation: none;
+    }
+  }
+</style>

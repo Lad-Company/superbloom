@@ -46,6 +46,79 @@ export const homepageQuery = defineQuery(`
   }
 `);
 
+export const whoWeAreQuery = defineQuery(`
+  *[_type == "whoWeAre"][0]{
+    heroHeading,
+    featuredMedia{
+      aspectRatio,
+      theme,
+      "media": media[0]{
+        _type,
+        _type == "mux.video" => { "playbackId": asset->playbackId },
+        _type == "image" => {
+          "url": asset->url,
+          "width": asset->metadata.dimensions.width,
+          "height": asset->metadata.dimensions.height,
+          "alt": asset->altText
+        }
+      }
+    },
+    marquee{ text, theme },
+    introStatement,
+    statCards[]{
+      _key,
+      label,
+      value,
+      description,
+      items,
+      theme
+    },
+    advantageHeadline,
+    advantageBlocks[]{
+      _key,
+      heading,
+      body,
+      aspectRatio,
+      "media": media[0]{
+        _type,
+        _type == "mux.video" => { "playbackId": asset->playbackId },
+        _type == "image" => {
+          "url": asset->url,
+          "width": asset->metadata.dimensions.width,
+          "height": asset->metadata.dimensions.height,
+          "alt": asset->altText
+        }
+      }
+    },
+    disciplines[]{
+      _key,
+      title,
+      description
+    },
+    ctas[]{
+      _key,
+      heading,
+      label,
+      href,
+      "media": media[0]{
+        _type,
+        _type == "mux.video" => { "playbackId": asset->playbackId },
+        _type == "image" => {
+          "url": asset->url,
+          "width": asset->metadata.dimensions.width,
+          "height": asset->metadata.dimensions.height,
+          "alt": asset->altText
+        }
+      }
+    },
+    faqs[]{
+      _key,
+      question,
+      answer
+    }
+  }
+`);
+
 export const workIndexQuery = defineQuery(`
   *[_type == "workIndex"][0]{
     heroHeading,

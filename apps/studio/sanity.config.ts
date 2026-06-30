@@ -4,7 +4,7 @@ import {muxInput} from 'sanity-plugin-mux-input'
 import {orderableDocumentListDeskItem} from '@sanity/orderable-document-list'
 import {schemaTypes} from '@superbloom/schemas'
 
-const singletons = ['homepage', 'workIndex']
+const singletons = ['homepage', 'workIndex', 'whoWeAre']
 // Document types rendered via a custom list item below (excluded from the default list).
 const customListed = [...singletons, 'caseStudy']
 
@@ -27,6 +27,10 @@ export default defineConfig({
               .title('Work Index')
               .id('workIndex')
               .child(S.document().schemaType('workIndex').documentId('workIndex')),
+            S.listItem()
+              .title('Who We Are')
+              .id('whoWeAre')
+              .child(S.document().schemaType('whoWeAre').documentId('whoWeAre')),
             orderableDocumentListDeskItem({type: 'caseStudy', title: 'Case Studies', S, context}),
             S.divider(),
             ...S.documentTypeListItems().filter(

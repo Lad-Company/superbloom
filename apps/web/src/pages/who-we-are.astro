@@ -1,0 +1,177 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import Section from '../components/case/Section.astro';
+import ContactBlock from '../components/ContactBlock.astro';
+import Marquee from '../components/Marquee.astro';
+import StatCards from '../components/StatCards.astro';
+import TextMedia from '../components/TextMedia.astro';
+import DisciplineList from '../components/DisciplineList.astro';
+import TwoUp from '../components/TwoUp.astro';
+import Faq from '../components/Faq.astro';
+import Video from '../components/Video.astro';
+import { sanityClient } from '../lib/sanity';
+import { whoWeAreQuery } from '../lib/queries';
+import type { WhoWeAreQueryResult } from '../sanity.types';
+
+const page = await sanityClient.fetch<WhoWeAreQueryResult>(whoWeAreQuery);
+
+const heroHeading = page?.heroHeading ?? 'Audiences move fast. We help you move faster.';
+const introStatement =
+  page?.introStatement ??
+  'SuperBloom is an independent creative company built to move brands beyond advertising. We bring varied disciplines together powered by a collective of unexpected minds who make unignorable work.';
+const marqueeText =
+  page?.marquee?.text ??
+  'Campaigns. Content. Experiences. branded Entertainment. Social. strategy. creative.';
+const marqueeTheme = (page?.marquee?.theme as any) ?? 'green';
+const featuredTheme = (page?.featuredMedia?.theme as any) ?? 'blue';
+const featuredMedia = page?.featuredMedia?.media ?? null;
+const statCards = page?.statCards ?? [];
+const advantageHeadline = page?.advantageHeadline ?? 'Our unfair advantage';
+const advantageBlocks = page?.advantageBlocks ?? [];
+const disciplines = page?.disciplines ?? [];
+const ctas = page?.ctas ?? [];
+const faqs = page?.faqs ?? [];
+
+---
+
+<Layout title="Who We Are — Superbloom">
+  <Section theme="dark">
+    <Nav state="dark" />
+    <div class="hero">
+      <h1 class="type-h1">{heroHeading}</h1>
+    </div>
+  </Section>
+
+  {(featuredMedia || true) && (
+    <Section theme={featuredTheme}>
+      <div class="featured-media">
+        {featuredMedia?._type === 'mux.video' && featuredMedia.playbackId && (
+          <Video playbackId={featuredMedia.playbackId} title={heroHeading} />
+        )}
+        {featuredMedia?._type === 'image' && featuredMedia.url && (
+          <img
+            src={featuredMedia.url}
+            alt={featuredMedia.alt ?? ''}
+            width={featuredMedia.width ?? undefined}
+            height={featuredMedia.height ?? undefined}
+          />
+        )}
+        {!featuredMedia && <div class="featured-placeholder" />}
+      </div>
+    </Section>
+  )}
+
+  <Section theme={marqueeTheme}>
+    <Marquee text={marqueeText} />
+  </Section>
+
+  <Section theme="dark">
+    <div class="intro">
+      <p class="intro-statement type-h4">{introStatement}</p>
+    </div>
+  </Section>
+
+  {statCards.length > 0 && (
+    <StatCards cards={statCards as any[]} />
+  )}
+
+  <Section theme="dark">
+    <div class="advantage-headline">
+      <p class="type-h3">{advantageHeadline}</p>
+    </div>
+    {advantageBlocks.map((block) => (
+      <TextMedia
+        heading={block.heading}
+        body={block.body ?? null}
+        media={block.media as any ?? null}
+        aspectRatio={(block.aspectRatio as any) ?? '1:1'}
+      />
+    ))}
+    {advantageBlocks.length === 0 && (
+      <TextMedia
+        heading="Everyone. Everywhere. All at once."
+        body="Moving together from day one, reducing handoffs, speeding up the process, and keeping ideas sharp from concept to launch."
+        media={null}
+        aspectRatio="1:1"
+      />
+    )}
+  </Section>
+
+  {disciplines.length > 0 && (
+    <Section theme="dark">
+      <div class="discipline-section">
+        <DisciplineList items={disciplines as any[]} />
+      </div>
+    </Section>
+  )}
+
+  {ctas.length > 0 && (
+    <Section theme="dark">
+      <TwoUp items={ctas as any[]} />
+    </Section>
+  )}
+
+  {faqs.length > 0 && (
+    <Section theme="dark">
+      <Faq items={faqs as any[]} />
+    </Section>
+  )}
+
+  <ContactBlock />
+  <Footer />
+</Layout>
+
+<style>
+  .hero {
+    padding: var(--space-3xl) var(--space-xs) var(--space-xl);
+  }
+  .hero h1 {
+    margin: 0;
+    max-width: 14ch;
+  }
+  .featured-media {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+  .featured-media img,
+  .featured-media :global(mux-player) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    --media-object-fit: cover;
+  }
+  .featured-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--fg-12);
+  }
+  .intro {
+    padding: var(--space-4xl) var(--space-xs);
+  }
+  .intro-statement {
+    margin: 0;
+    max-width: 24ch;
+  }
+  .advantage-headline {
+    padding: var(--space-4xl) var(--space-xs) 0;
+  }
+  .advantage-headline p {
+    margin: 0;
+  }
+  .discipline-section {
+    padding: var(--space-4xl) 0;
+  }
+  @media (max-width: 768px) {
+    .hero {
+      padding: 120px var(--space-3xs) var(--space-xl);
+    }
+    .intro {
+      padding: var(--space-2xl) var(--space-3xs);
+    }
+    .advantage-headline {
+      padding: var(--space-2xl) var(--space-3xs) 0;
+    }
+  }
+</style>

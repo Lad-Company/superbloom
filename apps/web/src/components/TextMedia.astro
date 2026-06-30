@@ -1,0 +1,99 @@
+---
+import Video from './Video.astro';
+
+interface Media {
+  _type: 'image' | 'mux.video';
+  url?: string | null;
+  width?: number | null;
+  height?: number | null;
+  alt?: string | null;
+  playbackId?: string | null;
+}
+
+interface Props {
+  heading: string | null;
+  body?: string | null;
+  media?: Media | null;
+  aspectRatio?: '1:1' | '16:9' | '4:5' | '2:1' | null;
+}
+
+const { heading, body, media, aspectRatio = '1:1' } = Astro.props;
+
+const ratioMap = { '1:1': '1 / 1', '16:9': '16 / 9', '4:5': '4 / 5', '2:1': '2 / 1' } as const;
+const ratio = ratioMap[aspectRatio ?? '1:1'];
+---
+
+<div class="text-media">
+  <div class="text-col">
+    {heading && <p class="heading type-h4">{heading}</p>}
+    {body && <p class="body type-h6">{body}</p>}
+  </div>
+  <div class="media-col">
+    {media && (
+      <div class="media-wrap" style={`aspect-ratio: ${ratio};`}>
+        {media._type === 'mux.video' && media.playbackId && (
+          <Video playbackId={media.playbackId} title={heading ?? undefined} />
+        )}
+        {media._type === 'image' && media.url && (
+          <img
+            src={media.url}
+            alt={media.alt ?? ''}
+            width={media.width ?? undefined}
+            height={media.height ?? undefined}
+          />
+        )}
+      </div>
+    )}
+    {!media && (
+      <div class="media-placeholder" style={`aspect-ratio: ${ratio};`} />
+    )}
+  </div>
+</div>
+
+<style>
+  .text-media {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    padding: var(--space-4xl) var(--space-xs) 0;
+  }
+  .text-col {
+    flex: 1 0 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-right: var(--space-3xl);
+  }
+  .heading,
+  .body {
+    margin: 0;
+  }
+  .media-col {
+    flex: 1 0 0;
+    min-width: 0;
+  }
+  .media-wrap,
+  .media-placeholder {
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-s);
+    background: var(--fg-12);
+  }
+  .media-wrap img,
+  .media-wrap :global(mux-player) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    --media-object-fit: cover;
+  }
+  @media (max-width: 768px) {
+    .text-media {
+      flex-direction: column;
+      padding: var(--space-2xl) var(--space-3xs) 0;
+    }
+    .text-col {
+      padding-right: 0;
+    }
+  }
+</style>

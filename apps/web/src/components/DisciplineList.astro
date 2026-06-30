@@ -1,0 +1,60 @@
+---
+interface Discipline {
+  _key?: string;
+  title: string | null;
+  description?: string | null;
+}
+
+interface Props {
+  items: Discipline[];
+}
+
+const { items } = Astro.props;
+---
+
+<ul class="discipline-list">
+  {items.map((item) => (
+    <li class="row">
+      <p class="title type-h4">{item.title}</p>
+      {item.description && (
+        <p class="description type-caption">{item.description}</p>
+      )}
+    </li>
+  ))}
+</ul>
+
+<style>
+  .discipline-list {
+    margin: 0;
+    padding: 0 var(--space-xs);
+    list-style: none;
+  }
+  .row {
+    display: flex;
+    gap: var(--page-gutter);
+    align-items: flex-start;
+    padding-top: var(--space-xs);
+    border-top: 1px solid var(--fg-12);
+  }
+  .title {
+    flex: 1 0 0;
+    min-width: 0;
+    margin: 0;
+  }
+  .description {
+    flex: 1 0 0;
+    min-width: 0;
+    margin: 0;
+    padding-top: 8px;
+    color: var(--fg-60);
+  }
+  @media (max-width: 768px) {
+    .discipline-list {
+      padding: 0 var(--space-3xs);
+    }
+    .row {
+      flex-direction: column;
+      gap: var(--space-3xs);
+    }
+  }
+</style>

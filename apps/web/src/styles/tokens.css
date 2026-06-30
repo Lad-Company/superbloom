@@ -23,6 +23,16 @@
   --radius-s: 6px; /* buttons, labels, chips */
   --radius-m: 8px; /* inputs */
 
+  /* Superbloom brand hue tokens (see ADR-0013) */
+  --blue: #3993dd;
+  --blue-fg: #ffffff;
+  --green: #99a224;
+  --green-fg: #000000;
+  --pink: #e6c6e2;
+  --pink-fg: #000000;
+  --purple: #3f2293;
+  --purple-fg: #ffffff;
+
   /* Fonts (real faces first, fallbacks until Lad supplies licensed files) */
   --font-display-tight: 'PP Neue Corp Tight', 'Arial Narrow', system-ui, sans-serif;
   --font-display-compact: 'PP Neue Corp Compact', 'Arial Narrow', system-ui, sans-serif;

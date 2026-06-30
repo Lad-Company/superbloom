@@ -1,0 +1,37 @@
+---
+interface Props {
+  href?: string;
+  label: string;
+  class?: string;
+}
+
+const { href, label, class: className } = Astro.props;
+---
+
+{href ? (
+  <a class:list={['btn', className]} href={href}>{label}</a>
+) : (
+  <span class:list={['btn', className]}>{label}</span>
+)}
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-3xs) 16px;
+    border-radius: var(--radius-s);
+    background: var(--fg);
+    color: var(--bg);
+    text-decoration: none;
+    backdrop-filter: blur(35px);
+    -webkit-backdrop-filter: blur(35px);
+    font-family: var(--font-label);
+    font-weight: 800;
+    font-size: 17px;
+    line-height: 1;
+    letter-spacing: 0.34px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+</style>

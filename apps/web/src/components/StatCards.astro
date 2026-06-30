@@ -1,0 +1,94 @@
+---
+type Theme = 'light' | 'dark' | 'blue' | 'green' | 'pink' | 'purple';
+
+interface StatCard {
+  _key?: string;
+  label: string | null;
+  value?: string | null;
+  description?: string | null;
+  items?: string[] | null;
+  theme?: Theme | null;
+}
+
+interface Props {
+  cards: StatCard[];
+}
+
+const { cards } = Astro.props;
+
+const themeVars: Record<Theme, string> = {
+  light: '--bg: #ffffff; --fg: #000000; --fg-12: rgba(0,0,0,0.12); --fg-60: rgba(0,0,0,0.6);',
+  dark:  '--bg: #000000; --fg: #ffffff; --fg-12: rgba(255,255,255,0.12); --fg-60: rgba(255,255,255,0.6);',
+  blue:  '--bg: var(--blue); --fg: var(--blue-fg); --fg-12: rgba(255,255,255,0.12); --fg-60: rgba(255,255,255,0.6);',
+  green: '--bg: var(--green); --fg: var(--green-fg); --fg-12: rgba(0,0,0,0.12); --fg-60: rgba(0,0,0,0.6);',
+  pink:  '--bg: var(--pink); --fg: var(--pink-fg); --fg-12: rgba(0,0,0,0.12); --fg-60: rgba(0,0,0,0.6);',
+  purple:'--bg: var(--purple); --fg: var(--purple-fg); --fg-12: rgba(255,255,255,0.12); --fg-60: rgba(255,255,255,0.6);',
+};
+---
+
+<div class="stat-cards">
+  {cards.map((card) => {
+    const vars = themeVars[card.theme ?? 'light'];
+    return (
+      <div class="card" style={vars}>
+        <p class="label type-h5">{card.label}</p>
+        <div class="body">
+          {card.value && <p class="value type-h2">{card.value}</p>}
+          {card.description && <p class="description type-caption">{card.description}</p>}
+          {card.items && card.items.length > 0 && (
+            <ul class="items type-h6">
+              {card.items.map((item) => <li>{item}</li>)}
+            </ul>
+          )}
+        </div>
+      </div>
+    );
+  })}
+</div>
+
+<style>
+  .stat-cards {
+    display: flex;
+    align-items: stretch;
+  }
+  .card {
+    flex: 1 0 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--space-xs);
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 480px;
+  }
+  .label {
+    margin: 0;
+  }
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .value {
+    margin: 0;
+  }
+  .description {
+    margin: 0;
+    max-width: 24ch;
+  }
+  .items {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    line-height: 1.2;
+  }
+  @media (max-width: 768px) {
+    .stat-cards {
+      flex-direction: column;
+    }
+    .card {
+      min-height: 320px;
+    }
+  }
+</style>

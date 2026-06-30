@@ -1,5 +1,5 @@
 ---
-type Theme = 'light' | 'dark' | 'primary' | 'secondary';
+type Theme = 'light' | 'dark' | 'primary' | 'secondary' | 'blue' | 'green' | 'pink' | 'purple';
 
 interface Props {
   theme?: Theme;
@@ -14,6 +14,10 @@ const vars: Record<Theme, string> = {
   dark: '--bg: #000000; --fg: #ffffff; --fg-12: rgba(255,255,255,0.12); --fg-60: rgba(255,255,255,0.6);',
   primary: '--bg: var(--brand-primary); --fg: var(--brand-primary-fg);',
   secondary: '--bg: var(--brand-secondary); --fg: var(--brand-secondary-fg);',
+  blue: '--bg: var(--blue); --fg: var(--blue-fg); --fg-12: rgba(255,255,255,0.12); --fg-60: rgba(255,255,255,0.6);',
+  green: '--bg: var(--green); --fg: var(--green-fg); --fg-12: rgba(0,0,0,0.12); --fg-60: rgba(0,0,0,0.6);',
+  pink: '--bg: var(--pink); --fg: var(--pink-fg); --fg-12: rgba(0,0,0,0.12); --fg-60: rgba(0,0,0,0.6);',
+  purple: '--bg: var(--purple); --fg: var(--purple-fg); --fg-12: rgba(255,255,255,0.12); --fg-60: rgba(255,255,255,0.6);',
 };
 ---
 

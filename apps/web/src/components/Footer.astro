@@ -1,5 +1,11 @@
 ---
-const nav = ['Our Work', 'Who We Are', 'News & Press', 'Zine', 'Shop'];
+const nav = [
+  { label: 'Our Work', href: '/work' },
+  { label: 'Who We Are', href: '/who-we-are' },
+  { label: 'News & Press', href: '#' },
+  { label: 'Zine', href: '#' },
+  { label: 'Shop', href: '#' },
+];
 const social = ['Instagram', 'LinkedIn', 'Vimeo', 'YouTube'];
 ---
 
@@ -27,7 +33,7 @@ const social = ['Instagram', 'LinkedIn', 'Vimeo', 'YouTube'];
       </p>
     </div>
     <ul class="col">
-      {nav.map((label) => <li><a href="#">{label}</a></li>)}
+      {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
     </ul>
     <ul class="col">
       {social.map((label) => <li><a href="#">{label}</a></li>)}

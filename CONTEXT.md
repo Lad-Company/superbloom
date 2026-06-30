@@ -24,6 +24,10 @@ _Avoid_: Agency network, freelancer pool, contractor list
 One of Superbloom's named service offerings. Current capabilities: Creative, Branded Entertainment, Social Studios, All-Media Productions, Brand Salon.
 _Avoid_: Service, offering, practice area
 
+**Discipline**:
+A granular area of expertise shown on the Who We Are page (e.g. strategy, creative, experiential, social, production, entertainment, media, creators). Describes the breadth of what Superbloom does. Modeled as a bespoke list on the `whoWeAre` singleton and not referenced elsewhere.
+_Avoid_: Capability (when referring to this breadth list — a Discipline is not a productized service offering)
+
 **Brand Salon**:
 A specific Capability — a structured live workshop in which Superbloom brings the Creative Collective and a client team together to solve a brief in real time (typically 4 hours). Always treated as a Capability entry, not a standalone content type.
 _Avoid_: Workshop, Brand Workshop, Salon

@@ -4,17 +4,22 @@ interface Props {
 }
 
 const { state = 'light' } = Astro.props;
-const links = ['Our Work', 'Who We Are', 'News & Press', 'Zine'];
+const links = [
+  { label: 'Our Work', href: '/work' },
+  { label: 'Who We Are', href: '/who-we-are' },
+  { label: 'News & Press', href: '#' },
+  { label: 'Zine', href: '#' },
+];
 ---
 
 <nav class:list={['nav', state]}>
   <a href="/" class="logo type-eyebrow">Superbloom House</a>
   <ul class="links">
     {
-      links.map((label) => (
+      links.map((link) => (
         <li>
-          <a href="#" class="type-eyebrow">
-            {label}
+          <a href={link.href} class="type-eyebrow">
+            {link.label}
           </a>
         </li>
       ))

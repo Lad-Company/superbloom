@@ -1,0 +1,105 @@
+---
+interface FaqItem {
+  _key?: string;
+  question: string | null;
+  answer?: string | null;
+}
+
+interface Props {
+  heading?: string;
+  items: FaqItem[];
+}
+
+const { heading = 'FAQ', items } = Astro.props;
+---
+
+<div class="faq">
+  <p class="faq-heading type-h4">{heading}</p>
+  <ul class="faq-list">
+    {items.map((item) => (
+      <li>
+        <details class="faq-item">
+          <summary class="faq-question">
+            <span class="question-text type-h6">{item.question}</span>
+            <span class="icon" aria-hidden="true">+</span>
+          </summary>
+          {item.answer && (
+            <p class="faq-answer type-caption">{item.answer}</p>
+          )}
+        </details>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style>
+  .faq {
+    display: flex;
+    gap: var(--page-gutter);
+    align-items: flex-start;
+    padding: var(--space-4xl) var(--space-xs) var(--space-3xl);
+  }
+  .faq-heading {
+    flex: 1 0 0;
+    min-width: 0;
+    margin: 0;
+    padding-right: var(--space-xl);
+  }
+  .faq-list {
+    flex: 0 0 auto;
+    width: 50%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .faq-item {
+    border-top: 1px solid var(--fg-12);
+  }
+  .faq-item[open] .icon {
+    content: '−';
+  }
+  .faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-xs);
+    padding: var(--space-xs) 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq-question::-webkit-details-marker {
+    display: none;
+  }
+  .question-text {
+    flex: 1 0 0;
+    min-width: 0;
+  }
+  .icon {
+    font-size: 24px;
+    line-height: 1;
+    flex-shrink: 0;
+    font-family: var(--font-body);
+    font-weight: 400;
+    transition: transform 0.2s ease;
+  }
+  details[open] .icon {
+    transform: rotate(45deg);
+  }
+  .faq-answer {
+    margin: 0;
+    padding-bottom: var(--space-xs);
+    color: var(--fg-60);
+  }
+  @media (max-width: 768px) {
+    .faq {
+      flex-direction: column;
+      padding: var(--space-2xl) var(--space-3xs) var(--space-2xl);
+    }
+    .faq-heading {
+      padding-right: 0;
+    }
+    .faq-list {
+      width: 100%;
+    }
+  }
+</style>

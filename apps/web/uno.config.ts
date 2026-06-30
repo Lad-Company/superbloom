@@ -22,8 +22,14 @@ export default defineConfig({
     // Type styles transcribed from Figma R3 variables
     'type-h1':
       'font-display-tight font-[750] text-[200px] leading-[0.78] tracking-[0] uppercase',
+    'type-h2':
+      'font-display-tight font-[750] text-[140px] leading-[0.88] tracking-[0] uppercase',
     'type-h3':
       'font-display-tight font-[750] text-[120px] leading-[0.88] tracking-[0] uppercase',
+    'type-h4':
+      'font-display-tight font-[750] text-[80px] leading-[0.88] tracking-[0] uppercase',
+    'type-h5':
+      'font-display-tight font-[750] text-[56px] leading-[0.88] tracking-[0] uppercase',
     'type-h6': 'font-body font-medium text-[24px] leading-[1.2] tracking-[-0.48px]',
     'type-eyebrow':
       'font-display-compact font-[750] text-[17px] leading-none tracking-[0.34px] uppercase',
