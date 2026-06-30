@@ -46,11 +46,33 @@ export const homepageQuery = defineQuery(`
   }
 `);
 
+export const workIndexQuery = defineQuery(`
+  *[_type == "workIndex"][0]{
+    heroHeading,
+    allWorkHeading
+  }
+`);
+
 export const caseStudiesQuery = defineQuery(`
-  *[_type == "caseStudy"] | order(title asc) {
+  *[_type == "caseStudy"] | order(orderRank) {
     title,
     "slug": slug.current,
-    client
+    summary,
+    cardSize,
+    cardAspectRatio,
+    tags[]->{ title, color },
+    "media": cardMedia[0]{
+      _type,
+      _type == "mux.video" => {
+        "playbackId": asset->playbackId
+      },
+      _type == "image" => {
+        "url": asset->url,
+        "width": asset->metadata.dimensions.width,
+        "height": asset->metadata.dimensions.height,
+        "alt": asset->altText
+      }
+    }
   }
 `);
 

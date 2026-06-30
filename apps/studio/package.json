@@ -10,6 +10,7 @@
     "typegen": "sanity schema extract --path schema.json && sanity typegen generate"
   },
   "dependencies": {
+    "@sanity/orderable-document-list": "^1.5.1",
     "@superbloom/schemas": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

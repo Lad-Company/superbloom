@@ -6,6 +6,7 @@ import {heroBlock} from './heroBlock'
 import {capesBlock} from './capesBlock'
 import {newsBlock} from './newsBlock'
 import {homepage} from './homepage'
+import {workIndex} from './workIndex'
 import {highlightsSection} from './highlightsSection'
 import {textSection} from './textSection'
 import {mediaSection} from './mediaSection'
@@ -22,6 +23,7 @@ export const schemaTypes = [
   capesBlock,
   newsBlock,
   homepage,
+  workIndex,
   highlightsSection,
   textSection,
   mediaSection,

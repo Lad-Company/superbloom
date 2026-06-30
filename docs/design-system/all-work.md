@@ -42,17 +42,21 @@ _Fields marked with an asterisk are required._
 
 ## Implementation status / gaps
 
-Current `work/index.astro` is a tracer stub (a bare `<ul>` of links). The grid,
-cards, and responsive behavior are unbuilt. Schema gaps against `caseStudy`:
+**Built** against the R3 design
+([node 4394-2448](https://www.figma.com/design/PgQyJQIoLqIfoWnJtU0MTh/-i--Superbloom---R3?node-id=4394-2448&m=dev)),
+which supersedes the older "large/small alternation" model with **per-card
+aspect ratio + rows of one full-width or two equal-width cards**. See ADR 0012.
 
-- **Card media:** no thumbnail/grid-image field; only `heroVideo` (Mux) exists.
-  The 1:1 / 16:9 / 4:5 aspect-ratio variants are not modeled.
-- **Tags (up to 2) = dedicated field (decided).** No `tags` field exists today;
-  **decided: add a dedicated `tags` field** (not reused `capabilities`/`deliverables`),
-  shared with News Card.
-- **Card size (large / small) = optionally authored, layout-derived fallback
-  (decided).** Card size is an **optional authored field** per work item; when not
-  authored, it is **derived from layout position** (the large/small alternation rule).
-  This is a Work-index ordering concern, not a `caseStudy` field.
-- **Headline:** maps to `caseStudy.title`.
+- **Page:** `work/index.astro` is a dark `Section` with an H1 hero + "All Work"
+  grid, reusing `ContactBlock` + `Footer`. Hero/heading copy comes from the
+  `workIndex` singleton (fallbacks hardcoded). The **featured carousel** above
+  the grid is deferred.
+- **Card:** shared `Card.astro` (media + tag overlay + headline + summary),
+  consumed by both the Work grid (`size="fill"`) and News (`NewsCard` delegates).
+- **Schema (`caseStudy`):** added `cardMedia` (mux.video|image, max 1),
+  `cardAspectRatio` (`1:1`/`16:9`/`4:5`/`2:1`), `tags` (ref→`tag`, max 2),
+  `cardSize` (`full`/`half`, default `half`), and `orderRank`
+  (`@sanity/orderable-document-list`). `summary` reused. `title` → headline.
+- **Row layout:** cards are packed in `orderRank` order — a `full` card takes its
+  own row; consecutive `half` cards pair two-per-row; single column on mobile.
 - **Min 5 work items:** a page-level display rule, not a schema constraint.

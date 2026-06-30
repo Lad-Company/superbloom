@@ -1,10 +1,12 @@
 import {defineField, defineType} from 'sanity'
+import {orderRankField} from '@sanity/orderable-document-list'
 
 export const caseStudy = defineType({
   name: 'caseStudy',
   title: 'Case Study',
   type: 'document',
   fields: [
+    orderRankField({type: 'caseStudy'}),
     defineField({
       name: 'title',
       type: 'string',
@@ -23,6 +25,37 @@ export const caseStudy = defineType({
       type: 'array',
       of: [{type: 'reference', to: [{type: 'capability'}]}],
       validation: (rule) => rule.min(1),
+    }),
+    // Work-index card fields. The card thumbnail is a dedicated grid image/video
+    // distinct from heroVideo, mirroring the news card shape so the two share one
+    // Card component and GROQ projection.
+    defineField({
+      name: 'cardMedia',
+      title: 'Card Media',
+      type: 'array',
+      of: [{type: 'mux.video'}, {type: 'image'}],
+      validation: (rule) => rule.max(1),
+    }),
+    defineField({
+      name: 'cardAspectRatio',
+      title: 'Card Aspect Ratio',
+      type: 'string',
+      options: {list: ['1:1', '16:9', '4:5', '2:1'], layout: 'radio'},
+      initialValue: '16:9',
+    }),
+    defineField({
+      name: 'tags',
+      type: 'array',
+      of: [{type: 'reference', to: [{type: 'tag'}]}],
+      validation: (rule) => rule.max(2),
+    }),
+    defineField({
+      name: 'cardSize',
+      title: 'Card Size',
+      description: 'full = own row; half = pairs with the next half card.',
+      type: 'string',
+      options: {list: ['full', 'half'], layout: 'radio'},
+      initialValue: 'half',
     }),
     defineField({name: 'heroVideo', title: 'Hero Video', type: 'mux.video'}),
     defineField({name: 'year', type: 'string', title: 'Year'}),

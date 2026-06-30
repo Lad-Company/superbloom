@@ -1,9 +1,12 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {muxInput} from 'sanity-plugin-mux-input'
+import {orderableDocumentListDeskItem} from '@sanity/orderable-document-list'
 import {schemaTypes} from '@superbloom/schemas'
 
-const singletons = ['homepage']
+const singletons = ['homepage', 'workIndex']
+// Document types rendered via a custom list item below (excluded from the default list).
+const customListed = [...singletons, 'caseStudy']
 
 export default defineConfig({
   name: 'superbloom',
@@ -12,7 +15,7 @@ export default defineConfig({
   dataset: 'production',
   plugins: [
     structureTool({
-      structure: (S) =>
+      structure: (S, context) =>
         S.list()
           .title('Content')
           .items([
@@ -20,9 +23,14 @@ export default defineConfig({
               .title('Homepage')
               .id('homepage')
               .child(S.document().schemaType('homepage').documentId('homepage')),
+            S.listItem()
+              .title('Work Index')
+              .id('workIndex')
+              .child(S.document().schemaType('workIndex').documentId('workIndex')),
+            orderableDocumentListDeskItem({type: 'caseStudy', title: 'Case Studies', S, context}),
             S.divider(),
             ...S.documentTypeListItems().filter(
-              (item) => !singletons.includes(item.getId() as string),
+              (item) => !customListed.includes(item.getId() as string),
             ),
           ]),
     }),

@@ -1,5 +1,5 @@
 ---
-import Video from './Video.astro';
+import Card from './Card.astro';
 
 interface Tag {
   title: string | null;
@@ -31,87 +31,16 @@ interface Props {
 }
 
 const { item, size = 'small', showCopy = false } = Astro.props;
-
-const ratioMap = { '1:1': '1 / 1', '16:9': '16 / 9', '4:5': '4 / 5' } as const;
-const ratio = ratioMap[item.aspectRatio ?? '16:9'];
 const href = item.slug ? `/news/${item.slug}` : '#';
-const tags = item.tags ?? [];
 ---
 
-<a class:list={['news-card', size]} href={href}>
-  <div class="media" style={`aspect-ratio: ${ratio};`}>
-    {item.media?._type === 'mux.video' && item.media.playbackId && (
-      <Video playbackId={item.media.playbackId} title={item.title ?? undefined} />
-    )}
-    {item.media?._type === 'image' && item.media.url && (
-      <img
-        src={item.media.url}
-        alt={item.media.alt ?? ''}
-        width={item.media.width ?? undefined}
-        height={item.media.height ?? undefined}
-      />
-    )}
-    {tags.length > 0 && (
-      <ul class="tags">
-        {tags.map((tag) => (
-          <li class="d1-label type-label">{tag.title}</li>
-        ))}
-      </ul>
-    )}
-  </div>
-  {item.title && <p class="headline type-h6">{item.title}</p>}
-  {showCopy && item.summary && <p class="summary type-caption">{item.summary}</p>}
-</a>
-
-<style>
-  .news-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3xs);
-    text-decoration: none;
-    color: var(--fg);
-    flex: 0 0 auto;
-  }
-  .news-card.large {
-    width: 451px;
-    max-width: 80vw;
-  }
-  .news-card.small {
-    width: 335px;
-    max-width: 70vw;
-  }
-  .media {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius-s);
-    background: var(--fg-12);
-  }
-  .media img,
-  .media :global(mux-player) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    --media-object-fit: cover;
-  }
-  .tags {
-    position: absolute;
-    inset: var(--space-3xs) auto auto var(--space-3xs);
-    display: flex;
-    gap: var(--space-xs-4);
-  }
-  .d1-label {
-    padding: 6px 10px;
-    border-radius: var(--radius-s);
-    background: var(--bg-20);
-    color: var(--bg);
-    backdrop-filter: blur(35px);
-    -webkit-backdrop-filter: blur(35px);
-  }
-  .headline {
-    margin: 0;
-  }
-  .summary {
-    margin: 0;
-    color: var(--fg-60);
-  }
-</style>
+<Card
+  href={href}
+  title={item.title}
+  media={item.media}
+  aspectRatio={item.aspectRatio}
+  tags={item.tags}
+  summary={item.summary}
+  size={size}
+  showSummary={showCopy}
+/>

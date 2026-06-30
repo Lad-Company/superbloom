@@ -1,0 +1,127 @@
+---
+import Video from './Video.astro';
+
+interface Tag {
+  title: string | null;
+  color: string | null;
+}
+
+interface Media {
+  _type: 'image' | 'mux.video';
+  url?: string | null;
+  width?: number | null;
+  height?: number | null;
+  alt?: string | null;
+  playbackId?: string | null;
+}
+
+interface Props {
+  href: string;
+  title: string | null;
+  media: Media | null;
+  aspectRatio?: '1:1' | '16:9' | '4:5' | '2:1' | null;
+  tags?: Tag[] | null;
+  summary?: string | null;
+  size?: 'large' | 'small' | 'fill';
+  showSummary?: boolean;
+}
+
+const {
+  href,
+  title,
+  media,
+  aspectRatio = '16:9',
+  tags = [],
+  summary,
+  size = 'small',
+  showSummary = false,
+} = Astro.props;
+
+const ratioMap = { '1:1': '1 / 1', '16:9': '16 / 9', '4:5': '4 / 5', '2:1': '2 / 1' } as const;
+const ratio = ratioMap[aspectRatio ?? '16:9'];
+const tagList = tags ?? [];
+---
+
+<a class:list={['card', size]} href={href}>
+  <div class="media" style={`aspect-ratio: ${ratio};`}>
+    {media?._type === 'mux.video' && media.playbackId && (
+      <Video playbackId={media.playbackId} title={title ?? undefined} />
+    )}
+    {media?._type === 'image' && media.url && (
+      <img
+        src={media.url}
+        alt={media.alt ?? ''}
+        width={media.width ?? undefined}
+        height={media.height ?? undefined}
+      />
+    )}
+    {tagList.length > 0 && (
+      <ul class="tags">
+        {tagList.map((tag) => (
+          <li class="d1-label type-label">{tag.title}</li>
+        ))}
+      </ul>
+    )}
+  </div>
+  {title && <p class="headline type-h6">{title}</p>}
+  {showSummary && summary && <p class="summary type-caption">{summary}</p>}
+</a>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    text-decoration: none;
+    color: var(--fg);
+    flex: 0 0 auto;
+  }
+  .card.large {
+    width: 451px;
+    max-width: 80vw;
+  }
+  .card.small {
+    width: 335px;
+    max-width: 70vw;
+  }
+  .card.fill {
+    flex: 1 0 0;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+  .media {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-s);
+    background: var(--fg-12);
+  }
+  .media img,
+  .media :global(mux-player) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    --media-object-fit: cover;
+  }
+  .tags {
+    position: absolute;
+    inset: var(--space-3xs) auto auto var(--space-3xs);
+    display: flex;
+    gap: var(--space-xs-4);
+  }
+  .d1-label {
+    padding: 6px 10px;
+    border-radius: var(--radius-s);
+    background: var(--bg-20);
+    color: var(--bg);
+    backdrop-filter: blur(35px);
+    -webkit-backdrop-filter: blur(35px);
+  }
+  .headline {
+    margin: 0;
+  }
+  .summary {
+    margin: 0;
+    color: var(--fg-60);
+  }
+</style>
