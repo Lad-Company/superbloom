@@ -1,0 +1,13 @@
+# Figma-first evidence and motion reset
+
+The supplied July 2026 Figma screens are the primary visual and art-direction evidence for Superbloom House. Stable ADR and `CONTEXT.md` decisions follow as the source for content-domain meaning and explicit technical constraints. Current code is an implementation inventory, not a visual source of truth.
+
+When Figma does not establish a rule, the team must prototype it or make a new decision. It must not infer the rule from prior implementation alone.
+
+All existing motion behavior, GSAP/ScrollTrigger usage, timing, and easing are void as design-system precedent. A fresh motion prototype session will establish the interaction primitives, timing, easing, responsive behavior, and reduced-motion behavior before motion is standardized or extended. Static content sequence and reduced-motion safety remain requirements in the interim.
+
+**Why not treat code and Figma equally**: current code contains known tracer decisions, incomplete responsive behavior, and interactions established before this design-language review. Giving it equal authority would preserve accidental implementation details.
+
+**Why reset rather than refine existing motion**: the existing motion was established too quickly and has no approved behavioral or timing contract. Refining it would anchor the new system to unvalidated choices.
+
+**Reversibility**: low risk. This changes the decision process and defers unapproved behavior; it does not remove a necessary domain capability.
