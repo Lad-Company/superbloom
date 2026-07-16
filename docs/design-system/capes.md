@@ -32,16 +32,12 @@ _Fields marked with an asterisk are required._
 
 ## Implementation status / gaps
 
-**Decided: the Figma static grid is canonical.** Capes is the static text grid
-documented above (capability headline + description, up to 6, 3-up desktop / 2-up
-mobile) — there is **one** Capes, not a Home/About split. The current `Capes.astro`
-scroll-pinned video stack (GSAP `ScrollTrigger` pin + crossfading `mux-player`
-backgrounds, capability titles as an active-stepped list) **diverges and must be
-updated** to match this grid.
+The current Homepage screen establishes a media-backed Capes composition. Its
+motion annotation is not yet approved precedent, so static reading order and
+reduced-motion safety are required until the dedicated prototype session.
 
 Implementation backlog to bring `Capes.astro` in line:
 
-- **Replace the video-pin treatment** with the static 3/2-column grid.
 - **Description field:** render a per-capability description (maps to
   `capability.subtitle`); the current component does not render `subtitle`.
 - **Headline:** maps to `capability.title`.

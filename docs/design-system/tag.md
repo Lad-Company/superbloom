@@ -1,6 +1,6 @@
 # Tag
 
-> A small pill label, used to tag content (capability, category).
+> A small pill label presenting editorial taxonomy in overlay or inline context.
 
 - **Figma:** [node 6216-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6216-1279&m=dev) (documented as "Case Study Hero — Elements")
 - **Maps to:** no dedicated component yet; rendered inline as the capability pills in
@@ -13,7 +13,7 @@ an uppercase PP Neue Corp `Label`.
 
 ## Usage
 
-- Use to tag capabilities or categories.
+- Use to present Tags in editorial-card metadata.
 - Keep labels to 1–2 words.
 
 ## Notes
@@ -25,9 +25,6 @@ an uppercase PP Neue Corp `Label`.
 
 ## Implementation status / gaps
 
-- **No reusable Tag component** exists yet. Not to be confused with `.d1-label`
-  (the blurred translucent-white pill overlaid on media in News/Work cards) — Tag is
-  a bordered, theme-inheriting pill.
-- When built, it should be a shared component (capability tags in Case Study Hero,
-  and likely the Work card tags) driven by `capability.title`.
+- **Boundary:** `TagList` owns overlay and inline presentation contexts. A Tag is
+  editorial taxonomy, while Case Study Capabilities are a separate taxonomy.
 - Hover (filled) state is not implemented anywhere.

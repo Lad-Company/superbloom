@@ -1,27 +1,22 @@
 # Design System
 
-Component specifications derived from the Figma library
-([Superbloom Library](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library)).
+Content-contract notes for named modules in the approved
+[July 2026 Figma screens](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share).
 
-Each documented component has its own file mirroring the Figma documentation spine
-(Description / Fields / Behavior), plus a "Maps to" line and an implementation
-status / gaps note. These docs are the design source of truth; they describe
-intent and are kept docs-only — they do not modify schemas or components. Gaps
-between a spec and the current code are recorded per file as a backlog.
+Use [design-language.md](./design-language.md) for visual rules and component
+boundaries. These module docs define content responsibilities and authoring
+constraints only. They are not a substitute for Figma visual evidence and do not
+authorize implementation changes.
 
 | Component | Figma | Maps to | Status |
 | --- | --- | --- | --- |
-| [All Work](./all-work.md) | [node 6324-1308](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6324-1308&m=dev) | `apps/web/src/pages/work/index.astro` · `caseStudy` | Spec + decisions recorded; implementation is a tracer stub |
-| [Home-Hero](./home-hero.md) | [node 6119-1284](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6119-1284&m=dev) | `apps/web/src/components/blocks/Hero.astro` · `heroBlock` | Spec documented; largely implemented, minor gaps |
-| [Case Study Hero](./case-study-hero.md) | [node 6214-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6214-1279&m=dev) | `apps/web/src/pages/work/[slug].astro` · `caseStudy` | Decided: replace meta row with eyebrow + cape tags |
-| [Tag](./tag.md) | [node 6216-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6216-1279&m=dev) | none yet (capability pills) · `capability` | Spec documented; no shared component |
-| [News Carousel](./news-carousel.md) | [node 6242-1308](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6242-1308&m=dev) | `apps/web/src/components/blocks/NewsCarousel.astro` · `newsBlock` · homepage | Built (static row); auto-scroll motion deferred |
-| [News Card](./news-card.md) | [node 6243-1308](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6243-1308&m=dev) | `apps/web/src/components/NewsCard.astro` · `news` + `tag` | Built (large/small + copy); `inset` state deferred |
-| [Text Media 50-50](./text-media-50-50.md) | [node 6251-1308](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6251-1308&m=dev) | partial: `MediaSection` (textAndMedia) · homepage | Decided: shared `.d1-button`; unbuilt as homepage block |
-| [Capes](./capes.md) | [node 6062-1284](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6062-1284&m=dev) | `apps/web/src/components/blocks/Capes.astro` · `capesBlock` | Decided: Figma grid canonical; update `Capes.astro` to match |
-| [2-up](./2-up.md) | [node 6182-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6182-1279&m=dev) | none yet | Decided: shared `.d1-button`; unbuilt |
-| [Crosslink](./crosslink.md) | [node 6183-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6183-1279&m=dev) | none yet (card in 2-up) | Decided: shared `.d1-button`; unbuilt |
-| [FAQ](./faq.md) | [node 6158-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6158-1279&m=dev) | none yet | Spec documented; unbuilt |
-| [FAQ Item](./faq-item.md) | [node 6161-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6161-1279&m=dev) | none yet (row in FAQ) | Spec documented; unbuilt |
-| [Home-Zine](./home-zine.md) | [node 6133-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6133-1279&m=dev) | none yet · homepage | Decided: build Zine type + named green token + shared `.d1-button` |
-| [Who We Are](./who-we-are.md) | [node 4394-1779](https://www.figma.com/design/PgQyJQIoLqIfoWnJtU0MTh/-i--Superbloom---R3?node-id=4394-1779&m=dev) | `apps/web/src/pages/who-we-are.astro` · `whoWeAre` singleton | Tracer built; content authoring pending |
+| [Work Index](./work-index.md) | [Our Work](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-367&m=dev) | `apps/web/src/pages/work/index.astro` · `caseStudy` | Case Study browse contract |
+| [Index Page](./index-page.md) | [Index](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-600&m=dev) | future long-form index · News + Zine Articles | Long-form browse contract |
+| [Home-Hero](./home-hero.md) | [Homepage](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-374&m=dev) | `heroBlock` | Homepage hero content |
+| [Case Study Hero](./case-study-hero.md) | [Case Study](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-87&m=dev) | `caseStudy` | Case Study hero content |
+| [Home-Zine](./home-zine.md) | [Homepage](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-374&m=dev) | future Zine promo | Homepage Zine promotion |
+| [2-up](./2-up.md) / [Crosslink](./crosslink.md) | Current page screens | fixed-template composition | Related-content links |
+| [FAQ](./faq.md) / [FAQ Item](./faq-item.md) | [Who We Are](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-245&m=dev) | `whoWeAre.faqs[]` | Fixed-page FAQ content |
+| [Tag](./tag.md) | Current page screens | `TagList` · `tag` taxonomy | Editorial label presentation |
+| [Capes](./capes.md) | [Homepage](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-374&m=dev) | `capesBlock` · `capability` | Capability content |
+| [Card Carousel](./news-carousel.md) / [News Card](./news-card.md) | Current page screens | `EditorialCard` adapters | Content-adapter notes |

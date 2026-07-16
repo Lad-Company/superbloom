@@ -4,7 +4,7 @@ The supplied July 2026 Figma screens are the primary visual and art-direction ev
 
 When Figma does not establish a rule, the team must prototype it or make a new decision. It must not infer the rule from prior implementation alone.
 
-All existing motion behavior, GSAP/ScrollTrigger usage, timing, and easing are void as design-system precedent. A fresh motion prototype session will establish the interaction primitives, timing, easing, responsive behavior, and reduced-motion behavior before motion is standardized or extended. Static content sequence and reduced-motion safety remain requirements in the interim.
+All existing motion behavior, GSAP/ScrollTrigger usage, timing, and easing are void as design-system precedent. A fresh motion prototype session will establish the interaction primitives, timing, easing, responsive behavior, and reduced-motion behavior before motion is standardized or extended. Arietta approves the visual direction of the selected prototype; Pete validates technical feasibility and accessibility. Static content sequence and reduced-motion safety remain requirements in the interim.
 
 **Why not treat code and Figma equally**: current code contains known tracer decisions, incomplete responsive behavior, and interactions established before this design-language review. Giving it equal authority would preserve accidental implementation details.
 

@@ -1,15 +1,13 @@
-# News Carousel
+# Card Carousel
 
-> An auto-scrolling horizontal carousel of news items.
+> A progressively enhanced, horizontally browseable collection of editorial cards.
 
 - **Figma:** [node 6242-1308](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6242-1308&m=dev)
-- **Maps to:** unbuilt — no News schema or component yet. Belongs on the homepage
-  (`homepage.sections[]`). Shares the News Card with [All Work](./all-work.md).
+- **Maps to:** `CardCarousel` composition for editorial-card collections.
 
 ## Description
 
-An auto-scrolling carousel of news items, each rendered as a News Card (media with
-overlaid tags + a headline, no body copy).
+A browseable carousel of News cards (media with overlaid tags and a headline).
 
 ## Fields
 
@@ -22,8 +20,9 @@ _Fields marked with an asterisk are required._
 
 ## Behavior
 
-- Auto-scrolls horizontally.
-- Pauses on hover.
+- Uses CSS scroll-snap and keyboard scrolling first; arrows are optional
+  enhancement.
+- Motion is deferred to the dedicated prototype session.
 
 ### Responsive
 
@@ -42,10 +41,9 @@ in ADR-0011; CONTEXT.md defines **News** and **Tag**.
 
 Deferred backlog (this pass was a tracer):
 
-- **Auto-scroll + pause-on-hover** motion is not implemented — currently a static,
-  horizontally-scrollable row. Build with GSAP (available per ADR-0007).
-- **All Work reuse:** the News Card is not yet shared with the All Work grid; the
-  `.d1-label` pill styles are scoped inside `NewsCard.astro` and should be promoted
-  to a shared component when All Work is built.
+- **Motion:** do not infer auto-scroll or hover behavior from this tracer. It is
+  pending the dedicated motion prototype.
+- **Card boundary:** News uses a `NewsCard` content adapter. Work uses a separate
+  `WorkCard`; both compose `EditorialCard` and `MediaFrame`.
 - **Responsive sizing** (the documented 451/335px desktop and 280/200px mobile card
   widths, gutters, and `H7` headline steps) is approximated, not pixel-matched.

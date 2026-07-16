@@ -2,7 +2,7 @@
 
 > Art-directed narrative page introducing Superbloom's mission, team stats, disciplines, and Creative Collective.
 
-- **Figma (R3):** [node 4394-1779](https://www.figma.com/design/PgQyJQIoLqIfoWnJtU0MTh/-i--Superbloom---R3?node-id=4394-1779&m=dev)
+- **Figma:** [Who We Are](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-245&m=dev)
 - **Maps to:** `apps/web/src/pages/who-we-are.astro` · singleton `whoWeAre`
 - **Route:** `/who-we-are`
 
@@ -12,10 +12,10 @@
 |---|------|-----------|------------|-------|
 | 1 | Nav | `Nav.astro` | — | dark |
 | 2 | Hero | inline `<h1>` | `heroHeading` | dark |
-| 3 | Featured media | inline video/image | `featuredMedia{media,aspectRatio,theme}` | editor-selectable (default blue) |
-| 4 | Marquee | `Marquee.astro` | `marquee{text,theme}` | editor-selectable (default green) |
+| 3 | Featured media | inline video/image | `featuredMedia{media,aspectRatio}` | template-owned |
+| 4 | Marquee | `Marquee.astro` | `marquee{text}` | template-owned |
 | 5 | Intro statement | inline `<p>` | `introStatement` | dark |
-| 6 | Stat cards | `StatCards.astro` | `statCards[]{label,value,description,items[],theme}` | per-card (editor-selectable) |
+| 6 | Fact cards | `FactCardGrid` | `statCards[]{label,value,description,items[]}` | template-owned |
 | 7 | Advantage headline + blocks | `TextMedia.astro` | `advantageHeadline`, `advantageBlocks[]{heading,body,media,aspectRatio}` | dark |
 | 8 | Disciplines list | `DisciplineList.astro` | `disciplines[]{title,description}` | dark |
 | 9 | 2-up CTAs | `TwoUp.astro` | `ctas[]{heading,label,href,media}` (max 2) | dark |
@@ -31,17 +31,19 @@ The **Disciplines** list (what Superbloom does) is a bespoke `disciplines[]` fie
 
 ## Theming
 
-Brand hue roles `blue/green/pink/purple` (ADR-0013 + ADR-0010 amendment) are first used here. Green `#99a224` is the same Superbloom brand green as the Zine block. Stats cards carry an editor-selectable role per card; band sections (featured media, marquee) carry a per-section role. See `Section.astro` for resolved `--bg`/`--fg` values.
+Template-owned semantic Surface Roles map the page palette. Editors do not select
+hue-named values. The marquee is the sole `MarqueeDisplay` exception that may use
+PP Neue Corp Condensed and Wide.
 
 ## Motion deferred
 
-- Marquee: CSS `animation` in place; GSAP scroll-synced version deferred.
-- FAQ accordion: native `<details>` open/close; animated transition deferred.
+- No existing motion implementation is design-system precedent. Motion behavior is
+  deferred to the dedicated prototype session.
 
 ## Implementation status / gaps
 
 Spec implemented as a tracer. Content-authoring backlog:
 
 - Author `heroHeading`, `introStatement`, `statCards[]` (Founded/Team/Clients), `advantageBlocks[]`, `disciplines[]`, `ctas[]`, `faqs[]` in Studio.
-- Supply `featuredMedia` video/image asset once sourced ("Need to discuss asset/video" annotation in R3).
+- Supply the featured-media asset once sourced.
 - `TwoUp` CTA `href` values are `#` until target pages exist.

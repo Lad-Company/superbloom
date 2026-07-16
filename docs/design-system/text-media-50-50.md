@@ -41,7 +41,6 @@ Unbuilt as a homepage block. Overlaps but does not match existing pieces:
   (label + link).
 - **No homepage text/media block.** `homepage.sections[]` accepts only `heroBlock`,
   `capesBlock`, `contactBlock`. A new block type would be required.
-- **CTA / `.d1-button` → shared component (decided).** The dark pill button
-  (`.d1-button`) is used here; **decided: promote it to a shared component** (also
-  used by 2-up, Crosslink, Home-Zine).
-- The media here is a single featured card (4:5), tags optional.
+- **CTA:** use the approved `Button` primitive. Its variant follows the composed
+  Surface Role.
+- The media is a `MediaFrame` with a 4:5 ratio; tags are optional.

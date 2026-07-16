@@ -1,14 +1,14 @@
-# All Work
+# Work Index
 
 > The Work index: an editorial grid of all Case Studies in mixed card layouts.
 
-- **Figma:** [node 6324-1308](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6324-1308&m=dev)
+- **Figma:** [Our Work](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-367&m=dev)
 - **Maps to:** `apps/web/src/pages/work/index.astro` · schema: `caseStudy` · route: `/work`
 
 ## Description
 
-An editorial grid of all work items in mixed layouts. The page headline reads
-"All Work". Below it, Case Studies are laid out in rows that alternate between
+An editorial grid of Case Studies in mixed layouts. The page headline is owned by
+the Work template. Case Studies are laid out in rows that alternate between
 two small cards side by side and a single large (full-width) card.
 
 ## Fields
@@ -42,17 +42,16 @@ _Fields marked with an asterisk are required._
 
 ## Implementation status / gaps
 
-**Built** against the R3 design
-([node 4394-2448](https://www.figma.com/design/PgQyJQIoLqIfoWnJtU0MTh/-i--Superbloom---R3?node-id=4394-2448&m=dev)),
-which supersedes the older "large/small alternation" model with **per-card
-aspect ratio + rows of one full-width or two equal-width cards**. See ADR 0012.
+The Case Study card fields and editor-controlled ordering recorded in ADR-0012
+remain valid. The current visual source is the linked Our Work screen.
 
-- **Page:** `work/index.astro` is a dark `Section` with an H1 hero + "All Work"
+- **Page:** `work/index.astro` is a dark `Section` with an H1 hero + Work grid;
   grid, reusing `ContactBlock` + `Footer`. Hero/heading copy comes from the
   `workIndex` singleton (fallbacks hardcoded). The **featured carousel** above
   the grid is deferred.
-- **Card:** shared `Card.astro` (media + tag overlay + headline + summary),
-  consumed by both the Work grid (`size="fill"`) and News (`NewsCard` delegates).
+- **Card boundary:** Work uses a `WorkCard` content adapter that composes
+  `EditorialCard` and `MediaFrame`. It does not share a universal card contract
+  with News.
 - **Schema (`caseStudy`):** added `cardMedia` (mux.video|image, max 1),
   `cardAspectRatio` (`1:1`/`16:9`/`4:5`/`2:1`), `tags` (ref→`tag`, max 2),
   `cardSize` (`full`/`half`, default `half`), and `orderRank`

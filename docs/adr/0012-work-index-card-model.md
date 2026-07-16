@@ -1,5 +1,9 @@
 # Work index card model and shared Card component
 
+> **Partially superseded:** ADR-0016 replaces the shared `Card.astro` contract
+> with `MediaFrame`, `EditorialCard`, and content adapters. This ADR's Case Study
+> card-media, tag-taxonomy, and ordering decisions remain valid.
+
 The Work index (`/work`) renders each Case Study as a card in an editorial grid. The card data lives on the `caseStudy` document, because a Work card *is* a Case Study (`CONTEXT.md`: Work is composed of Case Studies). Four fields were added to `caseStudy`: `cardMedia` (array of `mux.video`|`image`, max 1), `cardAspectRatio` (`1:1`/`16:9`/`4:5`/`2:1`), `tags` (array of references to `tag`, max 2), and `cardSize` (`full`/`half`, default `half`). The existing `summary` is reused as the card's description line.
 
 **Card media is a dedicated field, not `heroVideo`**: the grid thumbnail is an art-directed image or video distinct from the case study hero. Mirroring the `news` media shape (`media[0]` + `aspectRatio`) lets News and Work share one GROQ projection and one component.

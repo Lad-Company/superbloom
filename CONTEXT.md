@@ -70,6 +70,10 @@ _Avoid_: Volume, edition, post
 Press and editorial coverage of Superbloom. A single News item is one unit that may combine Superbloom's own writeup and links to external coverage of the same story, presented together — so an item can be a self-published article, an external press mention, or both at once. Distinct from the Zine.
 _Avoid_: Blog, posts (when referring to News content)
 
+**Index Page**:
+The dedicated browse page for long-form editorial content: News (including press coverage), Zine Articles, and future editorial records. It is not Work and does not list Case Studies. Entries appear in one reverse-chronological feed by publication date.
+_Avoid_: All Work, Work index
+
 **Tag**:
 A free editorial label applied to content (e.g. a News item) for categorization, shown as a pill on cards. Authored as a small reusable taxonomy. Distinct from a Capability (a named service offering) and from Deliverables — a Tag is an editorial classification, not an offering.
 _Avoid_: Category, capability, keyword
@@ -97,6 +101,10 @@ _Avoid_: Component color, raw hue prop, theme color
 **Compact Interface Type**:
 PP Neue Corp Tight is the sole typeface for all compact interactive and navigational text, including buttons, tags, controls, and navigation. Graphik is reserved for editorial and reading copy; TT Bluescreens is not used in the web system.
 _Avoid_: Label font, UI font, TT Bluescreens
+
+**Marquee Display**:
+The only approved use of PP Neue Corp Condensed and Wide. These faces alternate within the Who We Are marquee and are not general-purpose display or interface type roles.
+_Avoid_: Alternate display system, marquee font
 
 **Media Frame**:
 The reusable visual container for image or video media. It establishes aspect ratio, crop, media overlays, and media controls, without knowing the content type or destination of its parent.

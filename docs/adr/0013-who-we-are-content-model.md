@@ -1,5 +1,9 @@
 # Who We Are content model, Discipline concept, and hue brand-color roles
 
+> **Partially superseded:** ADR-0014 replaces section 3's hue-named,
+> editor-selectable theme roles with template-constrained semantic Surface Roles.
+> Sections 1 and 2 remain valid.
+
 This ADR records three interrelated decisions made when building the `/who-we-are` page tracer.
 
 ## 1. `whoWeAre` singleton with structured named fields

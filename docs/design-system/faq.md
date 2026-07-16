@@ -34,9 +34,8 @@ _Fields marked with an asterisk are required._
 
 Entirely unbuilt.
 
-- **No FAQ model.** Needs a block type with a section `heading` and a repeatable
-  `items[]` of `question` / `answer` (both required, up to 6).
+- **Who We Are model:** `whoWeAre.faqs[]` supplies a fixed-template FAQ, with
+  `question` / `answer` entries (both required, up to 6).
 - **Disclosure interaction** (expand/collapse, `+`/`−` toggle) is unimplemented;
   build accessibly (`<details>`/`<summary>` or button + `aria-expanded`).
-- Where it lives (which page/document) is undecided — likely an About or capability
-  page section.
+- It belongs to the fixed Who We Are composition, not a general page-builder block.

@@ -1,5 +1,9 @@
 # Section theming via scoped CSS variables
 
+> **Partially superseded:** ADR-0014 replaces this ADR's hue-named and
+> editor-selectable role vocabulary with template-constrained semantic Surface
+> Roles. The scoped `--bg`/`--fg` mechanism remains valid.
+
 Colored and inverted sections are themed by scoping the `--bg`/`--fg` token contract per section, rather than swapping Uno color utilities. A section wrapper sets `--bg` and `--fg` for its subtree; components author against `var(--bg)`/`var(--fg)` and stay theme-agnostic. This generalizes the pattern already present in `Hero.astro` and `Capes.astro`.
 
 A themeable section carries a `theme` role: `light` (default white/black), `dark` (inverted black/white, e.g. footer chrome), `primary`, or `secondary`. `primary`/`secondary` resolve to a client brand's two accent colors, chosen per Case Study via two CMS color pickers and scoped on the page as `--brand-primary`/`--brand-secondary`. For Tyson, primary = yellow (hero), secondary = red (Outcomes).

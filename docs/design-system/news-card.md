@@ -3,8 +3,8 @@
 > A media card linking to a news item.
 
 - **Figma:** [node 6243-1308](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6243-1308&m=dev) (documented as "News Carousel — Elements")
-- **Maps to:** no dedicated component yet; the shared card used by
-  [News Carousel](./news-carousel.md) and [All Work](./all-work.md).
+- **Maps to:** `NewsCard`, a News content adapter used by
+  [Card Carousel](./news-carousel.md) and the [Index Page](./index-page.md).
 
 ## Description
 
@@ -35,9 +35,8 @@ News detail page (`/news/[slug]`).
 Deferred backlog (this pass was a tracer):
 
 - **`inset` state** is not implemented — only the default (flush) layout exists.
-- **Shared with All Work:** currently used only by the News Carousel. When All Work
-  is built, extract the shared card and promote the `.d1-label` styles (scoped here
-  for now) to a shared component.
-- **Card size source:** `size` is a component prop set by the carousel
-  (newest = large, rest = small). The authored/layout-derived fallback described in
-  [All Work](./all-work.md) is a Work-index concern, not built here.
+- **Card boundary:** `NewsCard` composes `EditorialCard` and `MediaFrame`.
+  It must not become a universal contract shared with Work cards.
+- **Card size source:** layout is owned by the consuming composition. The
+  Case Study-specific fields in [Work Index](./work-index.md) do not apply to
+  News cards.

@@ -8,8 +8,8 @@
 
 ## Description
 
-Two side-by-side cards that link out — each a media block with a headline and a CTA
-button (the `.d1-button` pill).
+Two side-by-side cards that link out — each a media block with a headline and a
+controlled `Button` variant.
 
 ## Fields
 
@@ -35,8 +35,7 @@ Entirely unbuilt.
 - **No "crosslink" model.** Each card is a link to another page/section with its own
   media + headline + CTA. No schema represents this; would need a new block type
   (and a home for it, e.g. an About page document or a homepage section).
-- **`.d1-button` → shared component (decided).** The dark/inverted pill CTA is reused
-  here; **decided: promote it to a shared component** (also seen in
-  [Text Media 50-50](./text-media-50-50.md), [Crosslink](./crosslink.md), Home-Zine).
+- **Button:** use the approved `Button` primitive. Variant selection is determined
+  by the composed Surface Role, not a legacy CSS class.
 - Media supports overlay tags (`.d1-label`) but the documented fields list only the
   two required crosslinks.

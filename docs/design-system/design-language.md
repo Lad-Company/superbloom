@@ -25,6 +25,7 @@ Do not infer new visual rules from existing code when it contradicts the first t
 - A page template maps allowed roles to Superbloom palette tokens. Case Study roles may instead resolve to a client’s Primary or Secondary Brand Color.
 - CMS authors choose only template-approved Surface Roles. They never enter raw component colors.
 - `light`, `dark`, `case-primary`, `case-secondary`, and page-specific brand roles are surface roles, not component variants.
+- The Contact Band receives a template-owned `contact` role, never an editor-selected color. Its approved mappings are Homepage → purple, Our Work → pink, Who We Are → blue, and Index Page → green.
 - Surface foreground selection must report contrast risk, but editors may explicitly override it. Do not silently block publishing.
 - No shadows. Hierarchy comes from contrast, full-bleed color bands, crop, border, and frosted overlay treatment.
 
@@ -42,7 +43,9 @@ Do not infer new visual rules from existing code when it contradicts the first t
 | `caption` | Graphik | 17px | Supporting copy and metadata |
 | `label` | PP Neue Corp Tight | 17px | Buttons, tags, nav, controls |
 
-All styles are semantic responsive tokens, not raw sizes. PP Neue Corp Compact, Condensed, and Wide are not general-purpose roles. Compact is not used; Condensed and Wide remain an explicit marquee-only exception if retained after implementation review. TT Bluescreens is not part of this web system.
+All styles are semantic responsive tokens, not raw sizes. PP Neue Corp Compact, Condensed, and Wide are not general-purpose roles. Compact is not used. Condensed and Wide are retained exclusively for the Who We Are `MarqueeDisplay` module. TT Bluescreens is not part of this web system.
+
+The July 2026 Figma screens still label some button, CTA, and overlay-label instances with TT Bluescreens. That typography is stale Figma implementation detail, not an exception to this rule. Update the Figma components to PP Neue Corp Tight before treating those annotations as current.
 
 ### Space, shape, and layers
 
@@ -104,6 +107,7 @@ Compose `SurfaceSection` + `PageGrid` + a named module. Do not add a configurabl
 
 - **Fixed Composition**: templates own order and allowed variants. Use for art-directed narrative pages such as Who We Are and Case Study.
 - **Editorial Composition**: CMS authors order an allowlisted sequence of modules. Use for modular landing pages such as Homepage.
+- **Index Page**: the dedicated browse page for long-form editorial content. It lists News (including press coverage), Zine Articles, and future editorial records in one reverse-chronological feed by publication date, never Case Studies.
 - **Case Study Media Section**: one media block with allowlisted layout variants and ordered assets. Keep Highlights, Text, and Stats as separate narrative blocks.
 - **Media ratios**: 16:9, 1:1, 4:5, 9:16, 3:2, plus `natural` only for Article Detail body media.
 - **Tags**: taxonomy is content meaning. Overlay and inline are presentation contexts. Tag documents do not control raw display color.
@@ -126,6 +130,27 @@ Compose `SurfaceSection` + `PageGrid` + a named module. Do not add a configurabl
 5. One `StatCards` module conflates fact cards and Case Study Outcomes.
 6. The mobile navigation is not designed, and current responsive behavior is only ad hoc `768px` stacking.
 7. Current GSAP/ScrollTrigger timing and behavior are not approved motion evidence.
+
+## Stale-code inventory
+
+This is an implementation inventory, not authorization to migrate it in place.
+
+- `apps/web/src/styles/tokens.css` and `apps/web/uno.config.ts` encode incomplete
+  spacing, R3 naming, hue tokens, PP Compact, and TT Bluescreens.
+- `apps/web/src/components/Card.astro` is the void universal-card contract.
+  `Button.astro` exposes no approved variants, and `Nav.astro` has no compact-menu
+  contract.
+- `apps/web/src/components/StatCards.astro` lets content select hue themes and
+  conflates FactCardGrid with Outcomes.
+- `apps/web/src/components/case/Section.astro` exposes hue-named section values
+  instead of template-constrained Surface Roles.
+- `packages/schemas/src/mediaSection.ts` needs the approved layout variants and
+  media-ratio constraints. `caseStudy.ts` still describes a shared Card projection.
+- `packages/schemas/src/tag.ts` still gives editorial taxonomy a raw display-color
+  field.
+
+The next implementation phase must replace these contracts deliberately, preserving
+the valid Case Study card-media, tag-taxonomy, and ordering decisions in ADR-0012.
 
 ## Prioritized implementation plan
 

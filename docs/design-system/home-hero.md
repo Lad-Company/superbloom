@@ -2,13 +2,13 @@
 
 > Full-bleed hero: background media with an overlaid headline and intro line.
 
-- **Figma:** [node 6119-1284](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6119-1284&m=dev)
+- **Figma:** [Homepage](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-374&m=dev)
 - **Maps to:** `apps/web/src/components/blocks/Hero.astro` · schema: `heroBlock` · used by `homepage.sections[]`
 
 ## Description
 
 A full-bleed hero — background media with an overlaid headline and intro line.
-The headline is set in PP Neue Corp (`H1`); the intro is a short Graphik line
+The headline uses the semantic `display-1` style in PP Neue Corp Tight; the intro is a short Graphik line
 sitting bottom-right of the headline.
 
 ## Fields

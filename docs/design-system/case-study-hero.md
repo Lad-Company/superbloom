@@ -2,7 +2,7 @@
 
 > A full-bleed case study hero on the case study's brand color: client eyebrow, a large headline, and capability tags.
 
-- **Figma:** [node 6214-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6214-1279&m=dev)
+- **Figma:** [Case Study](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-87&m=dev)
 - **Maps to:** the `.hero` section in `apps/web/src/pages/work/[slug].astro` · schema: `caseStudy` (`client`, `title`, `capabilities`, `primaryColor`)
 
 ## Description
@@ -22,9 +22,8 @@ _Fields marked with an asterisk are required._
 
 ## Behavior
 
-- Background = the case study's brand color, set per case study (not a fixed token
-  and not a light/dark mode). Foreground auto-derives for contrast (see
-  ADR-0010 / `Section` theming).
+- Background resolves through the `case-primary` Surface Role. Foreground contrast
+  risk is reported and may be explicitly overridden by an editor.
 - Tags render as outlined pills below the headline and wrap to multiple rows.
 
 ### Responsive
