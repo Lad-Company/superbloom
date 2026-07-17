@@ -21,9 +21,9 @@ const [featured, ...rest] = items;
   <div class="inner">
     {headline && <h2 class="type-h6 headline">{headline}</h2>}
     <div class="track">
-      {featured && <NewsCard item={featured} size="large" showCopy />}
+      {featured && <NewsCard item={featured} class="featured" showCopy />}
       {rest.map((item) => (
-        <NewsCard item={item} size="small" />
+        <NewsCard item={item} class="standard" />
       ))}
     </div>
   </div>
@@ -43,7 +43,16 @@ const [featured, ...rest] = items;
     padding-right: var(--space-xs);
     scroll-snap-type: x proximity;
   }
-  .track > :global(.card) {
+  .track > :global(.editorial-card) {
+    flex: 0 0 auto;
     scroll-snap-align: start;
+  }
+  .track > :global(.featured) {
+    width: 451px;
+    max-width: 80vw;
+  }
+  .track > :global(.standard) {
+    width: 335px;
+    max-width: 70vw;
   }
 </style>

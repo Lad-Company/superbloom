@@ -8,32 +8,29 @@ interface Tag {
   color: string | null;
 }
 
-interface NewsItem {
+interface WorkItem {
   title: string | null;
   slug: string | null;
   summary: string | null;
-  aspectRatio: MediaRatio | null;
+  cardAspectRatio: MediaRatio | null;
   tags: Tag[] | null;
   media: Media | null;
 }
 
 interface Props {
-  item: NewsItem;
-  showCopy?: boolean;
-  class?: string;
+  item: WorkItem;
 }
 
-const { item, showCopy = false, class: className } = Astro.props;
-const href = item.slug ? `/news/${item.slug}` : '#';
+const { item } = Astro.props;
+const href = item.slug ? `/work/${item.slug}` : '#';
 ---
 
 <EditorialCard
   href={href}
   title={item.title}
   media={item.media}
-  aspectRatio={item.aspectRatio}
-  summary={showCopy ? item.summary : undefined}
-  class={className}
+  aspectRatio={item.cardAspectRatio}
+  summary={item.summary}
 >
   <TagList slot="overlay" tags={item.tags} />
 </EditorialCard>

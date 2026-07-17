@@ -2,9 +2,10 @@
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
-import Section from '../../components/case/Section.astro';
+import SurfaceSection from '../../components/SurfaceSection.astro';
 import ContactBlock from '../../components/ContactBlock.astro';
-import Card from '../../components/Card.astro';
+import PageGrid from '../../components/PageGrid.astro';
+import WorkCard from '../../components/WorkCard.astro';
 import { sanityClient } from '../../lib/sanity';
 import { workIndexQuery, caseStudiesQuery } from '../../lib/queries';
 import type { WorkIndexQueryResult, CaseStudiesQueryResult } from '../../sanity.types';
@@ -17,31 +18,10 @@ const [workIndex, caseStudies] = await Promise.all([
 const heroHeading = workIndex?.heroHeading ?? 'Unexpected minds. Unignorable work.';
 const allWorkHeading = workIndex?.allWorkHeading ?? 'All work';
 
-// Pack ordered case studies into rows: a `full` card takes its own row;
-// consecutive `half` cards pair two-per-row.
-type WorkItem = CaseStudiesQueryResult[number];
-const rows: WorkItem[][] = [];
-let pending: WorkItem[] = [];
-const flush = () => {
-  if (pending.length) {
-    rows.push(pending);
-    pending = [];
-  }
-};
-for (const cs of caseStudies) {
-  if ((cs.cardSize ?? 'half') === 'full') {
-    flush();
-    rows.push([cs]);
-  } else {
-    pending.push(cs);
-    if (pending.length === 2) flush();
-  }
-}
-flush();
 ---
 
 <Layout title="Our Work — Superbloom">
-  <Section theme="dark">
+  <SurfaceSection role="dark">
     <Nav state="dark" />
     <div class="hero">
       <h1 class="type-h1 hero-heading">{heroHeading}</h1>
@@ -49,26 +29,15 @@ flush();
 
     <div class="all-work">
       <h2 class="type-h3 all-work-heading">{allWorkHeading}</h2>
-      <div class="rows">
-        {rows.map((row) => (
-          <div class="row">
-            {row.map((cs) => (
-              <Card
-                href={cs.slug ? `/work/${cs.slug}` : '#'}
-                title={cs.title}
-                media={cs.media}
-                aspectRatio={cs.cardAspectRatio}
-                tags={cs.tags}
-                summary={cs.summary}
-                size="fill"
-                showSummary
-              />
-            ))}
+      <PageGrid>
+        {caseStudies.map((cs) => (
+          <div class="page-grid-item" data-span={cs.cardSize === 'full' ? 'full' : undefined}>
+            <WorkCard item={cs} />
           </div>
         ))}
-      </div>
+      </PageGrid>
     </div>
-  </Section>
+  </SurfaceSection>
 
   <ContactBlock />
   <Footer />
@@ -83,36 +52,19 @@ flush();
     max-width: 14ch;
   }
   .all-work {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: var(--space-xl);
     padding: var(--space-4xl) 0;
   }
   .all-work-heading {
     margin: 0;
-    padding: 0 var(--space-xs);
-  }
-  .rows {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4xl);
-  }
-  .row {
-    display: flex;
-    gap: var(--page-gutter);
-    padding: 0 var(--space-xs);
-    align-items: flex-start;
   }
   @media (max-width: 768px) {
     .hero {
       padding: 120px var(--space-3xs) 0;
     }
-    .all-work-heading,
-    .row {
+    .all-work-heading {
       padding: 0 var(--space-3xs);
-    }
-    .row {
-      flex-direction: column;
     }
   }
 </style>

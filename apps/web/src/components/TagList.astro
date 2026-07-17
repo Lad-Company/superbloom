@@ -1,0 +1,44 @@
+---
+interface Tag {
+  title: string | null;
+}
+
+interface Props {
+  tags?: Tag[] | null;
+}
+
+const { tags = [] } = Astro.props;
+const tagList = tags ?? [];
+---
+
+{
+  tagList.length > 0 && (
+    <ul class="tag-list">
+      {tagList.map((tag) => (
+        <li class="tag type-label">{tag.title}</li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .tag-list {
+    position: absolute;
+    inset: var(--space-3xs) auto auto var(--space-3xs);
+    display: flex;
+    gap: var(--space-xs-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tag {
+    padding: 6px 10px;
+    border: var(--border-subtle);
+    border-radius: var(--radius-control);
+    background: var(--frosted-layer);
+    color: var(--bg);
+    backdrop-filter: blur(var(--frosted-layer-blur));
+    -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
+  }
+</style>

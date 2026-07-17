@@ -1,0 +1,40 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['page-grid', className]}>
+  <slot />
+</div>
+
+<style>
+  .page-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--space-2xl) var(--page-gutter);
+    padding-inline: var(--page-inset);
+  }
+
+  .page-grid :global(.page-grid-item) {
+    grid-column: span 6;
+    min-width: 0;
+  }
+
+  .page-grid :global(.page-grid-item[data-span='full']) {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 768px) {
+    .page-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-xl);
+    }
+
+    .page-grid :global(.page-grid-item) {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

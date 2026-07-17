@@ -1,0 +1,50 @@
+---
+import MediaFrame, { type Media, type MediaRatio } from './MediaFrame.astro';
+
+interface Props {
+  href: string;
+  title: string | null;
+  media: Media | null;
+  aspectRatio?: MediaRatio | null;
+  summary?: string | null;
+  class?: string;
+}
+
+const { href, title, media, aspectRatio, summary, class: className } = Astro.props;
+---
+
+<a class:list={['editorial-card', className]} href={href}>
+  <MediaFrame media={media} ratio={aspectRatio} title={title}>
+    <slot name="overlay" />
+  </MediaFrame>
+  <div class="content">
+    {title && <p class="headline type-h6">{title}</p>}
+    {summary && <p class="summary type-caption">{summary}</p>}
+  </div>
+</a>
+
+<style>
+  .editorial-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    min-width: 0;
+    color: var(--fg);
+    text-decoration: none;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs-4);
+  }
+
+  .headline,
+  .summary {
+    margin: 0;
+  }
+
+  .summary {
+    color: var(--fg-60);
+  }
+</style>

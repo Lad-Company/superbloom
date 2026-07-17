@@ -1,0 +1,60 @@
+---
+import Video from './Video.astro';
+
+export type MediaRatio = '1:1' | '16:9' | '4:5' | '2:1';
+
+export interface Media {
+  _type: 'image' | 'mux.video';
+  url?: string | null;
+  width?: number | null;
+  height?: number | null;
+  alt?: string | null;
+  playbackId?: string | null;
+}
+
+interface Props {
+  media: Media | null;
+  ratio?: MediaRatio | null;
+  title?: string | null;
+}
+
+const { media, ratio = '16:9', title } = Astro.props;
+const ratioMap: Record<MediaRatio, string> = {
+  '1:1': '1 / 1',
+  '16:9': '16 / 9',
+  '4:5': '4 / 5',
+  '2:1': '2 / 1',
+};
+---
+
+<div class="media-frame" style={`aspect-ratio: ${ratioMap[ratio ?? '16:9']};`}>
+  {media?._type === 'mux.video' && media.playbackId && (
+    <Video playbackId={media.playbackId} title={title ?? undefined} />
+  )}
+  {media?._type === 'image' && media.url && (
+    <img
+      src={media.url}
+      alt={media.alt ?? ''}
+      width={media.width ?? undefined}
+      height={media.height ?? undefined}
+    />
+  )}
+  <slot />
+</div>
+
+<style>
+  .media-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-media);
+    background: var(--fg-12);
+  }
+
+  .media-frame img,
+  .media-frame :global(mux-player) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    --media-object-fit: cover;
+  }
+</style>

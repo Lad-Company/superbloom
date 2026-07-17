@@ -18,10 +18,17 @@
   --space-3xl: 160px;
   --space-4xl: 200px;
   --page-gutter: 24px;
+  --page-inset: var(--space-xs);
 
   /* Radius */
-  --radius-s: 6px; /* buttons, labels, chips */
-  --radius-m: 8px; /* inputs */
+  --radius-control: 6px;
+  --radius-input: 8px;
+  --radius-media: var(--radius-control);
+
+  /* Borders and layers */
+  --border-subtle: 1px solid var(--bg-20);
+  --frosted-layer: var(--bg-20);
+  --frosted-layer-blur: 35px;
 
   /* Superbloom brand hue tokens (see ADR-0013) */
   --blue: #3993dd;
@@ -35,7 +42,7 @@
 
   /* Fonts (real faces first, fallbacks until Lad supplies licensed files) */
   --font-display-tight: 'PP Neue Corp Tight', 'Arial Narrow', system-ui, sans-serif;
-  --font-display-compact: 'PP Neue Corp Compact', 'Arial Narrow', system-ui, sans-serif;
+  --font-marquee: 'PP Neue Corp Compact', 'Arial Narrow', system-ui, sans-serif;
   --font-body: 'Graphik', 'Inter', system-ui, sans-serif;
-  --font-label: 'TT Bluescreens', ui-monospace, system-ui, sans-serif;
+  --font-interface: var(--font-display-tight);
 }
