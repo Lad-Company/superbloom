@@ -1,5 +1,5 @@
 ---
-import NarrativeBlockRenderer from '../narrative/NarrativeBlockRenderer.astro';
+import BodyBlockRenderer from '../narrative/BodyBlockRenderer.astro';
 import NarrativeSectionNav from '../narrative/NarrativeSectionNav.astro';
 import { blockId } from '../../lib/blockId';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
@@ -19,4 +19,4 @@ const sectionNavItems = body
 
 <NarrativeSectionNav items={[...sectionNavItems, { label: 'Press', id: 'press' }]} />
 
-{body.map((block) => <NarrativeBlockRenderer block={block} />)}
+{body.map((block) => <BodyBlockRenderer block={block} />)}

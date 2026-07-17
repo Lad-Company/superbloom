@@ -1,0 +1,120 @@
+---
+import MediaFrame, { type Media, type MediaRatio } from '../MediaFrame.astro';
+import BodyBlockRenderer from '../narrative/BodyBlockRenderer.astro';
+import type { NewsBySlugQueryResult } from '../../sanity.types';
+
+type NewsItem = NonNullable<NewsBySlugQueryResult>;
+type BodyBlock = NonNullable<NewsItem['body']>[number];
+
+interface Props {
+  item: NewsItem;
+}
+
+const { item } = Astro.props;
+const tags = item.tags ?? [];
+const externalLinks = item.externalLinks ?? [];
+const body = item.body ?? [];
+const published = item.publishedAt
+  ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(
+      new Date(item.publishedAt),
+    )
+  : null;
+---
+
+<article class="article-detail">
+  <header class="header">
+    {tags.length > 0 && (
+      <ul class="tags type-label" aria-label="Tags">
+        {tags.map((tag) => <li>{tag.title}</li>)}
+      </ul>
+    )}
+    <h1 class="type-h3 title">{item.title}</h1>
+    {published && <p class="type-eyebrow date">{published}</p>}
+  </header>
+
+  {item.media && (
+    <div class="lead-media">
+      <MediaFrame media={item.media as Media} ratio={item.aspectRatio as MediaRatio} title={item.title} />
+    </div>
+  )}
+
+  {body.map((block) => <BodyBlockRenderer block={block as BodyBlock} />)}
+
+  {externalLinks.length > 0 && (
+    <section class="external-coverage" aria-labelledby="external-coverage-heading">
+      <p id="external-coverage-heading" class="type-eyebrow external-label">Read elsewhere</p>
+      <ul class="external-list">
+        {externalLinks.map((link) => (
+          <li>
+            <a class="type-caption" href={link.url ?? '#'} target="_blank" rel="noopener noreferrer">
+              {link.outlet}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</article>
+
+<style>
+  .header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    padding: 140px var(--page-inset) var(--space-xs);
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs-4);
+    margin: 0;
+    padding: 0;
+    color: var(--fg-60);
+    list-style: none;
+  }
+
+  .title,
+  .date,
+  .external-label {
+    margin: 0;
+  }
+
+  .date,
+  .external-label {
+    color: var(--fg-60);
+  }
+
+  .lead-media :global(.media-frame) {
+    border-radius: 0;
+  }
+
+  .external-coverage {
+    padding: var(--space-2xl) var(--page-inset);
+  }
+
+  .external-label {
+    margin-bottom: var(--space-xs);
+  }
+
+  .external-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .external-list a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  @media (max-width: 768px) {
+    .header {
+      padding-top: 100px;
+    }
+  }
+</style>
