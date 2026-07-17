@@ -51,7 +51,6 @@ export const whoWeAreQuery = defineQuery(`
     heroHeading,
     featuredMedia{
       aspectRatio,
-      theme,
       "media": media[0]{
         _type,
         _type == "mux.video" => { "playbackId": asset->playbackId },
@@ -63,15 +62,14 @@ export const whoWeAreQuery = defineQuery(`
         }
       }
     },
-    marquee{ text, theme },
+    marquee{ text },
     introStatement,
     statCards[]{
       _key,
       label,
       value,
       description,
-      items,
-      theme
+      items
     },
     advantageHeadline,
     advantageBlocks[]{

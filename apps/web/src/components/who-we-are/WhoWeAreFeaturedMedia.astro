@@ -1,0 +1,32 @@
+---
+import MediaFrame, { type Media, type MediaRatio } from '../MediaFrame.astro';
+
+interface Props {
+  media: Media | null;
+  ratio?: MediaRatio | null;
+  title: string;
+}
+
+const { media, ratio = '16:9', title } = Astro.props;
+---
+
+<section class="featured-media">
+  <MediaFrame media={media} ratio={ratio} title={title} />
+</section>
+
+<style>
+  .featured-media {
+    background: var(--bg);
+    padding: var(--space-xs) var(--page-inset) var(--space-2xl);
+  }
+
+  .featured-media :global(.media-frame) {
+    border-radius: 0;
+  }
+
+  @media (max-width: 768px) {
+    .featured-media {
+      padding: var(--space-3xs) var(--space-3xs) var(--space-xl);
+    }
+  }
+</style>

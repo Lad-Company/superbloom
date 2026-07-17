@@ -1,0 +1,95 @@
+---
+import Metric from './Metric.astro';
+import SurfaceSection from './SurfaceSection.astro';
+
+interface FactCard {
+  _key?: string;
+  label: string | null;
+  value?: string | null;
+  description?: string | null;
+  items?: string[] | null;
+}
+
+interface Props {
+  cards: FactCard[];
+}
+
+const { cards } = Astro.props;
+const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
+---
+
+<div class="fact-card-grid">
+  {cards.map((card, index) => {
+    const role = surfaceRoles[index % surfaceRoles.length];
+
+    return (
+      <SurfaceSection role={role} class="fact-card">
+        <h2 class="label type-h5">{card.label}</h2>
+        <div class="body">
+          {card.value && <Metric value={card.value} />}
+          {card.description && <p class="description type-caption">{card.description}</p>}
+          {card.items && card.items.length > 0 && (
+            <ul class="items type-h6">
+              {card.items.map((item) => <li>{item}</li>)}
+            </ul>
+          )}
+        </div>
+      </SurfaceSection>
+    );
+  })}
+</div>
+
+<style>
+  .fact-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  :global(.fact-card) {
+    display: flex;
+    min-width: 0;
+    min-height: 600px;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--space-xs);
+  }
+
+  :global(.fact-card .label),
+  :global(.fact-card .description) {
+    margin: 0;
+  }
+
+  :global(.fact-card .body) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  :global(.fact-card .description) {
+    max-width: 24ch;
+  }
+
+  :global(.fact-card .items) {
+    line-height: 1.2;
+  }
+
+  :global(.fact-card .items li) {
+    margin: 0;
+  }
+
+  :global(.fact-card .body .value) {
+    display: block;
+    font-size: clamp(80px, 9.7vw, 140px);
+  }
+
+  @media (max-width: 768px) {
+    .fact-card-grid {
+      grid-template-columns: 1fr;
+    }
+
+    :global(.fact-card) {
+      min-height: 320px;
+      padding: var(--space-3xs);
+    }
+  }
+</style>

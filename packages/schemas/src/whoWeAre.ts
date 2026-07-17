@@ -1,7 +1,5 @@
 import {defineField, defineType} from 'sanity'
 
-const themeList = ['light', 'dark', 'blue', 'green', 'pink', 'purple']
-
 export const whoWeAre = defineType({
   name: 'whoWeAre',
   title: 'Who We Are',
@@ -30,12 +28,6 @@ export const whoWeAre = defineType({
           options: {list: ['1:1', '16:9', '4:5', '2:1'], layout: 'radio'},
           initialValue: '16:9',
         }),
-        defineField({
-          name: 'theme',
-          type: 'string',
-          options: {list: themeList, layout: 'radio'},
-          initialValue: 'blue',
-        }),
       ],
     }),
     defineField({
@@ -48,12 +40,6 @@ export const whoWeAre = defineType({
           type: 'string',
           initialValue:
             'Campaigns. Content. Experiences. branded Entertainment. Social. strategy. creative.',
-        }),
-        defineField({
-          name: 'theme',
-          type: 'string',
-          options: {list: themeList, layout: 'radio'},
-          initialValue: 'green',
         }),
       ],
     }),
@@ -84,12 +70,6 @@ export const whoWeAre = defineType({
               description: 'For a list-style card (e.g. client names)',
               type: 'array',
               of: [{type: 'string'}],
-            }),
-            defineField({
-              name: 'theme',
-              type: 'string',
-              options: {list: themeList, layout: 'radio'},
-              initialValue: 'light',
             }),
           ],
           preview: {select: {title: 'label', subtitle: 'value'}},

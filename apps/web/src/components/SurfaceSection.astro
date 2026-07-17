@@ -1,21 +1,32 @@
 ---
-export const caseStudySurfaceRoles = ['light', 'dark', 'case-primary', 'case-secondary'] as const;
+const surfaceRoles = [
+  'light',
+  'dark',
+  'case-primary',
+  'case-secondary',
+  'brand-accent',
+  'brand-deep',
+  'brand-muted',
+] as const;
 
-export type CaseStudySurfaceRole = (typeof caseStudySurfaceRoles)[number];
+type SurfaceRole = (typeof surfaceRoles)[number];
 
 interface Props {
-  role?: CaseStudySurfaceRole;
+  role?: SurfaceRole;
   id?: string;
   class?: string;
 }
 
 const { role = 'light', id, class: className } = Astro.props;
 
-const vars: Record<CaseStudySurfaceRole, string> = {
+const vars: Record<SurfaceRole, string> = {
   light: '--bg: #ffffff; --fg: #000000;',
   dark: '--bg: #000000; --fg: #ffffff;',
   'case-primary': '--bg: var(--case-primary-bg); --fg: var(--case-primary-fg);',
   'case-secondary': '--bg: var(--case-secondary-bg); --fg: var(--case-secondary-fg);',
+  'brand-accent': '--bg: var(--blue); --fg: var(--blue-fg);',
+  'brand-deep': '--bg: var(--purple); --fg: var(--purple-fg);',
+  'brand-muted': '--bg: var(--pink); --fg: var(--pink-fg);',
 };
 ---
 

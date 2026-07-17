@@ -1,0 +1,38 @@
+---
+import Nav from '../Nav.astro';
+
+interface Props {
+  heading: string;
+}
+
+const { heading } = Astro.props;
+---
+
+<section class="who-we-are-hero">
+  <Nav state="dark" />
+  <div class="content">
+    <h1 class="type-h1">{heading}</h1>
+  </div>
+</section>
+
+<style>
+  .who-we-are-hero {
+    background: var(--bg);
+    color: var(--fg);
+  }
+
+  .content {
+    padding: var(--space-3xl) var(--page-inset) var(--space-xl);
+  }
+
+  h1 {
+    margin: 0;
+    max-width: 14ch;
+  }
+
+  @media (max-width: 768px) {
+    .content {
+      padding: 120px var(--space-3xs) var(--space-xl);
+    }
+  }
+</style>

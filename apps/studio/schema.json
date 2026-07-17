@@ -1216,39 +1216,6 @@
                 ]
               },
               "optional": true
-            },
-            "theme": {
-              "type": "objectAttribute",
-              "value": {
-                "type": "union",
-                "of": [
-                  {
-                    "type": "string",
-                    "value": "light"
-                  },
-                  {
-                    "type": "string",
-                    "value": "dark"
-                  },
-                  {
-                    "type": "string",
-                    "value": "blue"
-                  },
-                  {
-                    "type": "string",
-                    "value": "green"
-                  },
-                  {
-                    "type": "string",
-                    "value": "pink"
-                  },
-                  {
-                    "type": "string",
-                    "value": "purple"
-                  }
-                ]
-              },
-              "optional": true
             }
           }
         },
@@ -1263,39 +1230,6 @@
               "type": "objectAttribute",
               "value": {
                 "type": "string"
-              },
-              "optional": true
-            },
-            "theme": {
-              "type": "objectAttribute",
-              "value": {
-                "type": "union",
-                "of": [
-                  {
-                    "type": "string",
-                    "value": "light"
-                  },
-                  {
-                    "type": "string",
-                    "value": "dark"
-                  },
-                  {
-                    "type": "string",
-                    "value": "blue"
-                  },
-                  {
-                    "type": "string",
-                    "value": "green"
-                  },
-                  {
-                    "type": "string",
-                    "value": "pink"
-                  },
-                  {
-                    "type": "string",
-                    "value": "purple"
-                  }
-                ]
               },
               "optional": true
             }
@@ -1345,39 +1279,6 @@
                   "of": {
                     "type": "string"
                   }
-                },
-                "optional": true
-              },
-              "theme": {
-                "type": "objectAttribute",
-                "value": {
-                  "type": "union",
-                  "of": [
-                    {
-                      "type": "string",
-                      "value": "light"
-                    },
-                    {
-                      "type": "string",
-                      "value": "dark"
-                    },
-                    {
-                      "type": "string",
-                      "value": "blue"
-                    },
-                    {
-                      "type": "string",
-                      "value": "green"
-                    },
-                    {
-                      "type": "string",
-                      "value": "pink"
-                    },
-                    {
-                      "type": "string",
-                      "value": "purple"
-                    }
-                  ]
                 },
                 "optional": true
               },

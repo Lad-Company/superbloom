@@ -162,11 +162,9 @@ export type WhoWeAre = {
       _key: string;
     }>;
     aspectRatio?: "1:1" | "16:9" | "4:5" | "2:1";
-    theme?: "light" | "dark" | "blue" | "green" | "pink" | "purple";
   };
   marquee?: {
     text?: string;
-    theme?: "light" | "dark" | "blue" | "green" | "pink" | "purple";
   };
   introStatement?: string;
   statCards?: Array<{
@@ -174,7 +172,6 @@ export type WhoWeAre = {
     value?: string;
     description?: string;
     items?: Array<string>;
-    theme?: "light" | "dark" | "blue" | "green" | "pink" | "purple";
     _type: "statCard";
     _key: string;
   }>;
@@ -681,12 +678,11 @@ export type HomepageQueryResult = {
   }> | null;
 } | null;
 // Variable: whoWeAreQuery
-// Query: *[_type == "whoWeAre"][0]{    heroHeading,    featuredMedia{      aspectRatio,      theme,      "media": media[0]{        _type,        _type == "mux.video" => { "playbackId": asset->playbackId },        _type == "image" => {          "url": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height,          "alt": asset->altText        }      }    },    marquee{ text, theme },    introStatement,    statCards[]{      _key,      label,      value,      description,      items,      theme    },    advantageHeadline,    advantageBlocks[]{      _key,      heading,      body,      aspectRatio,      "media": media[0]{        _type,        _type == "mux.video" => { "playbackId": asset->playbackId },        _type == "image" => {          "url": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height,          "alt": asset->altText        }      }    },    disciplines[]{      _key,      title,      description    },    ctas[]{      _key,      heading,      label,      href,      "media": media[0]{        _type,        _type == "mux.video" => { "playbackId": asset->playbackId },        _type == "image" => {          "url": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height,          "alt": asset->altText        }      }    },    faqs[]{      _key,      question,      answer    }  }
+// Query: *[_type == "whoWeAre"][0]{    heroHeading,    featuredMedia{      aspectRatio,      "media": media[0]{        _type,        _type == "mux.video" => { "playbackId": asset->playbackId },        _type == "image" => {          "url": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height,          "alt": asset->altText        }      }    },    marquee{ text },    introStatement,    statCards[]{      _key,      label,      value,      description,      items    },    advantageHeadline,    advantageBlocks[]{      _key,      heading,      body,      aspectRatio,      "media": media[0]{        _type,        _type == "mux.video" => { "playbackId": asset->playbackId },        _type == "image" => {          "url": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height,          "alt": asset->altText        }      }    },    disciplines[]{      _key,      title,      description    },    ctas[]{      _key,      heading,      label,      href,      "media": media[0]{        _type,        _type == "mux.video" => { "playbackId": asset->playbackId },        _type == "image" => {          "url": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height,          "alt": asset->altText        }      }    },    faqs[]{      _key,      question,      answer    }  }
 export type WhoWeAreQueryResult = {
   heroHeading: string | null;
   featuredMedia: {
     aspectRatio: "1:1" | "16:9" | "2:1" | "4:5" | null;
-    theme: "blue" | "dark" | "green" | "light" | "pink" | "purple" | null;
     media: {
       _type: "image";
       url: string | null;
@@ -700,7 +696,6 @@ export type WhoWeAreQueryResult = {
   } | null;
   marquee: {
     text: string | null;
-    theme: "blue" | "dark" | "green" | "light" | "pink" | "purple" | null;
   } | null;
   introStatement: string | null;
   statCards: Array<{
@@ -709,7 +704,6 @@ export type WhoWeAreQueryResult = {
     value: string | null;
     description: string | null;
     items: Array<string> | null;
-    theme: "blue" | "dark" | "green" | "light" | "pink" | "purple" | null;
   }> | null;
   advantageHeadline: string | null;
   advantageBlocks: Array<{
@@ -1028,7 +1022,7 @@ import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
     "\n  *[_type == \"homepage\"][0]{\n    sections[]{\n      _type,\n      _type == \"heroBlock\" => {\n        heading,\n        subheading,\n        \"videoPlaybackId\": video.asset->playbackId\n      },\n      _type == \"capesBlock\" => {\n        headline,\n        capabilities[]->{\n          title,\n          \"slug\": slug.current,\n          \"videoPlaybackId\": video.asset->playbackId\n        }\n      },\n      _type == \"newsBlock\" => {\n        headline,\n        \"items\": *[_type == \"news\"] | order(publishedAt desc)[0...8]{\n          title,\n          \"slug\": slug.current,\n          summary,\n          aspectRatio,\n          tags[]->{ title, color },\n          \"media\": media[0]{\n            _type,\n            _type == \"mux.video\" => {\n              \"playbackId\": asset->playbackId\n            },\n            _type == \"image\" => {\n              \"url\": asset->url,\n              \"width\": asset->metadata.dimensions.width,\n              \"height\": asset->metadata.dimensions.height,\n              \"alt\": asset->altText\n            }\n          }\n        }\n      },\n      _type == \"contactBlock\" => {\n        _type\n      }\n    }\n  }\n": HomepageQueryResult;
-    "\n  *[_type == \"whoWeAre\"][0]{\n    heroHeading,\n    featuredMedia{\n      aspectRatio,\n      theme,\n      \"media\": media[0]{\n        _type,\n        _type == \"mux.video\" => { \"playbackId\": asset->playbackId },\n        _type == \"image\" => {\n          \"url\": asset->url,\n          \"width\": asset->metadata.dimensions.width,\n          \"height\": asset->metadata.dimensions.height,\n          \"alt\": asset->altText\n        }\n      }\n    },\n    marquee{ text, theme },\n    introStatement,\n    statCards[]{\n      _key,\n      label,\n      value,\n      description,\n      items,\n      theme\n    },\n    advantageHeadline,\n    advantageBlocks[]{\n      _key,\n      heading,\n      body,\n      aspectRatio,\n      \"media\": media[0]{\n        _type,\n        _type == \"mux.video\" => { \"playbackId\": asset->playbackId },\n        _type == \"image\" => {\n          \"url\": asset->url,\n          \"width\": asset->metadata.dimensions.width,\n          \"height\": asset->metadata.dimensions.height,\n          \"alt\": asset->altText\n        }\n      }\n    },\n    disciplines[]{\n      _key,\n      title,\n      description\n    },\n    ctas[]{\n      _key,\n      heading,\n      label,\n      href,\n      \"media\": media[0]{\n        _type,\n        _type == \"mux.video\" => { \"playbackId\": asset->playbackId },\n        _type == \"image\" => {\n          \"url\": asset->url,\n          \"width\": asset->metadata.dimensions.width,\n          \"height\": asset->metadata.dimensions.height,\n          \"alt\": asset->altText\n        }\n      }\n    },\n    faqs[]{\n      _key,\n      question,\n      answer\n    }\n  }\n": WhoWeAreQueryResult;
+    "\n  *[_type == \"whoWeAre\"][0]{\n    heroHeading,\n    featuredMedia{\n      aspectRatio,\n      \"media\": media[0]{\n        _type,\n        _type == \"mux.video\" => { \"playbackId\": asset->playbackId },\n        _type == \"image\" => {\n          \"url\": asset->url,\n          \"width\": asset->metadata.dimensions.width,\n          \"height\": asset->metadata.dimensions.height,\n          \"alt\": asset->altText\n        }\n      }\n    },\n    marquee{ text },\n    introStatement,\n    statCards[]{\n      _key,\n      label,\n      value,\n      description,\n      items\n    },\n    advantageHeadline,\n    advantageBlocks[]{\n      _key,\n      heading,\n      body,\n      aspectRatio,\n      \"media\": media[0]{\n        _type,\n        _type == \"mux.video\" => { \"playbackId\": asset->playbackId },\n        _type == \"image\" => {\n          \"url\": asset->url,\n          \"width\": asset->metadata.dimensions.width,\n          \"height\": asset->metadata.dimensions.height,\n          \"alt\": asset->altText\n        }\n      }\n    },\n    disciplines[]{\n      _key,\n      title,\n      description\n    },\n    ctas[]{\n      _key,\n      heading,\n      label,\n      href,\n      \"media\": media[0]{\n        _type,\n        _type == \"mux.video\" => { \"playbackId\": asset->playbackId },\n        _type == \"image\" => {\n          \"url\": asset->url,\n          \"width\": asset->metadata.dimensions.width,\n          \"height\": asset->metadata.dimensions.height,\n          \"alt\": asset->altText\n        }\n      }\n    },\n    faqs[]{\n      _key,\n      question,\n      answer\n    }\n  }\n": WhoWeAreQueryResult;
     "\n  *[_type == \"workIndex\"][0]{\n    heroHeading,\n    allWorkHeading\n  }\n": WorkIndexQueryResult;
     "\n  *[_type == \"caseStudy\"] | order(orderRank) {\n    title,\n    \"slug\": slug.current,\n    summary,\n    cardSize,\n    cardAspectRatio,\n    tags[]->{ title, color },\n    \"media\": cardMedia[0]{\n      _type,\n      _type == \"mux.video\" => {\n        \"playbackId\": asset->playbackId\n      },\n      _type == \"image\" => {\n        \"url\": asset->url,\n        \"width\": asset->metadata.dimensions.width,\n        \"height\": asset->metadata.dimensions.height,\n        \"alt\": asset->altText\n      }\n    }\n  }\n": CaseStudiesQueryResult;
     "\n  *[_type == \"caseStudy\" && slug.current == $slug][0] {\n    title,\n    \"slug\": slug.current,\n    client,\n    year,\n    industry,\n    deliverables,\n    creativeCollective,\n    primaryColor,\n    secondaryColor,\n    \"heroVideoPlaybackId\": heroVideo.asset->playbackId,\n    \n  body[]{\n    _type,\n    _key,\n    theme,\n    eyebrow,\n    _type == \"highlightsSection\" => {\n      statement,\n      stats[]{ _key, value, label }\n    },\n    _type == \"textSection\" => {\n      body\n    },\n    _type == \"mediaSection\" => {\n      layout,\n      text,\n      media[]{\n        _type,\n        _key,\n        _type == \"mux.video\" => {\n          \"playbackId\": asset->playbackId\n        },\n        _type == \"image\" => {\n          \"url\": asset->url,\n          \"width\": asset->metadata.dimensions.width,\n          \"height\": asset->metadata.dimensions.height,\n          \"alt\": asset->altText\n        }\n      }\n    },\n    _type == \"statsSection\" => {\n      stats[]{ _key, value, label }\n    }\n  }\n\n  }\n": CaseStudyBySlugQueryResult;
