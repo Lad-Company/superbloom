@@ -1,0 +1,64 @@
+---
+interface Props {
+  label: string;
+  class?: string;
+}
+
+const { label, class: className } = Astro.props;
+---
+
+<div class:list={['card-carousel', className]} role="region" tabindex="0" aria-label={label}>
+  <slot />
+</div>
+
+<style>
+  .card-carousel {
+    display: flex;
+    gap: var(--page-gutter);
+    overflow-x: auto;
+    padding-right: var(--space-xs);
+    scroll-snap-type: x proximity;
+  }
+
+  .card-carousel > :global(.editorial-card) {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .card-carousel > :global(.featured) {
+    width: 451px;
+  }
+
+  .card-carousel > :global(.standard) {
+    width: 335px;
+  }
+
+  @media (max-width: 959px) {
+    .card-carousel {
+      gap: 16px;
+    }
+
+    .card-carousel > :global(.featured) {
+      width: 360px;
+    }
+
+    .card-carousel > :global(.standard) {
+      width: 268px;
+    }
+  }
+
+  @media (max-width: 599px) {
+    .card-carousel {
+      gap: 12px;
+      padding-right: 12px;
+    }
+
+    .card-carousel > :global(.featured) {
+      width: 280px;
+    }
+
+    .card-carousel > :global(.standard) {
+      width: 200px;
+    }
+  }
+</style>
