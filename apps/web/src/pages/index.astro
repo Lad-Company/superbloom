@@ -2,42 +2,18 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
-import Hero from '../components/blocks/Hero.astro';
-import Capes from '../components/blocks/Capes.astro';
-import NewsCarousel from '../components/blocks/NewsCarousel.astro';
-import ContactBand from '../components/ContactBand.astro';
+import HomepageComposition from '../components/home/HomepageComposition.astro';
 import { sanityClient } from '../lib/sanity';
 import { homepageQuery } from '../lib/queries';
 import type { HomepageQueryResult } from '../sanity.types';
 
 const homepage: HomepageQueryResult = await sanityClient.fetch(homepageQuery);
 const sections = homepage?.sections ?? [];
+const navigationRole = sections[0]?._type === 'newsBlock' ? 'dark' : 'light';
 ---
 
 <Layout>
-  <Navigation role="light" />
-  {
-    sections.map((section) => {
-      if (section._type === 'heroBlock') {
-        return (
-          <Hero
-            heading={section.heading ?? ''}
-            subheading={section.subheading}
-            videoPlaybackId={section.videoPlaybackId}
-          />
-        );
-      }
-      if (section._type === 'capesBlock') {
-        return <Capes headline={section.headline} capabilities={section.capabilities ?? []} />;
-      }
-      if (section._type === 'newsBlock') {
-        return <NewsCarousel headline={section.headline} items={section.items ?? []} />;
-      }
-      if (section._type === 'contactBlock') {
-        return <ContactBand role="brand-deep" />;
-      }
-      return null;
-    })
-  }
+  <Navigation role={navigationRole} />
+  <HomepageComposition sections={sections} />
   <Footer />
 </Layout>

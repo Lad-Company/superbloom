@@ -1,7 +1,7 @@
 ---
-import Section from '../case/Section.astro';
 import CardCarousel from '../CardCarousel.astro';
 import NewsCard from '../NewsCard.astro';
+import SurfaceSection from '../SurfaceSection.astro';
 import type { HomepageQueryResult } from '../../sanity.types';
 
 type NewsBlock = Extract<
@@ -12,15 +12,16 @@ type NewsBlock = Extract<
 interface Props {
   headline?: string | null;
   items: NewsBlock['items'];
+  role: 'light';
 }
 
-const { headline, items } = Astro.props;
+const { headline, items, role } = Astro.props;
 const [featured, ...rest] = items;
 ---
 
 {
   items.length > 0 && (
-    <Section theme="light" class="news">
+    <SurfaceSection role={role} class="news">
       <div class="inner">
         {headline && <h2 class="type-h6 headline">{headline}</h2>}
         <CardCarousel label={headline ?? 'Latest news'}>
@@ -30,7 +31,7 @@ const [featured, ...rest] = items;
           ))}
         </CardCarousel>
       </div>
-    </Section>
+    </SurfaceSection>
   )
 }
 
