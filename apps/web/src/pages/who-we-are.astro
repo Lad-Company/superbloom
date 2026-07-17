@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Footer from '../components/Footer.astro';
-import ContactBlock from '../components/ContactBlock.astro';
+import ContactBand from '../components/ContactBand.astro';
 import Marquee from '../components/Marquee.astro';
 import FactCardGrid from '../components/FactCardGrid.astro';
 import TextMedia from '../components/TextMedia.astro';
@@ -104,7 +104,7 @@ const faqs = page?.faqs ?? [];
     </SurfaceSection>
   )}
 
-  <ContactBlock />
+  <ContactBand role="brand-accent" />
   <Footer />
 </Layout>
 

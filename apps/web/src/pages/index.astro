@@ -1,11 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Nav from '../components/Nav.astro';
+import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import Hero from '../components/blocks/Hero.astro';
 import Capes from '../components/blocks/Capes.astro';
 import NewsCarousel from '../components/blocks/NewsCarousel.astro';
-import ContactBlock from '../components/ContactBlock.astro';
+import ContactBand from '../components/ContactBand.astro';
 import { sanityClient } from '../lib/sanity';
 import { homepageQuery } from '../lib/queries';
 import type { HomepageQueryResult } from '../sanity.types';
@@ -15,7 +15,7 @@ const sections = homepage?.sections ?? [];
 ---
 
 <Layout>
-  <Nav state="light" />
+  <Navigation role="light" />
   {
     sections.map((section) => {
       if (section._type === 'heroBlock') {
@@ -34,7 +34,7 @@ const sections = homepage?.sections ?? [];
         return <NewsCarousel headline={section.headline} items={section.items ?? []} />;
       }
       if (section._type === 'contactBlock') {
-        return <ContactBlock />;
+        return <ContactBand role="brand-deep" />;
       }
       return null;
     })

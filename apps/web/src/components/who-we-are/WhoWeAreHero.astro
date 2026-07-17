@@ -1,5 +1,5 @@
 ---
-import Nav from '../Nav.astro';
+import Navigation from '../Navigation.astro';
 
 interface Props {
   heading: string;
@@ -9,7 +9,7 @@ const { heading } = Astro.props;
 ---
 
 <section class="who-we-are-hero">
-  <Nav state="dark" />
+  <Navigation role="dark" />
   <div class="content">
     <h1 class="type-h1">{heading}</h1>
   </div>

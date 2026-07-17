@@ -1,4 +1,6 @@
 ---
+import SurfaceSection from './SurfaceSection.astro';
+
 const nav = [
   { label: 'Our Work', href: '/work' },
   { label: 'Who We Are', href: '/who-we-are' },
@@ -9,50 +11,50 @@ const nav = [
 const social = ['Instagram', 'LinkedIn', 'Vimeo', 'YouTube'];
 ---
 
-<footer class="footer type-eyebrow">
-  <div class="newsletter">
-    <p class="type-h3 nl-heading">Subscribe to our newsletter</p>
-    <form class="nl-form" onsubmit="return false">
-      <input class="nl-input type-eyebrow" type="email" placeholder="Your email" aria-label="Email address" />
-      <button class="nl-submit type-label" type="submit">Submit</button>
-    </form>
-  </div>
-  <div class="cols">
-    <div class="col contact">
-      <a href="mailto:hello@superbloomhouse.com" class="email">hello@superbloomhouse.com</a>
-      <p>
-        <a href="https://maps.app.goo.gl/JQnEQbBXd1q9TAJu5" target="_blank" rel="noopener">
-          5768 West Adams Blvd<br />Los Angeles, CA 90016
-        </a><br />P - 310.913.5312
-      </p>
-      <p>
-        NYC<br />
-        <a href="https://goo.gl/maps/RvvdLkRkVatXafCi9" target="_blank" rel="noopener">
-          77 10th Street, Floor 3<br />Brooklyn, NY 11215
-        </a>
-      </p>
+<SurfaceSection role="dark">
+  <footer class="footer type-eyebrow">
+    <div class="newsletter">
+      <p class="type-h3 nl-heading">Subscribe to our newsletter</p>
+      <form class="nl-form" onsubmit="return false">
+        <input class="nl-input type-eyebrow" type="email" placeholder="Your email" aria-label="Email address" />
+        <button class="nl-submit type-label" type="submit">Submit</button>
+      </form>
     </div>
-    <ul class="col">
-      {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
-    </ul>
-    <ul class="col">
-      {social.map((label) => <li><a href="#">{label}</a></li>)}
-    </ul>
-    <div class="col">
-      <p>All content ©<br />Superbloomhouse 2026</p>
+    <div class="cols">
+      <div class="col contact">
+        <a href="mailto:hello@superbloomhouse.com" class="email">hello@superbloomhouse.com</a>
+        <p>
+          <a href="https://maps.app.goo.gl/JQnEQbBXd1q9TAJu5" target="_blank" rel="noopener">
+            5768 West Adams Blvd<br />Los Angeles, CA 90016
+          </a><br />P - 310.913.5312
+        </p>
+        <p>
+          NYC<br />
+          <a href="https://goo.gl/maps/RvvdLkRkVatXafCi9" target="_blank" rel="noopener">
+            77 10th Street, Floor 3<br />Brooklyn, NY 11215
+          </a>
+        </p>
+      </div>
+      <ul class="col">
+        {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+      <ul class="col">
+        {social.map((label) => <li><a href="#">{label}</a></li>)}
+      </ul>
+      <div class="col">
+        <p>All content ©<br />Superbloomhouse 2026</p>
+      </div>
     </div>
-  </div>
-</footer>
+  </footer>
+</SurfaceSection>
 
 <style>
   .footer {
-    background: var(--fg);
-    color: var(--bg);
-    padding: 0 var(--space-xs) var(--space-xs);
+    padding: var(--space-4xl) var(--space-xs) var(--space-xs);
   }
   .newsletter {
-    padding: var(--space-2xl) 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 0 0 var(--space-2xl);
+    border-bottom: 1px solid var(--fg-12);
     margin-bottom: var(--space-2xl);
   }
   .nl-heading {
@@ -66,19 +68,19 @@ const social = ['Instagram', 'LinkedIn', 'Vimeo', 'YouTube'];
     align-items: center;
   }
   .nl-input {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--fg-12);
+    border: 1px solid var(--fg-12);
     border-radius: var(--radius-m);
-    color: var(--bg);
+    color: var(--fg);
     padding: var(--space-3xs) 16px;
     min-width: 280px;
   }
   .nl-input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--fg-60);
   }
   .nl-submit {
-    background: var(--bg);
-    color: var(--fg);
+    background: var(--fg);
+    color: var(--bg);
     border: none;
     border-radius: var(--radius-s);
     padding: var(--space-3xs) 16px;
@@ -106,5 +108,36 @@ const social = ['Instagram', 'LinkedIn', 'Vimeo', 'YouTube'];
   }
   p {
     margin: 0;
+  }
+  @media (max-width: 1023px) {
+    .footer {
+      padding: var(--space-3xl) var(--space-2xs) var(--space-2xs);
+    }
+    .cols {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      row-gap: var(--space-xl);
+    }
+  }
+  @media (max-width: 767px) {
+    .footer {
+      padding: var(--space-2xl) var(--space-3xs) var(--space-3xs);
+    }
+    .newsletter {
+      padding-bottom: var(--space-xl);
+      margin-bottom: var(--space-xl);
+    }
+    .nl-form {
+      align-items: stretch;
+      flex-direction: column;
+    }
+    .nl-input {
+      min-width: 0;
+      width: 100%;
+    }
+    .cols {
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+    }
   }
 </style>

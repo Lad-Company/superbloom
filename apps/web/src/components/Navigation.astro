@@ -1,0 +1,148 @@
+---
+interface Props {
+  role?: 'light' | 'dark';
+}
+
+const { role = 'light' } = Astro.props;
+const links = [
+  { label: 'Our Work', href: '/work' },
+  { label: 'Who We Are', href: '/who-we-are' },
+  { label: 'News & Press', href: '#' },
+  { label: 'Zine', href: '#' },
+];
+---
+
+<nav class:list={['navigation', role]} aria-label="Primary navigation">
+  <a href="/" class="logo type-eyebrow">Superbloom House</a>
+  <ul class="desktop-links">
+    {
+      links.map((link) => (
+        <li>
+          <a href={link.href} class="type-eyebrow">{link.label}</a>
+        </li>
+      ))
+    }
+  </ul>
+  <div class="desktop-actions">
+    <a href="#contact" class="btn btn-secondary type-label">Let's Chat</a>
+    <a href="#" class="btn btn-tertiary type-label">Shop</a>
+  </div>
+  <details class="compact-menu">
+    <summary class="type-label">Menu</summary>
+    <div class="compact-panel">
+      <ul>
+        {
+          links.map((link) => (
+            <li>
+              <a href={link.href} class="type-label">{link.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+      <a href="#contact" class="btn btn-secondary type-label">Let's Chat</a>
+      <a href="#" class="btn btn-tertiary type-label">Shop</a>
+    </div>
+  </details>
+</nav>
+
+<style>
+  .navigation {
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--page-gutter);
+    padding: var(--space-xs);
+    width: 100%;
+  }
+  .light { color: #ffffff; }
+  .dark { color: #000000; }
+  .logo,
+  a { text-decoration: none; }
+  .logo { flex-shrink: 0; }
+  .desktop-links,
+  .desktop-actions {
+    display: flex;
+    align-items: center;
+  }
+  .desktop-links { gap: var(--space-2xs); }
+  .desktop-actions {
+    gap: var(--page-gutter);
+    flex-shrink: 0;
+  }
+  .btn {
+    padding: var(--space-3xs) 16px;
+    border-radius: var(--radius-control);
+    backdrop-filter: blur(var(--frosted-layer-blur));
+    -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
+  }
+  .light .btn-secondary {
+    background: #ffffff;
+    color: #000000;
+  }
+  .light .btn-tertiary {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+  }
+  .dark .btn-secondary {
+    background: #000000;
+    color: #ffffff;
+  }
+  .dark .btn-tertiary {
+    background: rgba(0, 0, 0, 0.2);
+    color: #000000;
+  }
+  .compact-menu { display: none; }
+
+  @media (max-width: 1023px) {
+    .navigation { padding: var(--space-2xs); }
+    .desktop-links,
+    .desktop-actions { display: none; }
+    .compact-menu {
+      display: block;
+      position: relative;
+    }
+    .compact-menu summary {
+      cursor: pointer;
+      list-style: none;
+      padding: var(--space-3xs) 16px;
+      border: 1px solid currentColor;
+      border-radius: var(--radius-control);
+    }
+    .compact-menu summary::-webkit-details-marker { display: none; }
+    .compact-panel {
+      position: absolute;
+      top: calc(100% + var(--space-3xs));
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xs);
+      min-width: 220px;
+      padding: var(--space-2xs);
+      background: var(--bg);
+      color: var(--fg);
+      border-radius: var(--radius-input);
+    }
+    .compact-panel ul {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2xs);
+    }
+    .compact-panel .btn { text-align: center; }
+    .compact-panel .btn-secondary {
+      background: var(--fg);
+      color: var(--bg);
+    }
+    .compact-panel .btn-tertiary {
+      background: var(--fg-12);
+      color: var(--fg);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .navigation { padding: var(--space-3xs); }
+    .logo { max-width: 13ch; }
+  }
+</style>
