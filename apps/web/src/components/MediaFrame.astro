@@ -1,49 +1,155 @@
 ---
-import Video from './Video.astro';
+export type MediaRatio = '1:1' | '16:9' | '4:5' | '2:1' | 'fill';
 
-export type MediaRatio = '1:1' | '16:9' | '4:5' | '2:1';
-
-export interface Media {
+export interface ProjectedAsset {
   _type: 'image' | 'mux.video';
   url?: string | null;
   width?: number | null;
   height?: number | null;
-  alt?: string | null;
   playbackId?: string | null;
 }
 
-interface Props {
-  media: Media | null;
-  ratio?: MediaRatio | null;
-  title?: string | null;
+export interface Media {
+  asset?: ProjectedAsset | null;
+  altText?: string | null;
+  decorative?: boolean | null;
 }
 
-const { media, ratio = '16:9', title } = Astro.props;
+interface Props {
+  media?: Media | null;
+  ratio?: MediaRatio | null;
+  title?: string | null;
+  priority?: boolean;
+  active?: boolean;
+  class?: string;
+}
+
+const {
+  media,
+  ratio = '16:9',
+  title,
+  priority = false,
+  active = true,
+  class: className,
+} = Astro.props;
+
 const ratioMap: Record<MediaRatio, string> = {
   '1:1': '1 / 1',
   '16:9': '16 / 9',
   '4:5': '4 / 5',
   '2:1': '2 / 1',
+  'fill': 'auto',
 };
+
+const asset = media?.asset;
+const altText = media?.altText;
+const isDecorative = media?.decorative ?? false;
+const mediaRatio = ratio ?? '16:9';
+const ratioValue = ratioMap[mediaRatio];
+const styleAttr = mediaRatio === 'fill' ? '' : `aspect-ratio: ${ratioValue};`;
+const hasAsset =
+  (asset?._type === 'image' && Boolean(asset.url)) ||
+  (asset?._type === 'mux.video' && Boolean(asset.playbackId));
 ---
 
-<div class="media-frame" style={`aspect-ratio: ${ratioMap[ratio ?? '16:9']};`}>
-  {media?._type === 'mux.video' && media.playbackId && (
-    <Video playbackId={media.playbackId} title={title ?? undefined} />
-  )}
-  {media?._type === 'image' && media.url && (
-    <img
-      src={media.url}
-      alt={media.alt ?? ''}
-      width={media.width ?? undefined}
-      height={media.height ?? undefined}
+<media-frame
+  active={active ? true : undefined}
+  class:list={['media-frame', className, { 'media-placeholder': !hasAsset }]}
+  style={styleAttr}
+>
+  {asset?._type === 'mux.video' && asset.playbackId && (
+    <mux-player
+      playback-id={asset.playbackId}
+      metadata-video-title={title ?? undefined}
+      stream-type="on-demand"
+      muted
+      loop
+      default-hidden-captions
+      preload={priority ? 'auto' : 'none'}
     />
   )}
+  {asset?._type === 'image' && asset.url && (
+    <img
+      src={asset.url}
+      alt={isDecorative ? '' : (altText ?? '')}
+      width={asset.width ?? undefined}
+      height={asset.height ?? undefined}
+      loading={priority ? 'eager' : 'lazy'}
+      fetchpriority={priority ? 'high' : 'auto'}
+    />
+  )}
+  {!hasAsset && <div class="placeholder-content"></div>}
   <slot />
-</div>
+</media-frame>
+
+<script>
+  import '@mux/mux-player';
+
+  class MediaFrameElement extends HTMLElement {
+    static observedAttributes = ['active'];
+
+    private observer: IntersectionObserver | null = null;
+    private player: HTMLVideoElement | null = null;
+    private motionPreference: MediaQueryList | null = null;
+    private isVisible = false;
+    private handleVisibilityChange = () => this.updatePlayback();
+    private handleMotionChange = () => this.updatePlayback();
+
+    connectedCallback() {
+      this.player = this.querySelector('mux-player') as HTMLVideoElement | null;
+      if (!this.player) return;
+
+      this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+      this.observer = new IntersectionObserver(
+        ([entry]) => {
+          this.isVisible = entry.isIntersecting;
+          this.updatePlayback();
+        },
+        { threshold: 0 }
+      );
+      this.observer.observe(this);
+
+      document.addEventListener('visibilitychange', this.handleVisibilityChange);
+      this.motionPreference.addEventListener('change', this.handleMotionChange);
+
+      this.updatePlayback();
+    }
+
+    attributeChangedCallback() {
+      this.updatePlayback();
+    }
+
+    disconnectedCallback() {
+      this.observer?.disconnect();
+      document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+      this.motionPreference?.removeEventListener('change', this.handleMotionChange);
+    }
+
+    private updatePlayback() {
+      if (!this.player) return;
+
+      const isActive = this.hasAttribute('active');
+      const isDocVisible = document.visibilityState === 'visible';
+      const prefersReducedMotion = this.motionPreference?.matches ?? false;
+
+      const shouldPlay = isActive && this.isVisible && isDocVisible && !prefersReducedMotion;
+
+      if (shouldPlay) {
+        this.player.play?.().catch(() => {});
+      } else {
+        this.player.pause?.();
+      }
+    }
+  }
+
+  if (!customElements.get('media-frame')) {
+    customElements.define('media-frame', MediaFrameElement);
+  }
+</script>
 
 <style>
   .media-frame {
+    display: block;
     position: relative;
     overflow: hidden;
     border-radius: var(--radius-media);
@@ -55,6 +161,19 @@ const ratioMap: Record<MediaRatio, string> = {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    --controls: none;
     --media-object-fit: cover;
+  }
+
+  .media-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .placeholder-content {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--fg-12) 0%, var(--fg-8) 100%);
   }
 </style>

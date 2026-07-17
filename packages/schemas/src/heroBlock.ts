@@ -16,9 +16,9 @@ export const heroBlock = defineType({
       rows: 2,
     }),
     defineField({
-      name: 'video',
-      title: 'Background Video',
-      type: 'mux.video',
+      name: 'heroMedia',
+      title: 'Background Media',
+      type: 'mediaBox',
     }),
   ],
   preview: {

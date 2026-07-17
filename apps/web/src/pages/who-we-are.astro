@@ -70,8 +70,8 @@ const faqs = page?.faqs ?? [];
       <TextMedia
         heading={block.heading}
         body={block.body ?? null}
-        media={block.media as any ?? null}
-        aspectRatio={(block.aspectRatio as any) ?? '1:1'}
+        media={block.media ?? null}
+        aspectRatio={block.aspectRatio ?? '1:1'}
       />
     ))}
     {advantageBlocks.length === 0 && (

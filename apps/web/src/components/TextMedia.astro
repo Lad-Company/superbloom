@@ -1,26 +1,14 @@
 ---
-import Video from './Video.astro';
-
-interface Media {
-  _type: 'image' | 'mux.video';
-  url?: string | null;
-  width?: number | null;
-  height?: number | null;
-  alt?: string | null;
-  playbackId?: string | null;
-}
+import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro';
 
 interface Props {
   heading: string | null;
   body?: string | null;
   media?: Media | null;
-  aspectRatio?: '1:1' | '16:9' | '4:5' | '2:1' | null;
+  aspectRatio?: MediaRatio | null;
 }
 
 const { heading, body, media, aspectRatio = '1:1' } = Astro.props;
-
-const ratioMap = { '1:1': '1 / 1', '16:9': '16 / 9', '4:5': '4 / 5', '2:1': '2 / 1' } as const;
-const ratio = ratioMap[aspectRatio ?? '1:1'];
 ---
 
 <div class="text-media">
@@ -29,24 +17,7 @@ const ratio = ratioMap[aspectRatio ?? '1:1'];
     {body && <p class="body type-h6">{body}</p>}
   </div>
   <div class="media-col">
-    {media && (
-      <div class="media-wrap" style={`aspect-ratio: ${ratio};`}>
-        {media._type === 'mux.video' && media.playbackId && (
-          <Video playbackId={media.playbackId} title={heading ?? undefined} />
-        )}
-        {media._type === 'image' && media.url && (
-          <img
-            src={media.url}
-            alt={media.alt ?? ''}
-            width={media.width ?? undefined}
-            height={media.height ?? undefined}
-          />
-        )}
-      </div>
-    )}
-    {!media && (
-      <div class="media-placeholder" style={`aspect-ratio: ${ratio};`} />
-    )}
+    <MediaFrame media={media} ratio={aspectRatio} title={heading ?? undefined} />
   </div>
 </div>
 
@@ -73,19 +44,9 @@ const ratio = ratioMap[aspectRatio ?? '1:1'];
     flex: 1 0 0;
     min-width: 0;
   }
-  .media-wrap,
-  .media-placeholder {
+  .media-col :global(.media-frame) {
     width: 100%;
-    overflow: hidden;
     border-radius: var(--radius-s);
-    background: var(--fg-12);
-  }
-  .media-wrap img,
-  .media-wrap :global(mux-player) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    --media-object-fit: cover;
   }
   @media (max-width: 768px) {
     .text-media {

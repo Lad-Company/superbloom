@@ -25,9 +25,7 @@ export const news = defineType({
     }),
     defineField({
       name: 'media',
-      type: 'array',
-      of: [{type: 'mux.video'}, {type: 'image'}],
-      validation: (rule) => rule.max(1),
+      type: 'mediaBox',
     }),
     defineField({
       name: 'aspectRatio',

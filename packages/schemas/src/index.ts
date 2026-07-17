@@ -14,6 +14,7 @@ import {mediaSection} from './mediaSection'
 import {statsSection} from './statsSection'
 import {formSubmission} from './formSubmission'
 import {contactBlock} from './contactBlock'
+import {mediaBox} from './mediaBox'
 
 export const schemaTypes = [
   capability,
@@ -32,4 +33,5 @@ export const schemaTypes = [
   statsSection,
   formSubmission,
   contactBlock,
+  mediaBox,
 ]

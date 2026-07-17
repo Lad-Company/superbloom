@@ -1,5 +1,22 @@
 import { defineQuery } from 'groq';
 
+const mediaProjection = `{
+  "asset": asset[0]{
+    _type,
+    _type == "image" => {
+      "url": asset->url,
+      "width": asset->metadata.dimensions.width,
+      "height": asset->metadata.dimensions.height,
+      "altText": asset->altText
+    },
+    _type == "mux.video" => {
+      "playbackId": asset->playbackId
+    }
+  },
+  altText,
+  decorative
+}`;
+
 export const homepageQuery = defineQuery(`
   *[_type == "homepage"][0]{
     sections[]{
@@ -7,14 +24,14 @@ export const homepageQuery = defineQuery(`
       _type == "heroBlock" => {
         heading,
         subheading,
-        "videoPlaybackId": video.asset->playbackId
+        "heroMedia": heroMedia${mediaProjection}
       },
       _type == "capesBlock" => {
         headline,
         capabilities[]->{
           title,
           "slug": slug.current,
-          "videoPlaybackId": video.asset->playbackId
+          "media": media${mediaProjection}
         }
       },
       _type == "newsBlock" => {
@@ -25,18 +42,7 @@ export const homepageQuery = defineQuery(`
           summary,
           aspectRatio,
           tags[]->{ title, color },
-          "media": media[0]{
-            _type,
-            _type == "mux.video" => {
-              "playbackId": asset->playbackId
-            },
-            _type == "image" => {
-              "url": asset->url,
-              "width": asset->metadata.dimensions.width,
-              "height": asset->metadata.dimensions.height,
-              "alt": asset->altText
-            }
-          }
+          "media": media${mediaProjection}
         }
       },
       _type == "contactBlock" => {
@@ -51,16 +57,7 @@ export const whoWeAreQuery = defineQuery(`
     heroHeading,
     featuredMedia{
       aspectRatio,
-      "media": media[0]{
-        _type,
-        _type == "mux.video" => { "playbackId": asset->playbackId },
-        _type == "image" => {
-          "url": asset->url,
-          "width": asset->metadata.dimensions.width,
-          "height": asset->metadata.dimensions.height,
-          "alt": asset->altText
-        }
-      }
+      "media": media${mediaProjection}
     },
     marquee{ text },
     introStatement,
@@ -77,16 +74,7 @@ export const whoWeAreQuery = defineQuery(`
       heading,
       body,
       aspectRatio,
-      "media": media[0]{
-        _type,
-        _type == "mux.video" => { "playbackId": asset->playbackId },
-        _type == "image" => {
-          "url": asset->url,
-          "width": asset->metadata.dimensions.width,
-          "height": asset->metadata.dimensions.height,
-          "alt": asset->altText
-        }
-      }
+      "media": media${mediaProjection}
     },
     disciplines[]{
       _key,
@@ -98,16 +86,7 @@ export const whoWeAreQuery = defineQuery(`
       heading,
       label,
       href,
-      "media": media[0]{
-        _type,
-        _type == "mux.video" => { "playbackId": asset->playbackId },
-        _type == "image" => {
-          "url": asset->url,
-          "width": asset->metadata.dimensions.width,
-          "height": asset->metadata.dimensions.height,
-          "alt": asset->altText
-        }
-      }
+      "media": media${mediaProjection}
     },
     faqs[]{
       _key,
@@ -132,18 +111,7 @@ export const caseStudiesQuery = defineQuery(`
     cardSize,
     cardAspectRatio,
     tags[]->{ title, color },
-    "media": cardMedia[0]{
-      _type,
-      _type == "mux.video" => {
-        "playbackId": asset->playbackId
-      },
-      _type == "image" => {
-        "url": asset->url,
-        "width": asset->metadata.dimensions.width,
-        "height": asset->metadata.dimensions.height,
-        "alt": asset->altText
-      }
-    }
+    "media": cardMedia${mediaProjection}
   }
 `);
 
@@ -166,15 +134,7 @@ const narrativeBodyProjection = `
       media[]{
         _type,
         _key,
-        _type == "mux.video" => {
-          "playbackId": asset->playbackId
-        },
-        _type == "image" => {
-          "url": asset->url,
-          "width": asset->metadata.dimensions.width,
-          "height": asset->metadata.dimensions.height,
-          "alt": asset->altText
-        }
+        _type == "mediaBox" => ${mediaProjection}
       }
     },
     _type == "statsSection" => {
@@ -194,7 +154,7 @@ export const caseStudyBySlugQuery = defineQuery(`
     creativeCollective,
     primaryColor,
     secondaryColor,
-    "heroVideoPlaybackId": heroVideo.asset->playbackId,
+    "heroMedia": heroMedia${mediaProjection},
     ${narrativeBodyProjection}
   }
 `);
@@ -208,18 +168,7 @@ export const newsBySlugQuery = defineQuery(`
     aspectRatio,
     tags[]->{ title, color },
     externalLinks[]{ _key, outlet, url },
-    "media": media[0]{
-      _type,
-      _type == "mux.video" => {
-        "playbackId": asset->playbackId
-      },
-      _type == "image" => {
-        "url": asset->url,
-        "width": asset->metadata.dimensions.width,
-        "height": asset->metadata.dimensions.height,
-        "alt": asset->altText
-      }
-    },
+    "media": media${mediaProjection},
     ${narrativeBodyProjection}
   }
 `);

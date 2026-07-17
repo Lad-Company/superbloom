@@ -18,9 +18,7 @@ export const whoWeAre = defineType({
       fields: [
         defineField({
           name: 'media',
-          type: 'array',
-          of: [{type: 'mux.video'}, {type: 'image'}],
-          validation: (rule) => rule.max(1),
+          type: 'mediaBox',
         }),
         defineField({
           name: 'aspectRatio',
@@ -96,9 +94,7 @@ export const whoWeAre = defineType({
             defineField({name: 'body', type: 'text', rows: 3}),
             defineField({
               name: 'media',
-              type: 'array',
-              of: [{type: 'mux.video'}, {type: 'image'}],
-              validation: (rule) => rule.max(1),
+              type: 'mediaBox',
             }),
             defineField({
               name: 'aspectRatio',
@@ -144,9 +140,7 @@ export const whoWeAre = defineType({
             defineField({name: 'href', type: 'string', initialValue: '#'}),
             defineField({
               name: 'media',
-              type: 'array',
-              of: [{type: 'mux.video'}, {type: 'image'}],
-              validation: (rule) => rule.max(1),
+              type: 'mediaBox',
             }),
           ],
           preview: {select: {title: 'heading'}},

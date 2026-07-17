@@ -1,5 +1,5 @@
 ---
-import MediaFrame, { type Media, type MediaRatio } from '../MediaFrame.astro';
+import MediaFrame from '../MediaFrame.astro';
 import BodyBlockRenderer from '../narrative/BodyBlockRenderer.astro';
 import type { NewsBySlugQueryResult } from '../../sanity.types';
 
@@ -34,7 +34,7 @@ const published = item.publishedAt
 
   {item.media && (
     <div class="lead-media">
-      <MediaFrame media={item.media as Media} ratio={item.aspectRatio as MediaRatio} title={item.title} />
+      <MediaFrame media={item.media} ratio={item.aspectRatio} title={item.title} priority />
     </div>
   )}
 

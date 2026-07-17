@@ -1,8 +1,10 @@
 ---
+import MediaFrame, {type Media} from '../MediaFrame.astro';
+
 interface Capability {
   title: string | null;
   slug: string | null;
-  videoPlaybackId?: string | null;
+  media?: Media | null;
 }
 
 interface Props {
@@ -18,36 +20,28 @@ const { headline, capabilities } = Astro.props;
     <div class="media-stack">
       {
         capabilities.map((cap, i) => (
-          <div class:list={['media', { 'is-active': i === 0 }]} data-media data-index={i}>
-            {cap.videoPlaybackId ? (
-              <mux-player
-                playback-id={cap.videoPlaybackId}
-                stream-type="on-demand"
-                muted
-                loop
-                playsinline
-                nohotkeys
-                preload="auto"
-              />
-            ) : (
-              <div class="media-placeholder" />
-            )}
-          </div>
+          <MediaFrame
+            media={cap.media}
+            ratio="fill"
+            active={i === 0}
+            class={`media-frame-item${i === 0 ? ' is-active' : ''}`}
+          >
+            <div class="scrim"></div>
+            <div class="overlay">
+              {headline && <p class="headline type-h6">{headline}</p>}
+              <ol class="list">
+                {
+                  capabilities.map((c, idx) => (
+                    <li class:list={['type-h3', { 'is-active': idx === i }]} data-cap data-index={idx}>
+                      {c.title}
+                    </li>
+                  ))
+                }
+              </ol>
+            </div>
+          </MediaFrame>
         ))
       }
-    </div>
-    <div class="scrim"></div>
-    <div class="overlay">
-      {headline && <p class="headline type-h6">{headline}</p>}
-      <ol class="list">
-        {
-          capabilities.map((cap, i) => (
-            <li class:list={['type-h3', { 'is-active': i === 0 }]} data-cap data-index={i}>
-              {cap.title}
-            </li>
-          ))
-        }
-      </ol>
     </div>
   </div>
 </section>
@@ -58,40 +52,36 @@ const { headline, capabilities } = Astro.props;
     background: var(--bg);
     color: var(--bg);
   }
+
   .pin {
     position: relative;
     height: 100vh;
     overflow: clip;
   }
+
   .media-stack {
     position: absolute;
     inset: 0;
   }
-  .media {
+
+  .media-frame-item {
     position: absolute;
     inset: 0;
     opacity: 0;
     transition: opacity 0.5s ease;
   }
-  .media.is-active {
+
+  .media-frame-item.is-active {
     opacity: 1;
   }
-  .media :global(mux-player) {
-    width: 100%;
-    height: 100%;
-    --controls: none;
-    --media-object-fit: cover;
-  }
-  .media-placeholder {
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.1);
-  }
+
   .scrim {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.25);
+    pointer-events: none;
   }
+
   .overlay {
     position: absolute;
     inset: 0;
@@ -100,20 +90,25 @@ const { headline, capabilities } = Astro.props;
     gap: var(--page-gutter);
     align-items: start;
     padding: var(--space-4xl) var(--space-xs) 0;
+    pointer-events: none;
   }
+
   .headline {
     margin: 0;
     max-width: 24ch;
   }
+
   .list {
     display: flex;
     flex-direction: column;
     gap: 16px;
   }
+
   .list li {
     color: var(--bg-60);
     transition: color 0.4s ease;
   }
+
   .list li.is-active {
     color: var(--bg);
   }
@@ -122,37 +117,27 @@ const { headline, capabilities } = Astro.props;
 <script>
   import gsap from 'gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  import '@mux/mux-player';
 
   gsap.registerPlugin(ScrollTrigger);
 
   const sections = document.querySelectorAll<HTMLElement>('[data-capes]');
 
   sections.forEach((section) => {
-    const items = section.querySelectorAll<HTMLElement>('[data-cap]');
-    const medias = section.querySelectorAll<HTMLElement>('[data-media]');
+    const frames = section.querySelectorAll<HTMLElement>('media-frame');
     const pin = section.querySelector<HTMLElement>('[data-pin]');
-    const count = items.length;
+    const count = frames.length;
     if (!count || !pin) return;
 
     const setActive = (i: number) => {
-      items.forEach((el, idx) => el.classList.toggle('is-active', idx === i));
-      medias.forEach((el, idx) => {
-        const active = idx === i;
-        el.classList.toggle('is-active', active);
-        const player = el.querySelector('mux-player') as HTMLVideoElement | null;
-        if (!player) return;
-        if (active) {
-          void player.play?.()?.catch(() => {});
-        } else {
-          player.pause?.();
-        }
+      frames.forEach((frame, idx) => {
+        const isActive = idx === i;
+        frame.toggleAttribute('active', isActive);
+        frame.classList.toggle('is-active', isActive);
       });
     };
 
     const mm = gsap.matchMedia();
 
-    // Animated path: pin the visual and step the active capability as you scroll.
     mm.add('(prefers-reduced-motion: no-preference)', () => {
       const st = ScrollTrigger.create({
         trigger: section,
@@ -168,7 +153,6 @@ const { headline, capabilities } = Astro.props;
       return () => st.kill();
     });
 
-    // Reduced motion: no pin/scrub; first capability stays active (static).
     setActive(0);
   });
 </script>

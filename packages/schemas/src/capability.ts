@@ -23,9 +23,9 @@ export const capability = defineType({
       rows: 2,
     }),
     defineField({
-      name: 'video',
-      title: 'Video',
-      type: 'mux.video',
+      name: 'media',
+      title: 'Media',
+      type: 'mediaBox',
     }),
   ],
 })

@@ -107,7 +107,7 @@ The only approved use of PP Neue Corp Condensed and Wide. These faces alternate 
 _Avoid_: Alternate display system, marquee font
 
 **Media Frame**:
-The reusable visual container for image or video media. It establishes aspect ratio, crop, media overlays, and media controls, without knowing the content type or destination of its parent.
+The reusable visual container for image or video media. It establishes sizing, crop, media overlays, loading priority, and visibility-aware playback without knowing the content type or destination of its parent. Hidden video is always paused, including inactive media, offscreen media, and media in a background browser tab.
 _Avoid_: Card media, thumbnail component, image card
 
 **Editorial Card**:

@@ -24,7 +24,7 @@ export const mediaSection = defineType({
     defineField({
       name: 'media',
       type: 'array',
-      of: [{type: 'mux.video'}, {type: 'image'}],
+      of: [{type: 'mediaBox'}],
       validation: (rule) =>
         rule.required().custom((media, context) => {
           const requiredCount = context.parent?.layout === 'pairedSquare' ? 2 : 1

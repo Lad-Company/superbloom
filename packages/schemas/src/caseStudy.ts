@@ -32,9 +32,7 @@ export const caseStudy = defineType({
     defineField({
       name: 'cardMedia',
       title: 'Card Media',
-      type: 'array',
-      of: [{type: 'mux.video'}, {type: 'image'}],
-      validation: (rule) => rule.max(1),
+      type: 'mediaBox',
     }),
     defineField({
       name: 'cardAspectRatio',
@@ -57,7 +55,7 @@ export const caseStudy = defineType({
       options: {list: ['full', 'half'], layout: 'radio'},
       initialValue: 'half',
     }),
-    defineField({name: 'heroVideo', title: 'Hero Video', type: 'mux.video'}),
+    defineField({name: 'heroMedia', title: 'Hero Media', type: 'mediaBox'}),
     defineField({name: 'year', type: 'string', title: 'Year'}),
     defineField({name: 'industry', type: 'string', title: 'Industry'}),
     defineField({name: 'deliverables', type: 'text', rows: 2, title: 'Deliverables'}),

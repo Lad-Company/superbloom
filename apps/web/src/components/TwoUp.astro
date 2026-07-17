@@ -1,15 +1,6 @@
 ---
-import Video from './Video.astro';
+import MediaFrame, {type Media} from './MediaFrame.astro';
 import Button from './Button.astro';
-
-interface Media {
-  _type: 'image' | 'mux.video';
-  url?: string | null;
-  width?: number | null;
-  height?: number | null;
-  alt?: string | null;
-  playbackId?: string | null;
-}
 
 interface Cta {
   _key?: string;
@@ -29,20 +20,7 @@ const { items } = Astro.props;
 <div class="two-up">
   {items.map((item) => (
     <div class="col">
-      <div class="media-wrap">
-        {item.media?._type === 'mux.video' && item.media.playbackId && (
-          <Video playbackId={item.media.playbackId} title={item.heading ?? undefined} />
-        )}
-        {item.media?._type === 'image' && item.media.url && (
-          <img
-            src={item.media.url}
-            alt={item.media.alt ?? ''}
-            width={item.media.width ?? undefined}
-            height={item.media.height ?? undefined}
-          />
-        )}
-        {!item.media && <div class="media-placeholder" />}
-      </div>
+      <MediaFrame media={item.media} ratio="1:1" title={item.heading ?? undefined} />
       {item.heading && <p class="heading type-h5">{item.heading}</p>}
       {item.label && (
         <Button href={item.href ?? '#'} label={item.label} />
@@ -65,20 +43,8 @@ const { items } = Astro.props;
     flex-direction: column;
     gap: 24px;
   }
-  .media-wrap,
-  .media-placeholder {
-    aspect-ratio: 1 / 1;
-    width: 100%;
-    overflow: hidden;
+  .col :global(.media-frame) {
     border-radius: var(--radius-s);
-    background: var(--fg-12);
-  }
-  .media-wrap img,
-  .media-wrap :global(mux-player) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    --media-object-fit: cover;
   }
   .heading {
     margin: 0;

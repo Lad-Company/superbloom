@@ -1,28 +1,23 @@
 ---
-import Video from '../Video.astro';
+import MediaFrame, {type Media} from '../MediaFrame.astro';
 
 interface Props {
   heading: string;
   subheading?: string | null;
-  videoPlaybackId?: string | null;
+  heroMedia?: Media | null;
 }
 
-const { heading, subheading, videoPlaybackId } = Astro.props;
+const { heading, subheading, heroMedia } = Astro.props;
 ---
 
 <section class="hero">
-  {
-    videoPlaybackId && (
-      <div class="bg">
-        <Video playbackId={videoPlaybackId} title={heading} />
-      </div>
-    )
-  }
-  <div class="scrim"></div>
-  <div class="overlay">
-    <h1 class="type-h1">{heading}</h1>
-    {subheading && <p class="type-caption sub">{subheading}</p>}
-  </div>
+  <MediaFrame media={heroMedia} ratio="fill" title={heading} priority>
+    <div class="scrim"></div>
+    <div class="overlay">
+      <h1 class="type-h1">{heading}</h1>
+      {subheading && <p class="type-caption sub">{subheading}</p>}
+    </div>
+  </MediaFrame>
 </section>
 
 <style>
@@ -32,21 +27,20 @@ const { heading, subheading, videoPlaybackId } = Astro.props;
     overflow: clip;
     color: var(--bg);
   }
-  .bg {
+
+  .hero :global(media-frame) {
     position: absolute;
     inset: 0;
+    border-radius: 0;
   }
-  .bg :global(mux-player) {
-    width: 100%;
-    height: 100%;
-    --controls: none;
-    --media-object-fit: cover;
-  }
+
   .scrim {
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.35));
+    pointer-events: none;
   }
+
   .overlay {
     position: absolute;
     inset: auto 0 0 0;
@@ -55,12 +49,15 @@ const { heading, subheading, videoPlaybackId } = Astro.props;
     gap: var(--page-gutter);
     align-items: end;
     padding: 80px var(--space-xs);
+    pointer-events: none;
   }
+
   .overlay h1 {
     grid-column: 1 / 3;
     margin: 0;
     max-width: 15ch;
   }
+
   .sub {
     grid-column: 3;
     margin: 0;
