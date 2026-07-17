@@ -149,6 +149,42 @@ export const caseStudiesQuery = defineQuery(`
   }
 `);
 
+const narrativeBodyProjection = `
+  body[]{
+    _type,
+    _key,
+    theme,
+    eyebrow,
+    _type == "highlightsSection" => {
+      statement,
+      stats[]{ _key, value, label }
+    },
+    _type == "textSection" => {
+      body
+    },
+    _type == "mediaSection" => {
+      layout,
+      text,
+      media[]{
+        _type,
+        _key,
+        _type == "mux.video" => {
+          "playbackId": asset->playbackId
+        },
+        _type == "image" => {
+          "url": asset->url,
+          "width": asset->metadata.dimensions.width,
+          "height": asset->metadata.dimensions.height,
+          "alt": asset->altText
+        }
+      }
+    },
+    _type == "statsSection" => {
+      stats[]{ _key, value, label }
+    }
+  }
+`;
+
 export const caseStudyBySlugQuery = defineQuery(`
   *[_type == "caseStudy" && slug.current == $slug][0] {
     title,
@@ -161,39 +197,7 @@ export const caseStudyBySlugQuery = defineQuery(`
     primaryColor,
     secondaryColor,
     "heroVideoPlaybackId": heroVideo.asset->playbackId,
-    body[]{
-      _type,
-      _key,
-      theme,
-      eyebrow,
-      _type == "highlightsSection" => {
-        statement,
-        stats[]{ _key, value, label }
-      },
-      _type == "textSection" => {
-        body
-      },
-      _type == "mediaSection" => {
-        layout,
-        text,
-        media[]{
-          _type,
-          _key,
-          _type == "mux.video" => {
-            "playbackId": asset->playbackId
-          },
-          _type == "image" => {
-            "url": asset->url,
-            "width": asset->metadata.dimensions.width,
-            "height": asset->metadata.dimensions.height,
-            "alt": asset->altText
-          }
-        }
-      },
-      _type == "statsSection" => {
-        stats[]{ _key, value, label }
-      }
-    }
+    ${narrativeBodyProjection}
   }
 `);
 
@@ -218,38 +222,6 @@ export const newsBySlugQuery = defineQuery(`
         "alt": asset->altText
       }
     },
-    body[]{
-      _type,
-      _key,
-      theme,
-      eyebrow,
-      _type == "highlightsSection" => {
-        statement,
-        stats[]{ _key, value, label }
-      },
-      _type == "textSection" => {
-        body
-      },
-      _type == "mediaSection" => {
-        layout,
-        text,
-        media[]{
-          _type,
-          _key,
-          _type == "mux.video" => {
-            "playbackId": asset->playbackId
-          },
-          _type == "image" => {
-            "url": asset->url,
-            "width": asset->metadata.dimensions.width,
-            "height": asset->metadata.dimensions.height,
-            "alt": asset->altText
-          }
-        }
-      },
-      _type == "statsSection" => {
-        stats[]{ _key, value, label }
-      }
-    }
+    ${narrativeBodyProjection}
   }
 `);

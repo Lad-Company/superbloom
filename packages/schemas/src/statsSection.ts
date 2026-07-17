@@ -2,7 +2,7 @@ import {defineField, defineType} from 'sanity'
 
 export const statsSection = defineType({
   name: 'statsSection',
-  title: 'Stats (Outcomes)',
+  title: 'Outcomes',
   type: 'object',
   fields: [
     defineField({
@@ -29,6 +29,6 @@ export const statsSection = defineType({
   ],
   preview: {
     select: {title: 'eyebrow'},
-    prepare: ({title}) => ({title: title || 'Stats', subtitle: 'Stats Section'}),
+    prepare: ({title}) => ({title: title || 'Outcomes', subtitle: 'Case Study Outcomes'}),
   },
 })

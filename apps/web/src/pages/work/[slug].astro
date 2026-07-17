@@ -4,11 +4,10 @@ import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
 import Video from '../../components/Video.astro';
 import SurfaceSection from '../../components/SurfaceSection.astro';
-import CaseBodyBlock from '../../components/case/CaseBodyBlock.astro';
+import CaseStudyNarrative from '../../components/case/CaseStudyNarrative.astro';
 import { sanityClient } from '../../lib/sanity';
 import { caseStudyBySlugQuery } from '../../lib/queries';
 import { fgForHex } from '../../lib/luminance';
-import { blockId } from '../../lib/blockId';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
 
 const { slug } = Astro.params;
@@ -24,13 +23,6 @@ const primaryFg = fgForHex(primaryColor);
 const secondaryFg = fgForHex(secondaryColor);
 const heroLuminanceHigh = primaryFg === '#000000';
 const navState = heroLuminanceHigh ? 'dark' : 'light';
-
-const sectionNavItems = [
-  ...(cs.body ?? [])
-    .filter((b) => b.eyebrow)
-    .map((b) => ({ label: b.eyebrow!, id: blockId(b.eyebrow!) })),
-  { label: 'Press', id: 'press' },
-];
 
 const brandVars = [
   `--case-primary-bg: ${primaryColor}`,
@@ -81,23 +73,7 @@ const brandVars = [
       </div>
     )}
 
-    <nav class="section-nav type-eyebrow" data-section-nav>
-      <ul class="section-nav-list">
-        {sectionNavItems.map((item, i) => (
-          <li>
-            <a
-              href={`#${item.id}`}
-              class:list={['section-nav-link', { 'is-active': i === 0 }]}
-              data-nav-item
-            >
-              {item.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-
-    {(cs.body ?? []).map((block) => <CaseBodyBlock block={block} />)}
+    <CaseStudyNarrative body={cs.body} />
 
     <SurfaceSection id="press">
       <div class="stub-section">
@@ -177,31 +153,6 @@ const brandVars = [
     height: 100%;
     --controls: none;
     --media-object-fit: cover;
-  }
-
-  .section-nav {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: var(--bg);
-    border-bottom: 1px solid var(--fg-12);
-  }
-  .section-nav-list {
-    display: flex;
-    gap: 0;
-    padding: 0 var(--space-xs);
-  }
-  .section-nav-link {
-    display: block;
-    padding: var(--space-3xs) var(--space-2xs);
-    text-decoration: none;
-    color: var(--fg-60);
-    border-bottom: 2px solid transparent;
-  }
-  .section-nav-link.is-active,
-  .section-nav-link:hover {
-    color: var(--fg);
-    border-bottom-color: var(--fg);
   }
 
   .stub-section {

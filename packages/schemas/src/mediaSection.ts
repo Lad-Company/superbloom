@@ -25,6 +25,13 @@ export const mediaSection = defineType({
       name: 'media',
       type: 'array',
       of: [{type: 'mux.video'}, {type: 'image'}],
+      validation: (rule) =>
+        rule.required().custom((media, context) => {
+          const requiredCount = context.parent?.layout === 'pairedSquare' ? 2 : 1
+
+          return media?.length === requiredCount ||
+            `The ${context.parent?.layout ?? 'fullBleed16x9'} layout requires exactly ${requiredCount} media item${requiredCount === 1 ? '' : 's'}.`
+        }),
     }),
     defineField({
       name: 'text',

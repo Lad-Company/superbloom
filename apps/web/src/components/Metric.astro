@@ -1,0 +1,11 @@
+---
+interface Props {
+  value?: string | null;
+  label?: string | null;
+}
+
+const { value, label } = Astro.props;
+---
+
+{value && <span class="value type-h3">{value}</span>}
+{label && <span class="label type-eyebrow">{label}</span>}

@@ -1,4 +1,6 @@
 ---
+import Metric from '../Metric.astro';
+
 interface Stat {
   _key: string;
   value: string | null;
@@ -13,14 +15,13 @@ interface Props {
 const { eyebrow, stats } = Astro.props;
 ---
 
-<div class="stats-section">
+<div class="outcomes">
   {eyebrow && <p class="type-eyebrow eyebrow">{eyebrow}</p>}
   {stats && stats.length > 0 && (
     <ul class="grid">
-      {stats.map((s) => (
+      {stats.map((stat) => (
         <li class="item">
-          {s.value && <span class="val type-h3">{s.value}</span>}
-          {s.label && <span class="lbl type-eyebrow">{s.label}</span>}
+          <Metric value={stat.value} label={stat.label} />
         </li>
       ))}
     </ul>
@@ -28,7 +29,7 @@ const { eyebrow, stats } = Astro.props;
 </div>
 
 <style>
-  .stats-section {
+  .outcomes {
     padding: var(--space-2xl) var(--space-xs);
   }
   .eyebrow {
@@ -47,10 +48,10 @@ const { eyebrow, stats } = Astro.props;
     padding-top: var(--space-xs);
     border-top: 1px solid var(--fg-12);
   }
-  .val {
+  .item :global(.value) {
     display: block;
   }
-  .lbl {
+  .item :global(.label) {
     display: block;
     opacity: 0.7;
   }
