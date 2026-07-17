@@ -34,7 +34,7 @@ export type FormSubmission = {
 
 export type StatsSection = {
   _type: "statsSection";
-  theme?: "light" | "dark" | "primary" | "secondary";
+  theme?: "light" | "dark" | "case-primary" | "case-secondary";
   eyebrow?: string;
   stats?: Array<{
     value?: string;
@@ -46,7 +46,7 @@ export type StatsSection = {
 
 export type MediaSection = {
   _type: "mediaSection";
-  theme?: "light" | "dark" | "primary" | "secondary";
+  theme?: "light" | "dark" | "case-primary" | "case-secondary";
   eyebrow?: string;
   layout?: "fullBleed16x9" | "pairedSquare" | "textAndMedia";
   media?: Array<{
@@ -86,7 +86,7 @@ export type MediaSection = {
 
 export type TextSection = {
   _type: "textSection";
-  theme?: "light" | "dark" | "primary" | "secondary";
+  theme?: "light" | "dark" | "case-primary" | "case-secondary";
   eyebrow?: string;
   body?: Array<{
     children?: Array<{
@@ -110,7 +110,7 @@ export type TextSection = {
 
 export type HighlightsSection = {
   _type: "highlightsSection";
-  theme?: "light" | "dark" | "primary" | "secondary";
+  theme?: "light" | "dark" | "case-primary" | "case-secondary";
   eyebrow?: string;
   statement?: Array<{
     children?: Array<{
@@ -800,7 +800,7 @@ export type CaseStudyBySlugQueryResult = {
   body: Array<{
     _type: "highlightsSection";
     _key: string;
-    theme: "dark" | "light" | "primary" | "secondary" | null;
+    theme: "case-primary" | "case-secondary" | "dark" | "light" | null;
     eyebrow: string | null;
     statement: Array<{
       children?: Array<{
@@ -828,7 +828,7 @@ export type CaseStudyBySlugQueryResult = {
   } | {
     _type: "mediaSection";
     _key: string;
-    theme: "dark" | "light" | "primary" | "secondary" | null;
+    theme: "case-primary" | "case-secondary" | "dark" | "light" | null;
     eyebrow: string | null;
     layout: "fullBleed16x9" | "pairedSquare" | "textAndMedia" | null;
     text: Array<{
@@ -864,7 +864,7 @@ export type CaseStudyBySlugQueryResult = {
   } | {
     _type: "statsSection";
     _key: string;
-    theme: "dark" | "light" | "primary" | "secondary" | null;
+    theme: "case-primary" | "case-secondary" | "dark" | "light" | null;
     eyebrow: string | null;
     stats: Array<{
       _key: string;
@@ -874,7 +874,7 @@ export type CaseStudyBySlugQueryResult = {
   } | {
     _type: "textSection";
     _key: string;
-    theme: "dark" | "light" | "primary" | "secondary" | null;
+    theme: "case-primary" | "case-secondary" | "dark" | "light" | null;
     eyebrow: string | null;
     body: Array<{
       children?: Array<{
@@ -926,7 +926,7 @@ export type NewsBySlugQueryResult = {
   body: Array<{
     _type: "highlightsSection";
     _key: string;
-    theme: "dark" | "light" | "primary" | "secondary" | null;
+    theme: "case-primary" | "case-secondary" | "dark" | "light" | null;
     eyebrow: string | null;
     statement: Array<{
       children?: Array<{
@@ -954,7 +954,7 @@ export type NewsBySlugQueryResult = {
   } | {
     _type: "mediaSection";
     _key: string;
-    theme: "dark" | "light" | "primary" | "secondary" | null;
+    theme: "case-primary" | "case-secondary" | "dark" | "light" | null;
     eyebrow: string | null;
     layout: "fullBleed16x9" | "pairedSquare" | "textAndMedia" | null;
     text: Array<{
@@ -990,7 +990,7 @@ export type NewsBySlugQueryResult = {
   } | {
     _type: "statsSection";
     _key: string;
-    theme: "dark" | "light" | "primary" | "secondary" | null;
+    theme: "case-primary" | "case-secondary" | "dark" | "light" | null;
     eyebrow: string | null;
     stats: Array<{
       _key: string;
@@ -1000,7 +1000,7 @@ export type NewsBySlugQueryResult = {
   } | {
     _type: "textSection";
     _key: string;
-    theme: "dark" | "light" | "primary" | "secondary" | null;
+    theme: "case-primary" | "case-secondary" | "dark" | "light" | null;
     eyebrow: string | null;
     body: Array<{
       children?: Array<{

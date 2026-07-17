@@ -1,0 +1,33 @@
+---
+export const caseStudySurfaceRoles = ['light', 'dark', 'case-primary', 'case-secondary'] as const;
+
+export type CaseStudySurfaceRole = (typeof caseStudySurfaceRoles)[number];
+
+interface Props {
+  role?: CaseStudySurfaceRole;
+  id?: string;
+  class?: string;
+}
+
+const { role = 'light', id, class: className } = Astro.props;
+
+const vars: Record<CaseStudySurfaceRole, string> = {
+  light: '--bg: #ffffff; --fg: #000000;',
+  dark: '--bg: #000000; --fg: #ffffff;',
+  'case-primary': '--bg: var(--case-primary-bg); --fg: var(--case-primary-fg);',
+  'case-secondary': '--bg: var(--case-secondary-bg); --fg: var(--case-secondary-fg);',
+};
+---
+
+<section id={id} style={vars[role]} class:list={['surface-section', className]}>
+  <slot />
+</section>
+
+<style>
+  .surface-section {
+    --fg-12: color-mix(in srgb, var(--fg) 12%, transparent);
+    --fg-60: color-mix(in srgb, var(--fg) 60%, transparent);
+    background: var(--bg);
+    color: var(--fg);
+  }
+</style>

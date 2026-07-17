@@ -8,7 +8,7 @@ export const mediaSection = defineType({
     defineField({
       name: 'theme',
       type: 'string',
-      options: {list: ['light', 'dark', 'primary', 'secondary'], layout: 'radio'},
+      options: {list: ['light', 'dark', 'case-primary', 'case-secondary'], layout: 'radio'},
       initialValue: 'light',
     }),
     defineField({name: 'eyebrow', type: 'string'}),

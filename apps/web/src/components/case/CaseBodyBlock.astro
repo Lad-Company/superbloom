@@ -1,5 +1,5 @@
 ---
-import Section from './Section.astro';
+import SurfaceSection from '../SurfaceSection.astro';
 import HighlightsSection from './HighlightsSection.astro';
 import TextSection from './TextSection.astro';
 import MediaSection from './MediaSection.astro';
@@ -16,37 +16,37 @@ interface Props {
 const { block } = Astro.props;
 
 const id = block.eyebrow ? blockId(block.eyebrow) : undefined;
-const theme = block.theme ?? 'light';
+const role = block.theme ?? 'light';
 ---
 
 {block._type === 'highlightsSection' && (
-  <Section theme={theme} id={id} data-section>
+  <SurfaceSection role={role} id={id}>
     <HighlightsSection
       eyebrow={block.eyebrow}
       statement={block.statement ?? undefined}
       stats={block.stats ?? undefined}
     />
-  </Section>
+  </SurfaceSection>
 )}
 
 {block._type === 'textSection' && (
-  <Section theme={theme} id={id} data-section>
+  <SurfaceSection role={role} id={id}>
     <TextSection eyebrow={block.eyebrow} body={block.body ?? undefined} />
-  </Section>
+  </SurfaceSection>
 )}
 
 {block._type === 'mediaSection' && (
-  <Section theme={theme} id={id} data-section>
+  <SurfaceSection role={role} id={id}>
     <MediaSection
       layout={block.layout}
       media={block.media as any}
       text={block.text ?? undefined}
     />
-  </Section>
+  </SurfaceSection>
 )}
 
 {block._type === 'statsSection' && (
-  <Section theme={theme} id={id} data-section>
+  <SurfaceSection role={role} id={id}>
     <StatsSection eyebrow={block.eyebrow} stats={block.stats ?? undefined} />
-  </Section>
+  </SurfaceSection>
 )}

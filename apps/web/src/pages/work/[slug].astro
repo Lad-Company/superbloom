@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
 import Video from '../../components/Video.astro';
-import Section from '../../components/case/Section.astro';
+import SurfaceSection from '../../components/SurfaceSection.astro';
 import CaseBodyBlock from '../../components/case/CaseBodyBlock.astro';
 import { sanityClient } from '../../lib/sanity';
 import { caseStudyBySlugQuery } from '../../lib/queries';
@@ -33,10 +33,10 @@ const sectionNavItems = [
 ];
 
 const brandVars = [
-  `--brand-primary: ${primaryColor}`,
-  `--brand-primary-fg: ${primaryFg}`,
-  `--brand-secondary: ${secondaryColor}`,
-  `--brand-secondary-fg: ${secondaryFg}`,
+  `--case-primary-bg: ${primaryColor}`,
+  `--case-primary-fg: ${primaryFg}`,
+  `--case-secondary-bg: ${secondaryColor}`,
+  `--case-secondary-fg: ${secondaryFg}`,
 ].join('; ');
 ---
 
@@ -99,7 +99,7 @@ const brandVars = [
 
     {(cs.body ?? []).map((block) => <CaseBodyBlock block={block} />)}
 
-    <Section id="press">
+    <SurfaceSection id="press">
       <div class="stub-section">
         <p class="type-eyebrow stub-eyebrow">Press</p>
         <div class="press-grid">
@@ -112,9 +112,9 @@ const brandVars = [
           ))}
         </div>
       </div>
-    </Section>
+    </SurfaceSection>
 
-    <Section>
+    <SurfaceSection>
       <div class="stub-section">
         <p class="type-eyebrow stub-eyebrow">Related Work</p>
         <div class="related-grid">
@@ -127,7 +127,7 @@ const brandVars = [
           ))}
         </div>
       </div>
-    </Section>
+    </SurfaceSection>
 
     <Footer />
   </div>
@@ -197,7 +197,6 @@ const brandVars = [
     text-decoration: none;
     color: var(--fg-60);
     border-bottom: 2px solid transparent;
-    transition: color 0.2s, border-color 0.2s;
   }
   .section-nav-link.is-active,
   .section-nav-link:hover {
@@ -255,38 +254,3 @@ const brandVars = [
     margin: 0;
   }
 </style>
-
-<script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-  gsap.registerPlugin(ScrollTrigger);
-
-  const nav = document.querySelector<HTMLElement>('[data-section-nav]');
-  const links = nav ? Array.from(nav.querySelectorAll<HTMLAnchorElement>('[data-nav-item]')) : [];
-  const sections = Array.from(document.querySelectorAll<HTMLElement>('section[id]'));
-
-  if (nav && links.length && sections.length) {
-    const setActive = (id: string) => {
-      links.forEach((link) => {
-        const href = link.getAttribute('href') ?? '';
-        link.classList.toggle('is-active', href === `#${id}`);
-      });
-    };
-
-    const mm = gsap.matchMedia();
-
-    mm.add('(prefers-reduced-motion: no-preference)', () => {
-      sections.forEach((section) => {
-        ScrollTrigger.create({
-          trigger: section,
-          start: 'top center',
-          end: 'bottom center',
-          onEnter: () => setActive(section.id),
-          onEnterBack: () => setActive(section.id),
-        });
-      });
-      return () => ScrollTrigger.getAll().forEach((t) => t.kill());
-    });
-  }
-</script>

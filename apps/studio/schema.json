@@ -129,11 +129,11 @@
               },
               {
                 "type": "string",
-                "value": "primary"
+                "value": "case-primary"
               },
               {
                 "type": "string",
-                "value": "secondary"
+                "value": "case-secondary"
               }
             ]
           },
@@ -221,11 +221,11 @@
               },
               {
                 "type": "string",
-                "value": "primary"
+                "value": "case-primary"
               },
               {
                 "type": "string",
-                "value": "secondary"
+                "value": "case-secondary"
               }
             ]
           },
@@ -572,11 +572,11 @@
               },
               {
                 "type": "string",
-                "value": "primary"
+                "value": "case-primary"
               },
               {
                 "type": "string",
-                "value": "secondary"
+                "value": "case-secondary"
               }
             ]
           },
@@ -799,11 +799,11 @@
               },
               {
                 "type": "string",
-                "value": "primary"
+                "value": "case-primary"
               },
               {
                 "type": "string",
-                "value": "secondary"
+                "value": "case-secondary"
               }
             ]
           },
