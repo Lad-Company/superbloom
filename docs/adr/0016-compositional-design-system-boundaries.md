@@ -1,5 +1,7 @@
 # Compositional design-system boundaries
 
+> **Partially superseded:** ADR-0017 defines the fixed Case Study Spine, replaces Outcomes with Results and Related Work with Next Project, and removes generic narrative Body Blocks from the Case Study composition.
+
 Superbloom’s design system is composed from small primitives and named modules:
 
 - `SurfaceSection` owns Surface Role, foreground contract, and vertical rhythm.

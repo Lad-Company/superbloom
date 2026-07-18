@@ -32,10 +32,6 @@ _Avoid_: Capability (when referring to this breadth list — a Discipline is not
 A specific Capability — a structured live workshop in which Superbloom brings the Creative Collective and a client team together to solve a brief in real time (typically 4 hours). Always treated as a Capability entry, not a standalone content type.
 _Avoid_: Workshop, Brand Workshop, Salon
 
-**Worked Example**:
-A Brand Salon–specific sub-document showing a real client engagement (e.g., Virgin Voyages / Mystery Voyage). Part of the Brand Salon Capability entry, not a standalone Case Study.
-_Avoid_: Case study (when referring to Brand Salon documentation)
-
 ### Content
 
 **Work**:
@@ -43,20 +39,28 @@ The portfolio section of the site. Work is composed of Case Studies.
 _Avoid_: Projects, Portfolio, Campaign archive
 
 **Case Study**:
-A documented work engagement. A Case Study belongs to one or more Capabilities and may reference Creators who contributed. Its narrative anatomy is a fixed spine: Highlights, Challenge, Solution, Outcomes, Press, and Related Work.
+A documented work engagement. A Case Study belongs to one or more Capabilities and may reference Creators who contributed. Its narrative anatomy is the Case Study Spine. It may be followed by optional Press and a Next Project.
 _Avoid_: Project, campaign, post (when referring to Work content)
 
-**Outcomes**:
-The measurable results of a Case Study (e.g., sales lift, reach), shown as a distinct emphasized section. Distinct from Highlights, which is the headline framing of the engagement.
-_Avoid_: Results, metrics, KPIs (when referring to the Case Study section)
+**Case Study Spine**:
+The five required narrative sections of every Case Study: Highlights, Challenge, Unexpected Insight, Big Idea, and Results. The names, visible eyebrows, navigation labels, and order stay in lockstep.
+_Avoid_: Body Blocks, page sections, flexible content
+
+**Results**:
+The measurable outcomes of a Case Study (e.g., sales lift, reach), shown as the final emphasized section of the Case Study Spine. Distinct from Highlights, which is the headline framing of the engagement.
+_Avoid_: Outcomes, metrics, KPIs (when referring to the Case Study section)
 
 **Deliverables**:
 The categories of work Superbloom produced for an engagement (e.g., Campaign Strategy, Production), listed in a Case Study's header metadata.
 _Avoid_: Services, scope, outputs
 
-**Related Work**:
-Other Case Studies surfaced at the foot of a Case Study.
-_Avoid_: More projects, see also, recommendations
+**Next Project**:
+One optional Case Study explicitly curated at the foot of another Case Study.
+_Avoid_: Related Work, more projects, see also, recommendations
+
+**Press**:
+Up to three optional News items surfaced after a Case Study Spine. Press references News items rather than duplicating coverage links.
+_Avoid_: Case Study press links, coverage cards
 
 **Zine**:
 Superbloom's editorial publication, organized into Issues.
@@ -87,7 +91,7 @@ _Avoid_: Lead, contact, inquiry (when referring to the stored record)
 ### Brand and Theming
 
 **Brand Colors (Primary / Secondary)**:
-A client brand's two accent colors, chosen per Case Study, used to theme that Case Study's colored sections (e.g., the hero takes Primary, Outcomes takes Secondary). These are the brand's identity colors, not a fixed Superbloom palette. Stored as hex strings in the CMS (`@sanity/color-input` was not added; a plain string field is sufficient and can be upgraded to a color picker input later).
+A client brand's two accent colors, chosen per Case Study, used to theme that Case Study's colored sections (e.g., the hero takes Primary, Results may take Secondary). These are the brand's identity colors, not a fixed Superbloom palette. Stored as hex strings in the CMS (`@sanity/color-input` was not added; a plain string field is sufficient and can be upgraded to a color picker input later).
 _Avoid_: Theme color, highlight color, swatch
 
 **Section Theme**:
@@ -111,11 +115,11 @@ The reusable visual container for image or video media. It establishes sizing, c
 _Avoid_: Card media, thumbnail component, image card
 
 **Editorial Card**:
-A compositional card pattern that combines a Media Frame with content-specific metadata and linking. Work, News, Zine Article, and Related Work cards are content adapters of this pattern, not a single universal content model.
+A compositional card pattern that combines a Media Frame with content-specific metadata and linking. Work, News, Zine Article, and Next Project cards are content adapters of this pattern, not a single universal content model.
 _Avoid_: Universal card, News Card (when the content type is not News)
 
 **Surface Section**:
-A full-width page band that establishes a Surface Role, readable foreground, and shared vertical rhythm. It composes content modules such as a Contact Band or Outcomes rather than owning their content or layout.
+A full-width page band that establishes a Surface Role, readable foreground, and shared vertical rhythm. It composes content modules such as a Contact Band or Results rather than owning their content or layout.
 _Avoid_: Mega-section, page section component
 
 **Shared Site Shell**:
@@ -135,8 +139,8 @@ A reusable long-form presentation module shared by Zine Articles, News Items, an
 _Avoid_: Generic Article model, Zine Issue, News Item
 
 **Body Block**:
-A typed content block within a Case Study's `body[]` array. Each block has a `theme` role and optional `eyebrow` label (which also drives the scrollspy section nav). Block types: `highlightsSection`, `textSection`, `mediaSection`, `statsSection`.
-_Avoid_: Section, component, module (when referring to a body[] entry)
+A typed content block within the flexible body of a News item or other editorial record. Body Blocks do not define the Case Study Spine.
+_Avoid_: Case Study section, Case Study Spine
 
 ## Example dialogue
 
@@ -146,5 +150,3 @@ _Avoid_: Section, component, module (when referring to a body[] entry)
 > **Domain expert:** That's Team Members — the internal Superbloom staff.
 > **Dev:** Is Brand Salon its own nav section or under Capabilities?
 > **Domain expert:** Under Capabilities. It's one of our Capabilities. We might document more over time but the type is the same.
-> **Dev:** So a Brand Salon Worked Example is different from a Case Study in Work?
-> **Domain expert:** Yes. Worked Examples live inside the Brand Salon Capability entry. Case Studies live in Work.

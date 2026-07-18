@@ -1,5 +1,7 @@
 # News modeled as a single composite content type
 
+> **Partially superseded:** ADR-0017 replaces the shared Case Study/News Body Block rendering decision and the former Case Study spine names. News remains a composite content type with its own flexible Body Blocks.
+
 News is a single `news` document type that composes both halves of its definition: an optional internal `body[]` (Superbloom's own writeup, built from the shared body blocks) and an optional array of external links (`{ outlet, url }`) to outside coverage. Every News item has its own detail page, and a News Card always links to that page; external links are surfaced within it. A News item may therefore be a self-published article, an external press mention, or both at once.
 
 **Why one composite type over a discriminated union**: the team's mental model is that a News item is *one unit* — Superbloom writes a piece and also points to where the story was picked up, displayed together. Splitting into `article` vs `mention` sub-types (or a `kind` discriminator) would force an either/or that contradicts that model and complicate the feed query and the Studio.
