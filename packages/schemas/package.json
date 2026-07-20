@@ -5,10 +5,16 @@
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "scripts": {
+    "test": "vitest run"
+  },
   "peerDependencies": {
     "sanity": "*"
   },
   "dependencies": {
     "@sanity/orderable-document-list": "^1.5.1"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0"
   }
 }

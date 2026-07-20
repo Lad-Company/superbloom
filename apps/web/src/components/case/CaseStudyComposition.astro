@@ -1,0 +1,101 @@
+---
+import MediaFrame from '../MediaFrame.astro';
+import SurfaceSection from '../SurfaceSection.astro';
+import CaseStudyHero from './CaseStudyHero.astro';
+import CaseStudyNarrativeSection from './CaseStudyNarrativeSection.astro';
+import CaseStudyPress from './CaseStudyPress.astro';
+import CaseStudySpineNav from './CaseStudySpineNav.astro';
+import NextProject from './NextProject.astro';
+import Results from './Results.astro';
+import { caseStudySections } from '../../lib/caseStudySections';
+import { fgForHex } from '../../lib/luminance';
+import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
+
+type CaseStudy = NonNullable<CaseStudyBySlugQueryResult>;
+
+interface Props {
+  caseStudy: CaseStudy;
+}
+
+const { caseStudy } = Astro.props;
+const primaryColor = caseStudy.primaryColor ?? '#ffffff';
+const secondaryColor = caseStudy.secondaryColor ?? primaryColor;
+const primaryForeground = fgForHex(primaryColor);
+const secondaryForeground = fgForHex(secondaryColor);
+const brandVars = [
+  `--case-primary-bg: ${primaryColor}`,
+  `--case-primary-fg: ${primaryForeground}`,
+  `--case-secondary-bg: ${secondaryColor}`,
+  `--case-secondary-fg: ${secondaryForeground}`,
+].join('; ');
+---
+
+<div class="case-study" style={brandVars}>
+  <SurfaceSection role="case-primary">
+    <div class="hero-shell">
+      <slot name="navigation" />
+      <CaseStudyHero
+        client={caseStudy.client}
+        title={caseStudy.title}
+        capabilities={caseStudy.capabilities}
+      />
+    </div>
+  </SurfaceSection>
+
+  {caseStudy.leadMedia && (
+    <SurfaceSection role="case-primary">
+      <div class="lead-media">
+        <MediaFrame media={caseStudy.leadMedia} ratio="16:9" title={caseStudy.title} priority />
+      </div>
+    </SurfaceSection>
+  )}
+
+  <CaseStudySpineNav />
+
+  {caseStudySections.map((sectionDefinition) => {
+    if (sectionDefinition.field === 'results') {
+      return caseStudy.results && (
+        <Results
+          id={sectionDefinition.id}
+          label={sectionDefinition.label}
+          results={caseStudy.results}
+        />
+      );
+    }
+
+    const section = caseStudy[sectionDefinition.field];
+    return section && (
+      <CaseStudyNarrativeSection
+        id={sectionDefinition.id}
+        label={sectionDefinition.label}
+        section={section}
+        title={caseStudy.title}
+      />
+    );
+  })}
+
+  <CaseStudyPress items={caseStudy.press ?? []} />
+  {caseStudy.nextProject && <NextProject project={caseStudy.nextProject} />}
+</div>
+
+<style>
+  .case-study {
+    overflow: clip;
+  }
+  .hero-shell {
+    position: relative;
+    background: var(--bg);
+    color: var(--fg);
+  }
+  .lead-media {
+    padding: var(--space-xs) var(--page-inset) var(--space-2xl);
+  }
+  .lead-media :global(.media-frame) {
+    border-radius: 0;
+  }
+  @media (max-width: 767px) {
+    .lead-media {
+      padding: var(--space-3xs) var(--space-3xs) var(--space-xl);
+    }
+  }
+</style>

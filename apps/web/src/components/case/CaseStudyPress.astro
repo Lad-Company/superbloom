@@ -1,0 +1,56 @@
+---
+import NewsCard from '../NewsCard.astro';
+import SurfaceSection from '../SurfaceSection.astro';
+import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
+
+type PressItem = NonNullable<NonNullable<CaseStudyBySlugQueryResult>['press']>[number];
+
+interface Props {
+  items: PressItem[];
+}
+
+const { items } = Astro.props;
+const visibleItems = items.filter((item) => item?.slug).slice(0, 3);
+---
+
+{visibleItems.length > 0 && (
+  <SurfaceSection role="light">
+    <section class="press" aria-labelledby="case-study-press-heading">
+      <h2 id="case-study-press-heading" class="type-h3">Press</h2>
+      <div class="grid">
+        {visibleItems.map((item) => <NewsCard item={item} showCopy />)}
+      </div>
+    </section>
+  </SurfaceSection>
+)}
+
+<style>
+  .press {
+    padding: var(--space-4xl) var(--page-inset) var(--space-3xl);
+  }
+  h2 {
+    margin: 0 0 var(--space-xl);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--page-gutter);
+  }
+  @media (max-width: 1023px) {
+    .press {
+      padding-top: var(--space-3xl);
+    }
+  }
+  @media (max-width: 767px) {
+    .press {
+      padding-block: var(--space-2xl);
+    }
+    h2 {
+      font-size: 72px;
+    }
+    .grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+    }
+  }
+</style>

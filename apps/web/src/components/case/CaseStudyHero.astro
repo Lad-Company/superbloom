@@ -1,0 +1,73 @@
+---
+interface Capability {
+  title: string | null;
+}
+
+interface Props {
+  client: string | null;
+  title: string | null;
+  capabilities?: Capability[] | null;
+}
+
+const { client, title, capabilities = [] } = Astro.props;
+---
+
+<header class="hero">
+  {client && <p class="client type-h5">{client}</p>}
+  <h1 class="title type-h1">{title}</h1>
+  {capabilities && capabilities.length > 0 && (
+    <ul class="capabilities type-label" aria-label="Capabilities">
+      {capabilities.map((capability) => <li>{capability.title}</li>)}
+    </ul>
+  )}
+</header>
+
+<style>
+  .hero {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    min-height: 700px;
+    padding: 200px var(--page-inset) var(--space-2xl);
+  }
+  .client,
+  .title {
+    margin: 0;
+  }
+  .title {
+    max-width: 12ch;
+    overflow-wrap: anywhere;
+  }
+  .capabilities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs-4);
+    margin-top: auto;
+  }
+  .capabilities li {
+    padding: 8px;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-input);
+  }
+  @media (max-width: 1023px) {
+    .hero {
+      min-height: 620px;
+      padding-top: 160px;
+    }
+    .title {
+      font-size: clamp(88px, 16vw, 160px);
+    }
+  }
+  @media (max-width: 767px) {
+    .hero {
+      min-height: 520px;
+      padding-top: 120px;
+    }
+    .client {
+      font-size: 40px;
+    }
+    .title {
+      font-size: clamp(64px, 20vw, 112px);
+    }
+  }
+</style>

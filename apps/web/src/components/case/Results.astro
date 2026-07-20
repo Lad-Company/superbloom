@@ -1,0 +1,80 @@
+---
+import Metric from '../Metric.astro';
+import SurfaceSection from '../SurfaceSection.astro';
+import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
+
+type ResultsData = NonNullable<NonNullable<CaseStudyBySlugQueryResult>['results']>;
+
+interface Props {
+  id: string;
+  label: string;
+  results: ResultsData;
+}
+
+const { id, label, results } = Astro.props;
+const role = results.surfaceRole === 'case-secondary' ? 'case-secondary' : 'case-primary';
+---
+
+<SurfaceSection role={role} id={id} class="results-surface">
+  <div class="results">
+    <h2 class="type-eyebrow">{label}</h2>
+    <ul>
+      {(results.stats ?? []).map((stat) => (
+        <li>
+          <Metric value={stat.value} label={stat.label} />
+        </li>
+      ))}
+    </ul>
+  </div>
+</SurfaceSection>
+
+<style>
+  :global(.results-surface) {
+    scroll-margin-top: 72px;
+  }
+  .results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    margin-top: var(--space-4xl);
+    padding: var(--space-2xl) var(--page-inset) var(--space-3xl);
+  }
+  h2 {
+    margin: 0;
+  }
+  ul {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--page-gutter);
+  }
+  li {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+  li :global(.value) {
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 1023px) {
+    .results {
+      margin-top: var(--space-3xl);
+    }
+    ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      row-gap: var(--space-xl);
+    }
+    li :global(.value) {
+      font-size: clamp(72px, 13vw, 120px);
+    }
+  }
+  @media (max-width: 767px) {
+    .results {
+      margin-top: var(--space-2xl);
+      padding-block: var(--space-xl);
+    }
+    ul {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

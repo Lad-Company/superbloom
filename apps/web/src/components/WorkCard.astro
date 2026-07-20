@@ -19,9 +19,10 @@ interface WorkItem {
 
 interface Props {
   item: WorkItem;
+  class?: string;
 }
 
-const { item } = Astro.props;
+const { item, class: className } = Astro.props;
 const href = item.slug ? `/work/${item.slug}` : '#';
 ---
 
@@ -31,6 +32,7 @@ const href = item.slug ? `/work/${item.slug}` : '#';
   media={item.media}
   aspectRatio={item.cardAspectRatio}
   summary={item.summary}
+  class={className}
 >
   <TagList slot="overlay" tags={item.tags} />
 </EditorialCard>

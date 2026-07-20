@@ -1,206 +1,25 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Navigation from '../../components/Navigation.astro';
+import ContactBand from '../../components/ContactBand.astro';
 import Footer from '../../components/Footer.astro';
-import MediaFrame from '../../components/MediaFrame.astro';
-import SurfaceSection from '../../components/SurfaceSection.astro';
-import CaseStudyNarrative from '../../components/case/CaseStudyNarrative.astro';
+import CaseStudyComposition from '../../components/case/CaseStudyComposition.astro';
 import { sanityClient } from '../../lib/sanity';
 import { caseStudyBySlugQuery } from '../../lib/queries';
-import { fgForHex } from '../../lib/luminance';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
 
 const { slug } = Astro.params;
-const cs: CaseStudyBySlugQueryResult = await sanityClient.fetch(caseStudyBySlugQuery, { slug });
+const caseStudy: CaseStudyBySlugQueryResult = await sanityClient.fetch(caseStudyBySlugQuery, { slug });
 
-if (!cs) {
+if (!caseStudy) {
   return new Response(null, { status: 404, statusText: 'Not Found' });
 }
-
-const primaryColor = cs.primaryColor ?? '#ffffff';
-const secondaryColor = cs.secondaryColor ?? '#000000';
-const primaryFg = fgForHex(primaryColor);
-const secondaryFg = fgForHex(secondaryColor);
-const heroLuminanceHigh = primaryFg === '#000000';
-const navState = heroLuminanceHigh ? 'dark' : 'light';
-
-const brandVars = [
-  `--case-primary-bg: ${primaryColor}`,
-  `--case-primary-fg: ${primaryFg}`,
-  `--case-secondary-bg: ${secondaryColor}`,
-  `--case-secondary-fg: ${secondaryFg}`,
-].join('; ');
 ---
 
-<Layout title={`${cs.title} — Superbloom`}>
-  <div style={brandVars}>
-    <section class="hero" style={`--bg: ${primaryColor}; --fg: ${primaryFg};`}>
-      <Navigation role={navState} />
-      <div class="hero-inner">
-        <h1 class="type-h1 hero-title">{cs.title}</h1>
-        <div class="meta-row type-eyebrow">
-          {cs.year && (
-            <div class="meta-item">
-              <span class="meta-label">Year</span>
-              <span class="meta-value">{cs.year}</span>
-            </div>
-          )}
-          {cs.industry && (
-            <div class="meta-item">
-              <span class="meta-label">Industry</span>
-              <span class="meta-value">{cs.industry}</span>
-            </div>
-          )}
-          {cs.deliverables && (
-            <div class="meta-item meta-wide">
-              <span class="meta-label">Deliverables</span>
-              <span class="meta-value">{cs.deliverables}</span>
-            </div>
-          )}
-          {cs.creativeCollective && (
-            <div class="meta-item meta-wide">
-              <span class="meta-label">Creative Collective</span>
-              <span class="meta-value">{cs.creativeCollective}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-
-    {cs.heroMedia && (
-      <div class="hero-video">
-        <MediaFrame media={cs.heroMedia} ratio="fill" title={cs.title ?? undefined} />
-      </div>
-    )}
-
-    <CaseStudyNarrative body={cs.body} />
-
-    <SurfaceSection id="press">
-      <div class="stub-section">
-        <p class="type-eyebrow stub-eyebrow">Press</p>
-        <div class="press-grid">
-          {(['Headline', 'Headline', 'Headline'] as const).map((_) => (
-            <div class="press-card">
-              <div class="press-card-img"></div>
-              <p class="type-eyebrow press-card-outlet">Publication</p>
-              <p class="type-caption press-card-headline">Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod.</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </SurfaceSection>
-
-    <SurfaceSection>
-      <div class="stub-section">
-        <p class="type-eyebrow stub-eyebrow">Related Work</p>
-        <div class="related-grid">
-          {([0, 1, 2] as const).map(() => (
-            <div class="related-card">
-              <div class="related-card-img"></div>
-              <p class="type-eyebrow related-card-title">Case Study Title</p>
-              <p class="type-caption">Lorem ipsum dolor sit amet.</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </SurfaceSection>
-
-    <Footer />
-  </div>
+<Layout title={`${caseStudy.title} — Superbloom`}>
+  <CaseStudyComposition caseStudy={caseStudy}>
+    <Navigation slot="navigation" role="surface" />
+  </CaseStudyComposition>
+  <ContactBand role="brand-deep" />
+  <Footer />
 </Layout>
-
-<style>
-  .hero {
-    position: relative;
-    background: var(--bg);
-    color: var(--fg);
-    padding-bottom: var(--space-2xl);
-    overflow: clip;
-  }
-  .hero-inner {
-    padding: 0 var(--space-xs) var(--space-xs);
-    margin-top: 100px;
-  }
-  .hero-title {
-    margin: 0 0 var(--space-2xl);
-  }
-  .meta-row {
-    display: flex;
-    gap: var(--space-xs);
-    flex-wrap: wrap;
-    align-items: start;
-  }
-  .meta-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 120px;
-  }
-  .meta-wide {
-    min-width: 200px;
-    max-width: 260px;
-  }
-  .meta-label {
-    opacity: 0.5;
-  }
-
-  .hero-video {
-    aspect-ratio: 16 / 9;
-    background: #111;
-  }
-  .hero-video :global(media-frame) {
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-  }
-
-  .stub-section {
-    padding: var(--space-2xl) var(--space-xs);
-  }
-  .stub-eyebrow {
-    margin: 0 0 var(--space-xs);
-    color: var(--fg-60);
-  }
-  .press-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--page-gutter);
-  }
-  .press-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3xs);
-  }
-  .press-card-img {
-    background: var(--fg-12);
-    aspect-ratio: 16 / 9;
-    border-radius: var(--radius-s);
-    margin-bottom: var(--space-3xs);
-  }
-  .press-card-outlet {
-    margin: 0;
-    opacity: 0.5;
-  }
-  .press-card-headline {
-    margin: 0;
-  }
-  .related-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--page-gutter);
-  }
-  .related-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3xs);
-  }
-  .related-card-img {
-    background: var(--fg-12);
-    aspect-ratio: 4 / 3;
-    border-radius: var(--radius-s);
-    margin-bottom: var(--space-3xs);
-  }
-  .related-card-title {
-    margin: 0;
-  }
-</style>

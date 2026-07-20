@@ -15,7 +15,7 @@ interface Props {
 const { eyebrow, stats } = Astro.props;
 ---
 
-<div class="outcomes">
+<div class="narrative-stats">
   {eyebrow && <p class="type-eyebrow eyebrow">{eyebrow}</p>}
   {stats && stats.length > 0 && (
     <ul class="grid">
@@ -29,7 +29,7 @@ const { eyebrow, stats } = Astro.props;
 </div>
 
 <style>
-  .outcomes {
+  .narrative-stats {
     padding: var(--space-2xl) var(--space-xs);
   }
   .eyebrow {
@@ -48,11 +48,11 @@ const { eyebrow, stats } = Astro.props;
     padding-top: var(--space-xs);
     border-top: 1px solid var(--fg-12);
   }
-  .item :global(.value) {
+  .item :global(.value),
+  .item :global(.label) {
     display: block;
   }
   .item :global(.label) {
-    display: block;
     opacity: 0.7;
   }
 </style>

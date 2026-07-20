@@ -1,0 +1,4 @@
+{"_id":"cap-campaign-strategy","_type":"capability","title":"Campaign Strategy","slug":{"_type":"slug","current":"campaign-strategy"}}
+{"_id":"cap-content-production","_type":"capability","title":"Content Production","slug":{"_type":"slug","current":"content-production"}}
+{"_id":"cap-social-studios","_type":"capability","title":"Social Studios","slug":{"_type":"slug","current":"social-studios"}}
+{"_id":"cap-brand-salon","_type":"capability","title":"Brand Salon","slug":{"_type":"slug","current":"brand-salon"}}

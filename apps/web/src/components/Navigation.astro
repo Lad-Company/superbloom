@@ -1,6 +1,6 @@
 ---
 interface Props {
-  role?: 'light' | 'dark';
+  role?: 'light' | 'dark' | 'surface';
 }
 
 const { role = 'light' } = Astro.props;
@@ -59,6 +59,7 @@ const links = [
   }
   .light { color: #ffffff; }
   .dark { color: #000000; }
+  .surface { color: var(--fg); }
   .logo,
   a { text-decoration: none; }
   .logo { flex-shrink: 0; }
@@ -93,6 +94,14 @@ const links = [
   .dark .btn-tertiary {
     background: rgba(0, 0, 0, 0.2);
     color: #000000;
+  }
+  .surface .btn-secondary {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .surface .btn-tertiary {
+    background: var(--fg-12);
+    color: var(--fg);
   }
   .compact-menu { display: none; }
 

@@ -3,13 +3,11 @@ import SurfaceSection from '../SurfaceSection.astro';
 import HighlightsSection from '../case/HighlightsSection.astro';
 import TextSection from '../case/TextSection.astro';
 import MediaSection from '../case/MediaSection.astro';
-import Outcomes from '../case/Outcomes.astro';
+import NarrativeStats from './NarrativeStats.astro';
 import { blockId } from '../../lib/blockId';
-import type { CaseStudyBySlugQueryResult, NewsBySlugQueryResult } from '../../sanity.types';
+import type { NewsBySlugQueryResult } from '../../sanity.types';
 
-type CaseBlock = NonNullable<NonNullable<CaseStudyBySlugQueryResult>['body']>[number];
-type NewsBlock = NonNullable<NonNullable<NewsBySlugQueryResult>['body']>[number];
-type Block = CaseBlock | NewsBlock;
+type Block = NonNullable<NonNullable<NewsBySlugQueryResult>['body']>[number];
 
 interface Props {
   block: Block;
@@ -44,6 +42,6 @@ const role = block.theme ?? 'light';
 
 {block._type === 'statsSection' && (
   <SurfaceSection role={role} id={id}>
-    <Outcomes eyebrow={block.eyebrow} stats={block.stats ?? undefined} />
+    <NarrativeStats eyebrow={block.eyebrow} stats={block.stats ?? undefined} />
   </SurfaceSection>
 )}

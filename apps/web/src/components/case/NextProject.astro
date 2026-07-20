@@ -1,0 +1,68 @@
+---
+import SurfaceSection from '../SurfaceSection.astro';
+import WorkCard from '../WorkCard.astro';
+import { fgForHex } from '../../lib/luminance';
+import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
+
+type NextProjectData = NonNullable<NonNullable<CaseStudyBySlugQueryResult>['nextProject']>;
+
+interface Props {
+  project: NextProjectData;
+}
+
+const { project } = Astro.props;
+const background = project.primaryColor ?? '#ffffff';
+const foreground = fgForHex(background);
+const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground};`;
+---
+
+{project.slug && (
+  <div style={vars}>
+    <SurfaceSection role="case-primary">
+      <section class="next-project" aria-labelledby="next-project-heading">
+        <h2 id="next-project-heading" class="type-eyebrow">Next Project</h2>
+        <WorkCard item={project} class="next-project-card" />
+      </section>
+    </SurfaceSection>
+  </div>
+)}
+
+<style>
+  .next-project {
+    padding: var(--space-3xl) var(--page-inset);
+  }
+  h2 {
+    margin: 0 0 var(--space-xl);
+  }
+  .next-project :global(.next-project-card) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--page-gutter);
+  }
+  .next-project :global(.next-project-card .content) {
+    gap: var(--space-3xs);
+  }
+  .next-project :global(.next-project-card .headline) {
+    font-family: var(--font-display-tight);
+    font-size: 120px;
+    font-weight: 750;
+    line-height: 0.88;
+    text-transform: uppercase;
+  }
+  .next-project :global(.next-project-card .summary) {
+    color: var(--fg);
+  }
+  @media (max-width: 1023px) {
+    .next-project :global(.next-project-card .headline) {
+      font-size: clamp(64px, 10vw, 100px);
+    }
+  }
+  @media (max-width: 767px) {
+    .next-project {
+      padding-block: var(--space-2xl);
+    }
+    .next-project :global(.next-project-card) {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

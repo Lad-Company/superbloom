@@ -1,5 +1,15 @@
 import {defineField, defineType} from 'sanity'
 import {orderRankField} from '@sanity/orderable-document-list'
+import {
+  validateColorRequired,
+  validateHexColor,
+  validateSecondaryColorWithResults,
+  validateCapabilitiesUnique,
+  validateCapabilitiesCardinality,
+  validatePressUnique,
+  validatePressCardinality,
+  validateNextProjectNotSelf,
+} from './caseStudyContract'
 
 export const caseStudy = defineType({
   name: 'caseStudy',
@@ -18,16 +28,24 @@ export const caseStudy = defineType({
       options: {source: 'title'},
       validation: (rule) => rule.required(),
     }),
-    defineField({name: 'client', type: 'string'}),
+    defineField({
+      name: 'client',
+      type: 'string',
+      validation: (rule) => rule.required(),
+    }),
     defineField({name: 'summary', type: 'text', rows: 3}),
     defineField({
       name: 'capabilities',
       type: 'array',
       of: [{type: 'reference', to: [{type: 'capability'}]}],
-      validation: (rule) => rule.min(1),
+      validation: (rule) =>
+        rule
+          .required()
+          .custom(validateCapabilitiesUnique)
+          .custom(validateCapabilitiesCardinality),
     }),
     // Work-index card fields. The card thumbnail is a dedicated grid image/video
-    // distinct from heroVideo, mirroring the news card shape so the two share one
+    // distinct from leadMedia, mirroring the news card shape so the two share one
     // Card component and GROQ projection.
     defineField({
       name: 'cardMedia',
@@ -55,11 +73,6 @@ export const caseStudy = defineType({
       options: {list: ['full', 'half'], layout: 'radio'},
       initialValue: 'half',
     }),
-    defineField({name: 'heroMedia', title: 'Hero Media', type: 'mediaBox'}),
-    defineField({name: 'year', type: 'string', title: 'Year'}),
-    defineField({name: 'industry', type: 'string', title: 'Industry'}),
-    defineField({name: 'deliverables', type: 'text', rows: 2, title: 'Deliverables'}),
-    defineField({name: 'creativeCollective', type: 'text', rows: 2, title: 'Creative Collective'}),
     // Brand colors stored as hex strings. @sanity/color-input was not added to keep
     // the studio dependency surface minimal; a plain string field is sufficient for
     // the tracer bullet and can be upgraded to a color picker later.
@@ -68,23 +81,83 @@ export const caseStudy = defineType({
       type: 'string',
       title: 'Primary Brand Color (hex)',
       description: 'e.g. #fdd143',
+      validation: (rule) =>
+        rule.required().custom(validateColorRequired),
     }),
     defineField({
       name: 'secondaryColor',
       type: 'string',
       title: 'Secondary Brand Color (hex)',
       description: 'e.g. #cb122d',
+      validation: (rule) => rule.custom((value) => {
+        if (!value) return true // optional
+        return validateHexColor(value)
+      }),
+    }),
+    // Case Study Spine: five fixed narrative sections
+    defineField({
+      name: 'highlights',
+      title: 'Highlights',
+      type: 'caseStudyNarrativeSection',
+      validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'body',
-      title: 'Page Body',
+      name: 'challenge',
+      title: 'Challenge',
+      type: 'caseStudyNarrativeSection',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'unexpectedInsight',
+      title: 'Unexpected Insight',
+      type: 'caseStudyNarrativeSection',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'bigIdea',
+      title: 'Big Idea',
+      type: 'caseStudyNarrativeSection',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'results',
+      title: 'Results',
+      type: 'caseStudyResults',
+      validation: (rule) => rule.required(),
+    }),
+    // Optional lead media (16:9) below the hero
+    defineField({
+      name: 'leadMedia',
+      title: 'Lead Media',
+      type: 'mediaBox',
+    }),
+    // Optional press and next project references
+    defineField({
+      name: 'press',
+      title: 'Press',
       type: 'array',
-      of: [
-        {type: 'highlightsSection'},
-        {type: 'textSection'},
-        {type: 'mediaSection'},
-        {type: 'statsSection'},
-      ],
+      of: [{type: 'reference', to: [{type: 'news'}]}],
+      validation: (rule) =>
+        rule
+          .custom(validatePressUnique)
+          .custom(validatePressCardinality),
+    }),
+    defineField({
+      name: 'nextProject',
+      title: 'Next Project',
+      type: 'reference',
+      to: [{type: 'caseStudy'}],
+      validation: (rule) =>
+        rule.custom((nextProject, context) => validateNextProjectNotSelf(nextProject, context)),
     }),
   ],
+  validation: (rule) =>
+    rule.custom((document) =>
+      validateSecondaryColorWithResults({
+        parent: document as {
+          secondaryColor?: unknown
+          results?: {surfaceRole?: string}
+        },
+      })
+    ),
 })

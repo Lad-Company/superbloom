@@ -1,0 +1,82 @@
+---
+import SurfaceSection from '../SurfaceSection.astro';
+import PortableText from '../PortableText.astro';
+import CaseStudyMediaLayout from './CaseStudyMediaLayout.astro';
+import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
+
+type CaseStudy = NonNullable<CaseStudyBySlugQueryResult>;
+type NarrativeSection = NonNullable<CaseStudy['highlights']>;
+
+interface Props {
+  id: string;
+  label: string;
+  section: NarrativeSection;
+  title?: string | null;
+}
+
+const { id, label, section, title } = Astro.props;
+---
+
+<SurfaceSection role="light" id={id} class="narrative-surface">
+  <div class="narrative-section">
+    <div class="copy">
+      <h2 class="type-h5">{label}</h2>
+      <PortableText value={section.summary ?? []} class="summary" />
+    </div>
+    {(section.mediaLayouts ?? []).map((layout) => (
+      <CaseStudyMediaLayout layout={layout} title={title} />
+    ))}
+  </div>
+</SurfaceSection>
+
+<style>
+  :global(.narrative-surface) {
+    scroll-margin-top: 72px;
+  }
+  .narrative-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xl);
+    padding: var(--space-4xl) var(--page-inset) 0;
+  }
+  .copy {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) minmax(0, 3fr);
+    gap: var(--page-gutter);
+  }
+  h2 {
+    margin: 0;
+  }
+  .summary {
+    max-width: 960px;
+    padding-right: var(--space-xl);
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+  }
+  @media (max-width: 1023px) {
+    .narrative-section {
+      gap: var(--space-2xl);
+      padding-top: var(--space-3xl);
+    }
+    .copy {
+      grid-template-columns: 1fr;
+      gap: var(--space-xs);
+    }
+    .summary {
+      padding-right: 0;
+    }
+  }
+  @media (max-width: 767px) {
+    .narrative-section {
+      padding-top: var(--space-2xl);
+    }
+    h2 {
+      font-size: 44px;
+    }
+    .summary {
+      font-size: 24px;
+    }
+  }
+</style>

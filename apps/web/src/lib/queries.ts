@@ -143,19 +143,70 @@ const narrativeBodyProjection = `
   }
 `;
 
+const caseStudyMediaLayoutsProjection = `
+  mediaLayouts[]{
+    _type,
+    _key,
+    _type == "caseStudyFullBleedMedia" => {
+      "media": mediaBox${mediaProjection}
+    },
+    _type == "caseStudyTextMedia" => {
+      text,
+      mediaPosition,
+      "media": mediaBox${mediaProjection}
+    },
+    _type == "caseStudyPairedPortraitMedia" => {
+      "media": mediaBoxes[]${mediaProjection}
+    }
+  }
+`;
+
 export const caseStudyBySlugQuery = defineQuery(`
   *[_type == "caseStudy" && slug.current == $slug][0] {
     title,
     "slug": slug.current,
     client,
-    year,
-    industry,
-    deliverables,
-    creativeCollective,
+    capabilities[]->{ title },
     primaryColor,
     secondaryColor,
-    "heroMedia": heroMedia${mediaProjection},
-    ${narrativeBodyProjection}
+    "leadMedia": leadMedia${mediaProjection},
+    highlights{
+      summary,
+      ${caseStudyMediaLayoutsProjection}
+    },
+    challenge{
+      summary,
+      ${caseStudyMediaLayoutsProjection}
+    },
+    unexpectedInsight{
+      summary,
+      ${caseStudyMediaLayoutsProjection}
+    },
+    bigIdea{
+      summary,
+      ${caseStudyMediaLayoutsProjection}
+    },
+    results{
+      surfaceRole,
+      stats[]{ _key, value, label }
+    },
+    press[0...3]->{
+      title,
+      "slug": slug.current,
+      summary,
+      aspectRatio,
+      tags[]->{ title, color },
+      "media": media${mediaProjection}
+    },
+    nextProject->{
+      title,
+      "slug": slug.current,
+      summary,
+      cardAspectRatio,
+      tags[]->{ title, color },
+      "media": cardMedia${mediaProjection},
+      primaryColor
+    }
   }
 `);
 

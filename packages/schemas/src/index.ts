@@ -15,6 +15,11 @@ import {statsSection} from './statsSection'
 import {formSubmission} from './formSubmission'
 import {contactBlock} from './contactBlock'
 import {mediaBox} from './mediaBox'
+import {caseStudyNarrativeSection} from './caseStudyNarrativeSection'
+import {caseStudyFullBleedMedia} from './caseStudyFullBleedMedia'
+import {caseStudyTextMedia} from './caseStudyTextMedia'
+import {caseStudyPairedPortraitMedia} from './caseStudyPairedPortraitMedia'
+import {caseStudyResults} from './caseStudyResults'
 
 export const schemaTypes = [
   capability,
@@ -34,4 +39,9 @@ export const schemaTypes = [
   formSubmission,
   contactBlock,
   mediaBox,
+  caseStudyNarrativeSection,
+  caseStudyFullBleedMedia,
+  caseStudyTextMedia,
+  caseStudyPairedPortraitMedia,
+  caseStudyResults,
 ]
