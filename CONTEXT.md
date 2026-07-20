@@ -51,7 +51,7 @@ The measurable outcomes of a Case Study (e.g., sales lift, reach), shown as the 
 _Avoid_: Outcomes, metrics, KPIs (when referring to the Case Study section)
 
 **Deliverables**:
-The categories of work Superbloom produced for an engagement (e.g., Campaign Strategy, Production), listed in a Case Study's header metadata.
+The categories of work Superbloom produced for an engagement (e.g., Campaign Strategy, Production).
 _Avoid_: Services, scope, outputs
 
 **Next Project**:
