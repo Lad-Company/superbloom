@@ -50,6 +50,10 @@ const styleAttr = mediaRatio === 'fill' ? '' : `aspect-ratio: ${ratioValue};`;
 const hasAsset =
   (asset?._type === 'image' && Boolean(asset.url)) ||
   (asset?._type === 'mux.video' && Boolean(asset.playbackId));
+const videoPoster =
+  asset?._type === 'mux.video' && asset.playbackId
+    ? `https://image.mux.com/${asset.playbackId}/thumbnail.jpg?time=0`
+    : undefined;
 ---
 
 <media-frame
@@ -60,6 +64,7 @@ const hasAsset =
   {asset?._type === 'mux.video' && asset.playbackId && (
     <mux-player
       playback-id={asset.playbackId}
+      poster={videoPoster}
       metadata-video-title={title ?? undefined}
       stream-type="on-demand"
       muted

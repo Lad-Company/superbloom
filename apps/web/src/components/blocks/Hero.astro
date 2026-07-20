@@ -23,7 +23,7 @@ const { heading, subheading, heroMedia } = Astro.props;
 <style>
   .hero {
     position: relative;
-    min-height: 100vh;
+    aspect-ratio: 3 / 2;
     overflow: clip;
     color: var(--bg);
   }
@@ -48,7 +48,7 @@ const { heading, subheading, heroMedia } = Astro.props;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--page-gutter);
     align-items: end;
-    padding: 80px var(--space-xs);
+    padding: var(--space-xl) var(--page-inset);
     pointer-events: none;
   }
 
@@ -62,5 +62,27 @@ const { heading, subheading, heroMedia } = Astro.props;
     grid-column: 3;
     margin: 0;
     align-self: end;
+  }
+
+  @media (max-width: 767px) {
+    .hero {
+      aspect-ratio: 375 / 667;
+    }
+
+    .overlay {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-3xs);
+      padding: var(--space-3xs);
+    }
+
+    .overlay h1,
+    .sub {
+      grid-column: 1;
+    }
+
+    .overlay h1 {
+      max-width: none;
+      font-size: 72px;
+    }
   }
 </style>
