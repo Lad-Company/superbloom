@@ -29,8 +29,10 @@ A media card linking to a news item: media with overlaid tags, a headline, and
 Built as `NewsCard.astro`, with props for `size` (large/small) and a `showCopy`
 toggle. Media renders an image or Mux video at the item's `aspectRatio`
 (`1:1`/`16:9`/`4:5`); tags overlay the media as `.d1-label` pills sourced from the
-`tag` taxonomy (referenced by `news.tags`, max 2). The card always links to the
-News detail page (`/news/[slug]`).
+`tag` taxonomy (referenced by `news.tags`, max 2). Update the adapter to follow
+the News item's authored card destination: either `/news/[slug]` or its explicitly
+primary external coverage link. External targets open in a new tab with a
+text-and-icon indicator, while the internal detail remains separately reachable.
 
 Deferred backlog (this pass was a tracer):
 

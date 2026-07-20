@@ -1,45 +1,39 @@
 # Home-Zine
 
-> Editorial block: a media card paired with a headline, intro line, and label, on a fixed brand color.
+> Editorial block: a media card paired with a headline, intro line, and CTA label, on a fixed brand color.
 
-- **Figma:** [node 6133-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6133-1279&m=dev)
-- **Maps to:** unbuilt — no schema or component. A homepage promo for the
-  [Zine](../../CONTEXT.md) (`homepage.sections[]`).
+- **Figma:** [Homepage](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-374&m=dev)
+- **Maps to:** `homeZine` block · used by `homepage.sections[]` Editorial Composition
+- **Implementation spec:** [zine-implementation-spec.md](./zine-implementation-spec.md)
 
 ## Description
 
-An editorial block — a media card with a headline, intro line, and label — promoting
-the Zine on the homepage.
+An editorial block promoting a Zine Issue on the homepage. The block explicitly references an Issue and owns its own promo headline, intro, media, and CTA label — it does not automatically mirror the current Issue.
 
 ## Fields
 
-- Headline*
-- Intro*
-- Media* (image or video)
-- Label*
+- Issue reference* (explicitly selected)
+- Promo headline* (custom, may differ from Issue title)
+- Promo intro* (custom, may differ from Issue intro)
+- Promo media* (image or video, may differ from Issue cover)
+- CTA label* (e.g., "Explore Issue 01")
 
 _Fields marked with an asterisk are required._
 
 ## Behavior
 
-- Assigned a **brand color (Green, `#99a224`)** background — **does not** switch with
-  light / dark page mode.
+- Assigned a **fixed brand color (Green, `#99a224`)** background — does not switch with light/dark page mode
+- CTA links to `/zine` or `/zine/issues/[issue-slug]` depending on whether the referenced Issue is current
+- Editors choose which Issue to promote and customize the promo content
 
 ### Responsive
 
-- **Desktop (1440):** media left, text block right (~483px) with semantic
-  `display-3`, intro `caption`, and a `Button` CTA. Page margin 32px.
+- **Desktop (1440):** media left, text block right (~483px) with semantic `display-3`, intro `caption`, and a `Button` CTA. Page margin 32px.
 - **Mobile (375):** stacks (media, then text). Headline `H3` 48px. Page margin 12px.
 
-## Implementation status / gaps
+## Implementation notes
 
-Entirely unbuilt. Key design-model notes:
-
-- **Surface:** Home-Zine receives a template-approved semantic Surface Role. Its
-  palette mapping is owned by the Homepage template, not chosen by editors.
-- **Zine promo content type (decided: build it).** No `zine`/`zineIssue` schema
-  exists yet; this block needs a source (latest Zine Issue) plus its own homepage
-  block type. **Decided: add a Zine content type.**
-- **CTA:** use the approved `Button` primitive.
-- **Label\*** is a required field here distinct from the `.d1-label` media tag — it is
-  the CTA/section label.
+- Surface Role is template-owned, not CMS-selectable
+- Homepage template maps this block to the green brand palette
+- CTA destination logic: if `issue.slug === zineLanding.currentIssue.slug`, link to `/zine`; otherwise `/zine/issues/[issue-slug]`
+- Use existing `Button` primitive for CTA

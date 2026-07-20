@@ -22,10 +22,10 @@ Do not infer new visual rules from existing code when it contradicts the first t
 ### Color and surfaces
 
 - Components receive semantic Surface Roles, never raw hues.
-- A page template maps allowed roles to Superbloom palette tokens. Case Study roles may instead resolve to a client’s Primary or Secondary Brand Color.
+- A page template maps allowed roles to Superbloom palette tokens. Case Study roles may instead resolve to a client's Primary or Secondary Brand Color.
 - CMS authors choose only template-approved Surface Roles. They never enter raw component colors.
 - `light`, `dark`, `case-primary`, `case-secondary`, and page-specific brand roles are surface roles, not component variants.
-- The Contact Band receives a template-owned `contact` role, never an editor-selected color. Its approved mappings are Homepage → purple, Our Work → pink, Who We Are → blue, and Index Page → green.
+- The Contact Band receives a template-owned `contact` role, never an editor-selected color. Its approved mappings are Homepage → purple, Our Work → pink, Who We Are → blue, Index Page → green.
 - Surface foreground selection must report contrast risk, but editors may explicitly override it. Do not silently block publishing.
 - No shadows. Hierarchy comes from contrast, full-bleed color bands, crop, border, and frosted overlay treatment.
 
@@ -63,7 +63,7 @@ The ordered spacing scale is `8, 12, 24, 32, 40, 64, 80, 96, 120, 160, 200px`. E
 - `CardGrid`, for editorial card collections
 - `SplitFeature`, for two-column text/media compositions
 - `EditorialRail`, for Article Detail and Case Study reading layouts
-- `MetricGrid`, for Outcomes
+- `MetricGrid`, for Results
 
 The responsive system has three ranges:
 
@@ -92,11 +92,11 @@ Use container-aware component rules where possible. Components may not introduce
 
 - **Shared site shell**: Navigation, ContactBand, Footer.
 - **Heroes**: Media Hero, Page Hero, Case Hero. They share primitives but remain named modules.
-- **Editorial Cards**: `EditorialCard` composes a `MediaFrame`; `WorkCard`, `NewsCard`, `ArticleCard`, and Related Work are content adapters.
-- **Article Detail**: shared long-form presentation module for Zine, News, and future editorial records. It does not merge their content models.
-- **Case Study**: Case Hero, NarrativeSectionNav, narrative Body Blocks, Outcomes, Related Work.
+- **Editorial Cards**: `EditorialCard` composes a `MediaFrame`; `WorkCard`, `NewsCard`, `EditorialArticleCard`, `ZineArticleCard`, and Next Project are content adapters.
+- **Article Detail**: shared long-form presentation module for Zine Articles, News, and Editorial Articles. It does not merge their content models.
+- **Case Study**: Case Hero, Case Study Spine (five fixed sections), Press, Next Project.
 - **FactCardGrid**: the Who We Are facts pattern.
-- **Outcomes**: Case Study results pattern. It is distinct from FactCardGrid.
+- **Results**: Case Study Results section pattern. It is distinct from FactCardGrid.
 - **CardCarousel**: CSS scroll-snap and keyboard scrolling first, optional arrow enhancement second.
 
 ### Composition boundaries
@@ -107,11 +107,12 @@ Compose `SurfaceSection` + `PageGrid` + a named module. Do not add a configurabl
 
 - **Fixed Composition**: templates own order and allowed variants. Use for art-directed narrative pages such as Who We Are and Case Study.
 - **Editorial Composition**: CMS authors order an allowlisted sequence of modules. Use for modular landing pages such as Homepage.
-- **Index Page**: the dedicated browse page for long-form editorial content. It lists News (including press coverage), Zine Articles, and future editorial records in one reverse-chronological feed by publication date, never Case Studies.
-- **Case Study Media Section**: one media block with allowlisted layout variants and ordered assets. Keep Highlights, Text, and Stats as separate narrative blocks.
+- **Index Page**: the dedicated browse page for long-form editorial content at `/index`. It lists News and Editorial Articles in one reverse-chronological feed by publication date, never Zine Articles or Case Studies.
+- **Case Study Spine**: five required fixed sections (Highlights, Challenge, Unexpected Insight, Big Idea, Results) whose meaning, navigation labels, and order are locked.
+- **Article Body Sections**: ordered body blocks for News, Editorial Articles, and Zine Articles. Use `articleTextSection` and `articleMediaSection` with allowlisted layout variants.
 - **Media ratios**: 16:9, 1:1, 4:5, 9:16, 3:2, plus `natural` only for Article Detail body media.
 - **Tags**: taxonomy is content meaning. Overlay and inline are presentation contexts. Tag documents do not control raw display color.
-- **NarrativeSectionNav**: only templates with named, anchorable Body Blocks use it. Render normal anchor links first, then enhance active state.
+- **NarrativeSectionNav**: only templates with named, anchorable sections use it (e.g., Case Study Spine). Render normal anchor links first, then enhance active state.
 
 ## Interaction rules
 
@@ -127,7 +128,7 @@ Compose `SurfaceSection` + `PageGrid` + a named module. Do not add a configurabl
 2. Current typography relies on missing TT Bluescreens even though PP Tight is now the approved compact interface face.
 3. Spacing names are incomplete and raw values recur in components.
 4. `Card` combines Media Frame, card layout, content metadata, and width management.
-5. One `StatCards` module conflates fact cards and Case Study Outcomes.
+5. One `StatCards` module conflates fact cards and Case Study Results.
 6. The mobile navigation is not designed, and current responsive behavior is only ad hoc `768px` stacking.
 7. Current GSAP/ScrollTrigger timing and behavior are not approved motion evidence.
 
@@ -141,7 +142,7 @@ This is an implementation inventory, not authorization to migrate it in place.
   `Button.astro` exposes no approved variants, and `Nav.astro` has no compact-menu
   contract.
 - `apps/web/src/components/StatCards.astro` lets content select hue themes and
-  conflates FactCardGrid with Outcomes.
+  conflates FactCardGrid with Results.
 - `apps/web/src/components/case/Section.astro` exposes hue-named section values
   instead of template-constrained Surface Roles.
 - `packages/schemas/src/mediaSection.ts` needs the approved layout variants and
@@ -160,6 +161,6 @@ the valid Case Study card-media, tag-taxonomy, and ordering decisions in ADR-001
 4. Build primitives: SurfaceSection, PageGrid, MediaFrame, Button, Icon, TagList, form controls, and Metric. Test light, dark, brand, and case surfaces.
 5. Replace duplicated shared-site-shell code with Navigation, ContactBand, Footer, and the accessible compact mobile menu.
 6. Split the current Card into MediaFrame, EditorialCard, and content adapters. Add controlled media ratios and progressive CardCarousel.
-7. Implement named hero modules, FactCardGrid, Outcomes, Article Detail, Case Study Media Section layout variants, and NarrativeSectionNav.
+7. Implement named hero modules, FactCardGrid, Results, Article Detail, Article body section layout variants, and Case Study Spine navigation.
 8. Refactor fixed and editorial CMS templates to consume the new module contracts. Preserve the distinction between template-owned and CMS-ordered composition.
 9. Validate all desktop, compact, and small layouts against the supplied Figma screens, and validate keyboard access, contrast warnings/overrides, static no-JavaScript content, and reduced-motion behavior.

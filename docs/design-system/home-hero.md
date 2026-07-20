@@ -37,9 +37,8 @@ _Fields marked with an asterisk are required._
 
 - **Intro required:** the spec marks Intro* required, but `heroBlock.subheading`
   is optional and `Hero.astro` renders it conditionally.
-- **Media = image or video:** the spec allows an image *or* video; `heroBlock`
-  only has a Mux `video` field and `Hero.astro` only renders a video background.
-  No image fallback/option is modeled.
+- **Media rendering:** `heroBlock.heroMedia` already uses `mediaBox`; ensure
+  `Hero.astro` renders either its image or video path.
 - **Naming:** spec "Headline" = schema `heading`; spec "Intro" = schema `subheading`.
-- **Media required:** spec marks Media* required; `heroBlock.video` is optional
+- **Media required:** spec marks Media* required; `heroBlock.heroMedia` is optional
   (the component renders with no background if absent).

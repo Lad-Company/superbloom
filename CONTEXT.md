@@ -67,19 +67,31 @@ Superbloom's editorial publication, organized into Issues.
 _Avoid_: Blog, magazine, editorial
 
 **Zine Issue**:
-A single edition of the Zine. Each Issue contains one or more Zine Articles.
+A single edition of the Zine. Each Issue contains one or more ordered Zine Articles, and each Zine Article belongs to exactly one Issue.
 _Avoid_: Volume, edition, post
 
+**Zine Article**:
+A long-form story belonging to exactly one Zine Issue. The complete authored sequence of an Issue's Zine Articles forms that Issue's table of contents.
+_Avoid_: Editorial Article, News, post
+
 **News**:
-Press and editorial coverage of Superbloom. A single News item is one unit that may combine Superbloom's own writeup and links to external coverage of the same story, presented together — so an item can be a self-published article, an external press mention, or both at once. Distinct from the Zine.
+Press, announcements, and editorial coverage of Superbloom. A single News item may combine Superbloom's own long-form writeup and links to external coverage of the same story. News is distinct from both the Zine and Editorial Articles; editors choose between News and Editorial Article according to editorial intent rather than an enforced semantic rule.
 _Avoid_: Blog, posts (when referring to News content)
 
+**Editorial Article**:
+A standalone long-form, non-Zine editorial record. Editorial Articles appear alongside News on the Index Page and use the shared Article Detail presentation. They remain a separate authored content type even though News may also contain a long-form body.
+_Avoid_: Zine Article, News, generic Article
+
 **Index Page**:
-The dedicated browse page for long-form editorial content: News (including press coverage), Zine Articles, and future editorial records. It is not Work and does not list Case Studies. Entries appear in one reverse-chronological feed by publication date.
-_Avoid_: All Work, Work index
+The News & Press browse page. It contains News and Editorial Articles in one reverse-chronological feed by publication date. It excludes Zine Articles and Case Studies.
+_Avoid_: All Work, Work index, Blog
+
+**Article Detail**:
+A reusable long-form presentation module shared by Zine Articles, News items, and Editorial Articles. It does not merge their distinct content models, routes, or editorial purpose.
+_Avoid_: Generic Article model, Zine Issue, News Item
 
 **Tag**:
-A free editorial label applied to content (e.g. a News item) for categorization, shown as a pill on cards. Authored as a small reusable taxonomy. Distinct from a Capability (a named service offering) and from Deliverables — a Tag is an editorial classification, not an offering.
+A free editorial label applied to content (e.g. a News item, Case Study, Zine Article) for categorization, shown as a pill on cards. Authored as a small reusable taxonomy. Distinct from a Capability (a named service offering) and from Deliverables — a Tag is an editorial classification, not an offering.
 _Avoid_: Category, capability, keyword
 
 ### Forms
@@ -88,10 +100,28 @@ _Avoid_: Category, capability, keyword
 A contact or inquiry entry submitted by a site visitor, mirrored to Sanity as a permanent record and routed via Mailchimp.
 _Avoid_: Lead, contact, inquiry (when referring to the stored record)
 
+### Shop
+
+**Shop**:
+The integrated e-commerce section of the site. It contains Products and the Cart and leads customers into checkout. The Shop is a first-class site section, not an external destination.
+_Avoid_: Store, external shop link
+
+**Product**:
+A purchasable record in the Shop. A Product may have multiple Variants.
+_Avoid_: Item, SKU (when referring to the product-level entity)
+
+**Variant**:
+A specific purchasable configuration of a Product (e.g., "Small / Red"), with its own price and availability.
+_Avoid_: Option, SKU
+
+**Cart**:
+A visitor's selected Variants and quantities before checkout.
+_Avoid_: Basket
+
 ### Brand and Theming
 
 **Brand Colors (Primary / Secondary)**:
-A client brand's two accent colors, chosen per Case Study, used to theme that Case Study's colored sections (e.g., the hero takes Primary, Results may take Secondary). These are the brand's identity colors, not a fixed Superbloom palette. Stored as hex strings in the CMS (`@sanity/color-input` was not added; a plain string field is sufficient and can be upgraded to a color picker input later).
+A client brand's two accent colors, chosen per Case Study, used to theme that Case Study's colored sections (e.g., the hero takes Primary, Results may take Secondary). These are the brand's identity colors, not a fixed Superbloom palette. Stored as hex strings in the CMS.
 _Avoid_: Theme color, highlight color, swatch
 
 **Section Theme**:
@@ -115,7 +145,7 @@ The reusable visual container for image or video media. It establishes sizing, c
 _Avoid_: Card media, thumbnail component, image card
 
 **Editorial Card**:
-A compositional card pattern that combines a Media Frame with content-specific metadata and linking. Work, News, Zine Article, and Next Project cards are content adapters of this pattern, not a single universal content model.
+A compositional card pattern that combines a Media Frame with content-specific metadata and linking. Work, News, Editorial Article, Zine Article, and Next Project cards are content adapters of this pattern, not a single universal content model.
 _Avoid_: Universal card, News Card (when the content type is not News)
 
 **Surface Section**:
@@ -134,12 +164,8 @@ _Avoid_: Static page, hardcoded page
 A page content model in which CMS authors arrange an ordered, allowlisted set of content modules. Used for modular landing pages where order is an editorial decision.
 _Avoid_: Page builder, free-form layout
 
-**Article Detail**:
-A reusable long-form presentation module shared by Zine Articles, News Items, and future editorial content. It does not merge their distinct content models, routes, or editorial purpose.
-_Avoid_: Generic Article model, Zine Issue, News Item
-
 **Body Block**:
-A typed content block within the flexible body of a News item or other editorial record. Body Blocks do not define the Case Study Spine.
+A typed content block within the flexible body of a News item, Editorial Article, or Zine Article. Body Blocks do not define the Case Study Spine, which is a fixed named composition.
 _Avoid_: Case Study section, Case Study Spine
 
 ## Example dialogue
@@ -150,3 +176,7 @@ _Avoid_: Case Study section, Case Study Spine
 > **Domain expert:** That's Team Members — the internal Superbloom staff.
 > **Dev:** Is Brand Salon its own nav section or under Capabilities?
 > **Domain expert:** Under Capabilities. It's one of our Capabilities. We might document more over time but the type is the same.
+> **Dev:** Does the Index Page include Zine Articles?
+> **Domain expert:** No. Index is News and Editorial Articles only. Zine Articles stay in the Zine section.
+> **Dev:** Where do we link to the Shop?
+> **Domain expert:** It's in the main nav. Shop is a first-class section, not an external link.
