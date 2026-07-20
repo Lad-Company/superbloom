@@ -36,13 +36,16 @@ export const homepageQuery = defineQuery(`
       },
       _type == "newsBlock" => {
         headline,
-        "items": *[_type == "news"] | order(publishedAt desc)[0...8]{
+        "items": *[_type == "news"] | order(publicationDate desc)[0...8]{
           title,
           "slug": slug.current,
-          summary,
-          aspectRatio,
+          overview,
+          publicationDate,
+          cardDestination,
+          externalCoverage[]{ outlet, url, isPrimary },
+          cardAspectRatio,
           tags[]->{ title, color },
-          "media": media${mediaProjection}
+          "cardMedia": cardMedia${mediaProjection}
         }
       },
       _type == "contactBlock" => {
@@ -115,34 +118,6 @@ export const caseStudiesQuery = defineQuery(`
   }
 `);
 
-const narrativeBodyProjection = `
-  body[]{
-    _type,
-    _key,
-    theme,
-    eyebrow,
-    _type == "highlightsSection" => {
-      statement,
-      stats[]{ _key, value, label }
-    },
-    _type == "textSection" => {
-      body
-    },
-    _type == "mediaSection" => {
-      layout,
-      text,
-      media[]{
-        _type,
-        _key,
-        _type == "mediaBox" => ${mediaProjection}
-      }
-    },
-    _type == "statsSection" => {
-      stats[]{ _key, value, label }
-    }
-  }
-`;
-
 const caseStudyMediaLayoutsProjection = `
   mediaLayouts[]{
     _type,
@@ -193,10 +168,13 @@ export const caseStudyBySlugQuery = defineQuery(`
     press[0...3]->{
       title,
       "slug": slug.current,
-      summary,
-      aspectRatio,
+      overview,
+      publicationDate,
+      cardDestination,
+      externalCoverage[]{ outlet, url, isPrimary },
+      cardAspectRatio,
       tags[]->{ title, color },
-      "media": media${mediaProjection}
+      "cardMedia": cardMedia${mediaProjection}
     },
     nextProject->{
       title,
@@ -210,16 +188,54 @@ export const caseStudyBySlugQuery = defineQuery(`
   }
 `);
 
-export const newsBySlugQuery = defineQuery(`
-  *[_type == "news" && slug.current == $slug][0] {
+const articleBodyProjection = `
+  body[]{
+    _type,
+    _key,
+    _type == "articleTextSection" => {
+      heading,
+      text
+    },
+    _type == "articleMediaSection" => {
+      layout,
+      "media": media${mediaProjection},
+      "pairedMedia": pairedMedia[]${mediaProjection}
+    }
+  }
+`
+
+const articleProjection = `
+    _type,
     title,
     "slug": slug.current,
-    publishedAt,
-    summary,
-    aspectRatio,
+    publicationDate,
+    overview,
     tags[]->{ title, color },
-    externalLinks[]{ _key, outlet, url },
-    "media": media${mediaProjection},
-    ${narrativeBodyProjection}
+    externalCoverage[]{ _key, outlet, url, isPrimary },
+    "leadMedia": leadMedia${mediaProjection},
+    ${articleBodyProjection},
+    relatedItems[]->{
+      _type,
+      title,
+      "slug": slug.current,
+      overview,
+      publicationDate,
+      cardDestination,
+      externalCoverage[]{ outlet, url, isPrimary },
+      cardAspectRatio,
+      tags[]->{ title, color },
+      "cardMedia": cardMedia${mediaProjection}
+    }
+`
+
+export const newsArticleBySlugQuery = defineQuery(`
+  *[_type == "news" && slug.current == $slug][0] {
+    ${articleProjection}
+  }
+`);
+
+export const editorialArticleBySlugQuery = defineQuery(`
+  *[_type == "editorialArticle" && slug.current == $slug][0] {
+    ${articleProjection}
   }
 `);

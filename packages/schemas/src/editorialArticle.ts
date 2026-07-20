@@ -1,15 +1,13 @@
 import {defineField, defineType} from 'sanity'
-import {validateExternalCoverage, validateNewsContent, validatePortableTextNonEmpty, validateRelatedItems} from './articleContract'
+import {validateArticleBody, validatePortableTextNonEmpty, validateRelatedItems} from './articleContract'
 
-export const news = defineType({
-  name: 'news',
-  title: 'News',
+export const editorialArticle = defineType({
+  name: 'editorialArticle',
+  title: 'Editorial Article',
   type: 'document',
-  validation: (rule) => rule.custom(validateNewsContent),
   fields: [
     defineField({
       name: 'title',
-      title: 'Headline',
       type: 'string',
       validation: (rule) => rule.required(),
     }),
@@ -34,33 +32,11 @@ export const news = defineType({
       name: 'body',
       type: 'array',
       of: [{type: 'articleTextSection'}, {type: 'articleMediaSection'}],
+      validation: (rule) => rule.required().custom(validateArticleBody),
     }),
     defineField({
       name: 'leadMedia',
       type: 'mediaBox',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'externalCoverage',
-      type: 'array',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            defineField({name: 'outlet', type: 'string', validation: (rule) => rule.required()}),
-            defineField({name: 'url', type: 'url', validation: (rule) => rule.required()}),
-            defineField({name: 'isPrimary', type: 'boolean', initialValue: false}),
-          ],
-          preview: {select: {title: 'outlet', subtitle: 'url'}},
-        },
-      ],
-      validation: (rule) => rule.custom(validateExternalCoverage),
-    }),
-    defineField({
-      name: 'cardDestination',
-      type: 'string',
-      options: {list: ['internal', 'external'], layout: 'radio'},
-      initialValue: 'internal',
       validation: (rule) => rule.required(),
     }),
     defineField({

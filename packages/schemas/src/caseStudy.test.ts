@@ -232,13 +232,11 @@ describe('Case Study Spine Schema', () => {
   })
 
   describe('contract: case study media layout types not in news', () => {
-    it('news body accepts only legacy section types', () => {
+    it('news body accepts only article section types', () => {
       const newsBodyField = news.fields?.find((f) => f.name === 'body')
       const ofTypes = (newsBodyField as any)?.of?.map?.((item: any) => item.type) ?? []
-      expect(ofTypes).toContain('highlightsSection')
-      expect(ofTypes).toContain('textSection')
-      expect(ofTypes).toContain('mediaSection')
-      expect(ofTypes).toContain('statsSection')
+      expect(ofTypes).toContain('articleTextSection')
+      expect(ofTypes).toContain('articleMediaSection')
       // Case Study-only types should not be in News body
       expect(ofTypes).not.toContain('caseStudyFullBleedMedia')
       expect(ofTypes).not.toContain('caseStudyTextMedia')

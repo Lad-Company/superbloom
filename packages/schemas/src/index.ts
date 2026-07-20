@@ -20,6 +20,9 @@ import {caseStudyFullBleedMedia} from './caseStudyFullBleedMedia'
 import {caseStudyTextMedia} from './caseStudyTextMedia'
 import {caseStudyPairedPortraitMedia} from './caseStudyPairedPortraitMedia'
 import {caseStudyResults} from './caseStudyResults'
+import {articleTextSection} from './articleTextSection'
+import {articleMediaSection} from './articleMediaSection'
+import {editorialArticle} from './editorialArticle'
 
 export const schemaTypes = [
   capability,
@@ -44,4 +47,7 @@ export const schemaTypes = [
   caseStudyTextMedia,
   caseStudyPairedPortraitMedia,
   caseStudyResults,
+  articleTextSection,
+  articleMediaSection,
+  editorialArticle,
 ]

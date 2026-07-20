@@ -4,16 +4,15 @@ import Navigation from '../../components/Navigation.astro';
 import Footer from '../../components/Footer.astro';
 import ContactBand from '../../components/ContactBand.astro';
 import ArticleDetail from '../../components/editorial/ArticleDetail.astro';
-import { sanityClient } from '../../lib/sanity';
-import { newsArticleBySlugQuery } from '../../lib/queries';
+import {sanityClient} from '../../lib/sanity';
+import {editorialArticleBySlugQuery} from '../../lib/queries';
 
-const { slug } = Astro.params;
-const article = await sanityClient.fetch(newsArticleBySlugQuery, { slug });
+const {slug} = Astro.params;
+const article = await sanityClient.fetch(editorialArticleBySlugQuery, {slug});
 
 if (!article) {
-  return new Response(null, { status: 404, statusText: 'Not Found' });
+  return new Response(null, {status: 404, statusText: 'Not Found'});
 }
-
 ---
 
 <Layout title={`${article.title} — Superbloom`}>

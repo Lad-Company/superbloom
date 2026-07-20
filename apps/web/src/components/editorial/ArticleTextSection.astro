@@ -1,0 +1,31 @@
+---
+import PortableText from '../PortableText.astro';
+import type {TypedObject} from 'astro-portabletext/types';
+
+type PortableBlock = TypedObject & {children?: Array<{text?: string | null}>};
+
+interface Props {
+  heading?: string | null;
+  text?: PortableBlock[] | null;
+}
+
+const {heading, text} = Astro.props;
+---
+
+{text && (
+  <section class="article-text">
+    {heading && <h2 class="type-h5">{heading}</h2>}
+    <PortableText value={text} class="type-body" />
+  </section>
+)}
+
+<style>
+  .article-text {
+    width: min(100% - (2 * var(--page-inset)), 720px);
+    margin: var(--space-xl) auto;
+  }
+
+  h2 {
+    margin: 0 0 var(--space-xs);
+  }
+</style>

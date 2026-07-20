@@ -11,10 +11,13 @@ interface Tag {
 interface NewsItem {
   title: string | null;
   slug: string | null;
-  summary: string | null;
-  aspectRatio: MediaRatio | null;
+  overview?: Array<{ children?: Array<{ text?: string | null }> }> | null;
+  publicationDate?: string | null;
+  cardDestination?: 'internal' | 'external' | null;
+  externalCoverage?: Array<{ url?: string | null; isPrimary?: boolean | null }> | null;
+  cardAspectRatio: MediaRatio | null;
   tags: Tag[] | null;
-  media: Media | null;
+  cardMedia: Media | null;
 }
 
 interface Props {
@@ -24,16 +27,47 @@ interface Props {
 }
 
 const { item, showCopy = false, class: className } = Astro.props;
-const href = item.slug ? `/news/${item.slug}` : '#';
+const internalHref = item.slug ? `/news/${item.slug}` : '#';
+const primaryCoverage = item.externalCoverage?.find((link) => link.isPrimary)?.url;
+const opensInNewTab = item.cardDestination === 'external' && Boolean(primaryCoverage);
+const href = opensInNewTab ? primaryCoverage! : internalHref;
+const summary = item.overview
+  ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
+  .join(' ')
+  .trim();
 ---
 
-<EditorialCard
-  href={href}
-  title={item.title}
-  media={item.media}
-  aspectRatio={item.aspectRatio}
-  summary={showCopy ? item.summary : undefined}
-  class={className}
->
-  <TagList slot="overlay" tags={item.tags} />
-</EditorialCard>
+<div class:list={['news-card', className]}>
+  <EditorialCard
+    href={href}
+    title={item.title}
+    media={item.cardMedia}
+    aspectRatio={item.cardAspectRatio}
+    summary={showCopy ? summary : undefined}
+    publicationDate={item.publicationDate}
+    target={opensInNewTab ? '_blank' : undefined}
+    rel={opensInNewTab ? 'noopener noreferrer' : undefined}
+    externalLabel={opensInNewTab ? 'Read externally (opens in a new tab)' : undefined}
+  >
+    <TagList slot="overlay" tags={item.tags} />
+  </EditorialCard>
+  {opensInNewTab && (
+    <a class="internal-link type-caption" href={internalHref}>
+      Read article details
+    </a>
+  )}
+</div>
+
+<style>
+  .news-card {
+    min-width: 0;
+  }
+
+  .internal-link {
+    display: inline-block;
+    margin-top: var(--space-3xs);
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+</style>

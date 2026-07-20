@@ -7,19 +7,30 @@ interface Props {
   media: Media | null;
   aspectRatio?: MediaRatio | null;
   summary?: string | null;
+  publicationDate?: string | null;
   class?: string;
+  target?: string;
+  rel?: string;
+  externalLabel?: string;
 }
 
-const { href, title, media, aspectRatio, summary, class: className } = Astro.props;
+const { href, title, media, aspectRatio, summary, publicationDate, class: className, target, rel, externalLabel } = Astro.props;
+const formattedDate = publicationDate
+  ? new Intl.DateTimeFormat('en-US', {year: 'numeric', month: 'long', day: 'numeric'}).format(
+      new Date(publicationDate),
+    )
+  : null;
 ---
 
-<a class:list={['editorial-card', className]} href={href}>
+<a class:list={['editorial-card', className]} href={href} target={target} rel={rel}>
   <MediaFrame media={media} ratio={aspectRatio} title={title}>
     <slot name="overlay" />
   </MediaFrame>
   <div class="content">
     {title && <p class="headline type-h6">{title}</p>}
     {summary && <p class="summary type-caption">{summary}</p>}
+    {formattedDate && <time class="publication-date type-caption" datetime={publicationDate}>{formattedDate}</time>}
+    {externalLabel && <p class="external-label type-caption">{externalLabel}</p>}
   </div>
 </a>
 
@@ -45,6 +56,14 @@ const { href, title, media, aspectRatio, summary, class: className } = Astro.pro
   }
 
   .summary {
+    color: var(--fg-60);
+  }
+
+  .external-label {
+    margin: 0;
+  }
+
+  .publication-date {
     color: var(--fg-60);
   }
 </style>

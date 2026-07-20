@@ -1,5 +1,5 @@
 ---
-export type MediaRatio = '1:1' | '16:9' | '4:5' | '2:1' | 'fill';
+export type MediaRatio = '1:1' | '16:9' | '4:5' | '3:2' | '2:1' | 'fill';
 
 export interface ProjectedAsset {
   _type: 'image' | 'mux.video';
@@ -37,6 +37,7 @@ const ratioMap: Record<MediaRatio, string> = {
   '1:1': '1 / 1',
   '16:9': '16 / 9',
   '4:5': '4 / 5',
+  '3:2': '3 / 2',
   '2:1': '2 / 1',
   'fill': 'auto',
 };

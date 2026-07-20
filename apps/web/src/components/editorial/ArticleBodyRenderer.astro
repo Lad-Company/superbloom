@@ -1,0 +1,29 @@
+---
+import ArticleTextSection from './ArticleTextSection.astro';
+import ArticleMediaSection from './ArticleMediaSection.astro';
+import type {Media} from '../MediaFrame.astro';
+import type {TypedObject} from 'astro-portabletext/types';
+
+type Block =
+  | {_type: 'articleTextSection'; heading?: string | null; text?: TypedObject[] | null}
+  | {
+      _type: 'articleMediaSection';
+      layout?: 'full-width' | 'editorial-rail' | 'paired' | null;
+      media?: Media | null;
+      pairedMedia?: Media[] | null;
+    };
+
+interface Props {
+  block: Block;
+}
+
+const {block} = Astro.props;
+---
+
+{block._type === 'articleTextSection' && (
+  <ArticleTextSection heading={block.heading} text={block.text} />
+)}
+
+{block._type === 'articleMediaSection' && (
+  <ArticleMediaSection layout={block.layout} media={block.media} pairedMedia={block.pairedMedia} />
+)}

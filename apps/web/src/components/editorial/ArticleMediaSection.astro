@@ -1,0 +1,41 @@
+---
+import MediaFrame, {type Media} from '../MediaFrame.astro';
+
+interface Props {
+  layout?: 'full-width' | 'editorial-rail' | 'paired' | null;
+  media?: Media | null;
+  pairedMedia?: Media[] | null;
+}
+
+const {layout = 'full-width', media, pairedMedia} = Astro.props;
+const frames = layout === 'paired' ? pairedMedia ?? [] : media ? [media] : [];
+---
+
+{frames.length > 0 && (
+  <section class:list={['article-media', `layout-${layout}`]}>
+    {frames.map((frame) => <MediaFrame media={frame} ratio={layout === 'editorial-rail' ? '3:2' : '16:9'} />)}
+  </section>
+)}
+
+<style>
+  .article-media {
+    display: grid;
+    gap: var(--space-xs);
+    width: min(100% - (2 * var(--page-inset)), 1440px);
+    margin: var(--space-xl) auto;
+  }
+
+  .layout-editorial-rail {
+    width: min(100% - (2 * var(--page-inset)), 960px);
+  }
+
+  .layout-paired {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 1023px) {
+    .layout-paired {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,191 @@
+---
+import MediaFrame, {type Media, type MediaRatio} from '../MediaFrame.astro';
+import PortableText from '../PortableText.astro';
+import ArticleBodyRenderer from './ArticleBodyRenderer.astro';
+import EditorialCard from '../EditorialCard.astro';
+import TagList from '../TagList.astro';
+import type {TypedObject} from 'astro-portabletext/types';
+
+type Tag = {title?: string | null; color?: string | null};
+type Coverage = {outlet?: string | null; url?: string | null; isPrimary?: boolean | null};
+type PortableBlock = TypedObject & {children?: Array<{text?: string | null}>};
+type RelatedItem = {
+  _type: 'news' | 'editorialArticle';
+  title?: string | null;
+  slug?: string | null;
+  overview?: PortableBlock[] | null;
+  publicationDate?: string | null;
+  cardDestination?: 'internal' | 'external' | null;
+  externalCoverage?: Coverage[] | null;
+  cardAspectRatio?: MediaRatio | null;
+  cardMedia?: Media | null;
+  tags?: Tag[] | null;
+};
+type BodyBlock =
+  | {_type: 'articleTextSection'; heading?: string | null; text?: PortableBlock[] | null}
+  | {
+      _type: 'articleMediaSection';
+      layout?: 'full-width' | 'editorial-rail' | 'paired' | null;
+      media?: Media | null;
+      pairedMedia?: Media[] | null;
+    };
+
+interface Props {
+  article: {
+    _type: 'news' | 'editorialArticle';
+    title?: string | null;
+    overview?: PortableBlock[] | null;
+    leadMedia?: Media | null;
+    body?: BodyBlock[] | null;
+    tags?: Tag[] | null;
+    externalCoverage?: Coverage[] | null;
+    relatedItems?: RelatedItem[] | null;
+  };
+}
+
+const {article} = Astro.props;
+const body = article.body ?? [];
+const coverage = article._type === 'news' ? article.externalCoverage ?? [] : [];
+const relatedItems = article.relatedItems?.length === 3 ? article.relatedItems : [];
+const relatedHref = (item: RelatedItem) => {
+  const primaryUrl = item.externalCoverage?.find((link) => link.isPrimary)?.url;
+  return item._type === 'news' && item.cardDestination === 'external' && primaryUrl
+    ? primaryUrl
+    : `/${item._type === 'news' ? 'news' : 'articles'}/${item.slug}`;
+};
+const opensRelatedExternally = (item: RelatedItem) =>
+  item._type === 'news' &&
+  item.cardDestination === 'external' &&
+  Boolean(item.externalCoverage?.find((link) => link.isPrimary)?.url);
+const summary = (item: RelatedItem) =>
+  item.overview
+    ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
+    .join(' ')
+    .trim();
+---
+
+<article class="article-detail">
+  <header class="hero">
+    {article.tags && <TagList tags={article.tags} />}
+    <h1 class="type-h3">{article.title}</h1>
+  </header>
+
+  {article.leadMedia && <MediaFrame media={article.leadMedia} ratio="16:9" title={article.title} priority />}
+
+  {article.overview && (
+    <section class="overview">
+      <PortableText value={article.overview} class="type-h5" />
+    </section>
+  )}
+
+  {body.map((block) => <ArticleBodyRenderer block={block} />)}
+
+  {coverage.length > 0 && (
+    <section class="external-coverage" aria-labelledby="external-coverage-heading">
+      <h2 id="external-coverage-heading" class="type-eyebrow">Read elsewhere</h2>
+      <ul>
+        {coverage.map((link) => (
+          <li>
+            {link.url ? (
+              <a href={link.url} target="_blank" rel="noopener noreferrer">
+                {link.outlet ?? link.url} <span class="sr-only">(opens in a new tab)</span>
+              </a>
+            ) : (
+              <span>{link.outlet}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {relatedItems.length === 3 && (
+    <nav class="related-items" aria-labelledby="related-items-heading">
+      <h2 id="related-items-heading" class="type-h5">Related items</h2>
+      <div class="related-grid">
+        {relatedItems.map((item) => (
+          <EditorialCard
+            href={relatedHref(item)}
+            title={item.title ?? null}
+            media={item.cardMedia ?? null}
+            aspectRatio={item.cardAspectRatio}
+            summary={summary(item)}
+            publicationDate={item.publicationDate}
+            target={opensRelatedExternally(item) ? '_blank' : undefined}
+            rel={opensRelatedExternally(item) ? 'noopener noreferrer' : undefined}
+            externalLabel={opensRelatedExternally(item) ? 'Read externally (opens in a new tab)' : undefined}
+          >
+            <TagList slot="overlay" tags={item.tags} />
+          </EditorialCard>
+        ))}
+      </div>
+    </nav>
+  )}
+</article>
+
+<style>
+  .hero {
+    position: relative;
+    padding: 140px var(--page-inset) var(--space-xs);
+  }
+
+  h1,
+  h2 {
+    margin: 0;
+  }
+
+  .hero :global(.tag-list) {
+    position: static;
+    margin-bottom: var(--space-3xs);
+  }
+
+  .overview,
+  .external-coverage,
+  .related-items {
+    width: min(100% - (2 * var(--page-inset)), 960px);
+    margin: var(--space-2xl) auto;
+  }
+
+  .external-coverage ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+    margin: var(--space-xs) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .external-coverage a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-xs);
+    margin-top: var(--space-xs);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 1023px) {
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      padding-top: 100px;
+    }
+  }
+</style>
