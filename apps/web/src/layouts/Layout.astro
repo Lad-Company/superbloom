@@ -5,11 +5,13 @@ import '../styles/tokens.css';
 interface Props {
   title?: string;
   description?: string;
+  canonicalUrl?: string;
 }
 
 const {
   title = 'Superbloom House',
   description = 'Superbloom House helps brands make work people actually want to watch, share, and talk about.',
+  canonicalUrl,
 } = Astro.props;
 ---
 
@@ -19,6 +21,7 @@ const {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{title}</title>
   </head>

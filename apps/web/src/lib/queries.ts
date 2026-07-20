@@ -50,6 +50,14 @@ export const homepageQuery = defineQuery(`
       },
       _type == "contactBlock" => {
         _type
+      },
+      _type == "homeZine" => {
+        "issue": issue->{ "slug": slug.current },
+        "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,
+        promoHeadline,
+        promoIntro,
+        "promoMedia": promoMedia${mediaProjection},
+        ctaLabel
       }
     }
   }
@@ -218,6 +226,7 @@ const articleProjection = `
       _type,
       title,
       "slug": slug.current,
+      "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,
       overview,
       publicationDate,
       cardDestination,
@@ -237,5 +246,81 @@ export const newsArticleBySlugQuery = defineQuery(`
 export const editorialArticleBySlugQuery = defineQuery(`
   *[_type == "editorialArticle" && slug.current == $slug][0] {
     ${articleProjection}
+  }
+`);
+
+const zineArticleCardProjection = `
+  _type,
+  title,
+  "slug": slug.current,
+  overview,
+  cardAspectRatio,
+  tags[]->{ title, color },
+  "cardMedia": cardMedia${mediaProjection}
+`
+
+const zineIssueProjection = `
+  issueNumber,
+  title,
+  "slug": slug.current,
+  publicationDate,
+  coverAspectRatio,
+  "coverMedia": coverMedia${mediaProjection},
+  introHeadline,
+  introText,
+  "introMedia": introMedia[]${mediaProjection},
+  editorLetter {
+    headline,
+    body,
+    "media": mediaBox${mediaProjection}
+  },
+  articles[]->{
+    ${zineArticleCardProjection}
+  },
+  "pdfUrl": pdfAsset.asset->url
+`
+
+export const zineLandingQuery = defineQuery(`
+  *[_type == "zineLanding"][0]{
+    "currentIssue": currentIssue->{
+      ${zineIssueProjection}
+    },
+    "pastIssues": *[_type == "zineIssue" && _id != ^.currentIssue._ref] | order(publicationDate desc) {
+      issueNumber,
+      title,
+      "slug": slug.current,
+      coverAspectRatio,
+      "coverMedia": coverMedia${mediaProjection}
+    }
+  }
+`);
+
+export const issueBySlugQuery = defineQuery(`
+  *[_type == "zineIssue" && slug.current == $slug][0]{
+    ${zineIssueProjection}
+  }
+`);
+
+export const issueArchiveQuery = defineQuery(`
+  *[_type == "zineIssue" && slug.current != $slug] | order(publicationDate desc) {
+    issueNumber,
+    title,
+    "slug": slug.current,
+    coverAspectRatio,
+    "coverMedia": coverMedia${mediaProjection}
+  }
+`);
+
+export const zineArticleBySlugQuery = defineQuery(`
+  *[_type == "zineIssue" && slug.current == $issueSlug][0]{
+    title,
+    "issueSlug": slug.current,
+    "article": *[
+      _type == "zineArticle" &&
+      slug.current == $articleSlug &&
+      _id in ^.articles[]._ref
+    ][0]{
+      ${articleProjection}
+    }
   }
 `);

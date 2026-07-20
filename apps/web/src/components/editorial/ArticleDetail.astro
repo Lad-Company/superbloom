@@ -10,9 +10,10 @@ type Tag = {title?: string | null; color?: string | null};
 type Coverage = {outlet?: string | null; url?: string | null; isPrimary?: boolean | null};
 type PortableBlock = TypedObject & {children?: Array<{text?: string | null}>};
 type RelatedItem = {
-  _type: 'news' | 'editorialArticle';
+  _type: 'news' | 'editorialArticle' | 'zineArticle';
   title?: string | null;
   slug?: string | null;
+  issueSlug?: string | null;
   overview?: PortableBlock[] | null;
   publicationDate?: string | null;
   cardDestination?: 'internal' | 'external' | null;
@@ -32,7 +33,7 @@ type BodyBlock =
 
 interface Props {
   article: {
-    _type: 'news' | 'editorialArticle';
+    _type: 'news' | 'editorialArticle' | 'zineArticle';
     title?: string | null;
     overview?: PortableBlock[] | null;
     leadMedia?: Media | null;
@@ -51,7 +52,13 @@ const relatedHref = (item: RelatedItem) => {
   const primaryUrl = item.externalCoverage?.find((link) => link.isPrimary)?.url;
   return item._type === 'news' && item.cardDestination === 'external' && primaryUrl
     ? primaryUrl
-    : `/${item._type === 'news' ? 'news' : 'articles'}/${item.slug}`;
+    : item._type === 'news'
+      ? `/news/${item.slug}`
+      : item._type === 'editorialArticle'
+        ? `/articles/${item.slug}`
+        : item.issueSlug && item.slug
+          ? `/zine/issues/${item.issueSlug}/${item.slug}`
+          : '#';
 };
 const opensRelatedExternally = (item: RelatedItem) =>
   item._type === 'news' &&

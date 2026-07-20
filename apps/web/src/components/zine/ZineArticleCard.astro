@@ -1,0 +1,37 @@
+---
+import EditorialCard from '../EditorialCard.astro';
+import TagList from '../TagList.astro';
+import type {Media, MediaRatio} from '../MediaFrame.astro';
+import type {TypedObject} from 'astro-portabletext/types';
+
+type Tag = {title?: string | null; color?: string | null};
+type OverviewBlock = TypedObject & {children?: Array<{text?: string | null}>};
+
+interface Props {
+  article: {
+    title?: string | null;
+    slug?: string | null;
+    overview?: OverviewBlock[] | null;
+    cardAspectRatio?: MediaRatio | null;
+    cardMedia?: Media | null;
+    tags?: Tag[] | null;
+  };
+  issueSlug: string;
+}
+
+const {article, issueSlug} = Astro.props;
+const summary = article.overview
+  ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
+  .join(' ')
+  .trim();
+---
+
+<EditorialCard
+  href={`/zine/issues/${issueSlug}/${article.slug}`}
+  title={article.title ?? null}
+  media={article.cardMedia ?? null}
+  aspectRatio={article.cardAspectRatio}
+  summary={summary}
+>
+  <TagList slot="overlay" tags={article.tags} />
+</EditorialCard>

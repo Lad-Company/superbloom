@@ -3,13 +3,15 @@ interface Props {
   href?: string;
   label: string;
   class?: string;
+  target?: string;
+  rel?: string;
 }
 
-const { href, label, class: className } = Astro.props;
+const { href, label, class: className, target, rel } = Astro.props;
 ---
 
 {href ? (
-  <a class:list={['btn', className]} href={href}>{label}</a>
+  <a class:list={['btn', className]} href={href} target={target} rel={rel}>{label}</a>
 ) : (
   <span class:list={['btn', className]}>{label}</span>
 )}

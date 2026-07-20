@@ -23,6 +23,10 @@ import {caseStudyResults} from './caseStudyResults'
 import {articleTextSection} from './articleTextSection'
 import {articleMediaSection} from './articleMediaSection'
 import {editorialArticle} from './editorialArticle'
+import {zineIssue} from './zineIssue'
+import {zineArticle} from './zineArticle'
+import {zineLanding} from './zineLanding'
+import {homeZine} from './homeZine'
 
 export const schemaTypes = [
   capability,
@@ -50,4 +54,8 @@ export const schemaTypes = [
   articleTextSection,
   articleMediaSection,
   editorialArticle,
+  zineIssue,
+  zineArticle,
+  zineLanding,
+  homeZine,
 ]

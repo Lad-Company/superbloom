@@ -1,0 +1,112 @@
+---
+import MediaFrame, {type Media, type MediaRatio} from '../MediaFrame.astro';
+
+interface Issue {
+  issueNumber?: number | null;
+  title?: string | null;
+  slug?: string | null;
+  coverAspectRatio?: MediaRatio | null;
+  coverMedia?: Media | null;
+}
+
+interface Props {
+  issues: Issue[];
+}
+
+const {issues} = Astro.props;
+---
+
+{
+  issues.length > 0 && (
+    <nav class="past-issues" aria-labelledby="past-issues-heading">
+      <h2 id="past-issues-heading" class="type-h3">Past Zines</h2>
+      <ul>
+        {issues.map((issue, index) => (
+          <li class:list={{featured: index === 0}}>
+            <a href={`/zine/issues/${issue.slug}`}>
+              <MediaFrame media={issue.coverMedia} ratio={issue.coverAspectRatio ?? '1:1'} title={issue.title} />
+              <span class="copy">
+                <span class="issue-number type-caption">Issue No. {issue.issueNumber}</span>
+                <span class="type-h5">{issue.title}</span>
+              </span>
+              <span class="read-more type-caption">Read more</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .past-issues {
+    padding: var(--space-4xl) var(--page-inset) var(--space-2xl);
+    background: #000;
+    color: #fff;
+  }
+
+  h2 {
+    margin: 0 0 var(--space-xs);
+  }
+
+  ul {
+    display: grid;
+    gap: 0;
+    max-width: 960px;
+  }
+
+  li {
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  li.featured {
+    --item-bg: var(--pink);
+    --item-fg: var(--pink-fg);
+    border-top: 0;
+  }
+
+  a {
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2xs);
+    padding: var(--space-2xs);
+    color: var(--item-fg, #fff);
+    text-decoration: none;
+  }
+
+  .featured a {
+    background: var(--item-bg);
+  }
+
+  media-frame {
+    width: 100%;
+  }
+
+  .copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs-4);
+  }
+
+  .issue-number,
+  .read-more {
+    text-transform: uppercase;
+  }
+
+  .read-more {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  @media (max-width: 767px) {
+    a {
+      grid-template-columns: 96px minmax(0, 1fr);
+      padding: var(--space-3xs) 0;
+    }
+
+    .read-more {
+      grid-column: 2;
+    }
+  }
+</style>

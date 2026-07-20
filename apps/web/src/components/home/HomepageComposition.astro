@@ -2,6 +2,7 @@
 import Hero from '../blocks/Hero.astro';
 import Capes from '../blocks/Capes.astro';
 import NewsCarousel from '../blocks/NewsCarousel.astro';
+import HomeZine from '../blocks/HomeZine.astro';
 import ContactBand from '../ContactBand.astro';
 import type { HomepageQueryResult } from '../../sanity.types';
 
@@ -41,6 +42,19 @@ const moduleSurfaceRoles = {
           headline={section.headline}
           items={section.items ?? []}
           role={moduleSurfaceRoles.newsBlock}
+        />
+      );
+    }
+
+    if (section._type === 'homeZine') {
+      return (
+        <HomeZine
+          issue={section.issue}
+          currentIssueSlug={section.currentIssueSlug}
+          promoHeadline={section.promoHeadline}
+          promoIntro={section.promoIntro}
+          promoMedia={section.promoMedia}
+          ctaLabel={section.ctaLabel}
         />
       );
     }

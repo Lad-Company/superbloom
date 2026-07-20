@@ -9,7 +9,7 @@ export const homepage = defineType({
       name: 'sections',
       title: 'Editorial Composition',
       type: 'array',
-      of: [{type: 'heroBlock'}, {type: 'capesBlock'}, {type: 'newsBlock'}, {type: 'contactBlock'}],
+      of: [{type: 'heroBlock'}, {type: 'capesBlock'}, {type: 'newsBlock'}, {type: 'homeZine'}, {type: 'contactBlock'}],
       validation: (rule) =>
         rule.required().min(1).custom((sections) => {
           const repeatedModule = sections?.find(

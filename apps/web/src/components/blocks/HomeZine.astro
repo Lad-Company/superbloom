@@ -1,0 +1,62 @@
+---
+import Button from '../Button.astro';
+import MediaFrame, {type Media} from '../MediaFrame.astro';
+import PortableText from '../PortableText.astro';
+import type {TypedObject} from 'astro-portabletext/types';
+
+type PortableBlock = TypedObject & {children?: Array<{text?: string | null}>};
+
+interface Props {
+  issue?: {slug?: string | null} | null;
+  currentIssueSlug?: string | null;
+  promoHeadline?: string | null;
+  promoIntro?: PortableBlock[] | null;
+  promoMedia?: Media | null;
+  ctaLabel?: string | null;
+}
+
+const {issue, currentIssueSlug, promoHeadline, promoIntro, promoMedia, ctaLabel} = Astro.props;
+const href = issue?.slug ? (issue.slug === currentIssueSlug ? '/zine' : `/zine/issues/${issue.slug}`) : '/zine';
+---
+
+<section class="home-zine" aria-labelledby="home-zine-heading">
+  <MediaFrame media={promoMedia} ratio="4:5" title={promoHeadline} />
+  <div class="content">
+    <h2 id="home-zine-heading" class="type-h3">{promoHeadline}</h2>
+    {promoIntro && <PortableText value={promoIntro} />}
+    <Button href={href} label={ctaLabel ?? 'Explore the Zine'} />
+  </div>
+</section>
+
+<style>
+  .home-zine {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--page-gutter);
+    padding: var(--space-4xl) var(--page-inset);
+    background: var(--green);
+    color: var(--green-fg);
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: var(--space-xs);
+    padding: 0 var(--space-xs);
+  }
+
+  h2 {
+    margin: 0;
+  }
+
+  @media (max-width: 1023px) {
+    .home-zine {
+      grid-template-columns: 1fr;
+    }
+
+    .content {
+      padding: 0;
+    }
+  }
+</style>

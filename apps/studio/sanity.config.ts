@@ -4,9 +4,9 @@ import {muxInput} from 'sanity-plugin-mux-input'
 import {orderableDocumentListDeskItem} from '@sanity/orderable-document-list'
 import {schemaTypes} from '@superbloom/schemas'
 
-const singletons = ['homepage', 'workIndex', 'whoWeAre']
+const singletons = ['homepage', 'workIndex', 'whoWeAre', 'zineLanding']
 // Document types rendered via a custom list item below (excluded from the default list).
-const customListed = [...singletons, 'caseStudy']
+const customListed = [...singletons, 'caseStudy', 'zineIssue']
 
 export default defineConfig({
   name: 'superbloom',
@@ -31,7 +31,12 @@ export default defineConfig({
               .title('Who We Are')
               .id('whoWeAre')
               .child(S.document().schemaType('whoWeAre').documentId('whoWeAre')),
+            S.listItem()
+              .title('Zine Landing')
+              .id('zineLanding')
+              .child(S.document().schemaType('zineLanding').documentId('zineLanding')),
             orderableDocumentListDeskItem({type: 'caseStudy', title: 'Case Studies', S, context}),
+            orderableDocumentListDeskItem({type: 'zineIssue', title: 'Zine Issues', S, context}),
             S.divider(),
             ...S.documentTypeListItems().filter(
               (item) => !customListed.includes(item.getId() as string),
