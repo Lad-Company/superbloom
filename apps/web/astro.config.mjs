@@ -9,4 +9,7 @@ export default defineConfig({
   output: 'server',
   adapter: vercel(),
   integrations: [UnoCSS()],
+  vite: {
+    envDir: '../..',
+  },
 });

@@ -18,7 +18,6 @@ export interface ProductVariant {
   id: string;
   title: string;
   availableForSale: boolean;
-  quantityAvailable: number | null;
   price: Money;
   selectedOptions: Array<{ name: string; value: string }>;
   image: ProductImage | null;
@@ -80,7 +79,14 @@ export class ShopifyError extends Error {
 function storeUrl() {
   const domain = import.meta.env.SHOPIFY_STORE_DOMAIN;
   const token = import.meta.env.SHOPIFY_STOREFRONT_TOKEN;
-  if (!domain || !token) throw new ShopifyError('Shop is not configured.', 503);
+  if (!domain || !token) {
+    console.error('Shopify integration failure', {
+      failure: 'missing_configuration',
+      domainConfigured: Boolean(domain),
+      tokenConfigured: Boolean(token),
+    });
+    throw new ShopifyError('Shop is not configured.', 503);
+  }
   return {
     url: `https://${domain.replace(/^https?:\/\//, '').replace(/\/$/, '')}/api/${SHOPIFY_API_VERSION}/graphql.json`,
     token,
@@ -99,22 +105,42 @@ async function request<T>(query: string, variables: Record<string, unknown> = {}
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Shopify-Storefront-Access-Token': token,
+          'Shopify-Storefront-Private-Token': token,
         },
         body: JSON.stringify({ query, variables }),
         signal: controller.signal,
       });
       if (!response.ok) {
+        console.error('Shopify integration failure', {
+          failure: 'http',
+          status: response.status,
+          attempt: attempt + 1,
+        });
         const message = response.status === 429
           ? 'The shop is busy. Please slow down and try again shortly.'
           : 'Shop service is temporarily unavailable.';
         throw new ShopifyError(message, response.status);
       }
       const body = (await response.json()) as GraphQLResponse<T>;
-      if (body.errors?.length || !body.data) throw new ShopifyError('Shop service returned an error.');
+      if (body.errors?.length || !body.data) {
+        console.error('Shopify integration failure', {
+          failure: 'graphql',
+          errorCount: body.errors?.length ?? 0,
+          hasData: Boolean(body.data),
+          attempt: attempt + 1,
+        });
+        throw new ShopifyError('Shop service returned an error.');
+      }
       return body.data;
     } catch (error) {
       lastError = error;
+      if (!(error instanceof ShopifyError)) {
+        console.error('Shopify integration failure', {
+          failure: 'transport',
+          errorName: error instanceof Error ? error.name : 'unknown',
+          attempt: attempt + 1,
+        });
+      }
       if (attempt < MAX_RETRIES) await new Promise((resolve) => setTimeout(resolve, 250 * 2 ** attempt));
     } finally {
       clearTimeout(timeout);
@@ -132,7 +158,7 @@ const productFields = `
   options { name values }
   variants(first: 100) {
     nodes {
-      id title availableForSale quantityAvailable
+      id title availableForSale
       price { amount currencyCode }
       selectedOptions { name value }
       image { url altText width height }
@@ -148,7 +174,7 @@ const cartFields = `
       id quantity cost { totalAmount { amount currencyCode } }
       merchandise {
         ... on ProductVariant {
-          id title availableForSale quantityAvailable
+          id title availableForSale
           price { amount currencyCode }
           selectedOptions { name value }
           image { url altText width height }
