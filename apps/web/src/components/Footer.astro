@@ -26,9 +26,13 @@ const currentYear = new Date().getFullYear();
     <div class="newsletter">
       <a href="/" class="logo type-eyebrow">Superbloom House</a>
       <p class="type-h3 nl-heading">Subscribe to our newsletter</p>
-      <form class="nl-form" onsubmit="return false">
-        <input class="nl-input type-eyebrow" type="email" placeholder="Your email" aria-label="Email address" />
+      <form class="nl-form" id="newsletter-form">
+        <label class="sr-only" for="newsletter-email">Email address</label>
+        <input class="nl-input type-eyebrow" id="newsletter-email" type="email" name="email" placeholder="Your email" autocomplete="email" required />
+        <input class="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <input type="hidden" name="startedAt" />
         <button class="nl-submit type-label" type="submit">Submit</button>
+        <p class="nl-status" aria-live="polite" role="status"></p>
       </form>
     </div>
     <div class="cols">
@@ -62,6 +66,57 @@ const currentYear = new Date().getFullYear();
     </div>
   </footer>
 </SurfaceSection>
+
+<script>
+  const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
+  const status = form?.querySelector('.nl-status');
+  const startedAt = form?.elements.namedItem('startedAt') as HTMLInputElement | null;
+
+  if (startedAt) startedAt.value = String(Date.now());
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+
+    const button = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    button.disabled = true;
+    if (status) {
+      status.textContent = 'Submitting…';
+      status.className = 'nl-status';
+    }
+
+    try {
+      const response = await fetch('/api/newsletter/subscribe.json', {
+        method: 'POST',
+        body: new FormData(form),
+      });
+      const data = await response.json() as {success?: boolean; error?: 'duplicate' | 'invalid' | 'network'};
+
+      if (data.success) {
+        form.reset();
+        if (startedAt) startedAt.value = String(Date.now());
+        if (status) {
+          status.textContent = 'You’re subscribed.';
+          status.classList.add('nl-status--ok');
+        }
+      } else if (status) {
+        status.textContent = data.error === 'duplicate'
+          ? 'You’re already subscribed.'
+          : data.error === 'invalid'
+            ? 'Enter a valid email address.'
+            : 'Something went wrong. Please try again.';
+        status.classList.add('nl-status--error');
+      }
+    } catch {
+      if (status) {
+        status.textContent = 'Something went wrong. Please try again.';
+        status.className = 'nl-status nl-status--error';
+      }
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>
 
 <style>
   .footer {
@@ -105,6 +160,26 @@ const currentYear = new Date().getFullYear();
     border-radius: var(--radius-s);
     padding: var(--space-3xs) 16px;
     cursor: pointer;
+  }
+  .nl-submit:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+  .nl-status {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 15px;
+  }
+  .nl-status--ok { color: var(--fg-60); }
+  .nl-status--error { color: #ff6b6b; }
+  .honeypot,
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
   .cols {
     display: flex;

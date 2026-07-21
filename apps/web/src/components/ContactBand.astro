@@ -18,10 +18,12 @@ const { role } = Astro.props;
         <h2 id="contact-heading" class="type-h5">Got a challenge that's too interesting for a normal agency?<br /><br />Let's talk.</h2>
       </div>
       <div class="page-grid-item contact-right">
-        <form class="contact-form" id="contact-form" novalidate>
+        <form class="contact-form" id="contact-form">
           <div class="fields">
             <div class="field-select">
-              <select name="inquiryType" class="input input--filled" required>
+              <label class="sr-only" for="contact-inquiry-type">Inquiry type</label>
+              <select id="contact-inquiry-type" name="inquiryType" class="input input--filled" required>
+                <option value="" disabled selected>Inquiry type*</option>
                 <option value="agency-partner">I am a brand looking for an agency partner</option>
                 <option value="creator">I am a Creator</option>
                 <option value="press">I am press / media</option>
@@ -29,10 +31,13 @@ const { role } = Astro.props;
               </select>
               <span class="select-arrow" aria-hidden="true"></span>
             </div>
-            <input class="input" type="text" name="name" placeholder="Name*" required />
-            <input class="input" type="email" name="email" placeholder="Email*" required />
+            <label class="sr-only" for="contact-name">Name</label>
+            <input class="input" id="contact-name" type="text" name="name" placeholder="Name*" autocomplete="name" required />
+            <label class="sr-only" for="contact-email">Email address</label>
+            <input class="input" id="contact-email" type="email" name="email" placeholder="Email*" autocomplete="email" required />
             <div class="field-select">
-              <select name="hearAboutUs" class="input" required>
+              <label class="sr-only" for="contact-hear-about-us">How did you hear about us?</label>
+              <select id="contact-hear-about-us" name="hearAboutUs" class="input" required>
                 <option value="" disabled selected>How did you hear about us?*</option>
                 <option value="referral">Referral</option>
                 <option value="instagram">Instagram</option>
@@ -43,11 +48,14 @@ const { role } = Astro.props;
               </select>
               <span class="select-arrow" aria-hidden="true"></span>
             </div>
-            <textarea class="input input--message" name="message" placeholder="Message*" rows="3" required></textarea>
+            <label class="sr-only" for="contact-message">Message</label>
+            <textarea class="input input--message" id="contact-message" name="message" placeholder="Message*" rows="3" required></textarea>
+            <input class="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+            <input type="hidden" name="startedAt" />
           </div>
           <div class="contact-actions">
             <button class="btn-submit type-label" type="submit">Submit</button>
-            <p class="status" id="contact-status" aria-live="polite"></p>
+            <p class="status" id="contact-status" aria-live="polite" role="status"></p>
           </div>
         </form>
       </div>
@@ -58,18 +66,24 @@ const { role } = Astro.props;
 <script>
   const form = document.getElementById('contact-form') as HTMLFormElement | null;
   const status = document.getElementById('contact-status');
+  const startedAt = form?.elements.namedItem('startedAt') as HTMLInputElement | null;
+
+  if (startedAt) startedAt.value = String(Date.now());
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (!form.reportValidity()) return;
+
     const button = form.querySelector('button[type="submit"]') as HTMLButtonElement;
     button.disabled = true;
     if (status) status.textContent = '';
 
     try {
       const response = await fetch('/api/contact', { method: 'POST', body: new FormData(form) });
-      const data = await response.json() as { ok?: boolean; error?: string };
-      if (!data.ok) throw new Error(data.error ?? 'Unknown error');
+      const data = await response.json() as { success?: boolean; error?: string };
+      if (!data.success) throw new Error(data.error ?? 'Unknown error');
       form.reset();
+      if (startedAt) startedAt.value = String(Date.now());
       if (status) {
         status.textContent = "Thanks — we’ll be in touch.";
         status.classList.remove('status--error');
@@ -188,6 +202,22 @@ const { role } = Astro.props;
   }
   .status--ok { color: color-mix(in srgb, var(--fg) 70%, transparent); }
   .status--error { color: #ff6b6b; }
+  .honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
 
   @media (max-width: 1023px) {
     .contact-band { padding-block: var(--space-3xl); }

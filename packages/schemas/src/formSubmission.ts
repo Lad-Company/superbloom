@@ -5,7 +5,12 @@ export const formSubmission = defineType({
   title: 'Form Submission',
   type: 'document',
   fields: [
-    defineField({name: 'inquiryType', title: 'Inquiry Type', type: 'string'}),
+    defineField({
+      name: 'inquiryType',
+      title: 'Inquiry Type',
+      type: 'string',
+      validation: (rule) => rule.required(),
+    }),
     defineField({
       name: 'name',
       type: 'string',
@@ -16,7 +21,12 @@ export const formSubmission = defineType({
       type: 'string',
       validation: (rule) => rule.required(),
     }),
-    defineField({name: 'hearAboutUs', title: 'How did you hear about us?', type: 'string'}),
+    defineField({
+      name: 'hearAboutUs',
+      title: 'How did you hear about us?',
+      type: 'string',
+      validation: (rule) => rule.required(),
+    }),
     defineField({
       name: 'message',
       type: 'text',
