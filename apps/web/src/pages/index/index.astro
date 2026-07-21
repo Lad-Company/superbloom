@@ -1,0 +1,198 @@
+---
+import ContactBand from '../../components/ContactBand.astro';
+import EditorialArticleCard from '../../components/EditorialArticleCard.astro';
+import Footer from '../../components/Footer.astro';
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import NewsCard from '../../components/NewsCard.astro';
+import PageGrid from '../../components/PageGrid.astro';
+import SurfaceSection from '../../components/SurfaceSection.astro';
+import { indexPageQuery, indexViewAllNewestQuery, indexViewAllOldestQuery } from '../../lib/queries';
+import { sanityClient } from '../../lib/sanity';
+import type {
+  IndexPageQueryResult,
+  IndexViewAllNewestQueryResult,
+  IndexViewAllOldestQueryResult,
+} from '../../sanity.types';
+
+const BATCH_SIZE = 7;
+const sort = Astro.url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest';
+const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
+const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+const recordLimit = page * BATCH_SIZE;
+
+const indexPage = await sanityClient.fetch<IndexPageQueryResult>(indexPageQuery);
+const featuredIds = [indexPage?.lead?._id, ...(indexPage?.secondary?.map((item) => item?._id) ?? [])].filter(
+  (id): id is string => Boolean(id),
+);
+const viewAllQuery = sort === 'oldest' ? indexViewAllOldestQuery : indexViewAllNewestQuery;
+const fetchedItems = await sanityClient.fetch<
+  IndexViewAllNewestQueryResult | IndexViewAllOldestQueryResult
+>(viewAllQuery, { featuredIds, offset: 0, end: recordLimit + 1 });
+const items = fetchedItems.slice(0, recordLimit);
+const hasMore = fetchedItems.length > recordLimit;
+
+const queryFor = (nextPage: number, nextSort = sort) => {
+  const params = new URLSearchParams();
+  if (nextSort === 'oldest') params.set('sort', nextSort);
+  if (nextPage > 1) params.set('page', String(nextPage));
+  const query = params.toString();
+  return query ? `/index?${query}` : '/index';
+};
+---
+
+<Layout title="Index — Superbloom">
+  <SurfaceSection role="light">
+    <Navigation role="surface" />
+    <main>
+      {indexPage?.lead && (
+        <section class="featured" aria-labelledby="featured-heading">
+          <h1 id="featured-heading" class="type-h1">Index</h1>
+          <div class="featured-grid">
+            <div class="lead">
+              {indexPage.lead._type === 'news' ? (
+                <NewsCard item={indexPage.lead} showCopy />
+              ) : (
+                <EditorialArticleCard item={indexPage.lead} showCopy />
+              )}
+            </div>
+            <div class="secondary">
+              {indexPage.secondary?.map((item) =>
+                item?._type === 'news' ? (
+                  <NewsCard item={item} showCopy />
+                ) : item ? (
+                  <EditorialArticleCard item={item} showCopy />
+                ) : null,
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section class="view-all" aria-labelledby="view-all-heading">
+        <div class="view-all-header">
+          <h2 id="view-all-heading" class="type-h3">View all</h2>
+          <nav class="sort" aria-label="Sort articles">
+            <a class="type-label" href={queryFor(1, 'newest')} aria-current={sort === 'newest' ? 'page' : undefined}>Newest</a>
+            <a class="type-label" href={queryFor(1, 'oldest')} aria-current={sort === 'oldest' ? 'page' : undefined}>Oldest</a>
+          </nav>
+        </div>
+        <PageGrid>
+          {items.map((item) => (
+            <div class="page-grid-item">
+              {item._type === 'news' ? (
+                <NewsCard item={item} showCopy />
+              ) : (
+                <EditorialArticleCard item={item} showCopy />
+              )}
+            </div>
+          ))}
+        </PageGrid>
+        {hasMore && (
+          <a class="load-more type-label" href={queryFor(page + 1)}>Load more</a>
+        )}
+      </section>
+    </main>
+  </SurfaceSection>
+  <ContactBand role="brand-tertiary" />
+  <Footer />
+</Layout>
+
+<style>
+  .featured,
+  .view-all {
+    padding: var(--space-3xl) var(--page-inset);
+  }
+
+  .featured {
+    padding-top: var(--space-4xl);
+  }
+
+  .featured h1,
+  .view-all h2 {
+    margin: 0;
+  }
+
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--space-xl) var(--page-gutter);
+    margin-top: var(--space-xl);
+  }
+
+  .lead {
+    grid-column: span 7;
+  }
+
+  .secondary {
+    display: grid;
+    grid-column: span 5;
+    gap: var(--space-xs);
+  }
+
+  .view-all {
+    padding-top: var(--space-xl);
+  }
+
+  .view-all-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-xl);
+  }
+
+  .sort {
+    display: flex;
+    gap: var(--space-3xs);
+  }
+
+  .sort a,
+  .load-more {
+    text-underline-offset: 0.15em;
+  }
+
+  .sort a[aria-current='page'] {
+    text-decoration-thickness: 2px;
+  }
+
+  .load-more {
+    display: inline-block;
+    margin: var(--space-xl) 0 0 var(--page-inset);
+  }
+
+  @media (max-width: 768px) {
+    .featured,
+    .view-all {
+      padding: var(--space-2xl) var(--space-3xs);
+    }
+
+    .featured {
+      padding-top: 120px;
+    }
+
+    .featured-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-xl);
+      margin-top: var(--space-xs);
+    }
+
+    .lead,
+    .secondary {
+      grid-column: 1 / -1;
+    }
+
+    .secondary {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-3xs);
+    }
+
+    .view-all-header {
+      margin-bottom: var(--space-xs);
+    }
+
+    .load-more {
+      margin-left: 0;
+    }
+  }
+</style>

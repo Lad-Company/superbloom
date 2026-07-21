@@ -1,0 +1,45 @@
+---
+import EditorialCard from './EditorialCard.astro';
+import TagList from './TagList.astro';
+import type { Media, MediaRatio } from './MediaFrame.astro';
+
+interface Tag {
+  title: string | null;
+  color: string | null;
+}
+
+interface EditorialArticleItem {
+  title: string | null;
+  slug: string | null;
+  overview?: Array<{ children?: Array<{ text?: string | null }> }> | null;
+  publicationDate?: string | null;
+  cardAspectRatio: MediaRatio | null;
+  tags: Tag[] | null;
+  cardMedia: Media | null;
+}
+
+interface Props {
+  item: EditorialArticleItem;
+  showCopy?: boolean;
+  class?: string;
+}
+
+const { item, showCopy = false, class: className } = Astro.props;
+const href = item.slug ? `/articles/${item.slug}` : '#';
+const summary = item.overview
+  ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
+  .join(' ')
+  .trim();
+---
+
+<EditorialCard
+  href={href}
+  title={item.title}
+  media={item.cardMedia}
+  aspectRatio={item.cardAspectRatio}
+  summary={showCopy ? summary : undefined}
+  publicationDate={item.publicationDate}
+  class={className}
+>
+  <TagList slot="overlay" tags={item.tags} />
+</EditorialCard>

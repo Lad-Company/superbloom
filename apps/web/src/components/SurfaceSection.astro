@@ -7,6 +7,7 @@ const surfaceRoles = [
   'brand-accent',
   'brand-deep',
   'brand-muted',
+  'brand-tertiary',
 ] as const;
 
 type SurfaceRole = (typeof surfaceRoles)[number];
@@ -28,6 +29,7 @@ const vars: Record<SurfaceRole, string> = {
   'brand-accent': '--bg: var(--blue); --fg: var(--blue-fg);',
   'brand-deep': '--bg: var(--purple); --fg: var(--purple-fg);',
   'brand-muted': '--bg: var(--pink); --fg: var(--pink-fg);',
+  'brand-tertiary': '--bg: var(--green); --fg: var(--green-fg);',
 };
 ---
 

@@ -17,6 +17,20 @@ const mediaProjection = `{
   decorative
 }`;
 
+const editorialCardProjection = `
+  _id,
+  _type,
+  title,
+  "slug": slug.current,
+  overview,
+  publicationDate,
+  cardDestination,
+  externalCoverage[]{ outlet, url, isPrimary },
+  cardAspectRatio,
+  tags[]->{ title, color },
+  "cardMedia": cardMedia${mediaProjection}
+`;
+
 export const homepageQuery = defineQuery(`
   *[_type == "homepage"][0]{
     sections[]{
@@ -322,5 +336,34 @@ export const zineArticleBySlugQuery = defineQuery(`
     ][0]{
       ${articleProjection}
     }
+  }
+`);
+
+export const indexPageQuery = defineQuery(`
+  *[_type == "indexPage"][0]{
+    "lead": lead->{
+      ${editorialCardProjection}
+    },
+    "secondary": secondary[]->{
+      ${editorialCardProjection}
+    }
+  }
+`);
+
+export const indexViewAllNewestQuery = defineQuery(`
+  *[
+    _type in ["news", "editorialArticle"] &&
+    !(_id in $featuredIds)
+  ] | order(publicationDate desc)[$offset...$end]{
+    ${editorialCardProjection}
+  }
+`);
+
+export const indexViewAllOldestQuery = defineQuery(`
+  *[
+    _type in ["news", "editorialArticle"] &&
+    !(_id in $featuredIds)
+  ] | order(publicationDate asc)[$offset...$end]{
+    ${editorialCardProjection}
   }
 `);

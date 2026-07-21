@@ -30,7 +30,11 @@ const formattedDate = publicationDate
     {title && <p class="headline type-h6">{title}</p>}
     {summary && <p class="summary type-caption">{summary}</p>}
     {formattedDate && <time class="publication-date type-caption" datetime={publicationDate}>{formattedDate}</time>}
-    {externalLabel && <p class="external-label type-caption">{externalLabel}</p>}
+    {externalLabel && (
+      <p class="external-label type-caption">
+        {externalLabel} <span aria-hidden="true">↗</span>
+      </p>
+    )}
   </div>
 </a>
 
