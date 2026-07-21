@@ -163,6 +163,7 @@ export const caseStudyBySlugQuery = defineQuery(`
   *[_type == "caseStudy" && slug.current == $slug][0] {
     title,
     "slug": slug.current,
+    summary,
     client,
     capabilities[]->{ title },
     primaryColor,
@@ -375,5 +376,35 @@ export const siteSettingsQuery = defineQuery(`
     linkedInUrl,
     vimeoUrl,
     youTubeUrl
+  }
+`);
+
+export const sitemapQuery = defineQuery(`
+  {
+    "caseStudies": *[_type == "caseStudy" && defined(slug.current)]{
+      "path": "/work/" + slug.current,
+      "updatedAt": _updatedAt
+    },
+    "news": *[_type == "news" && defined(slug.current)]{
+      "path": "/news/" + slug.current,
+      "updatedAt": _updatedAt
+    },
+    "articles": *[_type == "editorialArticle" && defined(slug.current)]{
+      "path": "/articles/" + slug.current,
+      "updatedAt": _updatedAt
+    },
+    "pastIssues": *[
+      _type == "zineIssue" &&
+      defined(slug.current) &&
+      _id != *[_type == "zineLanding"][0].currentIssue._ref
+    ]{
+      "path": "/zine/issues/" + slug.current,
+      "updatedAt": _updatedAt
+    },
+    "zineArticles": *[_type == "zineIssue" && defined(slug.current)]{
+      "issueSlug": slug.current,
+      "updatedAt": _updatedAt,
+      "articles": articles[]->{ "slug": slug.current, "updatedAt": _updatedAt }
+    }
   }
 `);

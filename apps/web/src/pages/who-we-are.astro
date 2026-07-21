@@ -35,7 +35,7 @@ const faqs = page?.faqs ?? [];
 
 ---
 
-<Layout title="Who We Are — Superbloom">
+<Layout title="Who We Are" description={introStatement} image={featuredMedia?.asset?._type === 'image' ? featuredMedia.asset.url ?? undefined : undefined}>
   <SurfaceSection role="dark">
     <WhoWeAreHero heading={heroHeading} />
   </SurfaceSection>

@@ -1,0 +1,43 @@
+---
+import ContactBand from './ContactBand.astro';
+import Footer from './Footer.astro';
+import Navigation from './Navigation.astro';
+import SurfaceSection from './SurfaceSection.astro';
+---
+
+<SurfaceSection role="dark">
+  <Navigation role="light" />
+  <main class="not-found">
+    <h1 class="type-h1">Page not found</h1>
+    <p class="type-h4">
+      Try visiting our <a href="/">homepage</a> or <a href="/work">our work</a>.
+    </p>
+  </main>
+</SurfaceSection>
+<ContactBand role="brand-deep" />
+<Footer />
+
+<style>
+  .not-found {
+    display: grid;
+    min-height: 70vh;
+    align-content: center;
+    gap: var(--space-xs);
+    padding: var(--space-4xl) var(--page-inset);
+  }
+  h1,
+  p {
+    margin: 0;
+  }
+  p {
+    max-width: 28ch;
+  }
+  a {
+    text-underline-offset: 0.15em;
+  }
+  @media (max-width: 768px) {
+    .not-found {
+      padding: var(--space-3xl) var(--space-3xs);
+    }
+  }
+</style>

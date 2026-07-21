@@ -1,18 +1,23 @@
 ---
 import '../styles/fonts.css';
 import '../styles/tokens.css';
+import SEOHead from '../components/SEOHead.astro';
 
 interface Props {
   title?: string;
   description?: string;
   canonicalUrl?: string;
+  image?: string;
 }
 
 const {
   title = 'Superbloom House',
   description = 'Superbloom House helps brands make work people actually want to watch, share, and talk about.',
-  canonicalUrl,
+  canonicalUrl = Astro.url.pathname,
+  image,
 } = Astro.props;
+
+const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
 ---
 
 <!doctype html>
@@ -20,10 +25,8 @@ const {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
-    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    <SEOHead title={title} description={description} canonicalUrl={canonical} image={image} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>{title}</title>
   </head>
   <body>
     <slot />

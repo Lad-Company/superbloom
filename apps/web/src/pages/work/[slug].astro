@@ -6,17 +6,23 @@ import Footer from '../../components/Footer.astro';
 import CaseStudyComposition from '../../components/case/CaseStudyComposition.astro';
 import { sanityClient } from '../../lib/sanity';
 import { caseStudyBySlugQuery } from '../../lib/queries';
+import { seoDescription, seoImage } from '../../lib/seo';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
 
 const { slug } = Astro.params;
 const caseStudy: CaseStudyBySlugQueryResult = await sanityClient.fetch(caseStudyBySlugQuery, { slug });
 
 if (!caseStudy) {
-  return new Response(null, { status: 404, statusText: 'Not Found' });
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
 }
 ---
 
-<Layout title={`${caseStudy.title} — Superbloom`}>
+<Layout
+  title={caseStudy.title ?? 'Case Study'}
+  description={seoDescription((caseStudy as { summary?: unknown }).summary)}
+  image={seoImage(caseStudy.leadMedia)}
+>
   <CaseStudyComposition caseStudy={caseStudy}>
     <Navigation slot="navigation" role="surface" />
   </CaseStudyComposition>

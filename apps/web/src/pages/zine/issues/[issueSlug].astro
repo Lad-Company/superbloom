@@ -6,24 +6,31 @@ import ContactBand from '../../../components/ContactBand.astro';
 import IssueDetail from '../../../components/zine/IssueDetail.astro';
 import {sanityClient} from '../../../lib/sanity';
 import {issueArchiveQuery, issueBySlugQuery, zineLandingQuery} from '../../../lib/queries';
+import {seoDescription, seoImage} from '../../../lib/seo';
 
 const issueSlug = Astro.params.issueSlug;
 const issue = await sanityClient.fetch(issueBySlugQuery, {slug: issueSlug});
 
 if (!issue) {
-  return new Response(null, {status: 404, statusText: 'Not Found'});
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
 }
 
 const zineLanding = await sanityClient.fetch(zineLandingQuery);
 
-if (zineLanding?.currentIssue?.slug === issue.slug) {
+if (issue && zineLanding?.currentIssue?.slug === issue.slug) {
   return Astro.redirect('/zine', 302);
 }
 
 const pastIssues = await sanityClient.fetch(issueArchiveQuery, {slug: issue.slug});
 ---
 
-<Layout title={`${issue.title} — Superbloom Zine`} canonicalUrl={`/zine/issues/${issue.slug}`}>
+<Layout
+  title={issue.title ?? 'Zine'}
+  description={seoDescription(issue.introText)}
+  image={seoImage(issue.coverMedia)}
+  canonicalUrl={`/zine/issues/${issue.slug}`}
+>
   <Navigation role="light" />
   <IssueDetail issue={issue} pastIssues={pastIssues} />
   <ContactBand role="brand-deep" />

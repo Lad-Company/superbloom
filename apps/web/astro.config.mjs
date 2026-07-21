@@ -5,6 +5,7 @@ import UnoCSS from '@unocss/astro';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://superbloomhouse.com',
   output: 'server',
   adapter: vercel(),
   integrations: [UnoCSS()],

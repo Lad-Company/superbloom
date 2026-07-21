@@ -6,20 +6,24 @@ import ContactBand from '../../../../components/ContactBand.astro';
 import ArticleDetail from '../../../../components/editorial/ArticleDetail.astro';
 import {sanityClient} from '../../../../lib/sanity';
 import {zineArticleBySlugQuery} from '../../../../lib/queries';
+import {seoDescription, seoImage} from '../../../../lib/seo';
 
 const issueSlug = Astro.params.issueSlug;
 const articleSlug = Astro.params.articleSlug;
 const result = await sanityClient.fetch(zineArticleBySlugQuery, {issueSlug, articleSlug});
 
 if (!result?.article || !result.issueSlug) {
-  return new Response(null, {status: 404, statusText: 'Not Found'});
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
 }
 
 const article = result.article;
 ---
 
 <Layout
-  title={`${article.title} — ${result.title} — Superbloom Zine`}
+  title={`${article.title ?? 'Article'} — ${result.title ?? 'Zine'}`}
+  description={seoDescription(article.overview)}
+  image={seoImage(article.leadMedia)}
   canonicalUrl={`/zine/issues/${result.issueSlug}/${article.slug}`}
 >
   <Navigation role="light" />

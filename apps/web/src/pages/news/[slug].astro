@@ -6,17 +6,23 @@ import ContactBand from '../../components/ContactBand.astro';
 import ArticleDetail from '../../components/editorial/ArticleDetail.astro';
 import { sanityClient } from '../../lib/sanity';
 import { newsArticleBySlugQuery } from '../../lib/queries';
+import { seoDescription, seoImage } from '../../lib/seo';
 
 const { slug } = Astro.params;
 const article = await sanityClient.fetch(newsArticleBySlugQuery, { slug });
 
 if (!article) {
-  return new Response(null, { status: 404, statusText: 'Not Found' });
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
 }
 
 ---
 
-<Layout title={`${article.title} — Superbloom`}>
+<Layout
+  title={article.title ?? 'News'}
+  description={seoDescription(article.overview)}
+  image={seoImage(article.leadMedia)}
+>
   <Navigation role="surface" />
   <ArticleDetail article={article} />
   <ContactBand role="brand-deep" />

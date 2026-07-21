@@ -6,15 +6,22 @@ import ContactBand from '../../components/ContactBand.astro';
 import IssueDetail from '../../components/zine/IssueDetail.astro';
 import {sanityClient} from '../../lib/sanity';
 import {zineLandingQuery} from '../../lib/queries';
+import {seoDescription, seoImage} from '../../lib/seo';
 
 const zineLanding = await sanityClient.fetch(zineLandingQuery);
 
 if (!zineLanding?.currentIssue) {
-  return new Response(null, {status: 404, statusText: 'Not Found'});
+  Astro.response.status = 404;
+  return Astro.rewrite('/404');
 }
 ---
 
-<Layout title={`${zineLanding.currentIssue.title} — Superbloom Zine`} canonicalUrl="/zine">
+<Layout
+  title={zineLanding.currentIssue.title ?? 'Zine'}
+  description={seoDescription(zineLanding.currentIssue.introText)}
+  image={seoImage(zineLanding.currentIssue.coverMedia)}
+  canonicalUrl="/zine"
+>
   <Navigation role="light" />
   <IssueDetail issue={zineLanding.currentIssue} pastIssues={zineLanding.pastIssues ?? []} />
   <ContactBand role="brand-deep" />
