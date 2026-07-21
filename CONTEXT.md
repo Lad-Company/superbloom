@@ -140,6 +140,50 @@ _Avoid_: Label font, UI font, TT Bluescreens
 The only approved use of PP Neue Corp Condensed and Wide. These faces alternate within the Who We Are marquee and are not general-purpose display or interface type roles.
 _Avoid_: Alternate display system, marquee font
 
+**Motion Language**:
+The sitewide behavior system named Controlled Anticipation. It pairs responsive interaction feedback with deliberate, cinematic reveals. It is expressed through reusable motion primitives and never through page-specific animation conventions.
+_Avoid_: Animation style, effects package, page motion
+
+**Text Link**:
+An inline or navigational text affordance. Its canonical hover treatment is Underline Draw.
+_Avoid_: Button, control
+
+**Contained Control**:
+A button, menu item, clickable card, or other bounded interactive surface. Its canonical hover treatment is Surface Wipe.
+_Avoid_: Text link
+
+**Three-Phase Loading**:
+The canonical async sequence: immediate structural skeleton, a single visible progress cue, then a content release that inherits the destination's entry motion. Indeterminate micro-actions under 400ms may omit the sequence.
+_Avoid_: Generic spinner, loading animation
+
+**Route Transition**:
+A full-viewport navigation transition reserved exclusively for destinations reached from the Shared Site Shell's primary Navigation. Other interactions retain local motion.
+_Avoid_: Page fade, universal navigation transition
+
+**Pinned Storytelling**:
+A ScrollTrigger-controlled chapter sequence allowed on the home page and the Work, Who We Are, News & Press, and Zine navbar destinations. Shop, Cart, slugged detail pages, forms, and other minor routes use normal document scrolling.
+_Avoid_: Scroll jacking, sitewide pinning
+
+**Reduced-Motion Feedback**:
+The accessible motion mode that preserves immediate state changes, color changes, and link underlines while removing pinning, scrubbing, parallax, blur, and delayed or staggered content reveals.
+_Avoid_: Motion off, full-motion fallback
+
+**Motion Recipe**:
+An approved composition of shared motion primitives applied by a page or component. Recipes supply content-specific sequencing without reimplementing motion behavior.
+_Avoid_: Page-specific animation script, motion preset
+
+**Art-Directed Hero**:
+A designated hero section that may add one-off choreography on top of the Motion Language when a documented creative brief requires it. It still inherits the shared accessibility, loading, hover, and cleanup rules.
+_Avoid_: Unconstrained custom animation, exception page
+
+**Motion Tempo**:
+The semantic duration scale for Controlled Anticipation: instant (120ms) for press and state feedback, quick (240ms) for hover, standard (480ms) for local reveals, deliberate (800ms) for type and Route Transitions, and chapter (1.2s+) only for Pinned Storytelling.
+_Avoid_: Arbitrary component timing, duration token
+
+**Motion Easing**:
+The Controlled Anticipation easing discipline: decisive ease-out for entrances and local feedback, `power3.inOut` for Route Transitions, and linear scrub only for Pinned Storytelling. Elastic, bouncy, and playful easing are excluded from shared primitives.
+_Avoid_: Spring motion, arbitrary easing
+
 **Media Frame**:
 The reusable visual container for image or video media. It establishes sizing, crop, media overlays, loading priority, and visibility-aware playback without knowing the content type or destination of its parent. Hidden video is always paused, including inactive media, offscreen media, and media in a background browser tab.
 _Avoid_: Card media, thumbnail component, image card

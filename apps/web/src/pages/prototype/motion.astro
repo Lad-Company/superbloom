@@ -1,0 +1,194 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import MotionLanguagePrototype from '../../components/prototype/MotionLanguagePrototype.astro';
+
+// PROTOTYPE: Four sitewide motion languages, switchable via /prototype/motion?variant=.
+const variants = {
+  bloom: {
+    number: '01',
+    name: 'Bloom',
+    principle: 'A soft, buoyant release. Things gather, then open.',
+    tempo: 'Slow in, quick out',
+    movement: 'Lift + settle',
+    color: '#99a224',
+  },
+  editorial: {
+    number: '02',
+    name: 'Editorial',
+    principle: 'Type sets the pace. The cut is as important as the move.',
+    tempo: 'Measured beats',
+    movement: 'Masked reveal',
+    color: '#e6c6e2',
+  },
+  signal: {
+    number: '03',
+    name: 'Signal',
+    principle: 'Fast, declarative, graphic. Motion carries a point of view.',
+    tempo: 'Immediate cuts',
+    movement: 'Snap + offset',
+    color: '#3993dd',
+  },
+  cinema: {
+    number: '04',
+    name: 'Cinema',
+    principle: 'Atmospheric and patient. The frame is always in motion.',
+    tempo: 'Long dissolves',
+    movement: 'Drift + focus',
+    color: '#3f2293',
+  },
+} as const;
+
+type Variant = keyof typeof variants;
+const requestedVariant = Astro.url.searchParams.get('variant') as Variant;
+const variant: Variant = requestedVariant in variants ? requestedVariant : 'bloom';
+const current = variants[variant];
+---
+
+<Layout title="Motion language prototype">
+  <MotionLanguagePrototype />
+  <style is:global>
+    .motion-prototype,
+    .motion-prototype + .prototype-switcher {
+      display: none !important;
+    }
+  </style>
+  <main class:list={['motion-prototype', `is-${variant}`]} style={`--accent: ${current.color}`}>
+    <section class="stage" aria-label={`${current.name} motion language`}>
+      <header class="masthead motion-enter">
+        <a href="/" class="wordmark">Superbloom<br />House</a>
+        <p class="eyebrow">Motion study / {current.number}</p>
+        <button class="menu-trigger" type="button">Menu <i></i></button>
+      </header>
+
+      <div class="hero">
+        <p class="hero-kicker motion-enter">One language, every touchpoint</p>
+        <h1 class="motion-headline" aria-label="Make it move differently">
+          <span>Make it</span>
+          <span>move</span>
+          <span>differently.</span>
+        </h1>
+        <div class="hero-bottom motion-enter">
+          <p>{current.principle}</p>
+          <button class="primary-action" type="button">Explore the work <b>↗</b></button>
+        </div>
+      </div>
+
+      <div class="specimen-strip motion-enter">
+        <div class="load-card" aria-label="Loading state example">
+          <div class="load-image"><i></i><i></i><i></i></div>
+          <span>Loading work</span>
+        </div>
+        <div class="motion-rules">
+          <p><b>Tempo</b>{current.tempo}</p>
+          <p><b>Gesture</b>{current.movement}</p>
+          <p><b>Scope</b>Page, type, hover, load</p>
+        </div>
+        <button class="replay" type="button" data-replay>Replay motion <span>↻</span></button>
+      </div>
+    </section>
+
+    <section class="transition-demo" aria-label="Page transition example">
+      <div class="transition-copy">
+        <p class="eyebrow">Page transition</p>
+        <h2>A change<br />of scene.</h2>
+      </div>
+      <div class="transition-frame">
+        <div class="frame-label">Next / 02</div>
+        <div class="frame-orb"></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="prototype-switcher" aria-label="Motion prototype variants">
+    <a href={`/prototype/motion?variant=${variant === 'bloom' ? 'cinema' : variant === 'editorial' ? 'bloom' : variant === 'signal' ? 'editorial' : 'signal'}`} aria-label="Previous style">←</a>
+    <span><b>{current.number}</b> {current.name}</span>
+    <a href={`/prototype/motion?variant=${variant === 'bloom' ? 'editorial' : variant === 'editorial' ? 'signal' : variant === 'signal' ? 'cinema' : 'bloom'}`} aria-label="Next style">→</a>
+  </nav>
+
+  <script>
+    const root = document.querySelector<HTMLElement>('.motion-prototype');
+    const replay = document.querySelector<HTMLButtonElement>('[data-replay]');
+    replay?.addEventListener('click', () => {
+      root?.classList.remove('is-playing');
+      requestAnimationFrame(() => root?.classList.add('is-playing'));
+    });
+
+    const variants = ['bloom', 'editorial', 'signal', 'cinema'];
+    document.addEventListener('keydown', (event) => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      const current = new URL(window.location.href).searchParams.get('variant') || 'bloom';
+      const index = variants.indexOf(current);
+      const next = event.key === 'ArrowRight'
+        ? variants[(index + 1) % variants.length]
+        : variants[(index - 1 + variants.length) % variants.length];
+      window.location.assign(`/prototype/motion?variant=${next}`);
+    });
+  </script>
+
+  <style>
+    .motion-prototype {
+      --ink: #080808;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--accent);
+      color: var(--ink);
+    }
+    .stage { min-height: min(830px, 100vh); padding: 28px var(--page-gutter) 24px; }
+    .masthead, .hero-bottom, .specimen-strip { display: flex; justify-content: space-between; gap: 24px; }
+    .masthead { align-items: flex-start; }
+    .wordmark, .menu-trigger { color: inherit; font: 500 17px/0.88 var(--font-display-tight); text-decoration: none; }
+    .eyebrow, .load-card span, .motion-rules { margin: 0; font: 500 12px/1 var(--font-body); text-transform: uppercase; letter-spacing: .02em; }
+    .menu-trigger, .primary-action, .replay { border: 0; color: inherit; background: transparent; cursor: pointer; }
+    .menu-trigger i { display: inline-block; width: 24px; margin-left: 7px; border-top: 1px solid; vertical-align: middle; transition: width .3s ease; }
+    .menu-trigger:hover i { width: 38px; }
+    .hero { display: flex; min-height: 640px; padding-top: clamp(100px, 14vh, 180px); flex-direction: column; justify-content: space-between; }
+    .hero-kicker { margin: 0 0 28px; }
+    .motion-headline { margin: 0; max-width: 980px; font: 400 clamp(84px, 13.4vw, 205px)/.74 var(--font-display-tight); letter-spacing: -.075em; text-transform: uppercase; }
+    .motion-headline span { display: block; }
+    .motion-headline span:nth-child(2) { padding-left: 13.5%; }
+    .motion-headline span:nth-child(3) { text-align: right; }
+    .hero-bottom { align-items: end; margin-top: 42px; }
+    .hero-bottom p { max-width: 245px; margin: 0; font-size: 16px; }
+    .primary-action { min-width: 180px; padding: 15px 16px; border: 1px solid currentColor; border-radius: 999px; font: 500 14px var(--font-body); text-align: left; transition: background .35s ease, color .35s ease, transform .35s ease; }
+    .primary-action b { float: right; font-size: 18px; line-height: 12px; }
+    .primary-action:hover { background: var(--ink); color: var(--accent); transform: scale(1.04); }
+    .specimen-strip { align-items: end; padding-top: 50px; }
+    .load-card { display: grid; grid-template-columns: 86px auto; gap: 10px; align-items: end; }
+    .load-image { position: relative; height: 54px; overflow: hidden; background: var(--ink); }
+    .load-image i { position: absolute; inset: 0 auto 0 0; width: 34%; background: color-mix(in srgb, var(--accent) 70%, white); animation: load-slide 1.6s infinite cubic-bezier(.6, 0, .4, 1); }
+    .load-image i:nth-child(2) { left: 34%; background: color-mix(in srgb, var(--accent) 45%, black); animation-delay: .15s; }
+    .load-image i:nth-child(3) { left: 68%; background: var(--ink); animation-delay: .3s; }
+    .motion-rules { display: flex; gap: 30px; }
+    .motion-rules p { margin: 0; display: grid; gap: 6px; }
+    .motion-rules b { font-weight: 500; opacity: .55; }
+    .replay { font: 500 12px var(--font-body); text-transform: uppercase; }
+    .replay span { padding-left: 5px; font-size: 16px; }
+    .transition-demo { display: grid; grid-template-columns: 1fr 1fr; min-height: 480px; background: var(--ink); color: white; }
+    .transition-copy { padding: 32px var(--page-gutter); display: flex; flex-direction: column; justify-content: space-between; }
+    .transition-copy h2 { margin: 0; font: 400 clamp(55px, 7vw, 110px)/.77 var(--font-display-tight); letter-spacing: -.06em; text-transform: uppercase; }
+    .transition-frame { position: relative; overflow: hidden; background: color-mix(in srgb, var(--accent) 75%, white); }
+    .frame-label { position: absolute; top: 32px; right: var(--page-gutter); z-index: 1; font: 500 12px var(--font-body); text-transform: uppercase; }
+    .frame-orb { position: absolute; width: 64%; aspect-ratio: 1; top: 14%; left: 18%; border-radius: 50%; background: var(--accent); mix-blend-mode: multiply; filter: blur(0); animation: orb-drift 8s ease-in-out infinite alternate; }
+    .motion-enter { animation: enter .8s both cubic-bezier(.2, .8, .2, 1); }
+    .hero-kicker { animation-delay: .05s; } .motion-headline { animation: headline .9s both .12s cubic-bezier(.2, .8, .2, 1); } .hero-bottom { animation-delay: .3s; } .specimen-strip { animation-delay: .42s; }
+    .prototype-switcher { position: fixed; z-index: 20; bottom: 20px; left: 50%; display: flex; align-items: center; gap: 18px; padding: 8px; transform: translateX(-50%); border: 1px solid rgba(255,255,255,.25); border-radius: 999px; background: rgba(8,8,8,.85); box-shadow: 0 10px 35px rgba(0,0,0,.25); color: #fff; backdrop-filter: blur(16px); }
+    .prototype-switcher a { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; color: inherit; text-decoration: none; transition: background .2s ease; }
+    .prototype-switcher a:hover { background: rgba(255,255,255,.18); }
+    .prototype-switcher span { min-width: 115px; font: 500 12px var(--font-body); text-align: center; text-transform: uppercase; }
+    .prototype-switcher b { margin-right: 5px; color: var(--accent); }
+
+    .is-editorial .stage { background: #e6c6e2; } .is-editorial .motion-headline { letter-spacing: -.1em; } .is-editorial .motion-headline span { overflow: hidden; } .is-editorial .motion-headline span::first-letter { color: #fff; } .is-editorial .primary-action { border-radius: 0; } .is-editorial .frame-orb { border-radius: 0; animation-name: editorial-wipe; }
+    .is-signal .stage { background: #3993dd; } .is-signal .motion-headline { font-style: italic; transform: skewY(-3deg); } .is-signal .motion-headline span:nth-child(2) { padding-left: 0; transform: translateX(20%); } .is-signal .primary-action { border-radius: 0; box-shadow: 5px 5px 0 var(--ink); } .is-signal .primary-action:hover { transform: translate(5px, 5px); box-shadow: 0 0 0 var(--ink); } .is-signal .frame-orb { border-radius: 0; animation-name: signal-shift; }
+    .is-cinema { --ink: #fff; color: #fff; } .is-cinema .stage { background: #3f2293; } .is-cinema .motion-headline { font-weight: 300; letter-spacing: -.065em; } .is-cinema .motion-headline span:nth-child(2) { padding-left: 25%; } .is-cinema .primary-action:hover { background: #fff; color: #3f2293; } .is-cinema .load-image { background: #fff; } .is-cinema .frame-orb { background: #e6c6e2; filter: blur(22px); animation-duration: 12s; }
+    .is-playing .motion-enter, .is-playing .motion-headline { animation: none; } .is-playing .motion-enter { animation: enter .8s both cubic-bezier(.2, .8, .2, 1); } .is-playing .motion-headline { animation: headline .9s both .12s cubic-bezier(.2, .8, .2, 1); }
+    @keyframes enter { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes headline { from { opacity: 0; transform: translateY(105%); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes load-slide { 0%, 100% { transform: translateX(-115%); } 50% { transform: translateX(310%); } }
+    @keyframes orb-drift { from { transform: translate(-16%, -8%) scale(.88); } to { transform: translate(19%, 15%) scale(1.24); } }
+    @keyframes editorial-wipe { from { transform: translateX(-90%) scaleX(.3); } to { transform: translateX(75%) scaleX(1.5); } }
+    @keyframes signal-shift { 0%, 45% { transform: translate(-15%, 16%); } 50%, 100% { transform: translate(48%, -7%); } }
+    @media (max-width: 720px) { .stage { min-height: 740px; padding-top: 20px; } .masthead .eyebrow { display: none; } .hero { min-height: 520px; padding-top: 100px; } .motion-headline { font-size: clamp(69px, 21vw, 120px); } .hero-bottom { align-items: start; flex-direction: column; } .specimen-strip { padding-top: 30px; flex-wrap: wrap; } .motion-rules { display: none; } .transition-demo { grid-template-columns: 1fr; min-height: 550px; } .transition-copy { min-height: 270px; } .transition-frame { min-height: 280px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+  </style>
+</Layout>
