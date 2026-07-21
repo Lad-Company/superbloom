@@ -111,7 +111,7 @@ export const zineIssue = defineType({
       of: [{type: 'reference', to: [{type: 'zineArticle'}]}],
       validation: (rule) => [
         rule.required().custom(validateArticlesMinOneAndUnique),
-        rule.custom(validateArticlesNotInAnotherIssue).warning(),
+        rule.custom(validateArticlesNotInAnotherIssue),
       ],
     }),
     defineField({
