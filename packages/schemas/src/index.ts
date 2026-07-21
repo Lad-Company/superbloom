@@ -28,6 +28,7 @@ import {zineArticle} from './zineArticle'
 import {zineLanding} from './zineLanding'
 import {homeZine} from './homeZine'
 import {indexPage} from './indexPage'
+import {siteSettings} from './siteSettings'
 
 export const schemaTypes = [
   capability,
@@ -60,4 +61,5 @@ export const schemaTypes = [
   zineLanding,
   homeZine,
   indexPage,
+  siteSettings,
 ]

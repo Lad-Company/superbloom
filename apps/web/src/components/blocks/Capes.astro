@@ -3,6 +3,7 @@ import MediaFrame, {type Media} from '../MediaFrame.astro';
 
 interface Capability {
   title: string | null;
+  subtitle?: string | null;
   slug: string | null;
   media?: Media | null;
 }
@@ -13,13 +14,14 @@ interface Props {
 }
 
 const { headline, capabilities } = Astro.props;
+const displayedCapabilities = capabilities.slice(0, 6);
 ---
 
 <section class="capes" data-capes>
   <div class="pin" data-pin>
     <div class="media-stack">
       {
-        capabilities.map((cap, i) => (
+        displayedCapabilities.map((cap, i) => (
           <MediaFrame
             media={cap.media}
             ratio="fill"
@@ -31,9 +33,10 @@ const { headline, capabilities } = Astro.props;
               {headline && <p class="headline type-h6">{headline}</p>}
               <ol class="list">
                 {
-                  capabilities.map((c, idx) => (
+                  displayedCapabilities.map((c, idx) => (
                     <li class:list={['type-h3', { 'is-active': idx === i }]} data-cap data-index={idx}>
-                      {c.title}
+                      <span>{c.title}</span>
+                      {c.subtitle && <span class="subtitle type-eyebrow">{c.subtitle}</span>}
                     </li>
                   ))
                 }
@@ -105,12 +108,18 @@ const { headline, capabilities } = Astro.props;
   }
 
   .list li {
+    display: flex;
+    flex-direction: column;
     color: var(--bg-60);
     transition: color 0.4s ease;
   }
 
   .list li.is-active {
     color: var(--bg);
+  }
+
+  .subtitle {
+    margin-top: var(--space-3xs);
   }
 </style>
 

@@ -14,7 +14,7 @@ export const capesBlock = defineType({
       title: 'Capabilities',
       type: 'array',
       of: [{type: 'reference', to: [{type: 'capability'}]}],
-      validation: (rule) => rule.min(1),
+      validation: (rule) => rule.min(1).max(6),
     }),
   ],
   preview: {

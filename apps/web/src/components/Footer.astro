@@ -1,19 +1,30 @@
 ---
 import SurfaceSection from './SurfaceSection.astro';
+import { sanityClient } from '../lib/sanity';
+import { siteSettingsQuery } from '../lib/queries';
+import type { SiteSettingsQueryResult } from '../sanity.types';
 
 const nav = [
-  { label: 'Our Work', href: '/work' },
+  { label: 'Work', href: '/work' },
   { label: 'Who We Are', href: '/who-we-are' },
-  { label: 'News & Press', href: '#' },
-  { label: 'Zine', href: '#' },
-  { label: 'Shop', href: '#' },
+  { label: 'Index', href: '/index' },
+  { label: 'Zine', href: '/zine' },
+  { label: 'Shop', href: '/shop' },
 ];
-const social = ['Instagram', 'LinkedIn', 'Vimeo', 'YouTube'];
+const siteSettings = await sanityClient.fetch<SiteSettingsQueryResult>(siteSettingsQuery);
+const social = [
+  { label: 'Instagram', href: siteSettings?.instagramUrl },
+  { label: 'LinkedIn', href: siteSettings?.linkedInUrl },
+  { label: 'Vimeo', href: siteSettings?.vimeoUrl },
+  { label: 'YouTube', href: siteSettings?.youTubeUrl },
+].filter((link): link is { label: string; href: string } => Boolean(link.href));
+const currentYear = new Date().getFullYear();
 ---
 
 <SurfaceSection role="dark">
   <footer class="footer type-eyebrow">
     <div class="newsletter">
+      <a href="/" class="logo type-eyebrow">Superbloom House</a>
       <p class="type-h3 nl-heading">Subscribe to our newsletter</p>
       <form class="nl-form" onsubmit="return false">
         <input class="nl-input type-eyebrow" type="email" placeholder="Your email" aria-label="Email address" />
@@ -38,11 +49,15 @@ const social = ['Instagram', 'LinkedIn', 'Vimeo', 'YouTube'];
       <ul class="col">
         {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
       </ul>
-      <ul class="col">
-        {social.map((label) => <li><a href="#">{label}</a></li>)}
-      </ul>
+      {social.length > 0 && (
+        <ul class="col">
+          {social.map((item) => (
+            <li><a href={item.href} target="_blank" rel="noopener noreferrer">{item.label}</a></li>
+          ))}
+        </ul>
+      )}
       <div class="col">
-        <p>All content ©<br />Superbloomhouse 2026</p>
+        <p>All content ©<br />Superbloom House {currentYear}</p>
       </div>
     </div>
   </footer>
@@ -56,6 +71,11 @@ const social = ['Instagram', 'LinkedIn', 'Vimeo', 'YouTube'];
     padding: 0 0 var(--space-2xl);
     border-bottom: 1px solid var(--fg-12);
     margin-bottom: var(--space-2xl);
+  }
+  .logo {
+    display: inline-block;
+    margin-bottom: var(--space-xs);
+    text-decoration: none;
   }
   .nl-heading {
     margin: 0 0 var(--space-xs);

@@ -44,6 +44,7 @@ export const homepageQuery = defineQuery(`
         headline,
         capabilities[]->{
           title,
+          subtitle,
           "slug": slug.current,
           "media": media${mediaProjection}
         }
@@ -365,5 +366,14 @@ export const indexViewAllOldestQuery = defineQuery(`
     !(_id in $featuredIds)
   ] | order(publicationDate asc)[$offset...$end]{
     ${editorialCardProjection}
+  }
+`);
+
+export const siteSettingsQuery = defineQuery(`
+  *[_type == "siteSettings"][0]{
+    instagramUrl,
+    linkedInUrl,
+    vimeoUrl,
+    youTubeUrl
   }
 `);
