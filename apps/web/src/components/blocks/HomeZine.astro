@@ -23,7 +23,7 @@ const href = issue?.slug ? (issue.slug === currentIssueSlug ? '/zine' : `/zine/i
   <MediaFrame media={promoMedia} ratio="4:5" title={promoHeadline} />
   <div class="content">
     <h2 id="home-zine-heading" class="type-h3">{promoHeadline}</h2>
-    {promoIntro && <PortableText value={promoIntro} />}
+    {promoIntro && <PortableText value={promoIntro} class="type-caption" />}
     <Button href={href} label={ctaLabel ?? 'Explore the Zine'} />
   </div>
 </section>
@@ -31,7 +31,7 @@ const href = issue?.slug ? (issue.slug === currentIssueSlug ? '/zine' : `/zine/i
 <style>
   .home-zine {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 483px);
     gap: var(--page-gutter);
     padding: var(--space-4xl) var(--page-inset);
     background: var(--green);
@@ -43,7 +43,6 @@ const href = issue?.slug ? (issue.slug === currentIssueSlug ? '/zine' : `/zine/i
     flex-direction: column;
     align-items: start;
     gap: var(--space-xs);
-    padding: 0 var(--space-xs);
   }
 
   h2 {
@@ -53,10 +52,11 @@ const href = issue?.slug ? (issue.slug === currentIssueSlug ? '/zine' : `/zine/i
   @media (max-width: 1023px) {
     .home-zine {
       grid-template-columns: 1fr;
+      padding-inline: var(--space-3xs);
     }
 
-    .content {
-      padding: 0;
+    h2 {
+      font-size: 48px;
     }
   }
 </style>
