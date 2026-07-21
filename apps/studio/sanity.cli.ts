@@ -5,7 +5,10 @@ export default defineCliConfig({
     projectId: 'l9mhqdtj',
     dataset: 'production',
   },
-  studioHost: 'superbloom',
+  studioHost: 'superbloom-cms',
+  deployment: {
+    appId: 'j0qgi6ycq5on9euxin542pro',
+  },
   typegen: {
     path: '../web/src/**/*.{ts,tsx}',
     schema: './schema.json',

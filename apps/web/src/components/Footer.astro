@@ -10,6 +10,7 @@ const nav = [
   { label: 'News & Press', href: '/index' },
   { label: 'Zine', href: '/zine' },
   { label: 'Shop', href: '/shop' },
+  { label: 'Edit', href: 'https://superbloom-cms.sanity.studio', external: true },
 ];
 const siteSettings = await sanityClient.fetch<SiteSettingsQueryResult>(siteSettingsQuery);
 const social = [
@@ -51,7 +52,13 @@ const currentYear = new Date().getFullYear();
         </p>
       </div>
       <ul class="col">
-        {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        {nav.map((item) => (
+          <li>
+            <a href={item.href} target={item.external ? '_blank' : undefined} rel={item.external ? 'noopener noreferrer' : undefined}>
+              {item.label}
+            </a>
+          </li>
+        ))}
       </ul>
       {social.length > 0 && (
         <ul class="col">

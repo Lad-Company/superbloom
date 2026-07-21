@@ -256,11 +256,11 @@ const current = styles[style];
   });
 
   document.querySelector<HTMLButtonElement>('[data-load-control]')?.addEventListener('click', (event) => {
-    const control = event.currentTarget;
+    const control = event.currentTarget as HTMLButtonElement | null;
     const preview = document.querySelector<HTMLElement>('[data-load-preview]');
     const status = document.querySelector<HTMLElement>('[data-load-status]');
     const title = document.querySelector<HTMLElement>('[data-load-title]');
-    if (!preview || control.dataset.loading) return;
+    if (!preview || !control || control.dataset.loading) return;
     control.dataset.loading = 'true';
     const value = control.querySelector('i');
     status && (status.textContent = 'Buffering film');
@@ -281,7 +281,8 @@ const current = styles[style];
 
   document.querySelector<HTMLFormElement>('[data-contact-form]')?.addEventListener('submit', (event) => {
     event.preventDefault();
-    const form = event.currentTarget;
+    const form = event.currentTarget as HTMLFormElement | null;
+    if (!form) return;
     const label = form.querySelector<HTMLElement>('[data-contact-label]');
     const input = form.querySelector<HTMLInputElement>('input');
     if (!label || !input) return;
@@ -291,14 +292,16 @@ const current = styles[style];
   });
 
   document.querySelector<HTMLButtonElement>('[data-sound]')?.addEventListener('click', (event) => {
-    const button = event.currentTarget;
+    const button = event.currentTarget as HTMLButtonElement | null;
+    if (!button) return;
     const isActive = button.getAttribute('aria-pressed') === 'true';
     button.setAttribute('aria-pressed', String(!isActive));
     button.querySelector('span')!.textContent = isActive ? 'Sound off' : 'Sound on';
   });
 
   document.querySelector<HTMLButtonElement>('[data-pulse]')?.addEventListener('click', (event) => {
-    const button = event.currentTarget;
+    const button = event.currentTarget as HTMLButtonElement | null;
+    if (!button) return;
     button.classList.toggle('is-playing');
     button.querySelector('span')!.textContent = button.classList.contains('is-playing') ? 'Pause the reel' : 'Play the reel';
   });
