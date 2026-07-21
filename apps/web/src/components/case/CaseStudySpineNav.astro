@@ -60,6 +60,7 @@ import { caseStudySections } from '../../lib/caseStudySections';
         block: 'start',
       });
       history.replaceState(null, '', link.hash);
+      section.focus({ preventScroll: true });
       setActive(section.id);
     };
     clickHandlers.set(link, handleClick);

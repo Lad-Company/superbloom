@@ -17,7 +17,7 @@ interface Props {
 const { id, label, section, title } = Astro.props;
 ---
 
-<SurfaceSection role="light" id={id} class="narrative-surface">
+<SurfaceSection role="light" id={id} tabindex={-1} class="narrative-surface">
   <div class="narrative-section">
     <div class="copy">
       <h2 class="type-h5">{label}</h2>

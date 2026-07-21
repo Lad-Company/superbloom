@@ -15,9 +15,9 @@ const { id, label, results } = Astro.props;
 const role = results.surfaceRole === 'case-secondary' ? 'case-secondary' : 'case-primary';
 ---
 
-<SurfaceSection role={role} id={id} class="results-surface">
+<SurfaceSection role={role} id={id} tabindex={-1} class="results-surface">
   <div class="results">
-    <h2 class="type-eyebrow">{label}</h2>
+    <h2 class="type-h5">{label}</h2>
     <ul>
       {(results.stats ?? []).map((stat) => (
         <li>
