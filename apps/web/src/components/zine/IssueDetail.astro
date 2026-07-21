@@ -1,5 +1,4 @@
 ---
-import Button from '../Button.astro';
 import MediaFrame, {type Media, type MediaRatio} from '../MediaFrame.astro';
 import PortableText from '../PortableText.astro';
 import ZineArticleCard from './ZineArticleCard.astro';
@@ -21,7 +20,7 @@ type PastIssue = {
   title?: string | null;
   slug?: string | null;
   coverAspectRatio?: MediaRatio | null;
-  coverMedia?: Media | null;
+  cardMedia?: Media | null;
 };
 
 interface Props {
@@ -30,13 +29,14 @@ interface Props {
     title?: string | null;
     slug?: string | null;
     coverAspectRatio?: MediaRatio | null;
-    coverMedia?: Media | null;
+    cardMedia?: Media | null;
+    heroMedia?: Media | null;
     introHeadline?: string | null;
     introText?: TextBlock[] | null;
     introMedia?: Media[] | null;
     editorLetter?: {headline?: string | null; body?: TextBlock[] | null; media?: Media | null} | null;
     articles?: Article[] | null;
-    pdfUrl?: string | null;
+    issuuUrl?: string | null;
   };
   pastIssues?: PastIssue[];
 }
@@ -44,26 +44,46 @@ interface Props {
 const {issue, pastIssues = []} = Astro.props;
 const articles = issue.articles ?? [];
 const introMedia = issue.introMedia ?? [];
+const hasIntro = Boolean(issue.introHeadline || issue.introText || introMedia.length > 0);
+const issuuEmbedUrl = (() => {
+  if (!issue.issuuUrl) return null;
+
+  try {
+    const url = new URL(issue.issuuUrl);
+    if (url.hostname === 'e.issuu.com') return url.toString();
+
+    const [, publisher, docs, publication] = url.pathname.split('/');
+    if (docs === 'docs' && publisher && publication) {
+      const params = new URLSearchParams({d: publication, u: publisher});
+      return `https://e.issuu.com/embed.html?${params}`;
+    }
+  } catch {
+    return null;
+  }
+
+  return issue.issuuUrl;
+})();
 ---
 
 <article class="issue-detail">
   <header class="hero">
     <MediaFrame
-      media={issue.coverMedia}
-      ratio={issue.coverAspectRatio ?? '16:9'}
+      media={issue.heroMedia}
+      ratio="16:9"
       title={issue.title}
       priority
     />
     <div class="hero-copy">
-      <p class="type-h4">Issue No. {issue.issueNumber}</p>
+      {issue.issueNumber && <p class="type-h4">Issue No. {issue.issueNumber}</p>}
       <h1 class="type-h1">{issue.title}</h1>
-      <a class="explore" href="#issue-intro">Explore the Issue</a>
+      <a class="explore" href={hasIntro ? '#issue-intro' : '#flipbook'}>Explore the Issue</a>
     </div>
   </header>
 
-  <section id="issue-intro" class="intro" aria-labelledby="intro-heading">
+  {hasIntro && (
+    <section id="issue-intro" class="intro" aria-labelledby="intro-heading">
     <div class="intro-copy">
-      <h2 id="intro-heading" class="type-h3">{issue.introHeadline}</h2>
+      {issue.introHeadline && <h2 id="intro-heading" class="type-h3">{issue.introHeadline}</h2>}
       {issue.introText && <PortableText value={issue.introText} class="type-h5" />}
     </div>
     <div class="collage" aria-hidden="true">
@@ -71,20 +91,33 @@ const introMedia = issue.introMedia ?? [];
         <MediaFrame media={media} ratio={index === 2 || index === 4 ? '3:2' : '1:1'} />
       ))}
     </div>
-  </section>
+    </section>
+  )}
 
   {issue.editorLetter && (
     <section class="editor-letter" aria-labelledby="editor-letter-heading">
-      <MediaFrame media={issue.editorLetter.media} ratio="4:5" title={issue.editorLetter.headline} />
+      {issue.editorLetter.media && (
+        <MediaFrame media={issue.editorLetter.media} ratio="4:5" title={issue.editorLetter.headline} />
+      )}
       <div>
-        <h2 id="editor-letter-heading" class="type-h3">{issue.editorLetter.headline}</h2>
+        <h2 id="editor-letter-heading" class="type-h3">
+          {issue.editorLetter.headline ?? 'Letter from the Editor'}
+        </h2>
         {issue.editorLetter.body && <PortableText value={issue.editorLetter.body} />}
-        {issue.pdfUrl && (
-          <a class="read-zine" href={issue.pdfUrl} target="_blank" rel="noopener noreferrer">
-            Read the Zine <span class="sr-only">(opens in a new tab)</span>
-          </a>
-        )}
       </div>
+    </section>
+  )}
+
+  {issuuEmbedUrl && (
+    <section id="flipbook" class="flipbook" aria-labelledby="flipbook-heading">
+      <h2 id="flipbook-heading" class="type-h3">Read the Zine</h2>
+      <iframe
+        src={issuuEmbedUrl}
+        title={`${issue.title ?? 'Zine'} flipbook`}
+        allow="clipboard-write; fullscreen"
+        allowfullscreen
+        loading="lazy"
+      />
     </section>
   )}
 
@@ -103,12 +136,6 @@ const introMedia = issue.introMedia ?? [];
 
   <PastIssues issues={pastIssues} />
 
-  {issue.pdfUrl && (
-    <div class="pdf-cta">
-      <Button href={issue.pdfUrl} label="Read the Zine" target="_blank" rel="noopener noreferrer" />
-      <span class="type-caption">Opens in a new tab</span>
-    </div>
-  )}
 </article>
 
 <style>
@@ -216,6 +243,19 @@ const introMedia = issue.introMedia ?? [];
     text-transform: uppercase;
   }
 
+  .flipbook {
+    padding: var(--space-4xl) var(--page-inset);
+    background: #000;
+    color: #fff;
+  }
+
+  .flipbook iframe {
+    width: 100%;
+    height: min(80svh, 900px);
+    margin-top: var(--space-xl);
+    border: 0;
+  }
+
   .stories {
     padding: var(--space-4xl) var(--page-inset);
     color: #fff;
@@ -227,13 +267,6 @@ const introMedia = issue.introMedia ?? [];
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--page-gutter);
     margin-top: var(--space-xl);
-  }
-
-  .pdf-cta {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3xs);
-    padding: var(--space-xl) var(--page-inset);
   }
 
   .sr-only {

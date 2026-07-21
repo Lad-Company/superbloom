@@ -8,12 +8,10 @@ import { homepageQuery } from '../lib/queries';
 import type { HomepageQueryResult } from '../sanity.types';
 
 const homepage: HomepageQueryResult = await sanityClient.fetch(homepageQuery);
-const sections = homepage?.sections ?? [];
-const navigationRole = sections[0]?._type === 'newsBlock' ? 'dark' : 'light';
 ---
 
 <Layout>
-  <Navigation role={navigationRole} />
-  <HomepageComposition sections={sections} />
+  <Navigation role="light" />
+  {homepage && <HomepageComposition homepage={homepage} />}
   <Footer />
 </Layout>

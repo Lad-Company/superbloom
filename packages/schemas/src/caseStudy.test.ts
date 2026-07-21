@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vitest'
 import {caseStudy} from './caseStudy'
-import {news} from './news'
+import {article} from './article'
 import {caseStudyNarrativeSection} from './caseStudyNarrativeSection'
 import {caseStudyResults} from './caseStudyResults'
 import {caseStudyFullBleedMedia} from './caseStudyFullBleedMedia'
@@ -96,10 +96,10 @@ describe('Case Study Spine Schema', () => {
   })
 
   describe('caseStudyResults schema', () => {
-    it('has required surfaceRole field', () => {
-      const roleField = caseStudyResults.fields?.find((f) => f.name === 'surfaceRole')
+    it('has required background color field', () => {
+      const roleField = caseStudyResults.fields?.find((f) => f.name === 'backgroundColor')
       expect(roleField).toBeDefined()
-      expect((roleField as any)?.initialValue).toBe('case-primary')
+      expect((roleField as any)?.initialValue).toBe('primary')
     })
 
     it('has required stats array with 1-4 items', () => {
@@ -124,14 +124,16 @@ describe('Case Study Spine Schema', () => {
       expect(mediaField?.type).toBe('mediaBox')
     })
 
-    it('caseStudyTextMedia requires text, mediaBox, and position', () => {
+    it('caseStudyTextMedia requires text, mediaBox, position, and width', () => {
       const textField = caseStudyTextMedia.fields?.find((f) => f.name === 'text')
       const mediaField = caseStudyTextMedia.fields?.find((f) => f.name === 'mediaBox')
       const posField = caseStudyTextMedia.fields?.find((f) => f.name === 'mediaPosition')
+      const widthField = caseStudyTextMedia.fields?.find((f) => f.name === 'mediaWidth')
 
       expect(textField).toBeDefined()
       expect(mediaField).toBeDefined()
       expect(posField).toBeDefined()
+      expect(widthField).toBeDefined()
 
       expect((posField as any)?.options?.list).toEqual(['left', 'right'])
     })
@@ -161,11 +163,11 @@ describe('Case Study Spine Schema', () => {
       // Should have validation that makes it required
     })
 
-    it('both color fields accept hex format', () => {
+    it('both color fields use color pickers', () => {
       const primaryField = caseStudy.fields?.find((f) => f.name === 'primaryColor')
       const secondaryField = caseStudy.fields?.find((f) => f.name === 'secondaryColor')
-      expect(primaryField?.type).toBe('string')
-      expect(secondaryField?.type).toBe('string')
+      expect(primaryField?.type).toBe('color')
+      expect(secondaryField?.type).toBe('color')
     })
   })
 
@@ -192,10 +194,10 @@ describe('Case Study Spine Schema', () => {
       expect(ofType).toBe('reference')
     })
 
-    it('press references news type', () => {
+    it('press references article type', () => {
       const pressField = caseStudy.fields?.find((f) => f.name === 'press')
       const toType = (pressField as any)?.of?.[0]?.to?.[0]?.type
-      expect(toType).toBe('news')
+      expect(toType).toBe('article')
     })
   })
 
@@ -231,10 +233,10 @@ describe('Case Study Spine Schema', () => {
     })
   })
 
-  describe('contract: case study media layout types not in news', () => {
-    it('news body accepts only article section types', () => {
-      const newsBodyField = news.fields?.find((f) => f.name === 'body')
-      const ofTypes = (newsBodyField as any)?.of?.map?.((item: any) => item.type) ?? []
+  describe('contract: case study media layout types not in articles', () => {
+    it('article body accepts only article section types', () => {
+      const articleBodyField = article.fields?.find((f) => f.name === 'body')
+      const ofTypes = (articleBodyField as any)?.of?.map?.((item: any) => item.type) ?? []
       expect(ofTypes).toContain('articleTextSection')
       expect(ofTypes).toContain('articleMediaSection')
       // Case Study-only types should not be in News body

@@ -7,11 +7,17 @@ export const caseStudyResults = defineType({
   type: 'object',
   fields: [
     defineField({
-      name: 'surfaceRole',
-      title: 'Surface Role',
+      name: 'backgroundColor',
+      title: 'Background Color',
       type: 'string',
-      options: {list: ['case-primary', 'case-secondary'], layout: 'radio'},
-      initialValue: 'case-primary',
+      options: {
+        list: [
+          {title: 'Primary brand color', value: 'primary'},
+          {title: 'Secondary brand color', value: 'secondary'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'primary',
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -53,10 +59,10 @@ export const caseStudyResults = defineType({
     }),
   ],
   preview: {
-    select: {role: 'surfaceRole', count: 'stats.length'},
-    prepare: ({role, count}) => ({
+    select: {backgroundColor: 'backgroundColor', count: 'stats.length'},
+    prepare: ({backgroundColor, count}) => ({
       title: 'Results',
-      subtitle: `${count ?? 0} stat(s) · ${role === 'case-secondary' ? 'Secondary' : 'Primary'} Surface`,
+      subtitle: `${count ?? 0} stat(s) · ${backgroundColor === 'secondary' ? 'Secondary' : 'Primary'} background`,
     }),
   },
 })

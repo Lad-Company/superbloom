@@ -6,13 +6,11 @@ import HomeZine from '../blocks/HomeZine.astro';
 import ContactBand from '../ContactBand.astro';
 import type { HomepageQueryResult } from '../../sanity.types';
 
-type HomepageSection = NonNullable<NonNullable<HomepageQueryResult>['sections']>[number];
-
 interface Props {
-  sections: HomepageSection[];
+  homepage: NonNullable<HomepageQueryResult>;
 }
 
-const { sections } = Astro.props;
+const { homepage } = Astro.props;
 
 const moduleSurfaceRoles = {
   newsBlock: 'light',
@@ -20,49 +18,38 @@ const moduleSurfaceRoles = {
 } as const;
 ---
 
-{
-  sections.map((section) => {
-    if (section._type === 'heroBlock') {
-      return (
-        <Hero
-          heading={section.heading ?? ''}
-          subheading={section.subheading}
-          heroMedia={section.heroMedia}
-        />
-      );
-    }
+{homepage.hero && (
+  <Hero
+    heading={homepage.hero.heading ?? ''}
+    subheading={homepage.hero.subheading}
+    heroMedia={homepage.hero.heroMedia}
+  />
+)}
 
-    if (section._type === 'capesBlock') {
-      return <Capes headline={section.headline} capabilities={section.capabilities ?? []} />;
-    }
+{homepage.capabilities && (
+  <Capes
+    headline={homepage.capabilities.headline}
+    capabilities={homepage.capabilities.capabilities ?? []}
+  />
+)}
 
-    if (section._type === 'newsBlock') {
-      return (
-        <NewsCarousel
-          headline={section.headline}
-          items={section.items ?? []}
-          role={moduleSurfaceRoles.newsBlock}
-        />
-      );
-    }
+{homepage.news && (
+  <NewsCarousel
+    headline={homepage.news.headline}
+    items={homepage.news.items ?? []}
+    role={moduleSurfaceRoles.newsBlock}
+  />
+)}
 
-    if (section._type === 'homeZine') {
-      return (
-        <HomeZine
-          issue={section.issue}
-          currentIssueSlug={section.currentIssueSlug}
-          promoHeadline={section.promoHeadline}
-          promoIntro={section.promoIntro}
-          promoMedia={section.promoMedia}
-          ctaLabel={section.ctaLabel}
-        />
-      );
-    }
+{homepage.zine && (
+  <HomeZine
+    issue={homepage.zine.issue}
+    currentIssueSlug={homepage.zine.currentIssueSlug}
+    promoHeadline={homepage.zine.promoHeadline}
+    promoIntro={homepage.zine.promoIntro}
+    promoMedia={homepage.zine.promoMedia}
+    ctaLabel={homepage.zine.ctaLabel}
+  />
+)}
 
-    if (section._type === 'contactBlock') {
-      return <ContactBand role={moduleSurfaceRoles.contactBlock} />;
-    }
-
-    return null;
-  })
-}
+{homepage.contact && <ContactBand role={moduleSurfaceRoles.contactBlock} />}

@@ -13,7 +13,8 @@ interface NewsItem {
   slug: string | null;
   overview?: Array<{ children?: Array<{ text?: string | null }> }> | null;
   publicationDate?: string | null;
-  cardDestination?: 'internal' | 'external' | null;
+  isExternal?: boolean | null;
+  externalUrl?: string | null;
   externalCoverage?: Array<{ url?: string | null; isPrimary?: boolean | null }> | null;
   cardAspectRatio: MediaRatio | null;
   tags: Tag[] | null;
@@ -28,9 +29,8 @@ interface Props {
 
 const { item, showCopy = false, class: className } = Astro.props;
 const internalHref = item.slug ? `/news/${item.slug}` : '#';
-const primaryCoverage = item.externalCoverage?.find((link) => link.isPrimary)?.url;
-const opensInNewTab = item.cardDestination === 'external' && Boolean(primaryCoverage);
-const href = opensInNewTab ? primaryCoverage! : internalHref;
+const href = item.isExternal && item.externalUrl ? item.externalUrl : internalHref;
+const opensInNewTab = item.isExternal && Boolean(item.externalUrl);
 const summary = item.overview
   ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
   .join(' ')
@@ -51,23 +51,10 @@ const summary = item.overview
   >
     <TagList slot="overlay" tags={item.tags} />
   </EditorialCard>
-  {opensInNewTab && (
-    <a class="internal-link type-caption" href={internalHref}>
-      Read article details
-    </a>
-  )}
 </div>
 
 <style>
   .news-card {
     min-width: 0;
-  }
-
-  .internal-link {
-    display: inline-block;
-    margin-top: var(--space-3xs);
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 0.15em;
   }
 </style>

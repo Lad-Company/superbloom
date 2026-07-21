@@ -34,6 +34,14 @@ _Avoid_: Workshop, Brand Workshop, Salon
 
 ### Content
 
+**Media Asset**:
+A reusable image or video that can be selected in a Media field. Images use Sanity's native asset picker. Videos are managed in the Video Library. A direct video upload from a Media field becomes a reusable Video Library entry.
+_Avoid_: Attachment, file (unless referring specifically to a Zine PDF)
+
+**Video Library**:
+The central Studio workspace for reusable videos. Editors may upload one or many videos, review the chronological list, and select or upload a video from a Media field. A video referenced by published content cannot be deleted; the editor is shown its usages instead. An unused video may be permanently deleted.
+_Avoid_: Videos tab, Media Library (when referring specifically to videos)
+
 **Work**:
 The portfolio section of the site. Work is composed of Case Studies.
 _Avoid_: Projects, Portfolio, Campaign archive

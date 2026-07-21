@@ -1,13 +1,12 @@
 import {defineField, defineType} from 'sanity'
 import {
   validatePortableTextNonEmpty,
-  validateArticlesMinOneAndUnique,
+  validateArticlesMinThreeAndUnique,
   validateArticlesNotInAnotherIssue,
-  validateIntroMediaExactlyFive,
   validateIssueNumberPositive,
   validateIssueNumberUnique,
-  validatePdfAsset,
   validateEditorLetterComplete,
+  validateIssuuUrl,
 } from './zineContract'
 
 export const zineIssue = defineType({
@@ -21,14 +20,13 @@ export const zineIssue = defineType({
       type: 'number',
       validation: (rule) =>
         rule
-          .required()
           .integer()
           .custom(validateIssueNumberPositive)
           .custom(validateIssueNumberUnique),
     }),
     defineField({
       name: 'title',
-      title: 'Title',
+      title: 'Issue Name',
       type: 'string',
       validation: (rule) => rule.required(),
     }),
@@ -42,11 +40,10 @@ export const zineIssue = defineType({
       name: 'publicationDate',
       title: 'Publication Date',
       type: 'datetime',
-      validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'coverMedia',
-      title: 'Cover Media',
+      name: 'cardMedia',
+      title: 'Card Image',
       type: 'mediaBox',
       validation: (rule) => rule.required(),
     }),
@@ -55,27 +52,33 @@ export const zineIssue = defineType({
       title: 'Cover Aspect Ratio',
       type: 'string',
       options: {list: ['16:9', '1:1', '4:5', '9:16', '3:2'], layout: 'radio'},
+      initialValue: '4:5',
+    }),
+    defineField({
+      name: 'heroMedia',
+      title: 'Hero Image',
+      type: 'mediaBox',
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'introHeadline',
       title: 'Intro Headline',
       type: 'string',
-      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'introText',
       title: 'Intro Text',
       type: 'array',
       of: [{type: 'block'}],
-      validation: (rule) => rule.required().custom(validatePortableTextNonEmpty),
+      validation: (rule) =>
+        rule.custom((value) => (value ? validatePortableTextNonEmpty(value) : true)),
     }),
     defineField({
       name: 'introMedia',
       title: 'Intro Media Collage',
       type: 'array',
       of: [{type: 'mediaBox'}],
-      validation: (rule) => rule.required().custom(validateIntroMediaExactlyFive),
+      validation: (rule) => rule.max(5),
     }),
     defineField({
       name: 'editorLetter',
@@ -87,7 +90,6 @@ export const zineIssue = defineType({
           name: 'headline',
           title: 'Headline',
           type: 'string',
-          validation: (rule) => rule.required(),
         }),
         defineField({
           name: 'body',
@@ -100,7 +102,6 @@ export const zineIssue = defineType({
           name: 'mediaBox',
           title: 'Media',
           type: 'mediaBox',
-          validation: (rule) => rule.required(),
         }),
       ],
     }),
@@ -108,17 +109,24 @@ export const zineIssue = defineType({
       name: 'articles',
       title: 'Articles',
       type: 'array',
-      of: [{type: 'reference', to: [{type: 'zineArticle'}]}],
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'article'}],
+          options: {filter: 'articleType == "zine" && isExternal != true'},
+        },
+      ],
       validation: (rule) => [
-        rule.required().custom(validateArticlesMinOneAndUnique),
+        rule.required().custom(validateArticlesMinThreeAndUnique),
         rule.custom(validateArticlesNotInAnotherIssue),
       ],
     }),
     defineField({
-      name: 'pdfAsset',
-      title: 'PDF Asset',
-      type: 'file',
-      validation: (rule) => rule.required().custom(validatePdfAsset),
+      name: 'issuuUrl',
+      title: 'ISSUU Flipbook URL',
+      type: 'url',
+      description: 'Paste the public ISSUU publication or embed URL.',
+      validation: (rule) => rule.required().custom(validateIssuuUrl),
     }),
   ],
   preview: {

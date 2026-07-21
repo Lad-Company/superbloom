@@ -4,10 +4,7 @@ import NewsCard from '../NewsCard.astro';
 import SurfaceSection from '../SurfaceSection.astro';
 import type { HomepageQueryResult } from '../../sanity.types';
 
-type NewsBlock = Extract<
-  NonNullable<NonNullable<HomepageQueryResult>['sections']>[number],
-  { _type: 'newsBlock' }
->;
+type NewsBlock = NonNullable<NonNullable<HomepageQueryResult>['news']>;
 
 interface Props {
   headline?: string | null;

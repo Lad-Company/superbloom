@@ -2,7 +2,6 @@ import {defineField, defineType} from 'sanity'
 import {orderRankField} from '@sanity/orderable-document-list'
 import {
   validateColorRequired,
-  validateHexColor,
   validateSecondaryColorWithResults,
   validateCapabilitiesUnique,
   validateCapabilitiesCardinality,
@@ -73,28 +72,24 @@ export const caseStudy = defineType({
       options: {list: ['full', 'half'], layout: 'radio'},
       initialValue: 'half',
     }),
-    // Brand colors stored as hex strings. @sanity/color-input was not added to keep
-    // the studio dependency surface minimal; a plain string field is sufficient for
-    // the tracer bullet and can be upgraded to a color picker later.
     defineField({
       name: 'primaryColor',
-      type: 'string',
-      title: 'Primary Brand Color (hex)',
-      description: 'e.g. #fdd143',
-      validation: (rule) =>
-        rule.required().custom(validateColorRequired),
+      type: 'color',
+      title: 'Primary Brand Color',
+      options: {disableAlpha: true},
+      validation: (rule) => rule.required().custom(validateColorRequired),
     }),
     defineField({
       name: 'secondaryColor',
-      type: 'string',
-      title: 'Secondary Brand Color (hex)',
-      description: 'e.g. #cb122d',
-      validation: (rule) => rule.custom((value) => {
-        if (!value) return true // optional
-        return validateHexColor(value)
-      }),
+      type: 'color',
+      title: 'Secondary Brand Color',
+      options: {disableAlpha: true},
     }),
-    // Case Study Spine: five fixed narrative sections
+    defineField({
+      name: 'leadMedia',
+      title: 'Lead Media',
+      type: 'mediaBox',
+    }),
     defineField({
       name: 'highlights',
       title: 'Highlights',
@@ -125,18 +120,18 @@ export const caseStudy = defineType({
       type: 'caseStudyResults',
       validation: (rule) => rule.required(),
     }),
-    // Optional lead media (16:9) below the hero
-    defineField({
-      name: 'leadMedia',
-      title: 'Lead Media',
-      type: 'mediaBox',
-    }),
-    // Optional press and next project references
+    // Optional press and next project references (filters to articleType: news in GROQ)
     defineField({
       name: 'press',
       title: 'Press',
       type: 'array',
-      of: [{type: 'reference', to: [{type: 'news'}]}],
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'article'}],
+          options: {filter: 'articleType == "news"'},
+        },
+      ],
       validation: (rule) =>
         rule
           .custom(validatePressUnique)
@@ -156,7 +151,7 @@ export const caseStudy = defineType({
       validateSecondaryColorWithResults({
         parent: document as {
           secondaryColor?: unknown
-          results?: {surfaceRole?: string}
+          results?: {backgroundColor?: string}
         },
       })
     ),

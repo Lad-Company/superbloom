@@ -6,21 +6,34 @@ export const homepage = defineType({
   type: 'document',
   fields: [
     defineField({
-      name: 'sections',
-      title: 'Editorial Composition',
-      type: 'array',
-      of: [{type: 'heroBlock'}, {type: 'capesBlock'}, {type: 'newsBlock'}, {type: 'homeZine'}, {type: 'contactBlock'}],
-      validation: (rule) =>
-        rule.required().min(1).custom((sections) => {
-          const repeatedModule = sections?.find(
-            (section, index) =>
-              sections.findIndex((candidate) => candidate._type === section._type) !== index,
-          )
-
-          return repeatedModule
-            ? `Only one ${repeatedModule._type} module is allowed.`
-            : true
-        }),
+      name: 'hero',
+      title: '1. Hero',
+      type: 'heroBlock',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'capabilities',
+      title: '2. Capabilities',
+      type: 'capesBlock',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'news',
+      title: '3. News',
+      type: 'newsBlock',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'zine',
+      title: '4. Zine',
+      type: 'homeZine',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'contact',
+      title: '5. Contact',
+      type: 'contactBlock',
+      validation: (rule) => rule.required(),
     }),
   ],
   preview: {

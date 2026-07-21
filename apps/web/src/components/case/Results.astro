@@ -12,7 +12,7 @@ interface Props {
 }
 
 const { id, label, results } = Astro.props;
-const role = results.surfaceRole === 'case-secondary' ? 'case-secondary' : 'case-primary';
+const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-primary';
 ---
 
 <SurfaceSection role={role} id={id} tabindex={-1} class="results-surface">

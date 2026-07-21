@@ -15,7 +15,9 @@ type Article = {
 async function main() {
   const [issues, articles] = await Promise.all([
     client.fetch<Issue[]>('*[_type == "zineIssue" && !(_id in path("drafts.**"))]{_id, articles}'),
-    client.fetch<Article[]>('*[_type == "zineArticle" && !(_id in path("drafts.**"))]{_id, title}'),
+    client.fetch<Article[]>(
+      '*[_type == "article" && articleType == "zine" && !(_id in path("drafts.**"))]{_id, title}',
+    ),
   ])
 
   const membershipCounts = new Map<string, number>()

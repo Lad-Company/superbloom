@@ -5,8 +5,16 @@
 
 const HEX_PATTERN = /^#[0-9a-fA-F]{6}$/
 
+function colorHex(color: unknown): unknown {
+  if (typeof color === 'object' && color !== null && 'hex' in color) {
+    return (color as {hex?: unknown}).hex
+  }
+  return color
+}
+
 export function isValidHexColor(color: unknown): boolean {
-  return typeof color === 'string' && HEX_PATTERN.test(color)
+  const hex = colorHex(color)
+  return typeof hex === 'string' && HEX_PATTERN.test(hex)
 }
 
 export function validateHexColor(color: unknown): string | boolean {
@@ -18,13 +26,13 @@ export function validateColorRequired(color: unknown): string | boolean {
 }
 
 export function validateSecondaryColorWithResults(
-  context: {parent?: {secondaryColor?: unknown; results?: {surfaceRole?: string}}}
+  context: {parent?: {secondaryColor?: unknown; results?: {backgroundColor?: string}}}
 ): string | boolean {
   const secondaryColor = context.parent?.secondaryColor
-  const surfaceRole = context.parent?.results?.surfaceRole
+  const backgroundColor = context.parent?.results?.backgroundColor
 
-  if (surfaceRole === 'case-secondary' && !isValidHexColor(secondaryColor)) {
-    return 'Secondary Brand Color is required when Results surface is "case-secondary"'
+  if (backgroundColor === 'secondary' && !isValidHexColor(secondaryColor)) {
+    return 'Secondary Brand Color is required when Results uses the secondary background'
   }
 
   return true

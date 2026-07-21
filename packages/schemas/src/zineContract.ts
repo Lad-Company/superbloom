@@ -37,9 +37,9 @@ export const validateReferencesUnique = (items: unknown) => {
   return new Set(references).size === references.length || 'References must be unique.'
 }
 
-export const validateArticlesMinOneAndUnique = (articles: unknown) => {
+export const validateArticlesMinThreeAndUnique = (articles: unknown) => {
   if (!Array.isArray(articles)) return 'Articles must be an array.'
-  if (articles.length < 1) return 'Issue must include at least one article.'
+  if (articles.length < 3) return 'Issue must include at least three articles.'
 
   const references = articles.map((item: Reference) => item._ref).filter(Boolean)
   return new Set(references).size === references.length || 'Article references must be unique.'
@@ -65,12 +65,8 @@ export const validateArticlesNotInAnotherIssue = async (
   return existingIssueCount === 0 || 'One or more selected articles already belong to another Issue.'
 }
 
-export const validateIntroMediaExactlyFive = (media: unknown) => {
-  if (!Array.isArray(media)) return 'Intro media must be an array.'
-  return media.length === 5 || 'Intro media must contain exactly five items.'
-}
-
 export const validateIssueNumberPositive = (num: unknown) => {
+  if (num === undefined || num === null) return true
   if (typeof num !== 'number') return 'Issue number must be a number.'
   return num > 0 || 'Issue number must be positive.'
 }
@@ -89,33 +85,26 @@ export const validateIssueNumberUnique = async (num: unknown, context: Validatio
   return existingIssueCount === 0 || 'Issue number must be unique.'
 }
 
-export const validatePdfAsset = (asset: unknown) => {
-  if (!asset) return 'PDF asset is required.'
-
-  const ref =
-    typeof asset === 'object' && asset !== null
-      ? (asset as {asset?: {_ref?: string}; _ref?: string}).asset?._ref ??
-        (asset as {_ref?: string})._ref
-      : undefined
-
-  return ref?.endsWith('-pdf') || 'Select a PDF file.'
-}
-
 export const validateEditorLetterComplete = (value: unknown) => {
   if (!value || typeof value !== 'object') return 'Editor letter is required.'
   const letter = value as Record<string, unknown>
-
-  if (!letter.headline || typeof letter.headline !== 'string') {
-    return 'Editor letter headline is required.'
-  }
 
   if (!hasPortableTextContent(letter.body)) {
     return 'Editor letter body is required and must contain content.'
   }
 
-  if (!letter.mediaBox) {
-    return 'Editor letter media is required.'
-  }
-
   return true
+}
+
+export const validateIssuuUrl = (value: unknown) => {
+  if (typeof value !== 'string' || !value) return 'ISSUU URL is required.'
+
+  try {
+    const url = new URL(value)
+    return url.hostname === 'issuu.com' || url.hostname.endsWith('.issuu.com')
+      ? true
+      : 'Use an ISSUU publication or embed URL.'
+  } catch {
+    return 'Enter a valid ISSUU URL.'
+  }
 }

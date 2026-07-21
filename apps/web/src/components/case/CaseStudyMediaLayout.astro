@@ -22,7 +22,13 @@ const { layout, title } = Astro.props;
 )}
 
 {layout._type === 'caseStudyTextMedia' && (
-  <div class:list={['text-media', `media-${layout.mediaPosition}`]}>
+  <div
+    class:list={[
+      'text-media',
+      `media-${layout.mediaPosition}`,
+      `width-${layout.mediaWidth ?? 'three-quarters'}`,
+    ]}
+  >
     <PortableText value={layout.text ?? []} class="text" />
     <MediaFrame media={layout.media} ratio="16:9" title={title} class="media" />
   </div>
@@ -44,9 +50,17 @@ const { layout, title } = Astro.props;
   }
   .text-media {
     display: grid;
-    grid-template-columns: minmax(240px, 1fr) minmax(0, 3fr);
     gap: var(--page-gutter);
     align-items: start;
+  }
+  .width-half {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .width-three-quarters.media-right {
+    grid-template-columns: minmax(240px, 1fr) minmax(0, 3fr);
+  }
+  .width-three-quarters.media-left {
+    grid-template-columns: minmax(0, 3fr) minmax(240px, 1fr);
   }
   .media-left :global(.media) {
     order: -1;

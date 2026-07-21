@@ -54,7 +54,7 @@ const queryFor = (nextPage: number, nextSort = sort) => {
           <h1 id="featured-heading" class="type-h1">Index</h1>
           <div class="featured-grid">
             <div class="lead">
-              {indexPage.lead._type === 'news' ? (
+              {indexPage.lead.articleType === 'news' ? (
                 <NewsCard item={indexPage.lead} showCopy />
               ) : (
                 <EditorialArticleCard item={indexPage.lead} showCopy />
@@ -62,7 +62,7 @@ const queryFor = (nextPage: number, nextSort = sort) => {
             </div>
             <div class="secondary">
               {indexPage.secondary?.map((item) =>
-                item?._type === 'news' ? (
+                item?.articleType === 'news' ? (
                   <NewsCard item={item} showCopy />
                 ) : item ? (
                   <EditorialArticleCard item={item} showCopy />
@@ -84,7 +84,7 @@ const queryFor = (nextPage: number, nextSort = sort) => {
         <PageGrid>
           {items.map((item) => (
             <div class="page-grid-item">
-              {item._type === 'news' ? (
+              {item.articleType === 'news' ? (
                 <NewsCard item={item} showCopy />
               ) : (
                 <EditorialArticleCard item={item} showCopy />

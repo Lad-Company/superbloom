@@ -20,11 +20,13 @@ const mediaProjection = `{
 const editorialCardProjection = `
   _id,
   _type,
+  articleType,
   title,
   "slug": slug.current,
   overview,
   publicationDate,
-  cardDestination,
+  isExternal,
+  externalUrl,
   externalCoverage[]{ outlet, url, isPrimary },
   cardAspectRatio,
   tags[]->{ title, color },
@@ -33,48 +35,35 @@ const editorialCardProjection = `
 
 export const homepageQuery = defineQuery(`
   *[_type == "homepage"][0]{
-    sections[]{
-      _type,
-      _type == "heroBlock" => {
-        heading,
-        subheading,
-        "heroMedia": heroMedia${mediaProjection}
-      },
-      _type == "capesBlock" => {
-        headline,
-        capabilities[]->{
-          title,
-          subtitle,
-          "slug": slug.current,
-          "media": media${mediaProjection}
-        }
-      },
-      _type == "newsBlock" => {
-        headline,
-        "items": *[_type == "news"] | order(publicationDate desc)[0...8]{
-          title,
-          "slug": slug.current,
-          overview,
-          publicationDate,
-          cardDestination,
-          externalCoverage[]{ outlet, url, isPrimary },
-          cardAspectRatio,
-          tags[]->{ title, color },
-          "cardMedia": cardMedia${mediaProjection}
-        }
-      },
-      _type == "contactBlock" => {
-        _type
-      },
-      _type == "homeZine" => {
-        "issue": issue->{ "slug": slug.current },
-        "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,
-        promoHeadline,
-        promoIntro,
-        "promoMedia": promoMedia${mediaProjection},
-        ctaLabel
+    hero{
+      heading,
+      subheading,
+      "heroMedia": heroMedia${mediaProjection}
+    },
+    capabilities{
+      headline,
+      capabilities[]->{
+        title,
+        subtitle,
+        "slug": slug.current,
+        "media": media${mediaProjection}
       }
-    }
+    },
+    news{
+      headline,
+      "items": *[_type == "article" && articleType == "news"] | order(coalesce(publicationDate, _createdAt) desc)[0...8]{
+        ${editorialCardProjection}
+      }
+    },
+    zine{
+      "issue": issue->{ "slug": slug.current },
+      "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,
+      promoHeadline,
+      promoIntro,
+      "promoMedia": promoMedia${mediaProjection},
+      ctaLabel
+    },
+    contact{ _type }
   }
 `);
 
@@ -151,6 +140,7 @@ const caseStudyMediaLayoutsProjection = `
     _type == "caseStudyTextMedia" => {
       text,
       mediaPosition,
+      mediaWidth,
       "media": mediaBox${mediaProjection}
     },
     _type == "caseStudyPairedPortraitMedia" => {
@@ -166,8 +156,8 @@ export const caseStudyBySlugQuery = defineQuery(`
     summary,
     client,
     capabilities[]->{ title },
-    primaryColor,
-    secondaryColor,
+    "primaryColor": primaryColor.hex,
+    "secondaryColor": secondaryColor.hex,
     "leadMedia": leadMedia${mediaProjection},
     highlights{
       summary,
@@ -186,7 +176,7 @@ export const caseStudyBySlugQuery = defineQuery(`
       ${caseStudyMediaLayoutsProjection}
     },
     results{
-      surfaceRole,
+      backgroundColor,
       stats[]{ _key, value, label }
     },
     press[0...3]->{
@@ -194,7 +184,9 @@ export const caseStudyBySlugQuery = defineQuery(`
       "slug": slug.current,
       overview,
       publicationDate,
-      cardDestination,
+      isExternal,
+      externalUrl,
+      articleType,
       externalCoverage[]{ outlet, url, isPrimary },
       cardAspectRatio,
       tags[]->{ title, color },
@@ -207,7 +199,7 @@ export const caseStudyBySlugQuery = defineQuery(`
       cardAspectRatio,
       tags[]->{ title, color },
       "media": cardMedia${mediaProjection},
-      primaryColor
+      "primaryColor": primaryColor.hex
     }
   }
 `);
@@ -230,22 +222,28 @@ const articleBodyProjection = `
 
 const articleProjection = `
     _type,
+    articleType,
     title,
     "slug": slug.current,
     publicationDate,
     overview,
+    isExternal,
+    externalUrl,
     tags[]->{ title, color },
     externalCoverage[]{ _key, outlet, url, isPrimary },
     "leadMedia": leadMedia${mediaProjection},
     ${articleBodyProjection},
     relatedItems[]->{
       _type,
+      articleType,
       title,
       "slug": slug.current,
       "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,
       overview,
       publicationDate,
-      cardDestination,
+      isExternal,
+      externalUrl,
+      articleType,
       externalCoverage[]{ outlet, url, isPrimary },
       cardAspectRatio,
       tags[]->{ title, color },
@@ -254,19 +252,20 @@ const articleProjection = `
 `
 
 export const newsArticleBySlugQuery = defineQuery(`
-  *[_type == "news" && slug.current == $slug][0] {
+  *[_type == "article" && articleType == "news" && isExternal != true && slug.current == $slug][0] {
     ${articleProjection}
   }
 `);
 
 export const editorialArticleBySlugQuery = defineQuery(`
-  *[_type == "editorialArticle" && slug.current == $slug][0] {
+  *[_type == "article" && articleType == "editorial" && slug.current == $slug][0] {
     ${articleProjection}
   }
 `);
 
 const zineArticleCardProjection = `
   _type,
+  articleType,
   title,
   "slug": slug.current,
   overview,
@@ -281,7 +280,8 @@ const zineIssueProjection = `
   "slug": slug.current,
   publicationDate,
   coverAspectRatio,
-  "coverMedia": coverMedia${mediaProjection},
+  "cardMedia": cardMedia${mediaProjection},
+  "heroMedia": heroMedia${mediaProjection},
   introHeadline,
   introText,
   "introMedia": introMedia[]${mediaProjection},
@@ -293,7 +293,7 @@ const zineIssueProjection = `
   articles[]->{
     ${zineArticleCardProjection}
   },
-  "pdfUrl": pdfAsset.asset->url
+  issuuUrl
 `
 
 export const zineLandingQuery = defineQuery(`
@@ -306,7 +306,7 @@ export const zineLandingQuery = defineQuery(`
       title,
       "slug": slug.current,
       coverAspectRatio,
-      "coverMedia": coverMedia${mediaProjection}
+      "cardMedia": cardMedia${mediaProjection}
     }
   }
 `);
@@ -323,7 +323,7 @@ export const issueArchiveQuery = defineQuery(`
     title,
     "slug": slug.current,
     coverAspectRatio,
-    "coverMedia": coverMedia${mediaProjection}
+    "cardMedia": cardMedia${mediaProjection}
   }
 `);
 
@@ -332,7 +332,8 @@ export const zineArticleBySlugQuery = defineQuery(`
     title,
     "issueSlug": slug.current,
     "article": *[
-      _type == "zineArticle" &&
+      _type == "article" &&
+      articleType == "zine" &&
       slug.current == $articleSlug &&
       _id in ^.articles[]._ref
     ][0]{
@@ -354,18 +355,20 @@ export const indexPageQuery = defineQuery(`
 
 export const indexViewAllNewestQuery = defineQuery(`
   *[
-    _type in ["news", "editorialArticle"] &&
+    _type == "article" &&
+    articleType in ["news", "editorial"] &&
     !(_id in $featuredIds)
-  ] | order(publicationDate desc)[$offset...$end]{
+  ] | order(coalesce(publicationDate, _createdAt) desc)[$offset...$end]{
     ${editorialCardProjection}
   }
 `);
 
 export const indexViewAllOldestQuery = defineQuery(`
   *[
-    _type in ["news", "editorialArticle"] &&
+    _type == "article" &&
+    articleType in ["news", "editorial"] &&
     !(_id in $featuredIds)
-  ] | order(publicationDate asc)[$offset...$end]{
+  ] | order(coalesce(publicationDate, _createdAt) asc)[$offset...$end]{
     ${editorialCardProjection}
   }
 `);
@@ -385,11 +388,11 @@ export const sitemapQuery = defineQuery(`
       "path": "/work/" + slug.current,
       "updatedAt": _updatedAt
     },
-    "news": *[_type == "news" && defined(slug.current)]{
+    "news": *[_type == "article" && articleType == "news" && isExternal != true && defined(slug.current)]{
       "path": "/news/" + slug.current,
       "updatedAt": _updatedAt
     },
-    "articles": *[_type == "editorialArticle" && defined(slug.current)]{
+    "articles": *[_type == "article" && articleType == "editorial" && defined(slug.current)]{
       "path": "/articles/" + slug.current,
       "updatedAt": _updatedAt
     },

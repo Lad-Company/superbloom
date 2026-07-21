@@ -3,13 +3,12 @@ import {
   validatePortableTextNonEmpty,
   validateRelatedItems,
   validateReferencesUnique,
-  validateArticlesMinOneAndUnique,
+  validateArticlesMinThreeAndUnique,
   validateArticlesNotInAnotherIssue,
-  validateIntroMediaExactlyFive,
   validateIssueNumberPositive,
   validateIssueNumberUnique,
-  validatePdfAsset,
   validateEditorLetterComplete,
+  validateIssuuUrl,
 } from './zineContract'
 
 describe('Zine Contract Validators', () => {
@@ -101,32 +100,32 @@ describe('Zine Contract Validators', () => {
     })
   })
 
-  describe('validateArticlesMinOneAndUnique', () => {
+  describe('validateArticlesMinThreeAndUnique', () => {
     it('rejects non-array', () => {
-      const result = validateArticlesMinOneAndUnique(null)
+      const result = validateArticlesMinThreeAndUnique(null)
       expect(result).toContain('array')
     })
 
-    it('rejects empty articles array', () => {
-      const result = validateArticlesMinOneAndUnique([])
-      expect(result).toContain('at least one')
-    })
-
-    it('accepts single article', () => {
-      expect(validateArticlesMinOneAndUnique([{_ref: 'article-1'}])).toBe(true)
+    it('requires at least three articles', () => {
+      expect(validateArticlesMinThreeAndUnique([])).toContain('at least three')
+      expect(validateArticlesMinThreeAndUnique([{_ref: 'article-1'}])).toContain('at least three')
+      expect(
+        validateArticlesMinThreeAndUnique([{_ref: 'article-1'}, {_ref: 'article-2'}]),
+      ).toContain('at least three')
     })
 
     it('rejects duplicate article references', () => {
-      const result = validateArticlesMinOneAndUnique([
+      const result = validateArticlesMinThreeAndUnique([
         {_ref: 'article-1'},
         {_ref: 'article-1'},
+        {_ref: 'article-2'},
       ])
       expect(result).toContain('unique')
     })
 
-    it('accepts multiple unique articles', () => {
+    it('accepts three unique articles', () => {
       expect(
-        validateArticlesMinOneAndUnique([
+        validateArticlesMinThreeAndUnique([
           {_ref: 'article-1'},
           {_ref: 'article-2'},
           {_ref: 'article-3'},
@@ -140,32 +139,6 @@ describe('Zine Contract Validators', () => {
         getClient: () => ({fetch: async () => 1}),
       })
       expect(result).toContain('another Issue')
-    })
-  })
-
-  describe('validateIntroMediaExactlyFive', () => {
-    it('rejects non-array', () => {
-      const result = validateIntroMediaExactlyFive(null)
-      expect(result).toContain('array')
-    })
-
-    it('rejects empty media array', () => {
-      const result = validateIntroMediaExactlyFive([])
-      expect(result).toContain('exactly five')
-    })
-
-    it('rejects fewer than five items', () => {
-      const result = validateIntroMediaExactlyFive([{}, {}, {}, {}])
-      expect(result).toContain('exactly five')
-    })
-
-    it('rejects more than five items', () => {
-      const result = validateIntroMediaExactlyFive([{}, {}, {}, {}, {}, {}])
-      expect(result).toContain('exactly five')
-    })
-
-    it('accepts exactly five items', () => {
-      expect(validateIntroMediaExactlyFive([{}, {}, {}, {}, {}])).toBe(true)
     })
   })
 
@@ -208,37 +181,9 @@ describe('Zine Contract Validators', () => {
     })
   })
 
-  describe('validatePdfAsset', () => {
-    it('rejects missing asset', () => {
-      const result = validatePdfAsset(null)
-      expect(result).toContain('required')
-    })
-
-    it('rejects undefined asset', () => {
-      const result = validatePdfAsset(undefined)
-      expect(result).toContain('required')
-    })
-
-    it('rejects non-PDF asset references', () => {
-      expect(validatePdfAsset({_ref: 'file-123-jpg'})).toContain('PDF')
-    })
-
-    it('accepts PDF file objects', () => {
-      expect(validatePdfAsset({_type: 'file', asset: {_ref: 'file-123-pdf'}})).toBe(true)
-    })
-  })
-
   describe('validateEditorLetterComplete', () => {
     it('requires an editor letter', () => {
       expect(validateEditorLetterComplete(undefined)).toContain('required')
-    })
-
-    it('requires editor letter headline', () => {
-      const result = validateEditorLetterComplete({
-        body: [{_type: 'block', children: [{text: 'Body'}]}],
-        mediaBox: {},
-      })
-      expect(result).toContain('headline')
     })
 
     it('requires editor letter body with content', () => {
@@ -250,22 +195,24 @@ describe('Zine Contract Validators', () => {
       expect(result).toContain('body')
     })
 
-    it('requires editor letter media', () => {
-      const result = validateEditorLetterComplete({
-        headline: 'Headline',
-        body: [{_type: 'block', children: [{text: 'Body'}]}],
-      })
-      expect(result).toContain('media')
-    })
-
-    it('accepts complete editor letter', () => {
+    it('accepts an editor letter body', () => {
       expect(
         validateEditorLetterComplete({
-          headline: 'Editor Letter',
           body: [{_type: 'block', children: [{text: 'Letter content'}]}],
-          mediaBox: {asset: [{_type: 'image'}]},
         }),
       ).toBe(true)
+    })
+  })
+
+  describe('validateIssuuUrl', () => {
+    it('requires an ISSUU URL', () => {
+      expect(validateIssuuUrl(undefined)).toContain('required')
+      expect(validateIssuuUrl('https://example.com/issue')).toContain('ISSUU')
+    })
+
+    it('accepts publication and embed URLs', () => {
+      expect(validateIssuuUrl('https://issuu.com/superbloom/docs/issue-one')).toBe(true)
+      expect(validateIssuuUrl('https://e.issuu.com/embed.html?d=issue-one')).toBe(true)
     })
   })
 })

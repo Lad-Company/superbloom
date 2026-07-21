@@ -13,6 +13,8 @@ interface EditorialArticleItem {
   slug: string | null;
   overview?: Array<{ children?: Array<{ text?: string | null }> }> | null;
   publicationDate?: string | null;
+  isExternal?: boolean | null;
+  externalUrl?: string | null;
   cardAspectRatio: MediaRatio | null;
   tags: Tag[] | null;
   cardMedia: Media | null;
@@ -25,7 +27,8 @@ interface Props {
 }
 
 const { item, showCopy = false, class: className } = Astro.props;
-const href = item.slug ? `/articles/${item.slug}` : '#';
+const opensInNewTab = item.isExternal && Boolean(item.externalUrl);
+const href = opensInNewTab ? item.externalUrl! : item.slug ? `/articles/${item.slug}` : '#';
 const summary = item.overview
   ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
   .join(' ')
@@ -40,6 +43,9 @@ const summary = item.overview
   summary={showCopy ? summary : undefined}
   publicationDate={item.publicationDate}
   class={className}
+  target={opensInNewTab ? '_blank' : undefined}
+  rel={opensInNewTab ? 'noopener noreferrer' : undefined}
+  externalLabel={opensInNewTab ? 'Read externally (opens in a new tab)' : undefined}
 >
   <TagList slot="overlay" tags={item.tags} />
 </EditorialCard>

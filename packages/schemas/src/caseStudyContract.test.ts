@@ -48,21 +48,21 @@ describe('Case Study Contract Validators', () => {
   })
 
   describe('validateSecondaryColorWithResults', () => {
-    it('allows secondary color to be missing when surfaceRole is case-primary', () => {
+    it('allows secondary color to be missing for the primary background', () => {
       const context = {
         parent: {
           secondaryColor: undefined,
-          results: {surfaceRole: 'case-primary'},
+          results: {backgroundColor: 'primary'},
         },
       }
       expect(validateSecondaryColorWithResults(context)).toBe(true)
     })
 
-    it('requires secondary color when surfaceRole is case-secondary', () => {
+    it('requires secondary color for the secondary background', () => {
       const context = {
         parent: {
           secondaryColor: undefined,
-          results: {surfaceRole: 'case-secondary'},
+          results: {backgroundColor: 'secondary'},
         },
       }
       const result = validateSecondaryColorWithResults(context)
@@ -70,11 +70,11 @@ describe('Case Study Contract Validators', () => {
       expect(result).toContain('required')
     })
 
-    it('accepts valid secondary color with case-secondary', () => {
+    it('accepts a valid secondary color for the secondary background', () => {
       const context = {
         parent: {
           secondaryColor: '#cb122d',
-          results: {surfaceRole: 'case-secondary'},
+          results: {backgroundColor: 'secondary'},
         },
       }
       expect(validateSecondaryColorWithResults(context)).toBe(true)

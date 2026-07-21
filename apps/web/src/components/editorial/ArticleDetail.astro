@@ -10,13 +10,15 @@ type Tag = {title?: string | null; color?: string | null};
 type Coverage = {outlet?: string | null; url?: string | null; isPrimary?: boolean | null};
 type PortableBlock = TypedObject & {children?: Array<{text?: string | null}>};
 type RelatedItem = {
-  _type: 'news' | 'editorialArticle' | 'zineArticle';
+  _type: 'article';
+  articleType?: 'news' | 'editorial' | 'zine' | null;
   title?: string | null;
   slug?: string | null;
   issueSlug?: string | null;
   overview?: PortableBlock[] | null;
   publicationDate?: string | null;
-  cardDestination?: 'internal' | 'external' | null;
+  isExternal?: boolean | null;
+  externalUrl?: string | null;
   externalCoverage?: Coverage[] | null;
   cardAspectRatio?: MediaRatio | null;
   cardMedia?: Media | null;
@@ -33,12 +35,14 @@ type BodyBlock =
 
 interface Props {
   article: {
-    _type: 'news' | 'editorialArticle' | 'zineArticle';
+    _type: 'article';
+    articleType?: 'news' | 'editorial' | 'zine' | null;
     title?: string | null;
     overview?: PortableBlock[] | null;
     leadMedia?: Media | null;
     body?: BodyBlock[] | null;
     tags?: Tag[] | null;
+    isExternal?: boolean | null;
     externalCoverage?: Coverage[] | null;
     relatedItems?: RelatedItem[] | null;
   };
@@ -46,24 +50,19 @@ interface Props {
 
 const {article} = Astro.props;
 const body = article.body ?? [];
-const coverage = article._type === 'news' ? article.externalCoverage ?? [] : [];
+const coverage = article.articleType === 'news' ? article.externalCoverage ?? [] : [];
 const relatedItems = article.relatedItems?.length === 3 ? article.relatedItems : [];
 const relatedHref = (item: RelatedItem) => {
-  const primaryUrl = item.externalCoverage?.find((link) => link.isPrimary)?.url;
-  return item._type === 'news' && item.cardDestination === 'external' && primaryUrl
-    ? primaryUrl
-    : item._type === 'news'
-      ? `/news/${item.slug}`
-      : item._type === 'editorialArticle'
-        ? `/articles/${item.slug}`
-        : item.issueSlug && item.slug
-          ? `/zine/issues/${item.issueSlug}/${item.slug}`
-          : '#';
+  if (item.isExternal && item.externalUrl) return item.externalUrl;
+  return item.articleType === 'news'
+    ? `/news/${item.slug}`
+    : item.articleType === 'editorial'
+      ? `/articles/${item.slug}`
+      : item.articleType === 'zine' && item.issueSlug && item.slug
+        ? `/zine/issues/${item.issueSlug}/${item.slug}`
+        : '#';
 };
-const opensRelatedExternally = (item: RelatedItem) =>
-  item._type === 'news' &&
-  item.cardDestination === 'external' &&
-  Boolean(item.externalCoverage?.find((link) => link.isPrimary)?.url);
+const opensRelatedExternally = (item: RelatedItem) => item.isExternal && Boolean(item.externalUrl);
 const summary = (item: RelatedItem) =>
   item.overview
     ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])

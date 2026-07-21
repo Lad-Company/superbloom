@@ -1,8 +1,6 @@
 import {defineField, defineType} from 'sanity'
 import {validateIndexPageSecondary} from './indexPageContract'
 
-const featuredItemTypes = [{type: 'news'}, {type: 'editorialArticle'}]
-
 export const indexPage = defineType({
   name: 'indexPage',
   title: 'Index Page',
@@ -12,14 +10,21 @@ export const indexPage = defineType({
       name: 'lead',
       title: 'Lead Item',
       type: 'reference',
-      to: featuredItemTypes,
+      to: [{type: 'article'}],
+      options: {filter: 'articleType in ["news", "editorial"]'},
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'secondary',
       title: 'Secondary Items',
       type: 'array',
-      of: [{type: 'reference', to: featuredItemTypes}],
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'article'}],
+          options: {filter: 'articleType in ["news", "editorial"]'},
+        },
+      ],
       validation: (rule) => rule.required().custom(validateIndexPageSecondary),
     }),
   ],

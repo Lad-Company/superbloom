@@ -6,7 +6,7 @@ interface Issue {
   title?: string | null;
   slug?: string | null;
   coverAspectRatio?: MediaRatio | null;
-  coverMedia?: Media | null;
+  cardMedia?: Media | null;
 }
 
 interface Props {
@@ -24,7 +24,7 @@ const {issues} = Astro.props;
         {issues.map((issue, index) => (
           <li class:list={{featured: index === 0}}>
             <a href={`/zine/issues/${issue.slug}`}>
-              <MediaFrame media={issue.coverMedia} ratio={issue.coverAspectRatio ?? '1:1'} title={issue.title} />
+              <MediaFrame media={issue.cardMedia} ratio={issue.coverAspectRatio ?? '4:5'} title={issue.title} />
               <span class="copy">
                 <span class="issue-number type-caption">Issue No. {issue.issueNumber}</span>
                 <span class="type-h5">{issue.title}</span>

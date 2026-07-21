@@ -27,12 +27,33 @@ export const caseStudyTextMedia = defineType({
       options: {list: ['left', 'right'], layout: 'radio'},
       validation: (rule) => rule.required(),
     }),
+    defineField({
+      name: 'mediaWidth',
+      title: 'Media Width',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Half width', value: 'half'},
+          {title: 'Three-quarter width', value: 'three-quarters'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'three-quarters',
+      validation: (rule) => rule.required(),
+    }),
   ],
   preview: {
-    select: {asset: 'mediaBox.asset.0._type', altText: 'mediaBox.altText', position: 'mediaPosition'},
-    prepare: ({asset, altText, position}) => ({
+    select: {
+      asset: 'mediaBox.asset.0._type',
+      altText: 'mediaBox.altText',
+      position: 'mediaPosition',
+      width: 'mediaWidth',
+    },
+    prepare: ({asset, altText, position, width}) => ({
       title: altText || '(no alt text)',
-      subtitle: (asset === 'mux.video' ? 'Video' : 'Image') + ` · Text + Media (${position})`,
+      subtitle:
+        (asset === 'mux.video' ? 'Video' : 'Image') +
+        ` · ${position}, ${width === 'half' ? 'half' : 'three-quarter'} width`,
     }),
   },
 })
