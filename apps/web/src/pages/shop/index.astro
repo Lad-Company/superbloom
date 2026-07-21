@@ -1,0 +1,34 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import Footer from '../../components/Footer.astro';
+import ProductGrid from '../../components/shop/ProductGrid.astro';
+import { listProducts } from '../../lib/shopify';
+
+const cursor = Astro.url.searchParams.get('after');
+let result: Awaited<ReturnType<typeof listProducts>> | null = null;
+let error = false;
+try {
+  result = await listProducts(cursor);
+} catch {
+  error = true;
+}
+---
+
+<Layout title="Shop | Superbloom House">
+  <Navigation role="surface" />
+  <main>
+    <header class="shop-header">
+      <p class="type-eyebrow">Superbloom House</p>
+      <h1 class="type-h1">Shop</h1>
+    </header>
+    {error ? <p class="message">Unable to load products. Please try again.</p> : result && <ProductGrid products={result.products} nextCursor={result.pageInfo.endCursor} hasNextPage={result.pageInfo.hasNextPage} />}
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .shop-header { padding: calc(var(--space-4xl) + var(--space-xl)) var(--page-inset) var(--space-xl); }
+  .shop-header p, .shop-header h1 { margin: 0; }
+  .message { padding: var(--space-xl) var(--page-inset); }
+</style>

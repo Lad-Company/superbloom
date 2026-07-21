@@ -2,6 +2,7 @@
 import '../styles/fonts.css';
 import '../styles/tokens.css';
 import SEOHead from '../components/SEOHead.astro';
+import CartDrawer from '../components/cart/CartDrawer.astro';
 
 interface Props {
   title?: string;
@@ -30,6 +31,7 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
   </head>
   <body>
     <slot />
+    <CartDrawer />
     <style is:global>
       *,
       *::before,

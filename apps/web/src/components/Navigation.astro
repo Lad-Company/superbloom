@@ -25,7 +25,8 @@ const links = [
   </ul>
   <div class="desktop-actions">
     <a href="#contact" class="btn btn-secondary type-label">Let's Chat</a>
-    <a href="#" class="btn btn-tertiary type-label">Shop</a>
+    <a href="/shop" class="btn btn-tertiary type-label">Shop</a>
+    <a href="/cart" class="cart-link type-label" aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a>
   </div>
   <details class="compact-menu">
     <summary class="type-label">Menu</summary>
@@ -40,10 +41,25 @@ const links = [
         }
       </ul>
       <a href="#contact" class="btn btn-secondary type-label">Let's Chat</a>
-      <a href="#" class="btn btn-tertiary type-label">Shop</a>
+      <a href="/shop" class="btn btn-tertiary type-label">Shop</a>
+      <a href="/cart" class="type-label">Cart <span data-cart-count>0</span></a>
     </div>
   </details>
 </nav>
+
+<script>
+  const counts = document.querySelectorAll<HTMLElement>('[data-cart-count]');
+  const refreshCartCount = async () => {
+    try {
+      const response = await fetch('/api/shop/cart/get.json');
+      if (!response.ok) return;
+      const cart = await response.json();
+      counts.forEach((count) => { count.textContent = String(cart.itemCount); });
+    } catch {}
+  };
+  refreshCartCount();
+  document.addEventListener('shop:cart-updated', refreshCartCount);
+</script>
 
 <style>
   .navigation {
@@ -79,6 +95,7 @@ const links = [
     backdrop-filter: blur(var(--frosted-layer-blur));
     -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
   }
+  .cart-link { text-decoration: none; }
   .light .btn-secondary {
     background: #ffffff;
     color: #000000;

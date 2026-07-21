@@ -1,0 +1,84 @@
+---
+import type { Product } from '../../lib/shopify';
+
+interface Props {
+  products: Product[];
+  nextCursor: string | null;
+  hasNextPage: boolean;
+}
+
+const { products, nextCursor, hasNextPage } = Astro.props;
+const money = (value: Product['priceRange']['minVariantPrice']) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: value.currencyCode }).format(Number(value.amount));
+---
+
+<section class="shop-grid" data-product-grid>
+  <div class="products" data-products>
+    {
+      products.map((product) => (
+        <article class="product">
+          <a href={`/shop/products/${product.handle}`}>
+            {product.featuredImage ? (
+              <img src={product.featuredImage.url} alt={product.featuredImage.altText ?? product.title} loading="lazy" />
+            ) : <div class="placeholder" aria-hidden="true" />}
+            {!product.availableForSale && <span class="sold-out">Sold out</span>}
+            <h2>{product.title}</h2>
+            <p>{money(product.priceRange.minVariantPrice)}</p>
+          </a>
+        </article>
+      ))
+    }
+  </div>
+  {hasNextPage && nextCursor && (
+    <a class="load-more" data-load-more href={`/shop?after=${encodeURIComponent(nextCursor)}`}>
+      Load more
+    </a>
+  )}
+</section>
+
+<script>
+  const grid = document.querySelector<HTMLElement>('[data-product-grid]');
+  const button = grid?.querySelector<HTMLAnchorElement>('[data-load-more]');
+  const money = (amount: string, currencyCode: string) => new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(Number(amount));
+
+  button?.addEventListener('click', async (event) => {
+    event.preventDefault();
+    const cursor = new URL(button.href).searchParams.get('after');
+    if (!cursor) return;
+    button.textContent = 'Loading…';
+    try {
+      const response = await fetch(`/api/shop/products.json?after=${encodeURIComponent(cursor)}`);
+      if (!response.ok) throw new Error();
+      const { products, pageInfo } = await response.json();
+      const container = grid?.querySelector<HTMLElement>('[data-products]');
+      products.forEach((product: any) => {
+        const card = document.createElement('article');
+        card.className = 'product';
+        const image = product.featuredImage
+          ? `<img src="${product.featuredImage.url}" alt="${product.featuredImage.altText ?? product.title}" loading="lazy">`
+          : '<div class="placeholder" aria-hidden="true"></div>';
+        card.innerHTML = `<a href="/shop/products/${product.handle}">${image}${!product.availableForSale ? '<span class="sold-out">Sold out</span>' : ''}<h2>${product.title}</h2><p>${money(product.priceRange.minVariantPrice.amount, product.priceRange.minVariantPrice.currencyCode)}</p></a>`;
+        container?.append(card);
+      });
+      if (pageInfo.hasNextPage && pageInfo.endCursor) button.href = `/shop?after=${encodeURIComponent(pageInfo.endCursor)}`;
+      else button.remove();
+      if (button.isConnected) button.textContent = 'Load more';
+    } catch {
+      button.textContent = 'Could not load more. Try again.';
+    }
+  });
+</script>
+
+<style>
+  .shop-grid { padding: var(--space-4xl) var(--page-inset); }
+  .products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2xs); }
+  .product { position: relative; }
+  .product a { text-decoration: none; }
+  .product img, .placeholder { aspect-ratio: 1; width: 100%; object-fit: cover; background: var(--fg-12); border-radius: var(--radius-media); }
+  .product h2, .product p { margin: var(--space-3xs) 0 0; }
+  .product h2 { font-size: 1rem; }
+  .product p { color: var(--fg-60); }
+  .sold-out { position: absolute; top: var(--space-3xs); right: var(--space-3xs); padding: 6px 8px; background: var(--bg); }
+  .load-more { display: block; width: fit-content; margin: var(--space-xl) auto 0; padding: var(--space-3xs) 16px; background: var(--fg); color: var(--bg); text-decoration: none; border-radius: var(--radius-control); }
+  @media (max-width: 767px) { .products { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>

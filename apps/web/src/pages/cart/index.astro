@@ -1,0 +1,89 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import Footer from '../../components/Footer.astro';
+import { getCart } from '../../lib/shopify';
+import { readCartId } from '../../lib/shopify-cart';
+
+const cartId = readCartId(Astro.cookies);
+const cart = cartId ? await getCart(cartId).catch(() => null) : null;
+const money = (amount: string, currency: string) => new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(amount));
+const error = Astro.url.searchParams.get('error');
+---
+
+<Layout title="Cart | Superbloom House">
+  <Navigation role="surface" />
+  <main class="cart" data-cart>
+    <h1 class="type-h1">Cart</h1>
+    {error === 'checkout' && <p role="alert">Could not proceed to checkout. Please try again.</p>}
+    {error === 'empty' && <p role="alert">Your cart is empty.</p>}
+    {!cart || cart.lines.length === 0 ? (
+      <p data-empty>Your cart is empty. <a href="/shop">Continue shopping</a></p>
+    ) : (
+      <>
+        <ul data-lines>
+          {cart.lines.map((line) => (
+            <li data-line={line.id}>
+              {line.merchandise.image && <img src={line.merchandise.image.url} alt={line.merchandise.image.altText ?? line.merchandise.product.title} />}
+              <div>
+                <a href={`/shop/products/${line.merchandise.product.handle}`}>{line.merchandise.product.title}</a>
+                <p>{line.merchandise.title}</p>
+                <p>{money(line.cost.totalAmount.amount, line.cost.totalAmount.currencyCode)}</p>
+                <div class="quantity">
+                  <button data-decrement type="button" aria-label={`Decrease ${line.merchandise.product.title} quantity`}>−</button>
+                  <input data-quantity type="number" min="1" max="20" value={line.quantity} aria-label={`${line.merchandise.product.title} quantity`} />
+                  <button data-increment type="button" aria-label={`Increase ${line.merchandise.product.title} quantity`}>+</button>
+                  <button data-remove type="button">Remove</button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <div class="summary">
+          <p>Subtotal <strong data-subtotal>{cart.subtotalAmount && money(cart.subtotalAmount.amount, cart.subtotalAmount.currencyCode)}</strong></p>
+          <a class="checkout" href="/api/shop/cart/checkout">Checkout</a>
+        </div>
+      </>
+    )}
+    <p data-feedback role="status"></p>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  const cart = document.querySelector<HTMLElement>('[data-cart]');
+  const feedback = cart?.querySelector<HTMLElement>('[data-feedback]');
+  const update = async (path: string, payload: object) => {
+    const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!response.ok) throw new Error();
+    location.reload();
+  };
+  cart?.querySelectorAll<HTMLElement>('[data-line]').forEach((line) => {
+    const id = line.dataset.line;
+    const quantity = line.querySelector<HTMLInputElement>('[data-quantity]');
+    const controls = line.querySelectorAll<HTMLButtonElement>('button');
+    const safely = (operation: () => Promise<void>) => {
+      controls.forEach((control) => { control.disabled = true; });
+      operation().catch(() => {
+        controls.forEach((control) => { control.disabled = false; });
+        if (feedback) feedback.textContent = 'Could not update your cart. Please try again.';
+      });
+    };
+    line.querySelector('[data-increment]')?.addEventListener('click', () => safely(() => update('/api/shop/cart/update.json', { lineId: id, quantity: Number(quantity?.value) + 1 })));
+    line.querySelector('[data-decrement]')?.addEventListener('click', () => Number(quantity?.value) > 1 ? safely(() => update('/api/shop/cart/update.json', { lineId: id, quantity: Number(quantity?.value) - 1 })) : undefined);
+    quantity?.addEventListener('change', () => safely(() => update('/api/shop/cart/update.json', { lineId: id, quantity: Number(quantity.value) })));
+    line.querySelector('[data-remove]')?.addEventListener('click', () => safely(() => update('/api/shop/cart/remove.json', { lineId: id })));
+  });
+</script>
+
+<style>
+  .cart { max-width: 60rem; margin: 0 auto; padding: calc(var(--space-4xl) + var(--space-xl)) var(--page-inset) var(--space-4xl); }
+  ul { display: grid; gap: var(--space-2xs); }
+  li { display: grid; grid-template-columns: 10rem 1fr; gap: var(--space-2xs); border-top: 1px solid var(--fg-12); padding-top: var(--space-2xs); }
+  li img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+  li p { margin: var(--space-3xs) 0; }
+  .quantity { display: flex; align-items: center; gap: var(--space-3xs); }
+  .quantity button, .checkout { padding: 8px 12px; border: 0; background: var(--fg); color: var(--bg); text-decoration: none; cursor: pointer; }
+  .summary { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--fg); margin-top: var(--space-xl); padding-top: var(--space-2xs); }
+  @media (max-width: 600px) { li { grid-template-columns: 7rem 1fr; } }
+</style>

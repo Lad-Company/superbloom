@@ -1,0 +1,74 @@
+<aside class="drawer" data-cart-drawer aria-hidden="true" aria-label="Shopping cart">
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="cart-drawer-title">
+    <div class="heading">
+      <h2 id="cart-drawer-title">Cart</h2>
+      <button type="button" data-close>Close</button>
+    </div>
+    <div data-content aria-live="polite">Loading cart…</div>
+  </div>
+</aside>
+
+<script>
+  const drawer = document.querySelector<HTMLElement>('[data-cart-drawer]');
+  const content = drawer?.querySelector<HTMLElement>('[data-content]');
+  const closeButton = drawer?.querySelector<HTMLButtonElement>('[data-close]');
+  let opener: HTMLElement | null = null;
+
+  const close = () => {
+    drawer?.setAttribute('aria-hidden', 'true');
+    opener?.focus();
+  };
+  const open = async (trigger?: HTMLElement | null) => {
+    opener = trigger ?? document.activeElement as HTMLElement;
+    drawer?.setAttribute('aria-hidden', 'false');
+    closeButton?.focus();
+    try {
+      const response = await fetch('/api/shop/cart/get.json');
+      if (!response.ok) throw new Error();
+      const cart = await response.json();
+      if (content) {
+        content.replaceChildren();
+        if (!cart.lines.length) content.textContent = 'Your cart is empty.';
+        else {
+          const list = document.createElement('ul');
+          cart.lines.forEach((line: any) => {
+            const item = document.createElement('li');
+            item.textContent = `${line.merchandise.product.title}, ${line.quantity}`;
+            list.append(item);
+          });
+          const link = document.createElement('a');
+          link.href = '/cart';
+          link.textContent = 'View cart';
+          content.append(list, link);
+        }
+      }
+    } catch {
+      if (content) content.textContent = 'Could not load your cart. Please try again.';
+    }
+  };
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as Element;
+    const cartLink = target.closest<HTMLAnchorElement>('a[href="/cart"]');
+    if (cartLink && !drawer?.contains(cartLink)) {
+      event.preventDefault();
+      open(cartLink);
+    }
+  });
+  document.addEventListener('shop:cart-updated', () => open());
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && drawer?.getAttribute('aria-hidden') === 'false') close();
+  });
+  closeButton?.addEventListener('click', close);
+  drawer?.addEventListener('click', (event) => { if (event.target === drawer) close(); });
+</script>
+
+<style>
+  .drawer { position: fixed; inset: 0; z-index: 20; display: grid; justify-items: end; background: rgb(0 0 0 / .35); }
+  .drawer[aria-hidden='true'] { display: none; }
+  .panel { width: min(100%, 28rem); height: 100%; padding: var(--space-2xs); background: var(--bg); color: var(--fg); }
+  .heading { display: flex; justify-content: space-between; align-items: center; }
+  h2 { margin: 0; }
+  button { padding: 8px 12px; border: 1px solid currentColor; background: transparent; }
+  ul { margin: var(--space-2xs) 0; display: grid; gap: var(--space-3xs); }
+</style>

@@ -1,0 +1,106 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Navigation from '../../../components/Navigation.astro';
+import Footer from '../../../components/Footer.astro';
+import { getProduct } from '../../../lib/shopify';
+
+const handle = Astro.params.handle;
+const product = handle ? await getProduct(handle).catch(() => null) : null;
+if (!product) return Astro.redirect('/404', 302);
+const initialVariant = product.variants.find((variant) => variant.availableForSale) ?? product.variants[0];
+const formatMoney = (amount: string, currency: string) => new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(amount));
+---
+
+<Layout title={`${product.title} | Shop | Superbloom House`}>
+  <Navigation role="surface" />
+  <main class="detail" data-product-detail data-variants={JSON.stringify(product.variants)}>
+    <div class="image">
+      {product.featuredImage ? <img src={product.featuredImage.url} alt={product.featuredImage.altText ?? product.title} /> : <div class="placeholder" />}
+    </div>
+    <div class="content">
+      <p class="type-eyebrow">Shop</p>
+      <h1 class="type-h2">{product.title}</h1>
+      <p class="price" data-price>{formatMoney(initialVariant.price.amount, initialVariant.price.currencyCode)}</p>
+      <form data-add-form>
+        {product.options.map((option) => (
+          <label>
+            {option.name}
+            <select data-option={option.name}>
+              {option.values.map((value) => (
+                <option
+                  value={value}
+                  selected={initialVariant.selectedOptions.some((selectedOption) => selectedOption.name === option.name && selectedOption.value === value)}
+                >
+                  {value}
+                </option>
+              ))}
+            </select>
+          </label>
+        ))}
+        <p data-availability aria-live="polite">{initialVariant.availableForSale ? 'In stock' : 'Sold out'}</p>
+        <button type="submit" data-add disabled={!initialVariant.availableForSale}>Add to cart</button>
+        <p data-feedback aria-live="polite"></p>
+      </form>
+      <div class="description" set:html={product.descriptionHtml} />
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-product-detail]');
+  const variants = JSON.parse(root?.dataset.variants ?? '[]');
+  const form = root?.querySelector<HTMLFormElement>('[data-add-form]');
+  const price = root?.querySelector<HTMLElement>('[data-price]');
+  const availability = root?.querySelector<HTMLElement>('[data-availability]');
+  const button = root?.querySelector<HTMLButtonElement>('[data-add]');
+  const feedback = root?.querySelector<HTMLElement>('[data-feedback]');
+  const money = (value: { amount: string; currencyCode: string }) => new Intl.NumberFormat('en-US', { style: 'currency', currency: value.currencyCode }).format(Number(value.amount));
+  let selected = variants.find((variant: any) => variant.availableForSale) ?? variants[0];
+
+  function selectVariant() {
+    const values = [...(root?.querySelectorAll<HTMLSelectElement>('select[data-option]') ?? [])].map((select) => ({ name: select.dataset.option, value: select.value }));
+    selected = variants.find((variant: any) => values.every((value) => variant.selectedOptions.some((option: any) => option.name === value.name && option.value === value.value)));
+    if (!selected) return;
+    if (price) price.textContent = money(selected.price);
+    if (availability) availability.textContent = selected.availableForSale ? 'In stock' : 'Sold out';
+    if (button) button.disabled = !selected.availableForSale;
+  }
+
+  root?.querySelectorAll('select[data-option]').forEach((select) => select.addEventListener('change', selectVariant));
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!selected?.availableForSale) return;
+    if (button) button.disabled = true;
+    if (feedback) feedback.textContent = 'Adding to cart…';
+    try {
+      const response = await fetch('/api/shop/cart/add.json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variantId: selected.id, quantity: 1 }),
+      });
+      if (!response.ok) throw new Error();
+      if (feedback) feedback.textContent = 'Added to cart.';
+      document.dispatchEvent(new CustomEvent('shop:cart-updated'));
+    } catch {
+      if (feedback) feedback.textContent = 'Could not add item. Please try again.';
+    } finally {
+      if (button) button.disabled = !selected?.availableForSale;
+    }
+  });
+</script>
+
+<style>
+  .detail { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl); padding: calc(var(--space-4xl) + var(--space-xl)) var(--page-inset) var(--space-4xl); }
+  .image img, .placeholder { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--fg-12); border-radius: var(--radius-media); }
+  .content { max-width: 36rem; }
+  h1, .content > p { margin: 0 0 var(--space-2xs); }
+  .price { font-size: 1.5rem; }
+  form { display: grid; gap: var(--space-3xs); margin: var(--space-xs) 0; }
+  label { display: grid; gap: 6px; }
+  select, button { padding: var(--space-3xs); font: inherit; }
+  button { border: 0; background: var(--fg); color: var(--bg); cursor: pointer; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .description :global(p) { margin: 0 0 var(--space-3xs); }
+  @media (max-width: 767px) { .detail { grid-template-columns: 1fr; padding-top: calc(var(--space-4xl) + var(--space-xl)); } }
+</style>
