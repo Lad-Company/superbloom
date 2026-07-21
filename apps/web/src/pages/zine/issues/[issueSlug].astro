@@ -27,7 +27,7 @@ const pastIssues = await sanityClient.fetch(issueArchiveQuery, {slug: issue.slug
 
 <Layout
   title={issue.title ?? 'Zine'}
-  description={seoDescription(issue.introText)}
+  description={seoDescription(issue.editorLetter)}
   image={seoImage(issue.heroMedia)}
   canonicalUrl={`/zine/issues/${issue.slug}`}
 >

@@ -1,11 +1,9 @@
 ---
-import MediaFrame, {type Media, type MediaRatio} from '../MediaFrame.astro';
+import MediaFrame, {type Media} from '../MediaFrame.astro';
 
 interface Issue {
-  issueNumber?: number | null;
   title?: string | null;
   slug?: string | null;
-  coverAspectRatio?: MediaRatio | null;
   cardMedia?: Media | null;
 }
 
@@ -24,9 +22,8 @@ const {issues} = Astro.props;
         {issues.map((issue, index) => (
           <li class:list={{featured: index === 0}}>
             <a href={`/zine/issues/${issue.slug}`}>
-              <MediaFrame media={issue.cardMedia} ratio={issue.coverAspectRatio ?? '4:5'} title={issue.title} />
+              <MediaFrame media={issue.cardMedia} ratio="4:5" title={issue.title} />
               <span class="copy">
-                <span class="issue-number type-caption">Issue No. {issue.issueNumber}</span>
                 <span class="type-h5">{issue.title}</span>
               </span>
               <span class="read-more type-caption">Read more</span>
@@ -89,7 +86,6 @@ const {issues} = Astro.props;
     gap: var(--space-xs-4);
   }
 
-  .issue-number,
   .read-more {
     text-transform: uppercase;
   }

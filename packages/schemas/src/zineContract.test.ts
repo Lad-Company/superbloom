@@ -5,9 +5,6 @@ import {
   validateReferencesUnique,
   validateArticlesMinThreeAndUnique,
   validateArticlesNotInAnotherIssue,
-  validateIssueNumberPositive,
-  validateIssueNumberUnique,
-  validateEditorLetterComplete,
   validateIssuuUrl,
 } from './zineContract'
 
@@ -139,68 +136,6 @@ describe('Zine Contract Validators', () => {
         getClient: () => ({fetch: async () => 1}),
       })
       expect(result).toContain('another Issue')
-    })
-  })
-
-  describe('validateIssueNumberPositive', () => {
-    it('rejects non-number', () => {
-      const result = validateIssueNumberPositive('1')
-      expect(result).toContain('number')
-    })
-
-    it('rejects zero', () => {
-      const result = validateIssueNumberPositive(0)
-      expect(result).toContain('positive')
-    })
-
-    it('rejects negative numbers', () => {
-      const result = validateIssueNumberPositive(-1)
-      expect(result).toContain('positive')
-    })
-
-    it('accepts positive integers', () => {
-      expect(validateIssueNumberPositive(1)).toBe(true)
-      expect(validateIssueNumberPositive(42)).toBe(true)
-      expect(validateIssueNumberPositive(100)).toBe(true)
-    })
-
-    it('rejects an issue number already used by another Issue', async () => {
-      const result = await validateIssueNumberUnique(5, {
-        document: {_id: 'current-issue'},
-        getClient: () => ({fetch: async () => 1}),
-      })
-      expect(result).toContain('unique')
-    })
-
-    it('allows the current Issue to retain its number', async () => {
-      const result = await validateIssueNumberUnique(5, {
-        document: {_id: 'current-issue'},
-        getClient: () => ({fetch: async () => 0}),
-      })
-      expect(result).toBe(true)
-    })
-  })
-
-  describe('validateEditorLetterComplete', () => {
-    it('requires an editor letter', () => {
-      expect(validateEditorLetterComplete(undefined)).toContain('required')
-    })
-
-    it('requires editor letter body with content', () => {
-      const result = validateEditorLetterComplete({
-        headline: 'Headline',
-        body: [],
-        mediaBox: {},
-      })
-      expect(result).toContain('body')
-    })
-
-    it('accepts an editor letter body', () => {
-      expect(
-        validateEditorLetterComplete({
-          body: [{_type: 'block', children: [{text: 'Letter content'}]}],
-        }),
-      ).toBe(true)
     })
   })
 

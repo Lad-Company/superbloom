@@ -1,11 +1,9 @@
 import {defineField, defineType} from 'sanity'
+import {orderRankField} from '@sanity/orderable-document-list'
 import {
   validatePortableTextNonEmpty,
   validateArticlesMinThreeAndUnique,
   validateArticlesNotInAnotherIssue,
-  validateIssueNumberPositive,
-  validateIssueNumberUnique,
-  validateEditorLetterComplete,
   validateIssuuUrl,
 } from './zineContract'
 
@@ -14,16 +12,7 @@ export const zineIssue = defineType({
   title: 'Zine Issue',
   type: 'document',
   fields: [
-    defineField({
-      name: 'issueNumber',
-      title: 'Issue Number',
-      type: 'number',
-      validation: (rule) =>
-        rule
-          .integer()
-          .custom(validateIssueNumberPositive)
-          .custom(validateIssueNumberUnique),
-    }),
+    orderRankField({type: 'zineIssue'}),
     defineField({
       name: 'title',
       title: 'Issue Name',
@@ -37,22 +26,10 @@ export const zineIssue = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'publicationDate',
-      title: 'Publication Date',
-      type: 'datetime',
-    }),
-    defineField({
       name: 'cardMedia',
       title: 'Card Image',
       type: 'mediaBox',
       validation: (rule) => rule.required(),
-    }),
-    defineField({
-      name: 'coverAspectRatio',
-      title: 'Cover Aspect Ratio',
-      type: 'string',
-      options: {list: ['16:9', '1:1', '4:5', '9:16', '3:2'], layout: 'radio'},
-      initialValue: '4:5',
     }),
     defineField({
       name: 'heroMedia',
@@ -61,49 +38,11 @@ export const zineIssue = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'introHeadline',
-      title: 'Intro Headline',
-      type: 'string',
-    }),
-    defineField({
-      name: 'introText',
-      title: 'Intro Text',
+      name: 'editorLetter',
+      title: 'Letter from the Editor',
       type: 'array',
       of: [{type: 'block'}],
-      validation: (rule) =>
-        rule.custom((value) => (value ? validatePortableTextNonEmpty(value) : true)),
-    }),
-    defineField({
-      name: 'introMedia',
-      title: 'Intro Media Collage',
-      type: 'array',
-      of: [{type: 'mediaBox'}],
-      validation: (rule) => rule.max(5),
-    }),
-    defineField({
-      name: 'editorLetter',
-      title: 'Editor Letter',
-      type: 'object',
-      validation: (rule) => rule.required().custom(validateEditorLetterComplete),
-      fields: [
-        defineField({
-          name: 'headline',
-          title: 'Headline',
-          type: 'string',
-        }),
-        defineField({
-          name: 'body',
-          title: 'Body',
-          type: 'array',
-          of: [{type: 'block'}],
-          validation: (rule) => rule.required().custom(validatePortableTextNonEmpty),
-        }),
-        defineField({
-          name: 'mediaBox',
-          title: 'Media',
-          type: 'mediaBox',
-        }),
-      ],
+      validation: (rule) => rule.required().custom(validatePortableTextNonEmpty),
     }),
     defineField({
       name: 'articles',
@@ -130,10 +69,6 @@ export const zineIssue = defineType({
     }),
   ],
   preview: {
-    select: {title: 'title', issueNumber: 'issueNumber', subtitle: 'publicationDate'},
-    prepare: ({title, issueNumber, subtitle}) => ({
-      title: `Issue ${issueNumber}: ${title}`,
-      subtitle,
-    }),
+    select: {title: 'title'},
   },
 })

@@ -16,25 +16,18 @@ type Article = {
   tags?: Tag[] | null;
 };
 type PastIssue = {
-  issueNumber?: number | null;
   title?: string | null;
   slug?: string | null;
-  coverAspectRatio?: MediaRatio | null;
   cardMedia?: Media | null;
 };
 
 interface Props {
   issue: {
-    issueNumber?: number | null;
     title?: string | null;
     slug?: string | null;
-    coverAspectRatio?: MediaRatio | null;
     cardMedia?: Media | null;
     heroMedia?: Media | null;
-    introHeadline?: string | null;
-    introText?: TextBlock[] | null;
-    introMedia?: Media[] | null;
-    editorLetter?: {headline?: string | null; body?: TextBlock[] | null; media?: Media | null} | null;
+    editorLetter?: TextBlock[] | null;
     articles?: Article[] | null;
     issuuUrl?: string | null;
   };
@@ -43,8 +36,6 @@ interface Props {
 
 const {issue, pastIssues = []} = Astro.props;
 const articles = issue.articles ?? [];
-const introMedia = issue.introMedia ?? [];
-const hasIntro = Boolean(issue.introHeadline || issue.introText || introMedia.length > 0);
 const issuuEmbedUrl = (() => {
   if (!issue.issuuUrl) return null;
 
@@ -74,36 +65,16 @@ const issuuEmbedUrl = (() => {
       priority
     />
     <div class="hero-copy">
-      {issue.issueNumber && <p class="type-h4">Issue No. {issue.issueNumber}</p>}
       <h1 class="type-h1">{issue.title}</h1>
-      <a class="explore" href={hasIntro ? '#issue-intro' : '#flipbook'}>Explore the Issue</a>
+      <a class="explore" href="#flipbook">Explore the Issue</a>
     </div>
   </header>
 
-  {hasIntro && (
-    <section id="issue-intro" class="intro" aria-labelledby="intro-heading">
-    <div class="intro-copy">
-      {issue.introHeadline && <h2 id="intro-heading" class="type-h3">{issue.introHeadline}</h2>}
-      {issue.introText && <PortableText value={issue.introText} class="type-h5" />}
-    </div>
-    <div class="collage" aria-hidden="true">
-      {introMedia.map((media, index) => (
-        <MediaFrame media={media} ratio={index === 2 || index === 4 ? '3:2' : '1:1'} />
-      ))}
-    </div>
-    </section>
-  )}
-
   {issue.editorLetter && (
     <section class="editor-letter" aria-labelledby="editor-letter-heading">
-      {issue.editorLetter.media && (
-        <MediaFrame media={issue.editorLetter.media} ratio="4:5" title={issue.editorLetter.headline} />
-      )}
       <div>
-        <h2 id="editor-letter-heading" class="type-h3">
-          {issue.editorLetter.headline ?? 'Letter from the Editor'}
-        </h2>
-        {issue.editorLetter.body && <PortableText value={issue.editorLetter.body} />}
+        <h2 id="editor-letter-heading" class="type-h3">Letter from the Editor</h2>
+        <PortableText value={issue.editorLetter} />
       </div>
     </section>
   )}
@@ -171,23 +142,9 @@ const issuuEmbedUrl = (() => {
     text-transform: uppercase;
   }
 
-  .hero-copy p,
   h1,
   h2 {
     margin: 0;
-  }
-
-  .intro {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: var(--page-gutter);
-    padding: var(--space-4xl) var(--page-inset);
-    color: #fff;
-    background: #000;
-  }
-
-  #issue-intro {
-    scroll-margin-top: var(--space-xl);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -196,34 +153,7 @@ const issuuEmbedUrl = (() => {
     }
   }
 
-  .intro-copy {
-    display: flex;
-    flex-direction: column;
-    justify-content: end;
-    gap: var(--space-xs);
-    max-width: 720px;
-  }
-
-  .collage {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-xs-4);
-    align-content: start;
-  }
-
-  .collage :global(.media-frame):nth-child(1) {
-    grid-row: span 2;
-  }
-
-  .collage :global(.media-frame):nth-child(4) {
-    grid-column: span 2;
-  }
-
   .editor-letter {
-    display: grid;
-    grid-template-columns: minmax(280px, 1fr) minmax(0, 1fr);
-    gap: var(--space-xl);
-    align-items: start;
     padding: var(--space-4xl) var(--page-inset);
     background: #c3e4d3;
     color: #000;
@@ -234,13 +164,6 @@ const issuuEmbedUrl = (() => {
     flex-direction: column;
     gap: var(--space-xs);
     max-width: 640px;
-  }
-
-  .read-zine {
-    font-family: var(--font-interface);
-    font-weight: 750;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
   }
 
   .flipbook {
@@ -279,11 +202,6 @@ const issuuEmbedUrl = (() => {
   }
 
   @media (max-width: 1023px) {
-    .intro,
-    .editor-letter {
-      grid-template-columns: 1fr;
-    }
-
     .article-grid {
       grid-template-columns: 1fr;
     }

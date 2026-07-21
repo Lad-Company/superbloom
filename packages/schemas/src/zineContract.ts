@@ -65,37 +65,6 @@ export const validateArticlesNotInAnotherIssue = async (
   return existingIssueCount === 0 || 'One or more selected articles already belong to another Issue.'
 }
 
-export const validateIssueNumberPositive = (num: unknown) => {
-  if (num === undefined || num === null) return true
-  if (typeof num !== 'number') return 'Issue number must be a number.'
-  return num > 0 || 'Issue number must be positive.'
-}
-
-export const validateIssueNumberUnique = async (num: unknown, context: ValidationContext) => {
-  if (typeof num !== 'number' || !context.document?._id || !context.getClient) return true
-
-  const documentId = context.document._id.replace(/^drafts\./, '')
-  const existingIssueCount = await context
-    .getClient({apiVersion: '2026-06-01'})
-    .fetch(
-      'count(*[_type == "zineIssue" && issueNumber == $issueNumber && !(_id in [$documentId, $draftId])])',
-      {issueNumber: num, documentId, draftId: `drafts.${documentId}`},
-    )
-
-  return existingIssueCount === 0 || 'Issue number must be unique.'
-}
-
-export const validateEditorLetterComplete = (value: unknown) => {
-  if (!value || typeof value !== 'object') return 'Editor letter is required.'
-  const letter = value as Record<string, unknown>
-
-  if (!hasPortableTextContent(letter.body)) {
-    return 'Editor letter body is required and must contain content.'
-  }
-
-  return true
-}
-
 export const validateIssuuUrl = (value: unknown) => {
   if (typeof value !== 'string' || !value) return 'ISSUU URL is required.'
 

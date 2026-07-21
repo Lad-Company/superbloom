@@ -4,6 +4,7 @@ import {muxInput} from 'sanity-plugin-mux-input'
 import {orderableDocumentListDeskItem} from '@sanity/orderable-document-list'
 import {colorInput} from '@sanity/color-input'
 import {schemaTypes} from '@superbloom/schemas'
+import {muxSchemaCompatibility} from './muxSchemaCompatibility'
 
 export default defineConfig({
   name: 'superbloom',
@@ -86,6 +87,7 @@ export default defineConfig({
           ]),
     }),
     muxInput(),
+    muxSchemaCompatibility(),
     colorInput(),
   ],
   schema: {

@@ -275,21 +275,11 @@ const zineArticleCardProjection = `
 `
 
 const zineIssueProjection = `
-  issueNumber,
   title,
   "slug": slug.current,
-  publicationDate,
-  coverAspectRatio,
   "cardMedia": cardMedia${mediaProjection},
   "heroMedia": heroMedia${mediaProjection},
-  introHeadline,
-  introText,
-  "introMedia": introMedia[]${mediaProjection},
-  editorLetter {
-    headline,
-    body,
-    "media": mediaBox${mediaProjection}
-  },
+  editorLetter,
   articles[]->{
     ${zineArticleCardProjection}
   },
@@ -301,11 +291,9 @@ export const zineLandingQuery = defineQuery(`
     "currentIssue": currentIssue->{
       ${zineIssueProjection}
     },
-    "pastIssues": *[_type == "zineIssue" && _id != ^.currentIssue._ref] | order(publicationDate desc) {
-      issueNumber,
+    "pastIssues": *[_type == "zineIssue" && _id != ^.currentIssue._ref] | order(orderRank) {
       title,
       "slug": slug.current,
-      coverAspectRatio,
       "cardMedia": cardMedia${mediaProjection}
     }
   }
@@ -318,11 +306,9 @@ export const issueBySlugQuery = defineQuery(`
 `);
 
 export const issueArchiveQuery = defineQuery(`
-  *[_type == "zineIssue" && slug.current != $slug] | order(publicationDate desc) {
-    issueNumber,
+  *[_type == "zineIssue" && slug.current != $slug] | order(orderRank) {
     title,
     "slug": slug.current,
-    coverAspectRatio,
     "cardMedia": cardMedia${mediaProjection}
   }
 `);
