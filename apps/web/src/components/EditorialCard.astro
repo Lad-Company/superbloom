@@ -1,20 +1,49 @@
 ---
 import MediaFrame, { type Media, type MediaRatio } from './MediaFrame.astro';
+import {
+  resolveContentCardSettings,
+  type PartialContentCardSettings,
+} from '../lib/contentCard';
 
 interface Props {
   href: string;
   title: string | null;
   media: Media | null;
-  aspectRatio?: MediaRatio | null;
   summary?: string | null;
   publicationDate?: string | null;
   class?: string;
   target?: string;
   rel?: string;
   externalLabel?: string;
+  cardId?: string | null;
+  contentSettings?: PartialContentCardSettings;
+  settings?: PartialContentCardSettings;
+  listSettings?: PartialContentCardSettings;
+  globalSettings?: PartialContentCardSettings;
 }
 
-const { href, title, media, aspectRatio, summary, publicationDate, class: className, target, rel, externalLabel } = Astro.props;
+const {
+  href,
+  title,
+  media,
+  summary,
+  publicationDate,
+  class: className,
+  target,
+  rel,
+  externalLabel,
+  cardId,
+  contentSettings,
+  settings,
+  listSettings,
+  globalSettings,
+} = Astro.props;
+const resolved = resolveContentCardSettings({
+  global: globalSettings,
+  content: contentSettings,
+  list: listSettings,
+  item: settings,
+});
 const formattedDate = publicationDate
   ? new Intl.DateTimeFormat('en-US', {year: 'numeric', month: 'long', day: 'numeric'}).format(
       new Date(publicationDate),
@@ -22,8 +51,16 @@ const formattedDate = publicationDate
   : null;
 ---
 
-<a class:list={['editorial-card', className]} href={href} target={target} rel={rel}>
-  <MediaFrame media={media} ratio={aspectRatio} title={title}>
+<a
+  class:list={['editorial-card', 'content-card', className]}
+  href={href}
+  target={target}
+  rel={rel}
+  data-card-width={resolved.cardWidth}
+  data-info-position={resolved.infoPosition}
+  data-content-card-id={cardId}
+>
+  <MediaFrame media={media} ratio={resolved.mediaAspectRatio as MediaRatio} title={title}>
     <slot name="overlay" />
   </MediaFrame>
   <div class="content">
@@ -54,6 +91,23 @@ const formattedDate = publicationDate
     gap: var(--space-xs-4);
   }
 
+  .editorial-card[data-info-position='left'],
+  .editorial-card[data-info-position='right'] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--page-gutter);
+  }
+
+  .editorial-card[data-info-position='left'] .content {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .editorial-card[data-info-position='left'] :global(.media-frame) {
+    grid-column: 2;
+  }
+
   .headline,
   .summary {
     margin: 0;
@@ -69,5 +123,19 @@ const formattedDate = publicationDate
 
   .publication-date {
     color: var(--fg-60);
+  }
+
+  .editorial-card:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 1023px) {
+    .editorial-card[data-info-position='left'],
+    .editorial-card[data-info-position='right'] {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xs);
+    }
   }
 </style>

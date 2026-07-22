@@ -1,7 +1,13 @@
 ---
 import EditorialCard from './EditorialCard.astro';
 import TagList from './TagList.astro';
-import type { Media, MediaRatio } from './MediaFrame.astro';
+import type { Media } from './MediaFrame.astro';
+import {
+  type CardWidth,
+  type InfoPosition,
+  type MediaAspectRatio,
+  type PartialContentCardSettings,
+} from '../lib/contentCard';
 
 interface Tag {
   title: string | null;
@@ -9,10 +15,13 @@ interface Tag {
 }
 
 interface WorkItem {
+  _id?: string | null;
   title: string | null;
   slug: string | null;
   summary: string | null;
-  cardAspectRatio: MediaRatio | null;
+  cardWidth?: CardWidth | null;
+  mediaAspectRatio?: MediaAspectRatio | null;
+  infoPosition?: InfoPosition | null;
   tags: Tag[] | null;
   media: Media | null;
 }
@@ -20,9 +29,12 @@ interface WorkItem {
 interface Props {
   item: WorkItem;
   class?: string;
+  settings?: PartialContentCardSettings;
+  listSettings?: PartialContentCardSettings;
+  globalSettings?: PartialContentCardSettings;
 }
 
-const { item, class: className } = Astro.props;
+const { item, class: className, settings, listSettings, globalSettings } = Astro.props;
 const href = item.slug ? `/work/${item.slug}` : '#';
 ---
 
@@ -30,9 +42,13 @@ const href = item.slug ? `/work/${item.slug}` : '#';
   href={href}
   title={item.title}
   media={item.media}
-  aspectRatio={item.cardAspectRatio}
+  contentSettings={item}
+  settings={settings}
+  listSettings={listSettings}
+  globalSettings={globalSettings}
   summary={item.summary}
   class={className}
+  cardId={item._id}
 >
   <TagList slot="overlay" tags={item.tags} />
 </EditorialCard>

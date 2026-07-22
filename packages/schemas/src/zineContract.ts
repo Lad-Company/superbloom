@@ -37,9 +37,9 @@ export const validateReferencesUnique = (items: unknown) => {
   return new Set(references).size === references.length || 'References must be unique.'
 }
 
-export const validateArticlesMinThreeAndUnique = (articles: unknown) => {
+export const validateArticlesMinOneAndUnique = (articles: unknown) => {
   if (!Array.isArray(articles)) return 'Articles must be an array.'
-  if (articles.length < 3) return 'Issue must include at least three articles.'
+  if (articles.length < 1) return 'Issue must include at least one article.'
 
   const references = articles.map((item: Reference) => item._ref).filter(Boolean)
   return new Set(references).size === references.length || 'Article references must be unique.'
@@ -76,4 +76,22 @@ export const validateIssuuUrl = (value: unknown) => {
   } catch {
     return 'Enter a valid ISSUU URL.'
   }
+}
+
+export const validateIssuuOrPdfRequired = (
+  document?: {issuuUrl?: string; pdfAsset?: unknown},
+) => {
+  if (!document) return true
+  const hasIssuu = !!document.issuuUrl
+  const hasPdf = !!document.pdfAsset
+
+  if (!hasIssuu && !hasPdf) {
+    return 'Provide either an ISSUU URL or a PDF asset.'
+  }
+
+  if (hasIssuu && hasPdf) {
+    return 'Provide either an ISSUU URL or a PDF asset, not both.'
+  }
+
+  return true
 }

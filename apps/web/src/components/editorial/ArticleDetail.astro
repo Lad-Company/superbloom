@@ -1,10 +1,17 @@
 ---
-import MediaFrame, {type Media, type MediaRatio} from '../MediaFrame.astro';
+import MediaFrame, {type Media} from '../MediaFrame.astro';
 import PortableText from '../PortableText.astro';
 import ArticleBodyRenderer from './ArticleBodyRenderer.astro';
-import EditorialCard from '../EditorialCard.astro';
+import MixedArticleCard from '../MixedArticleCard.astro';
+import ContentCardList from '../ContentCardList.astro';
 import TagList from '../TagList.astro';
 import type {TypedObject} from 'astro-portabletext/types';
+import type {
+  CardWidth,
+  InfoPosition,
+  MediaAspectRatio,
+  PartialContentCardSettings,
+} from '../../lib/contentCard';
 
 type Tag = {title?: string | null; color?: string | null};
 type Coverage = {outlet?: string | null; url?: string | null; isPrimary?: boolean | null};
@@ -12,17 +19,18 @@ type PortableBlock = TypedObject & {children?: Array<{text?: string | null}>};
 type RelatedItem = {
   _type: 'article';
   articleType?: 'news' | 'editorial' | 'zine' | null;
-  title?: string | null;
-  slug?: string | null;
+  title: string | null;
+  slug: string | null;
   issueSlug?: string | null;
   overview?: PortableBlock[] | null;
   publicationDate?: string | null;
-  isExternal?: boolean | null;
-  externalUrl?: string | null;
+  cardDestination?: 'internal' | 'external' | null;
   externalCoverage?: Coverage[] | null;
-  cardAspectRatio?: MediaRatio | null;
-  cardMedia?: Media | null;
-  tags?: Tag[] | null;
+  cardWidth?: CardWidth | null;
+  mediaAspectRatio?: MediaAspectRatio | null;
+  infoPosition?: InfoPosition | null;
+  cardMedia: Media | null;
+  tags: Tag[] | null;
 };
 type BodyBlock =
   | {_type: 'articleTextSection'; heading?: string | null; text?: PortableBlock[] | null}
@@ -42,9 +50,9 @@ interface Props {
     leadMedia?: Media | null;
     body?: BodyBlock[] | null;
     tags?: Tag[] | null;
-    isExternal?: boolean | null;
     externalCoverage?: Coverage[] | null;
     relatedItems?: RelatedItem[] | null;
+    globalCardDefaults?: PartialContentCardSettings;
   };
 }
 
@@ -52,22 +60,6 @@ const {article} = Astro.props;
 const body = article.body ?? [];
 const coverage = article.articleType === 'news' ? article.externalCoverage ?? [] : [];
 const relatedItems = article.relatedItems?.length === 3 ? article.relatedItems : [];
-const relatedHref = (item: RelatedItem) => {
-  if (item.isExternal && item.externalUrl) return item.externalUrl;
-  return item.articleType === 'news'
-    ? `/news/${item.slug}`
-    : item.articleType === 'editorial'
-      ? `/articles/${item.slug}`
-      : item.articleType === 'zine' && item.issueSlug && item.slug
-        ? `/zine/issues/${item.issueSlug}/${item.slug}`
-        : '#';
-};
-const opensRelatedExternally = (item: RelatedItem) => item.isExternal && Boolean(item.externalUrl);
-const summary = (item: RelatedItem) =>
-  item.overview
-    ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
-    .join(' ')
-    .trim();
 ---
 
 <article class="article-detail">
@@ -108,23 +100,11 @@ const summary = (item: RelatedItem) =>
   {relatedItems.length === 3 && (
     <nav class="related-items" aria-labelledby="related-items-heading">
       <h2 id="related-items-heading" class="type-h5">Related items</h2>
-      <div class="related-grid">
+      <ContentCardList class="related-grid">
         {relatedItems.map((item) => (
-          <EditorialCard
-            href={relatedHref(item)}
-            title={item.title ?? null}
-            media={item.cardMedia ?? null}
-            aspectRatio={item.cardAspectRatio}
-            summary={summary(item)}
-            publicationDate={item.publicationDate}
-            target={opensRelatedExternally(item) ? '_blank' : undefined}
-            rel={opensRelatedExternally(item) ? 'noopener noreferrer' : undefined}
-            externalLabel={opensRelatedExternally(item) ? 'Read externally (opens in a new tab)' : undefined}
-          >
-            <TagList slot="overlay" tags={item.tags} />
-          </EditorialCard>
+          <MixedArticleCard item={item} globalSettings={article.globalCardDefaults} showCopy />
         ))}
-      </div>
+      </ContentCardList>
     </nav>
   )}
 </article>
@@ -168,9 +148,6 @@ const summary = (item: RelatedItem) =>
   }
 
   .related-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-xs);
     margin-top: var(--space-xs);
   }
 
@@ -183,11 +160,6 @@ const summary = (item: RelatedItem) =>
     white-space: nowrap;
   }
 
-  @media (max-width: 1023px) {
-    .related-grid {
-      grid-template-columns: 1fr;
-    }
-  }
 
   @media (max-width: 768px) {
     .hero {

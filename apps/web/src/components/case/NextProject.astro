@@ -1,16 +1,19 @@
 ---
 import SurfaceSection from '../SurfaceSection.astro';
 import WorkCard from '../WorkCard.astro';
+import ContentCardList from '../ContentCardList.astro';
 import { fgForHex } from '../../lib/luminance';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
+import type {PartialContentCardSettings} from '../../lib/contentCard';
 
 type NextProjectData = NonNullable<NonNullable<CaseStudyBySlugQueryResult>['nextProject']>;
 
 interface Props {
   project: NextProjectData;
+  globalSettings?: PartialContentCardSettings;
 }
 
-const { project } = Astro.props;
+const { project, globalSettings } = Astro.props;
 const background = project.primaryColor ?? '#ffffff';
 const foreground = fgForHex(background);
 const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground};`;
@@ -21,7 +24,9 @@ const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground}
     <SurfaceSection role="case-primary">
       <section class="next-project" aria-labelledby="next-project-heading">
         <h2 id="next-project-heading" class="type-eyebrow">Next Project</h2>
-        <WorkCard item={project} class="next-project-card" />
+        <ContentCardList>
+          <WorkCard item={project} class="next-project-card" globalSettings={globalSettings} />
+        </ContentCardList>
       </section>
     </SurfaceSection>
   </div>
@@ -33,11 +38,6 @@ const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground}
   }
   h2 {
     margin: 0 0 var(--space-xl);
-  }
-  .next-project :global(.next-project-card) {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: var(--page-gutter);
   }
   .next-project :global(.next-project-card .content) {
     gap: var(--space-3xs);
@@ -60,9 +60,6 @@ const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground}
   @media (max-width: 767px) {
     .next-project {
       padding-block: var(--space-2xl);
-    }
-    .next-project :global(.next-project-card) {
-      grid-template-columns: 1fr;
     }
   }
 </style>

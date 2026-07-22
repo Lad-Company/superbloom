@@ -1,11 +1,11 @@
 ---
 import ContactBand from '../../components/ContactBand.astro';
-import EditorialArticleCard from '../../components/EditorialArticleCard.astro';
 import Footer from '../../components/Footer.astro';
 import Layout from '../../layouts/Layout.astro';
 import Navigation from '../../components/Navigation.astro';
-import NewsCard from '../../components/NewsCard.astro';
-import PageGrid from '../../components/PageGrid.astro';
+import ContentCardList from '../../components/ContentCardList.astro';
+import MixedArticleCard from '../../components/MixedArticleCard.astro';
+import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro';
 import SurfaceSection from '../../components/SurfaceSection.astro';
 import { indexPageQuery, indexViewAllNewestQuery, indexViewAllOldestQuery } from '../../lib/queries';
 import { sanityClient } from '../../lib/sanity';
@@ -14,23 +14,34 @@ import type {
   IndexViewAllNewestQueryResult,
   IndexViewAllOldestQueryResult,
 } from '../../sanity.types';
+import type { PartialContentCardSettings } from '../../lib/contentCard';
 
-const BATCH_SIZE = 7;
+const BATCH_SIZE = 12;
 const sort = Astro.url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest';
 const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
 const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 const recordLimit = page * BATCH_SIZE;
 
 const indexPage = await sanityClient.fetch<IndexPageQueryResult>(indexPageQuery);
-const featuredIds = [indexPage?.lead?._id, ...(indexPage?.secondary?.map((item) => item?._id) ?? [])].filter(
+const featured = indexPage?.featured?.filter((entry) => entry?.item) ?? [];
+const featuredIds = featured.map((entry) => entry.item?._id).filter(
   (id): id is string => Boolean(id),
 );
 const viewAllQuery = sort === 'oldest' ? indexViewAllOldestQuery : indexViewAllNewestQuery;
 const fetchedItems = await sanityClient.fetch<
   IndexViewAllNewestQueryResult | IndexViewAllOldestQueryResult
->(viewAllQuery, { featuredIds, offset: 0, end: recordLimit + 1 });
+>(viewAllQuery, {
+  featuredIds,
+  tagId: indexPage?.allSection?.tagId ?? null,
+  offset: 0,
+  end: recordLimit + 1,
+});
 const items = fetchedItems.slice(0, recordLimit);
 const hasMore = fetchedItems.length > recordLimit;
+const listSettings = indexPage?.allSection?.listDefaults as PartialContentCardSettings;
+const globalSettings = indexPage?.globalCardDefaults as PartialContentCardSettings;
+const overrideFor = (id: string) =>
+  indexPage?.allSection?.itemOverrides?.find((override) => override?.itemId === id) as PartialContentCardSettings;
 
 const queryFor = (nextPage: number, nextSort = sort) => {
   const params = new URLSearchParams();
@@ -49,27 +60,16 @@ const queryFor = (nextPage: number, nextSort = sort) => {
   <SurfaceSection role="light">
     <Navigation role="surface" />
     <main>
-      {indexPage?.lead && (
+      {featured.length > 0 && (
         <section class="featured" aria-labelledby="featured-heading">
           <h1 id="featured-heading" class="type-h1">Index</h1>
-          <div class="featured-grid">
-            <div class="lead">
-              {indexPage.lead.articleType === 'news' ? (
-                <NewsCard item={indexPage.lead} showCopy />
-              ) : (
-                <EditorialArticleCard item={indexPage.lead} showCopy />
-              )}
-            </div>
-            <div class="secondary">
-              {indexPage.secondary?.map((item) =>
-                item?.articleType === 'news' ? (
-                  <NewsCard item={item} showCopy />
-                ) : item ? (
-                  <EditorialArticleCard item={item} showCopy />
-                ) : null,
-              )}
-            </div>
-          </div>
+          <ContentCardList featured>
+            {featured.map((entry) => {
+              const item = entry.item!;
+              const settings = entry as PartialContentCardSettings;
+              return <MixedArticleCard item={item} settings={settings} globalSettings={globalSettings} showCopy />;
+            })}
+          </ContentCardList>
         </section>
       )}
 
@@ -81,19 +81,14 @@ const queryFor = (nextPage: number, nextSort = sort) => {
             <a class="type-label" href={queryFor(1, 'oldest')} aria-current={sort === 'oldest' ? 'page' : undefined}>Oldest</a>
           </nav>
         </div>
-        <PageGrid>
-          {items.map((item) => (
-            <div class="page-grid-item">
-              {item.articleType === 'news' ? (
-                <NewsCard item={item} showCopy />
-              ) : (
-                <EditorialArticleCard item={item} showCopy />
-              )}
-            </div>
-          ))}
-        </PageGrid>
+        <ContentCardList class="all-card-list">
+          {items.map((item) => {
+            const settings = overrideFor(item._id);
+            return <MixedArticleCard item={item} settings={settings} listSettings={listSettings} globalSettings={globalSettings} showCopy />;
+          })}
+        </ContentCardList>
         {hasMore && (
-          <a class="load-more type-label" href={queryFor(page + 1)}>Load more</a>
+          <ProgressiveLoadMore href={queryFor(page + 1)} />
         )}
       </section>
     </main>
@@ -117,21 +112,8 @@ const queryFor = (nextPage: number, nextSort = sort) => {
     margin: 0;
   }
 
-  .featured-grid {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: var(--space-xl) var(--page-gutter);
+  .featured :global(.content-card-list) {
     margin-top: var(--space-xl);
-  }
-
-  .lead {
-    grid-column: span 7;
-  }
-
-  .secondary {
-    display: grid;
-    grid-column: span 5;
-    gap: var(--space-xs);
   }
 
   .view-all {
@@ -152,7 +134,7 @@ const queryFor = (nextPage: number, nextSort = sort) => {
   }
 
   .sort a,
-  .load-more {
+  .view-all :global(.load-more) {
     text-underline-offset: 0.15em;
   }
 
@@ -160,12 +142,12 @@ const queryFor = (nextPage: number, nextSort = sort) => {
     text-decoration-thickness: 2px;
   }
 
-  .load-more {
+  .view-all :global(.load-more) {
     display: inline-block;
     margin: var(--space-xl) 0 0 var(--page-inset);
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1023px) {
     .featured,
     .view-all {
       padding: var(--space-2xl) var(--space-3xs);
@@ -175,27 +157,15 @@ const queryFor = (nextPage: number, nextSort = sort) => {
       padding-top: 120px;
     }
 
-    .featured-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: var(--space-xl);
+    .featured :global(.content-card-list) {
       margin-top: var(--space-xs);
-    }
-
-    .lead,
-    .secondary {
-      grid-column: 1 / -1;
-    }
-
-    .secondary {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--space-3xs);
     }
 
     .view-all-header {
       margin-bottom: var(--space-xs);
     }
 
-    .load-more {
+    .view-all :global(.load-more) {
       margin-left: 0;
     }
   }

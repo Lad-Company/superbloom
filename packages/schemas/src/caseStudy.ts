@@ -1,5 +1,4 @@
 import {defineField, defineType} from 'sanity'
-import {orderRankField} from '@sanity/orderable-document-list'
 import {
   validateColorRequired,
   validateSecondaryColorWithResults,
@@ -9,13 +8,13 @@ import {
   validatePressCardinality,
   validateNextProjectNotSelf,
 } from './caseStudyContract'
+import {cardWidthField, mediaAspectRatioField, infoPositionField, validateInfoPositionWithWidth} from './cardSettings'
 
 export const caseStudy = defineType({
   name: 'caseStudy',
   title: 'Case Study',
   type: 'document',
   fields: [
-    orderRankField({type: 'caseStudy'}),
     defineField({
       name: 'title',
       type: 'string',
@@ -43,6 +42,12 @@ export const caseStudy = defineType({
           .custom(validateCapabilitiesUnique)
           .custom(validateCapabilitiesCardinality),
     }),
+    // Publication date for Case Studies (required per spec)
+    defineField({
+      name: 'publicationDate',
+      type: 'datetime',
+      validation: (rule) => rule.required(),
+    }),
     // Work-index card fields. The card thumbnail is a dedicated grid image/video
     // distinct from leadMedia, mirroring the news card shape so the two share one
     // Card component and GROQ projection.
@@ -50,27 +55,16 @@ export const caseStudy = defineType({
       name: 'cardMedia',
       title: 'Card Media',
       type: 'mediaBox',
+      validation: (rule) => rule.required(),
     }),
-    defineField({
-      name: 'cardAspectRatio',
-      title: 'Card Aspect Ratio',
-      type: 'string',
-      options: {list: ['1:1', '16:9', '4:5', '2:1'], layout: 'radio'},
-      initialValue: '16:9',
-    }),
+    cardWidthField({required: true}),
+    mediaAspectRatioField({required: true}),
+    infoPositionField({required: true}),
     defineField({
       name: 'tags',
       type: 'array',
       of: [{type: 'reference', to: [{type: 'tag'}]}],
       validation: (rule) => rule.max(2),
-    }),
-    defineField({
-      name: 'cardSize',
-      title: 'Card Size',
-      description: 'full = own row; half = pairs with the next half card.',
-      type: 'string',
-      options: {list: ['full', 'half'], layout: 'radio'},
-      initialValue: 'half',
     }),
     defineField({
       name: 'primaryColor',
@@ -147,12 +141,21 @@ export const caseStudy = defineType({
     }),
   ],
   validation: (rule) =>
-    rule.custom((document) =>
-      validateSecondaryColorWithResults({
-        parent: document as {
-          secondaryColor?: unknown
-          results?: {backgroundColor?: string}
+    rule.custom((document) => {
+      const doc = document as {
+        secondaryColor?: unknown
+        results?: {backgroundColor?: string}
+        cardWidth?: string
+        infoPosition?: string
+      }
+      const secondaryColorValidation = validateSecondaryColorWithResults({
+        parent: {
+          secondaryColor: doc.secondaryColor,
+          results: doc.results,
         },
       })
-    ),
+      if (secondaryColorValidation !== true) return secondaryColorValidation
+
+      return validateInfoPositionWithWidth({parent: doc})
+    }),
 })

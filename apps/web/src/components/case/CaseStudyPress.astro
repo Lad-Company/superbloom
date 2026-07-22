@@ -1,15 +1,18 @@
 ---
 import NewsCard from '../NewsCard.astro';
+import ContentCardList from '../ContentCardList.astro';
 import SurfaceSection from '../SurfaceSection.astro';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
+import type {PartialContentCardSettings} from '../../lib/contentCard';
 
 type PressItem = NonNullable<NonNullable<CaseStudyBySlugQueryResult>['press']>[number];
 
 interface Props {
   items: PressItem[];
+  globalSettings?: PartialContentCardSettings;
 }
 
-const { items } = Astro.props;
+const { items, globalSettings } = Astro.props;
 const visibleItems = items.filter((item) => item?.slug).slice(0, 3);
 ---
 
@@ -17,9 +20,9 @@ const visibleItems = items.filter((item) => item?.slug).slice(0, 3);
   <SurfaceSection role="light">
     <section class="press" aria-labelledby="case-study-press-heading">
       <h2 id="case-study-press-heading" class="type-h3">Press</h2>
-      <div class="grid">
-        {visibleItems.map((item) => <NewsCard item={item} showCopy />)}
-      </div>
+      <ContentCardList class="grid">
+        {visibleItems.map((item) => <NewsCard item={item} globalSettings={globalSettings} showCopy />)}
+      </ContentCardList>
     </section>
   </SurfaceSection>
 )}
@@ -32,9 +35,7 @@ const visibleItems = items.filter((item) => item?.slug).slice(0, 3);
     margin: 0 0 var(--space-xl);
   }
   .grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--page-gutter);
+    padding: 0;
   }
   @media (max-width: 1023px) {
     .press {
@@ -47,10 +48,6 @@ const visibleItems = items.filter((item) => item?.slug).slice(0, 3);
     }
     h2 {
       font-size: 72px;
-    }
-    .grid {
-      grid-template-columns: 1fr;
-      gap: var(--space-xl);
     }
   }
 </style>

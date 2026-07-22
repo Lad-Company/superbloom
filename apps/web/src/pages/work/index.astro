@@ -4,16 +4,43 @@ import Navigation from '../../components/Navigation.astro';
 import Footer from '../../components/Footer.astro';
 import SurfaceSection from '../../components/SurfaceSection.astro';
 import ContactBand from '../../components/ContactBand.astro';
-import PageGrid from '../../components/PageGrid.astro';
+import ContentCardList from '../../components/ContentCardList.astro';
 import WorkCard from '../../components/WorkCard.astro';
+import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro';
 import { sanityClient } from '../../lib/sanity';
-import { workIndexQuery, caseStudiesQuery } from '../../lib/queries';
-import type { WorkIndexQueryResult, CaseStudiesQueryResult } from '../../sanity.types';
+import { workIndexQuery, caseStudiesNewestQuery, caseStudiesOldestQuery } from '../../lib/queries';
+import type {
+  CaseStudiesNewestQueryResult,
+  CaseStudiesOldestQueryResult,
+  WorkIndexQueryResult,
+} from '../../sanity.types';
+import type { PartialContentCardSettings } from '../../lib/contentCard';
 
-const [workIndex, caseStudies] = await Promise.all([
-  sanityClient.fetch<WorkIndexQueryResult>(workIndexQuery),
-  sanityClient.fetch<CaseStudiesQueryResult>(caseStudiesQuery),
-]);
+const BATCH_SIZE = 12;
+const sort = Astro.url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest';
+const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
+const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+const recordLimit = page * BATCH_SIZE;
+const workIndex = await sanityClient.fetch<WorkIndexQueryResult>(workIndexQuery);
+const featured = workIndex?.featured?.filter((entry) => entry?.item) ?? [];
+const featuredIds = featured.map((entry) => entry.item?._id).filter((id): id is string => Boolean(id));
+const query = sort === 'oldest' ? caseStudiesOldestQuery : caseStudiesNewestQuery;
+const fetchedCaseStudies = await sanityClient.fetch<
+  CaseStudiesNewestQueryResult | CaseStudiesOldestQueryResult
+>(query, {featuredIds, offset: 0, end: recordLimit + 1});
+const caseStudies = fetchedCaseStudies.slice(0, recordLimit);
+const hasMore = fetchedCaseStudies.length > recordLimit;
+const listSettings = workIndex?.allSection?.listDefaults as PartialContentCardSettings;
+const globalSettings = workIndex?.globalCardDefaults as PartialContentCardSettings;
+const overrideFor = (id: string) =>
+  workIndex?.allSection?.itemOverrides?.find((override) => override?.itemId === id) as PartialContentCardSettings;
+const queryFor = (nextPage: number, nextSort = sort) => {
+  const params = new URLSearchParams();
+  if (nextSort === 'oldest') params.set('sort', nextSort);
+  if (nextPage > 1) params.set('page', String(nextPage));
+  const search = params.toString();
+  return search ? `/work?${search}` : '/work';
+};
 
 const heroHeading = workIndex?.heroHeading ?? 'Unexpected minds. Unignorable work.';
 const allWorkHeading = workIndex?.allWorkHeading ?? 'All work';
@@ -27,15 +54,40 @@ const allWorkHeading = workIndex?.allWorkHeading ?? 'All work';
       <h1 class="type-h1 hero-heading">{heroHeading}</h1>
     </div>
 
+    {featured.length > 0 && (
+      <section class="featured-work" aria-labelledby="featured-work-heading">
+        <h2 id="featured-work-heading" class="type-h3">Featured</h2>
+        <ContentCardList featured>
+          {featured.map((entry) => (
+            <WorkCard
+              item={entry.item!}
+              settings={entry as PartialContentCardSettings}
+              globalSettings={globalSettings}
+            />
+          ))}
+        </ContentCardList>
+      </section>
+    )}
+
     <div class="all-work">
-      <h2 class="type-h3 all-work-heading">{allWorkHeading}</h2>
-      <PageGrid>
+      <div class="all-work-header">
+        <h2 class="type-h3 all-work-heading">{allWorkHeading}</h2>
+        <nav class="sort" aria-label="Sort Case Studies">
+          <a class="type-label" href={queryFor(1, 'newest')} aria-current={sort === 'newest' ? 'page' : undefined}>Newest</a>
+          <a class="type-label" href={queryFor(1, 'oldest')} aria-current={sort === 'oldest' ? 'page' : undefined}>Oldest</a>
+        </nav>
+      </div>
+      <ContentCardList class="all-card-list">
         {caseStudies.map((cs) => (
-          <div class="page-grid-item" data-span={cs.cardSize === 'full' ? 'full' : undefined}>
-            <WorkCard item={cs} />
-          </div>
+          <WorkCard
+            item={cs}
+            settings={overrideFor(cs._id)}
+            listSettings={listSettings}
+            globalSettings={globalSettings}
+          />
         ))}
-      </PageGrid>
+      </ContentCardList>
+      {hasMore && <ProgressiveLoadMore href={queryFor(page + 1)} />}
     </div>
   </SurfaceSection>
 
@@ -54,17 +106,43 @@ const allWorkHeading = workIndex?.allWorkHeading ?? 'All work';
   .all-work {
     display: grid;
     gap: var(--space-xl);
+    min-width: 0;
     padding: var(--space-4xl) 0;
+  }
+  .featured-work {
+    display: grid;
+    gap: var(--space-xl);
+    padding: var(--space-4xl) var(--page-inset) 0;
+  }
+  .all-work-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-inline: var(--page-inset);
+  }
+  .sort {
+    display: flex;
+    gap: var(--space-3xs);
+  }
+  .all-work :global(.load-more) {
+    margin-left: var(--page-inset);
   }
   .all-work-heading {
     margin: 0;
   }
-  @media (max-width: 768px) {
+  @media (max-width: 1023px) {
     .hero {
       padding: 120px var(--space-3xs) 0;
     }
     .all-work-heading {
-      padding: 0 var(--space-3xs);
+      padding: 0;
+    }
+    .featured-work,
+    .all-work-header {
+      padding-inline: var(--space-3xs);
+    }
+    .all-work-header {
+      flex-wrap: wrap;
     }
   }
 </style>

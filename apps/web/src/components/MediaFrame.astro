@@ -1,5 +1,5 @@
 ---
-export type MediaRatio = '1:1' | '16:9' | '4:5' | '9:16' | '3:2' | '2:1' | 'fill';
+export type MediaRatio = 'intrinsic' | '1:1' | '16:9' | '4:5' | '9:16' | '3:2' | '2:1' | 'fill';
 
 export interface ProjectedAsset {
   _type: 'image' | 'mux.video';
@@ -7,6 +7,7 @@ export interface ProjectedAsset {
   width?: number | null;
   height?: number | null;
   playbackId?: string | null;
+  aspectRatio?: string | null;
 }
 
 export interface Media {
@@ -34,6 +35,7 @@ const {
 } = Astro.props;
 
 const ratioMap: Record<MediaRatio, string> = {
+  'intrinsic': 'auto',
   '1:1': '1 / 1',
   '16:9': '16 / 9',
   '4:5': '4 / 5',
@@ -48,7 +50,14 @@ const altText = media?.altText;
 const isDecorative = media?.decorative ?? false;
 const mediaRatio = ratio ?? '16:9';
 const ratioValue = ratioMap[mediaRatio];
-const styleAttr = mediaRatio === 'fill' ? '' : `aspect-ratio: ${ratioValue};`;
+const intrinsicVideoRatio =
+  asset?._type === 'mux.video' && asset.aspectRatio?.match(/^\d+:\d+$/)
+    ? asset.aspectRatio.replace(':', ' / ')
+    : '16 / 9';
+const styleAttr =
+  mediaRatio === 'fill' || (mediaRatio === 'intrinsic' && asset?._type !== 'mux.video')
+    ? ''
+    : `aspect-ratio: ${mediaRatio === 'intrinsic' ? intrinsicVideoRatio : ratioValue};`;
 const hasAsset =
   (asset?._type === 'image' && Boolean(asset.url)) ||
   (asset?._type === 'mux.video' && Boolean(asset.playbackId));
@@ -60,7 +69,7 @@ const videoPoster =
 
 <media-frame
   active={active ? true : undefined}
-  class:list={['media-frame', className, { 'media-placeholder': !hasAsset }]}
+  class:list={['media-frame', className, { 'media-placeholder': !hasAsset, intrinsic: mediaRatio === 'intrinsic' }]}
   style={styleAttr}
 >
   {asset?._type === 'mux.video' && asset.playbackId && (
@@ -170,6 +179,10 @@ const videoPoster =
     object-fit: cover;
     --controls: none;
     --media-object-fit: cover;
+  }
+
+  .media-frame.intrinsic img {
+    height: auto;
   }
 
   .media-placeholder {

@@ -1,0 +1,72 @@
+---
+interface Props {
+  href: string;
+}
+
+const {href} = Astro.props;
+---
+
+<progressive-load-more>
+  <a class="load-more type-label" href={href} data-load-more>Load more</a>
+</progressive-load-more>
+
+<script>
+  class ProgressiveLoadMoreElement extends HTMLElement {
+    private loading = false;
+    private observer?: IntersectionObserver;
+
+    connectedCallback() {
+      const link = this.querySelector<HTMLAnchorElement>('[data-load-more]');
+      const list = this.previousElementSibling;
+      if (!link || !list || !('IntersectionObserver' in window)) return;
+
+      this.observer = new IntersectionObserver(async ([entry]) => {
+        if (!entry.isIntersecting || this.loading || !link.href) return;
+        this.loading = true;
+        link.textContent = 'Loading…';
+
+        try {
+          const response = await fetch(link.href);
+          if (!response.ok) throw new Error('Could not load more cards');
+          const nextPage = new DOMParser().parseFromString(await response.text(), 'text/html');
+          const knownIds = new Set(
+            Array.from(list.querySelectorAll('[data-content-card-id]')).map((card) =>
+              card.getAttribute('data-content-card-id'),
+            ),
+          );
+          nextPage.querySelectorAll('.all-card-list > [data-content-card-id]').forEach((card) => {
+            if (!knownIds.has(card.getAttribute('data-content-card-id'))) list.append(card);
+          });
+          const next = nextPage.querySelector<HTMLAnchorElement>('[data-load-more]');
+          if (next) {
+            link.href = next.href;
+            link.textContent = 'Load more';
+          } else {
+            this.observer?.disconnect();
+            this.remove();
+          }
+          history.replaceState(null, '', response.url);
+        } catch {
+          link.textContent = 'Retry loading more';
+        } finally {
+          this.loading = false;
+        }
+      }, {rootMargin: '400px'});
+      this.observer.observe(link);
+    }
+
+    disconnectedCallback() {
+      this.observer?.disconnect();
+    }
+  }
+
+  if (!customElements.get('progressive-load-more')) {
+    customElements.define('progressive-load-more', ProgressiveLoadMoreElement);
+  }
+</script>
+
+<style>
+  progressive-load-more {
+    display: block;
+  }
+</style>

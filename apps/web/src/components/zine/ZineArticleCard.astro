@@ -1,25 +1,39 @@
 ---
 import EditorialCard from '../EditorialCard.astro';
 import TagList from '../TagList.astro';
-import type {Media, MediaRatio} from '../MediaFrame.astro';
+import type {Media} from '../MediaFrame.astro';
 import type {TypedObject} from 'astro-portabletext/types';
+import {
+  type CardWidth,
+  type InfoPosition,
+  type MediaAspectRatio,
+  type PartialContentCardSettings,
+} from '../../lib/contentCard';
 
 type Tag = {title?: string | null; color?: string | null};
 type OverviewBlock = TypedObject & {children?: Array<{text?: string | null}>};
 
 interface Props {
   article: {
+    _id?: string | null;
     title?: string | null;
     slug?: string | null;
     overview?: OverviewBlock[] | null;
-    cardAspectRatio?: MediaRatio | null;
+    publicationDate?: string | null;
+    cardWidth?: CardWidth | null;
+    mediaAspectRatio?: MediaAspectRatio | null;
+    infoPosition?: InfoPosition | null;
     cardMedia?: Media | null;
     tags?: Tag[] | null;
   };
   issueSlug: string;
+  settings?: PartialContentCardSettings;
+  listSettings?: PartialContentCardSettings;
+  globalSettings?: PartialContentCardSettings;
+  mixedList?: boolean;
 }
 
-const {article, issueSlug} = Astro.props;
+const {article, issueSlug, settings, listSettings, globalSettings, mixedList = false} = Astro.props;
 const summary = article.overview
   ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
   .join(' ')
@@ -30,8 +44,13 @@ const summary = article.overview
   href={`/zine/issues/${issueSlug}/${article.slug}`}
   title={article.title ?? null}
   media={article.cardMedia ?? null}
-  aspectRatio={article.cardAspectRatio}
+  contentSettings={article}
+  settings={settings}
+  listSettings={listSettings}
+  globalSettings={globalSettings}
   summary={summary}
+  publicationDate={article.publicationDate}
+  cardId={article._id}
 >
-  <TagList slot="overlay" tags={article.tags} />
+  <TagList slot="overlay" tags={article.tags} typeLabel={mixedList ? 'Zine' : undefined} maxTags={mixedList ? 1 : 2} />
 </EditorialCard>

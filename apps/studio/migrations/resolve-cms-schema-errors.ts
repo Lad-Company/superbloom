@@ -19,6 +19,21 @@ type ZineIssue = {
   coverMedia?: unknown
   editorLetter?: unknown
 }
+type CardDocument = {
+  _id: string
+  _type: 'article' | 'caseStudy'
+  cardAspectRatio?: string
+  cardSize?: string
+  isExternal?: boolean
+  externalUrl?: string
+}
+type ConfigDocument = {_id: string; _type: 'indexPage' | 'workIndex' | 'siteSettings'}
+
+const defaultCardSettings = {
+  cardWidth: '1/2',
+  mediaAspectRatio: '16:9',
+  infoPosition: 'below',
+}
 
 const withoutArrayKey = (section: HomepageSection) => {
   const {_key, ...value} = section
@@ -26,12 +41,18 @@ const withoutArrayKey = (section: HomepageSection) => {
 }
 
 async function main() {
-  const [homepages, zineIssues] = await Promise.all([
+  const [homepages, zineIssues, cardDocuments, configDocuments] = await Promise.all([
     client.fetch<Homepage[]>(
-      '*[_type == "homepage" && defined(sections)]{_id,sections,hero,capabilities,news,zine,contact}',
+      '*[_type == "homepage"]{_id,sections,hero,capabilities,news,zine,contact}',
     ),
     client.fetch<ZineIssue[]>(
       '*[_type == "zineIssue"]{_id,cardMedia,heroMedia,coverMedia,editorLetter}',
+    ),
+    client.fetch<CardDocument[]>(
+      '*[_type in ["article", "caseStudy"]]{_id,_type,cardAspectRatio,cardSize,isExternal,externalUrl}',
+    ),
+    client.fetch<ConfigDocument[]>(
+      '*[_type in ["indexPage", "workIndex", "siteSettings"]]{_id,_type}',
     ),
   ])
 
@@ -60,6 +81,7 @@ async function main() {
 
     transaction = transaction.patch(homepage._id, {
       set,
+      setIfMissing: {'news.listDefaults': defaultCardSettings},
       unset: ['sections'],
     })
   }
@@ -80,6 +102,7 @@ async function main() {
 
     transaction = transaction.patch(issue._id, {
       set,
+      setIfMissing: {listDefaults: defaultCardSettings},
       unset: [
         'issueNumber',
         'publicationDate',
@@ -88,18 +111,73 @@ async function main() {
         'introHeadline',
         'introText',
         'introMedia',
-        'pdfAsset',
       ],
     })
   }
 
-  if (homepages.length === 0 && zineIssues.length === 0) {
+  for (const document of cardDocuments) {
+    const mediaAspectRatio = document.cardAspectRatio ?? defaultCardSettings.mediaAspectRatio
+    const cardWidth =
+      document._type === 'caseStudy' && document.cardSize === 'full'
+        ? 'full'
+        : defaultCardSettings.cardWidth
+    const setIfMissing: Record<string, unknown> = {
+      cardWidth,
+      mediaAspectRatio,
+      infoPosition: defaultCardSettings.infoPosition,
+    }
+
+    if (document._type === 'article') {
+      setIfMissing.cardDestination = document.isExternal ? 'external' : 'internal'
+      if (document.isExternal && document.externalUrl) {
+        setIfMissing.externalCoverage = [
+          {
+            _key: `migrated-${document._id}`,
+            _type: 'externalCoverage',
+            outlet: 'External coverage',
+            url: document.externalUrl,
+            isPrimary: true,
+          },
+        ]
+      }
+    }
+
+    transaction = transaction.patch(document._id, {
+      setIfMissing,
+      unset: ['cardAspectRatio', 'cardSize', 'isExternal', 'externalUrl', 'orderRank'],
+    })
+  }
+
+  for (const document of configDocuments) {
+    if (document._type === 'siteSettings') {
+      transaction = transaction.patch(document._id, {
+        setIfMissing: {cardDefaults: defaultCardSettings},
+      })
+    } else {
+      transaction = transaction.patch(document._id, {
+        setIfMissing: {
+          featured: [],
+          'allSection.listDefaults': defaultCardSettings,
+        },
+        unset: document._type === 'indexPage' ? ['lead', 'secondary'] : [],
+      })
+    }
+  }
+
+  if (
+    homepages.length === 0 &&
+    zineIssues.length === 0 &&
+    cardDocuments.length === 0 &&
+    configDocuments.length === 0
+  ) {
     console.log('No CMS documents required migration.')
     return
   }
 
   await transaction.commit()
-  console.log(`Migrated ${homepages.length} homepage and ${zineIssues.length} zine issue document(s).`)
+  console.log(
+    `Migrated ${homepages.length} homepage, ${zineIssues.length} zine issue, ${cardDocuments.length} card, and ${configDocuments.length} configuration document(s).`,
+  )
 }
 
 main().catch((error) => {

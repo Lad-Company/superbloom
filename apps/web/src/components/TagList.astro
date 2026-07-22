@@ -5,15 +5,18 @@ interface Tag {
 
 interface Props {
   tags?: Tag[] | null;
+  typeLabel?: string;
+  maxTags?: number;
 }
 
-const { tags = [] } = Astro.props;
-const tagList = tags ?? [];
+const { tags = [], typeLabel, maxTags = 2 } = Astro.props;
+const tagList = (tags ?? []).slice(0, maxTags);
 ---
 
 {
-  tagList.length > 0 && (
+  (typeLabel || tagList.length > 0) && (
     <ul class="tag-list">
+      {typeLabel && <li class="tag type-label">{typeLabel}</li>}
       {tagList.map((tag) => (
         <li class="tag type-label">{tag.title}</li>
       ))}

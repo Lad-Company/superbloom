@@ -3,6 +3,7 @@ import CardCarousel from '../CardCarousel.astro';
 import NewsCard from '../NewsCard.astro';
 import SurfaceSection from '../SurfaceSection.astro';
 import type { HomepageQueryResult } from '../../sanity.types';
+import type {ContentCardSettingsInput, PartialContentCardSettings} from '../../lib/contentCard';
 
 type NewsBlock = NonNullable<NonNullable<HomepageQueryResult>['news']>;
 
@@ -10,10 +11,19 @@ interface Props {
   headline?: string | null;
   items: NewsBlock['items'];
   role: 'light';
+  listDefaults?: PartialContentCardSettings;
+  itemOverrides?: Array<{articleId?: string | null} & ContentCardSettingsInput> | null;
+  globalSettings?: PartialContentCardSettings;
 }
 
-const { headline, items, role } = Astro.props;
+const { headline, items, role, listDefaults: listSettings, itemOverrides, globalSettings } = Astro.props;
 const [featured, ...rest] = items;
+const overrideFor = (id?: string | null) =>
+  itemOverrides?.find((override) => override.articleId === id);
+const carouselSettings = (id?: string | null): ContentCardSettingsInput => ({
+  ...overrideFor(id),
+  infoPosition: 'below',
+});
 ---
 
 {
@@ -22,9 +32,9 @@ const [featured, ...rest] = items;
       <div class="inner">
         {headline && <h2 class="type-h6 headline">{headline}</h2>}
         <CardCarousel label={headline ?? 'Latest news'}>
-          {featured && <NewsCard item={featured} class="featured" showCopy />}
+          {featured && <NewsCard item={featured} class="featured" settings={carouselSettings(featured._id)} listSettings={listSettings} globalSettings={globalSettings} showCopy />}
           {rest.map((item) => (
-            <NewsCard item={item} class="standard" />
+            <NewsCard item={item} class="standard" settings={carouselSettings(item._id)} listSettings={listSettings} globalSettings={globalSettings} />
           ))}
         </CardCarousel>
       </div>

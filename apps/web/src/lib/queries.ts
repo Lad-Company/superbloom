@@ -10,7 +10,8 @@ const mediaProjection = `{
       "altText": asset->altText
     },
     _type == "mux.video" => {
-      "playbackId": asset->playbackId
+      "playbackId": asset->playbackId,
+      "aspectRatio": asset->data.aspect_ratio
     }
   },
   altText,
@@ -25,10 +26,12 @@ const editorialCardProjection = `
   "slug": slug.current,
   overview,
   publicationDate,
-  isExternal,
-  externalUrl,
+  cardDestination,
   externalCoverage[]{ outlet, url, isPrimary },
-  cardAspectRatio,
+  cardWidth,
+  mediaAspectRatio,
+  infoPosition,
+  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,
   tags[]->{ title, color },
   "cardMedia": cardMedia${mediaProjection}
 `;
@@ -51,6 +54,8 @@ export const homepageQuery = defineQuery(`
     },
     news{
       headline,
+      listDefaults,
+      itemOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },
       "items": *[_type == "article" && articleType == "news"] | order(coalesce(publicationDate, _createdAt) desc)[0...8]{
         ${editorialCardProjection}
       }
@@ -63,7 +68,8 @@ export const homepageQuery = defineQuery(`
       "promoMedia": promoMedia${mediaProjection},
       ctaLabel
     },
-    contact{ _type }
+    contact{ _type },
+    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
   }
 `);
 
@@ -114,17 +120,60 @@ export const whoWeAreQuery = defineQuery(`
 export const workIndexQuery = defineQuery(`
   *[_type == "workIndex"][0]{
     heroHeading,
-    allWorkHeading
+    allWorkHeading,
+    featured[]{
+      _key,
+      cardWidth,
+      mediaAspectRatio,
+      infoPosition,
+      "item": caseStudy->{
+        _id,
+        title,
+        "slug": slug.current,
+        summary,
+        publicationDate,
+        cardWidth,
+        mediaAspectRatio,
+        infoPosition,
+        tags[]->{ title, color },
+        "media": cardMedia${mediaProjection}
+      }
+    },
+    allSection{
+      listDefaults,
+      itemOverrides[]{ "itemId": caseStudy._ref, cardWidth, mediaAspectRatio, infoPosition }
+    },
+    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
   }
 `);
 
-export const caseStudiesQuery = defineQuery(`
-  *[_type == "caseStudy"] | order(orderRank) {
+export const caseStudiesNewestQuery = defineQuery(`
+  *[_type == "caseStudy" && !(_id in $featuredIds)]
+    | order(coalesce(publicationDate, _createdAt) desc)[$offset...$end] {
+    _id,
     title,
     "slug": slug.current,
     summary,
-    cardSize,
-    cardAspectRatio,
+    publicationDate,
+    cardWidth,
+    mediaAspectRatio,
+    infoPosition,
+    tags[]->{ title, color },
+    "media": cardMedia${mediaProjection}
+  }
+`);
+
+export const caseStudiesOldestQuery = defineQuery(`
+  *[_type == "caseStudy" && !(_id in $featuredIds)]
+    | order(coalesce(publicationDate, _createdAt) asc)[$offset...$end] {
+    _id,
+    title,
+    "slug": slug.current,
+    summary,
+    publicationDate,
+    cardWidth,
+    mediaAspectRatio,
+    infoPosition,
     tags[]->{ title, color },
     "media": cardMedia${mediaProjection}
   }
@@ -184,11 +233,12 @@ export const caseStudyBySlugQuery = defineQuery(`
       "slug": slug.current,
       overview,
       publicationDate,
-      isExternal,
-      externalUrl,
+      cardDestination,
       articleType,
       externalCoverage[]{ outlet, url, isPrimary },
-      cardAspectRatio,
+      cardWidth,
+      mediaAspectRatio,
+      infoPosition,
       tags[]->{ title, color },
       "cardMedia": cardMedia${mediaProjection}
     },
@@ -196,11 +246,14 @@ export const caseStudyBySlugQuery = defineQuery(`
       title,
       "slug": slug.current,
       summary,
-      cardAspectRatio,
+      cardWidth,
+      mediaAspectRatio,
+      infoPosition,
       tags[]->{ title, color },
       "media": cardMedia${mediaProjection},
       "primaryColor": primaryColor.hex
-    }
+    },
+    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
   }
 `);
 
@@ -227,13 +280,13 @@ const articleProjection = `
     "slug": slug.current,
     publicationDate,
     overview,
-    isExternal,
-    externalUrl,
+    cardDestination,
     tags[]->{ title, color },
     externalCoverage[]{ _key, outlet, url, isPrimary },
     "leadMedia": leadMedia${mediaProjection},
     ${articleBodyProjection},
     relatedItems[]->{
+      _id,
       _type,
       articleType,
       title,
@@ -241,18 +294,20 @@ const articleProjection = `
       "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,
       overview,
       publicationDate,
-      isExternal,
-      externalUrl,
+      cardDestination,
       articleType,
       externalCoverage[]{ outlet, url, isPrimary },
-      cardAspectRatio,
+      cardWidth,
+      mediaAspectRatio,
+      infoPosition,
       tags[]->{ title, color },
       "cardMedia": cardMedia${mediaProjection}
-    }
+    },
+    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
 `
 
 export const newsArticleBySlugQuery = defineQuery(`
-  *[_type == "article" && articleType == "news" && isExternal != true && slug.current == $slug][0] {
+  *[_type == "article" && articleType == "news" && slug.current == $slug][0] {
     ${articleProjection}
   }
 `);
@@ -264,12 +319,16 @@ export const editorialArticleBySlugQuery = defineQuery(`
 `);
 
 const zineArticleCardProjection = `
+  _id,
   _type,
   articleType,
   title,
   "slug": slug.current,
   overview,
-  cardAspectRatio,
+  publicationDate,
+  cardWidth,
+  mediaAspectRatio,
+  infoPosition,
   tags[]->{ title, color },
   "cardMedia": cardMedia${mediaProjection}
 `
@@ -283,7 +342,11 @@ const zineIssueProjection = `
   articles[]->{
     ${zineArticleCardProjection}
   },
-  issuuUrl
+  listDefaults,
+  articleOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },
+  issuuUrl,
+  "pdfUrl": pdfAsset.asset->url,
+  "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
 `
 
 export const zineLandingQuery = defineQuery(`
@@ -330,20 +393,30 @@ export const zineArticleBySlugQuery = defineQuery(`
 
 export const indexPageQuery = defineQuery(`
   *[_type == "indexPage"][0]{
-    "lead": lead->{
-      ${editorialCardProjection}
+    featured[]{
+      _key,
+      cardWidth,
+      mediaAspectRatio,
+      infoPosition,
+      "item": article->{
+        ${editorialCardProjection}
+      }
     },
-    "secondary": secondary[]->{
-      ${editorialCardProjection}
-    }
+    allSection{
+      listDefaults,
+      "tagId": tagFilter._ref,
+      itemOverrides[]{ "itemId": article._ref, cardWidth, mediaAspectRatio, infoPosition }
+    },
+    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
   }
 `);
 
 export const indexViewAllNewestQuery = defineQuery(`
   *[
     _type == "article" &&
-    articleType in ["news", "editorial"] &&
-    !(_id in $featuredIds)
+    articleType in ["news", "editorial", "zine"] &&
+    !(_id in $featuredIds) &&
+    (!defined($tagId) || $tagId in tags[]._ref)
   ] | order(coalesce(publicationDate, _createdAt) desc)[$offset...$end]{
     ${editorialCardProjection}
   }
@@ -352,8 +425,9 @@ export const indexViewAllNewestQuery = defineQuery(`
 export const indexViewAllOldestQuery = defineQuery(`
   *[
     _type == "article" &&
-    articleType in ["news", "editorial"] &&
-    !(_id in $featuredIds)
+    articleType in ["news", "editorial", "zine"] &&
+    !(_id in $featuredIds) &&
+    (!defined($tagId) || $tagId in tags[]._ref)
   ] | order(coalesce(publicationDate, _createdAt) asc)[$offset...$end]{
     ${editorialCardProjection}
   }
@@ -364,7 +438,8 @@ export const siteSettingsQuery = defineQuery(`
     instagramUrl,
     linkedInUrl,
     vimeoUrl,
-    youTubeUrl
+    youTubeUrl,
+    cardDefaults
   }
 `);
 
@@ -374,7 +449,7 @@ export const sitemapQuery = defineQuery(`
       "path": "/work/" + slug.current,
       "updatedAt": _updatedAt
     },
-    "news": *[_type == "article" && articleType == "news" && isExternal != true && defined(slug.current)]{
+    "news": *[_type == "article" && articleType == "news" && defined(slug.current)]{
       "path": "/news/" + slug.current,
       "updatedAt": _updatedAt
     },

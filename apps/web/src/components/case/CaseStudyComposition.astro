@@ -74,8 +74,8 @@ const brandVars = [
     );
   })}
 
-  <CaseStudyPress items={caseStudy.press ?? []} />
-  {caseStudy.nextProject && <NextProject project={caseStudy.nextProject} />}
+  <CaseStudyPress items={caseStudy.press ?? []} globalSettings={caseStudy.globalCardDefaults} />
+  {caseStudy.nextProject && <NextProject project={caseStudy.nextProject} globalSettings={caseStudy.globalCardDefaults} />}
 </div>
 
 <style>

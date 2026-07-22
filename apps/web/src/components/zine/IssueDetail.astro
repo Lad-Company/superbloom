@@ -1,9 +1,17 @@
 ---
-import MediaFrame, {type Media, type MediaRatio} from '../MediaFrame.astro';
+import MediaFrame, {type Media} from '../MediaFrame.astro';
+import ContentCardList from '../ContentCardList.astro';
 import PortableText from '../PortableText.astro';
 import ZineArticleCard from './ZineArticleCard.astro';
 import PastIssues from './PastIssues.astro';
 import type {TypedObject} from 'astro-portabletext/types';
+import type {
+  CardWidth,
+  ContentCardSettingsInput,
+  InfoPosition,
+  MediaAspectRatio,
+  PartialContentCardSettings,
+} from '../../lib/contentCard';
 
 type TextBlock = TypedObject & {children?: Array<{text?: string | null}>};
 type Tag = {title?: string | null; color?: string | null};
@@ -11,7 +19,10 @@ type Article = {
   title?: string | null;
   slug?: string | null;
   overview?: TextBlock[] | null;
-  cardAspectRatio?: MediaRatio | null;
+  publicationDate?: string | null;
+  cardWidth?: CardWidth | null;
+  mediaAspectRatio?: MediaAspectRatio | null;
+  infoPosition?: InfoPosition | null;
   cardMedia?: Media | null;
   tags?: Tag[] | null;
 };
@@ -29,13 +40,19 @@ interface Props {
     heroMedia?: Media | null;
     editorLetter?: TextBlock[] | null;
     articles?: Article[] | null;
+    listDefaults?: PartialContentCardSettings;
+    articleOverrides?: Array<{articleId?: string | null} & ContentCardSettingsInput> | null;
     issuuUrl?: string | null;
+    pdfUrl?: string | null;
+    globalCardDefaults?: PartialContentCardSettings;
   };
   pastIssues?: PastIssue[];
 }
 
 const {issue, pastIssues = []} = Astro.props;
 const articles = issue.articles ?? [];
+const overrideFor = (id?: string | null) =>
+  issue.articleOverrides?.find((override) => override.articleId === id);
 const issuuEmbedUrl = (() => {
   if (!issue.issuuUrl) return null;
 
@@ -91,16 +108,28 @@ const issuuEmbedUrl = (() => {
       />
     </section>
   )}
+  {issue.pdfUrl && (
+    <section id="flipbook" class="flipbook" aria-labelledby="flipbook-heading">
+      <h2 id="flipbook-heading" class="type-h3">Read the Zine</h2>
+      <a href={issue.pdfUrl} target="_blank" rel="noopener noreferrer">Read the Zine <span class="sr-only">(opens in a new tab)</span></a>
+    </section>
+  )}
 
   <section class="stories" aria-labelledby="stories-heading">
     <h2 id="stories-heading" class="type-h3">More stories</h2>
     {
       issue.slug && (
-        <ul class="article-grid">
+        <ContentCardList class="article-grid">
           {articles.map((article) => (
-            <li><ZineArticleCard article={article} issueSlug={issue.slug!} /></li>
+            <ZineArticleCard
+              article={article}
+              issueSlug={issue.slug!}
+              settings={overrideFor((article as {_id?: string})._id)}
+              listSettings={issue.listDefaults}
+              globalSettings={issue.globalCardDefaults}
+            />
           ))}
-        </ul>
+        </ContentCardList>
       )
     }
   </section>
@@ -186,9 +215,6 @@ const issuuEmbedUrl = (() => {
   }
 
   .article-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--page-gutter);
     margin-top: var(--space-xl);
   }
 
@@ -201,9 +227,4 @@ const issuuEmbedUrl = (() => {
     white-space: nowrap;
   }
 
-  @media (max-width: 1023px) {
-    .article-grid {
-      grid-template-columns: 1fr;
-    }
-  }
 </style>

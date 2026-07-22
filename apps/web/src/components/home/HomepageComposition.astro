@@ -37,6 +37,9 @@ const moduleSurfaceRoles = {
   <NewsCarousel
     headline={homepage.news.headline}
     items={homepage.news.items ?? []}
+    listDefaults={homepage.news.listDefaults}
+    itemOverrides={homepage.news.itemOverrides}
+    globalSettings={homepage.globalCardDefaults}
     role={moduleSurfaceRoles.newsBlock}
   />
 )}

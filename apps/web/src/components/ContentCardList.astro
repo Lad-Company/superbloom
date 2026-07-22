@@ -1,0 +1,105 @@
+---
+interface Props {
+  class?: string;
+  featured?: boolean;
+}
+
+const {class: className, featured = false} = Astro.props;
+---
+
+<content-card-list class:list={['content-card-list', className]} data-featured={featured ? true : undefined}>
+  <slot />
+</content-card-list>
+
+<script>
+  class ContentCardListElement extends HTMLElement {
+    private observer?: ResizeObserver;
+
+    connectedCallback() {
+      if (!this.hasAttribute('data-featured')) return;
+      this.observer = new ResizeObserver(() => this.layout());
+      this.observer.observe(this);
+      Array.from(this.children).forEach((card) => this.observer?.observe(card));
+      this.layout();
+    }
+
+    disconnectedCallback() {
+      this.observer?.disconnect();
+    }
+
+    private layout() {
+      const mobile = window.innerWidth < 1024;
+      const gap =
+        Number.parseFloat(getComputedStyle(this).getPropertyValue('--space-2xl')) || 32;
+      Array.from(this.children).forEach((card) => {
+        const element = card as HTMLElement;
+        element.style.gridRowEnd = mobile
+          ? 'auto'
+          : `span ${Math.ceil(element.getBoundingClientRect().height + gap)}`;
+      });
+    }
+  }
+
+  if (!customElements.get('content-card-list')) {
+    customElements.define('content-card-list', ContentCardListElement);
+  }
+</script>
+
+<style>
+  .content-card-list {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-flow: row;
+    align-items: start;
+    gap: var(--space-2xl) var(--page-gutter);
+    min-width: 0;
+    width: 100%;
+  }
+
+  .content-card-list[data-featured] {
+    grid-auto-rows: 1px;
+    grid-auto-flow: row dense;
+    row-gap: 0;
+  }
+
+  .content-card-list > :global(.content-card[data-card-width='1/4']) {
+    grid-column: span 3;
+  }
+
+  .content-card-list > :global(.content-card[data-card-width='1/3']) {
+    grid-column: span 4;
+  }
+
+  .content-card-list > :global(.content-card[data-card-width='1/2']) {
+    grid-column: span 6;
+  }
+
+  .content-card-list > :global(.content-card[data-card-width='2/3']) {
+    grid-column: span 8;
+  }
+
+  .content-card-list > :global(.content-card[data-card-width='3/4']) {
+    grid-column: span 9;
+  }
+
+  .content-card-list > :global(.content-card[data-card-width='full']) {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 1023px) {
+    .content-card-list {
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+    }
+
+    .content-card-list[data-featured] {
+      grid-auto-rows: auto;
+      row-gap: var(--space-xl);
+    }
+
+    .content-card-list > :global(.content-card[data-card-width]) {
+      grid-column: 1 / -1;
+      width: 100%;
+    }
+  }
+</style>

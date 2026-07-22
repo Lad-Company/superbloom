@@ -1,21 +1,28 @@
 ---
 import EditorialCard from './EditorialCard.astro';
 import TagList from './TagList.astro';
-import type { Media, MediaRatio } from './MediaFrame.astro';
+import type { Media } from './MediaFrame.astro';
+import {
+  type CardWidth,
+  type InfoPosition,
+  type MediaAspectRatio,
+  type PartialContentCardSettings,
+} from '../lib/contentCard';
 
 interface Tag {
-  title: string | null;
-  color: string | null;
+  title?: string | null;
+  color?: string | null;
 }
 
 interface EditorialArticleItem {
+  _id?: string | null;
   title: string | null;
   slug: string | null;
   overview?: Array<{ children?: Array<{ text?: string | null }> }> | null;
   publicationDate?: string | null;
-  isExternal?: boolean | null;
-  externalUrl?: string | null;
-  cardAspectRatio: MediaRatio | null;
+  cardWidth?: CardWidth | null;
+  mediaAspectRatio?: MediaAspectRatio | null;
+  infoPosition?: InfoPosition | null;
   tags: Tag[] | null;
   cardMedia: Media | null;
 }
@@ -24,11 +31,22 @@ interface Props {
   item: EditorialArticleItem;
   showCopy?: boolean;
   class?: string;
+  settings?: PartialContentCardSettings;
+  listSettings?: PartialContentCardSettings;
+  globalSettings?: PartialContentCardSettings;
+  mixedList?: boolean;
 }
 
-const { item, showCopy = false, class: className } = Astro.props;
-const opensInNewTab = item.isExternal && Boolean(item.externalUrl);
-const href = opensInNewTab ? item.externalUrl! : item.slug ? `/articles/${item.slug}` : '#';
+const {
+  item,
+  showCopy = false,
+  class: className,
+  settings,
+  listSettings,
+  globalSettings,
+  mixedList = false,
+} = Astro.props;
+const href = item.slug ? `/articles/${item.slug}` : '#';
 const summary = item.overview
   ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
   .join(' ')
@@ -39,13 +57,14 @@ const summary = item.overview
   href={href}
   title={item.title}
   media={item.cardMedia}
-  aspectRatio={item.cardAspectRatio}
+  contentSettings={item}
+  settings={settings}
+  listSettings={listSettings}
+  globalSettings={globalSettings}
   summary={showCopy ? summary : undefined}
   publicationDate={item.publicationDate}
   class={className}
-  target={opensInNewTab ? '_blank' : undefined}
-  rel={opensInNewTab ? 'noopener noreferrer' : undefined}
-  externalLabel={opensInNewTab ? 'Read externally (opens in a new tab)' : undefined}
+  cardId={item._id}
 >
-  <TagList slot="overlay" tags={item.tags} />
+  <TagList slot="overlay" tags={item.tags} typeLabel={mixedList ? 'Editorial' : undefined} maxTags={mixedList ? 1 : 2} />
 </EditorialCard>

@@ -224,8 +224,8 @@ describe('Case Study Spine Schema', () => {
   })
 
   describe('contract: card fields preserved', () => {
-    it('work index card fields are unchanged', () => {
-      const cardFields = ['cardMedia', 'cardAspectRatio', 'cardSize', 'tags']
+    it('case study card fields include content card settings', () => {
+      const cardFields = ['publicationDate', 'cardMedia', 'cardWidth', 'mediaAspectRatio', 'infoPosition', 'tags']
       const fieldNames = caseStudy.fields?.map((f) => f.name) ?? []
       cardFields.forEach((field) => {
         expect(fieldNames).toContain(field)

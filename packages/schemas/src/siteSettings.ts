@@ -1,4 +1,5 @@
 import {defineField, defineType} from 'sanity'
+import {cardSettingsFieldGroup} from './cardSettings'
 
 export const siteSettings = defineType({
   name: 'siteSettings',
@@ -28,6 +29,10 @@ export const siteSettings = defineType({
       title: 'YouTube URL',
       type: 'url',
       validation: (rule) => rule.required().uri({scheme: ['http', 'https']}),
+    }),
+    ...cardSettingsFieldGroup({
+      title: 'Global Card Defaults',
+      collapsed: true,
     }),
   ],
   preview: {

@@ -1,8 +1,8 @@
 type Reference = {_ref?: string}
 type PortableTextBlock = {children?: Array<{text?: string}>}
 type ValidationContext = {
-  document?: {_id?: string; _type?: string; articleType?: string; externalCoverage?: unknown[]; isExternal?: boolean}
-  parent?: {cardDestination?: string; isExternal?: boolean}
+  document?: {_id?: string; _type?: string; articleType?: string; externalCoverage?: unknown[]}
+  parent?: {cardDestination?: string}
 }
 
 const hasPortableTextContent = (value: unknown) =>
@@ -14,7 +14,6 @@ const hasPortableTextContent = (value: unknown) =>
 export const validateArticleBody = (body: unknown, context: ValidationContext) => {
   if (Array.isArray(body) && body.length > 0) return true
 
-  // For unified article type, check articleType; fall back to _type for backward compatibility
   const type = context.document?.articleType ?? context.document?._type
   if (type === 'news' && (context.document?.externalCoverage?.length ?? 0) > 0) {
     return true

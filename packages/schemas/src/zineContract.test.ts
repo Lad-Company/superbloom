@@ -3,9 +3,10 @@ import {
   validatePortableTextNonEmpty,
   validateRelatedItems,
   validateReferencesUnique,
-  validateArticlesMinThreeAndUnique,
+  validateArticlesMinOneAndUnique,
   validateArticlesNotInAnotherIssue,
   validateIssuuUrl,
+  validateIssuuOrPdfRequired,
 } from './zineContract'
 
 describe('Zine Contract Validators', () => {
@@ -97,22 +98,19 @@ describe('Zine Contract Validators', () => {
     })
   })
 
-  describe('validateArticlesMinThreeAndUnique', () => {
+  describe('validateArticlesMinOneAndUnique', () => {
     it('rejects non-array', () => {
-      const result = validateArticlesMinThreeAndUnique(null)
+      const result = validateArticlesMinOneAndUnique(null)
       expect(result).toContain('array')
     })
 
-    it('requires at least three articles', () => {
-      expect(validateArticlesMinThreeAndUnique([])).toContain('at least three')
-      expect(validateArticlesMinThreeAndUnique([{_ref: 'article-1'}])).toContain('at least three')
-      expect(
-        validateArticlesMinThreeAndUnique([{_ref: 'article-1'}, {_ref: 'article-2'}]),
-      ).toContain('at least three')
+    it('requires at least one article', () => {
+      expect(validateArticlesMinOneAndUnique([])).toContain('at least one')
+      expect(validateArticlesMinOneAndUnique([{_ref: 'article-1'}])).toBe(true)
     })
 
     it('rejects duplicate article references', () => {
-      const result = validateArticlesMinThreeAndUnique([
+      const result = validateArticlesMinOneAndUnique([
         {_ref: 'article-1'},
         {_ref: 'article-1'},
         {_ref: 'article-2'},
@@ -120,9 +118,10 @@ describe('Zine Contract Validators', () => {
       expect(result).toContain('unique')
     })
 
-    it('accepts three unique articles', () => {
+    it('accepts one or more unique articles', () => {
+      expect(validateArticlesMinOneAndUnique([{_ref: 'article-1'}])).toBe(true)
       expect(
-        validateArticlesMinThreeAndUnique([
+        validateArticlesMinOneAndUnique([
           {_ref: 'article-1'},
           {_ref: 'article-2'},
           {_ref: 'article-3'},
@@ -148,6 +147,34 @@ describe('Zine Contract Validators', () => {
     it('accepts publication and embed URLs', () => {
       expect(validateIssuuUrl('https://issuu.com/superbloom/docs/issue-one')).toBe(true)
       expect(validateIssuuUrl('https://e.issuu.com/embed.html?d=issue-one')).toBe(true)
+    })
+  })
+
+  describe('validateIssuuOrPdfRequired', () => {
+    it('allows an uninitialized draft', () => {
+      expect(validateIssuuOrPdfRequired(undefined)).toBe(true)
+    })
+
+    it('requires at least one of ISSUU or PDF', () => {
+      expect(validateIssuuOrPdfRequired({})).toContain('either')
+      expect(validateIssuuOrPdfRequired({issuuUrl: undefined, pdfAsset: undefined})).toContain('either')
+    })
+
+    it('allows ISSUU only', () => {
+      expect(validateIssuuOrPdfRequired({issuuUrl: 'https://issuu.com/test/doc'})).toBe(true)
+    })
+
+    it('allows PDF only', () => {
+      expect(validateIssuuOrPdfRequired({pdfAsset: {_type: 'file', asset: {_ref: 'file-123'}}})).toBe(true)
+    })
+
+    it('rejects both ISSUU and PDF', () => {
+      expect(
+        validateIssuuOrPdfRequired({
+          issuuUrl: 'https://issuu.com/test/doc',
+          pdfAsset: {_type: 'file', asset: {_ref: 'file-123'}},
+        }),
+      ).toContain('not both')
     })
   })
 })
