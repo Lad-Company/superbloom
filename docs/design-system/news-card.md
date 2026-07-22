@@ -1,44 +1,36 @@
 # News Card
 
-> A media card linking to a news item.
+**Status:** Target adapter contract; current code may still use legacy props
 
-- **Figma:** [node 6243-1308](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6243-1308&m=dev) (documented as "News Carousel — Elements")
-- **Maps to:** `NewsCard`, a News content adapter used by
-  [Card Carousel](./news-carousel.md) and the [Index Page](./index-page.md).
+**Earlier Figma evidence:** [News Carousel Elements, node 6243:1308](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6243-1308&m=dev)
 
-## Description
+**Current composition authority:** [Figma nodes 1:4790 and 1:4816](https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4790&m=dev)
 
-A media card linking to a news item: media with overlaid tags, a headline, and
-(optionally) a one-line description.
+**Complete contract:** [CMS Content Composition implementation specification](./cms-content-composition-spec.md)
 
-## Usage
+`NewsCard` is the News-specific adapter for the shared Content Card
+composition. It supplies News metadata and destination behavior without becoming
+a universal content model.
 
-- Use inside the News Carousel.
-- Size each card Large or Small as needed.
+## Adapter responsibilities
 
-## Functionality
+- Always provide title, overview, publication date, card media, and the resolved
+  internal or external destination.
+- Use the global Content Card settings: width fractions from `1/4` through
+  `full`, the shared aspect-ratio list including `intrinsic`, and Info position
+  `below`, `left`, or `right`.
+- Resolve non-Featured settings through per-item partial override, list default,
+  content default, then global default. Featured cards instead require all three
+  settings explicitly.
+- Render badges in the media-frame top-left. Mixed Article lists show `News`
+  plus at most one Tag. Type-specific News lists hide the Type badge and may show
+  up to two Tags.
+- For `cardDestination: external`, link to the exactly one primary coverage URL,
+  open a new tab, and show a text-and-icon indicator. The internal News detail
+  remains available at `/news/[slug]`.
 
-- Size: **Large** or **Small** (chosen per card).
-- Media ratio: `1:1` / `16:9` / `4:5`.
-- Tags (up to 2) overlay the media (the `.d1-label` translucent pill).
-- States: **default** / **inset** (inset pads the headline/copy block; default is flush).
-- Copy toggle: headline only, or headline + description line.
+Content Card controls presentation. News adapter fields do not define legacy
+binary sizing, inset states, or a per-card copy toggle.
 
-## Implementation status / gaps
-
-Built as `NewsCard.astro`, with props for `size` (large/small) and a `showCopy`
-toggle. Media renders an image or Mux video at the item's `aspectRatio`
-(`1:1`/`16:9`/`4:5`); tags overlay the media as `.d1-label` pills sourced from the
-`tag` taxonomy (referenced by `news.tags`, max 2). Update the adapter to follow
-the News item's authored card destination: either `/news/[slug]` or its explicitly
-primary external coverage link. External targets open in a new tab with a
-text-and-icon indicator, while the internal detail remains separately reachable.
-
-Deferred backlog (this pass was a tracer):
-
-- **`inset` state** is not implemented — only the default (flush) layout exists.
-- **Card boundary:** `NewsCard` composes `EditorialCard` and `MediaFrame`.
-  It must not become a universal contract shared with Work cards.
-- **Card size source:** layout is owned by the consuming composition. The
-  Case Study-specific fields in [Work Index](./work-index.md) do not apply to
-  News cards.
+On mobile, ordinary cards become full width with Info below. Cards remain narrow
+only inside an explicit horizontal carousel.

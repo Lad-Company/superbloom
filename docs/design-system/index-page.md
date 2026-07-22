@@ -1,57 +1,41 @@
 # Index Page
 
-The Index Page is the dedicated browse page for long-form editorial content at `/index`. It contains News and Editorial Articles in one reverse-chronological feed by publication date. It excludes Zine Articles and Case Studies.
+**Status:** Target contract, not an implementation-status claim
 
-- **Figma:** [Index](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-600&m=dev)
-- **Route:** `/index`
-- **Records:** News, Editorial Articles
-- **Implementation spec:** [editorial-index-and-article-implementation-spec.md](./editorial-index-and-article-implementation-spec.md)
+**Route:** `/index`
 
-## Content contract
+**Current design authority:** [Figma nodes 1:4790 and 1:4816](https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4790&m=dev)
 
-The Index Page has two sections:
+**Complete contract:** [CMS Content Composition implementation specification](./cms-content-composition-spec.md)
 
-### Featured section
+The Index Page is the mixed Article browse page for published News, Editorial,
+and Zine Articles. Case Studies are not included.
 
-Curated via the `indexPage` singleton:
-- One lead card (large, prominent)
-- Three secondary cards (smaller grid)
-- Featured items are excluded from View All
+## Fixed structure
 
-### View All section
+1. **Featured** is optional and hidden when empty. Editors manually order 1-4
+   unique Articles. Every card fully configures width, media aspect ratio, and
+   Info position. Featured always uses masonry and has no list defaults.
+2. **All** is required. It is a live row-flow list of every matching published
+   Article except those in Featured. Editors set one list default for card
+   width, media aspect ratio, and Info position, then may apply partial per-item
+   overrides. Items cannot be pinned or manually excluded.
 
-All News + Editorial Articles in reverse-chronological order by publication date, excluding featured items. Supports:
-- Sort toggle: newest (default) / oldest
-- Progressive Load More: seven records per batch
-- Baseline works without JavaScript
+All sorts by publication date, newest by default or oldest. The Index singleton
+may optionally select one Tag as a CMS source rule. This is not a visitor-facing
+filter. With no selected Tag, All includes every published News, Editorial, and
+Zine Article not in Featured.
 
-## Card presentation
+## Cards and loading
 
-Cards display:
-- Card media at editor-selected aspect ratio
-- Title
-- Overview excerpt
-- Publication date
-- Optional tags (max 2)
+Index cards use the Content Card contract. Mixed lists show a required Type
+badge plus at most one Tag in the media-frame top-left. Article publication date
+is visible in the adapter-owned Info block. News may use an internal or validated
+primary external destination; Editorial and Zine Articles use their type routes.
 
-### Card destinations
+The first All page is server-rendered. A real Load More pagination link is the
+no-JavaScript baseline, with endless scrolling as progressive enhancement.
+Batch size is frontend-owned and not configurable in the CMS.
 
-**News cards:**
-- Follow the editor-selected `cardDestination`
-- Internal targets use `/news/[slug]`
-- External targets require one explicitly primary coverage link, open in a new tab, and include a text-and-icon indicator
-- Internal detail page always remains accessible (via subtle secondary link)
-
-**Editorial Article cards:**
-- Always link to `/articles/[slug]` internal detail page
-
-## Behavior
-
-- Featured section displays curated lead + three secondary cards
-- View All displays all remaining News + Editorial Articles
-- Sort control changes order (newest/oldest) via URL query
-- Load More loads next seven records
-- Works without JavaScript via pagination query params
-
-Visual layout, card treatment, responsive behavior, and interaction follow
-[design-language.md](./design-language.md) and the linked Figma screen.
+On mobile, row and masonry cards become full width with Info below. Explicit
+horizontal carousels are the only narrow-card exception.

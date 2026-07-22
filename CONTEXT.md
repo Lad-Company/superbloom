@@ -11,11 +11,11 @@ A member of Superbloom's internal staff. Shown on the People page.
 _Avoid_: Employee, creator (when referring to internal staff), talent
 
 **Creator**:
-A member of the Creative Collective — an external collaborator curated and championed by Superbloom. Shown on the Creators page.
+A member of the Creative Collective, an external collaborator curated and championed by Superbloom. Shown on the Creators page.
 _Avoid_: Team member, freelancer, talent, contributor
 
 **Creative Collective**:
-Superbloom's curated network of external Creators. The Collective is a core differentiator in Superbloom's business model — it is not a department or an internal team.
+Superbloom's curated network of external Creators. The Collective is a core differentiator in Superbloom's business model. It is not a department or an internal team.
 _Avoid_: Agency network, freelancer pool, contractor list
 
 ### Offerings
@@ -26,33 +26,33 @@ _Avoid_: Service, offering, practice area
 
 **Discipline**:
 A granular area of expertise shown on the Who We Are page (e.g. strategy, creative, experiential, social, production, entertainment, media, creators). Describes the breadth of what Superbloom does. Modeled as a bespoke list on the `whoWeAre` singleton and not referenced elsewhere.
-_Avoid_: Capability (when referring to this breadth list — a Discipline is not a productized service offering)
+_Avoid_: Capability (when referring to this breadth list; a Discipline is not a productized service offering)
 
 **Brand Salon**:
-A specific Capability — a structured live workshop in which Superbloom brings the Creative Collective and a client team together to solve a brief in real time (typically 4 hours). Always treated as a Capability entry, not a standalone content type.
+A specific Capability: a structured live workshop in which Superbloom brings the Creative Collective and a client team together to solve a brief in real time (typically 4 hours). Always treated as a Capability entry, not a standalone content type.
 _Avoid_: Workshop, Brand Workshop, Salon
 
 ### Content
 
 **Media Asset**:
-A reusable image or video that can be selected in a Media field. Images use Sanity's native asset picker. Videos are managed in the Video Library. A direct video upload from a Media field becomes a reusable Video Library entry.
+A reusable image or Mux video selected or uploaded from a Media field. Images use Sanity's native asset picker. Field-level Mux upload and selection remain available.
 _Avoid_: Attachment, file (unless referring specifically to a Zine PDF)
 
 **Video Library**:
-The central Studio workspace for reusable videos. Editors may upload one or many videos, review the chronological list, and select or upload a video from a Media field. A video referenced by published content cannot be deleted; the editor is shown its usages instead. An unused video may be permanently deleted.
-_Avoid_: Videos tab, Media Library (when referring specifically to videos)
+A proposed dedicated Studio workspace for reusable videos. It is deferred and must not be described as currently implemented. Editors continue to select or upload Mux video from individual Media fields.
+_Avoid_: Describing a dedicated Videos tab or central Video Library as implemented
 
 **Work**:
 The portfolio section of the site. Work is composed of Case Studies.
 _Avoid_: Projects, Portfolio, Campaign archive
 
 **Case Study**:
-A documented work engagement. A Case Study belongs to one or more Capabilities and may reference Creators who contributed. Its narrative anatomy is the Case Study Spine. It may be followed by optional Press and a Next Project.
+A documented work engagement. A Case Study belongs to one or more Capabilities, has a required Publication Date, and may reference Creators who contributed. Its narrative anatomy is the Case Study Spine. It may be followed by optional Press and a Next Project.
 _Avoid_: Project, campaign, post (when referring to Work content)
 
 **Case Study Spine**:
-The five required narrative sections of every Case Study: Highlights, Challenge, Unexpected Insight, Big Idea, and Results. The names, visible eyebrows, navigation labels, and order stay in lockstep.
-_Avoid_: Body Blocks, page sections, flexible content
+The five required narrative sections of every Case Study: Highlights, Challenge, Unexpected Insight, Big Idea, and Results. The names, visible eyebrows, navigation labels, and order stay in lockstep. Authors compose Content Layout Rows inside every section. Results also retains its required stats treatment.
+_Avoid_: Reorderable sections, flexible page builder, Article body
 
 **Results**:
 The measurable outcomes of a Case Study (e.g., sales lift, reach), shown as the final emphasized section of the Case Study Spine. Distinct from Highlights, which is the headline framing of the engagement.
@@ -87,19 +87,27 @@ Press, announcements, and editorial coverage of Superbloom. A single News item m
 _Avoid_: Blog, posts (when referring to News content)
 
 **Editorial Article**:
-A standalone long-form, non-Zine editorial record. Editorial Articles appear alongside News on the Index Page and use the shared Article Detail presentation. They remain a separate authored content type even though News may also contain a long-form body.
+A standalone long-form, non-Zine editorial identity. Editorial Articles share Article storage with News and Zine Articles, while retaining a distinct Studio view, create action, route, and content adapter.
 _Avoid_: Zine Article, News, generic Article
 
 **Index Page**:
-The News & Press browse page. It contains News and Editorial Articles in one reverse-chronological feed by publication date. It excludes Zine Articles and Case Studies.
+The mixed Article browse page at `/index`. It contains News, Editorial Articles, and Zine Articles. Its optional Featured section is manually curated; its required All section includes every other published Article, sorted by Publication Date and optionally narrowed by one CMS-selected Tag. It excludes Case Studies.
 _Avoid_: All Work, Work index, Blog
 
 **Article Detail**:
-A reusable long-form presentation module shared by Zine Articles, News items, and Editorial Articles. It does not merge their distinct content models, routes, or editorial purpose.
-_Avoid_: Generic Article model, Zine Issue, News Item
+A reusable long-form presentation shared by Zine Articles, News items, and Editorial Articles. The three editorial identities use shared Article storage with a hidden `articleType` discriminator, distinct Studio views and create actions, distinct routes, and separate content adapters.
+_Avoid_: Zine Issue, collapsing editorial identities, universal content adapter
+
+**Article**:
+The shared CMS document that stores News, Editorial Articles, and Zine Articles. Its required hidden `articleType` discriminator selects the editorial identity, Studio view, route, and adapter behavior.
+_Avoid_: A fourth visitor-facing content type, universal content model
+
+**Publication Date**:
+The required date used to sort Articles and Case Studies in browse pages. Article cards display it; Case Study cards do not.
+_Avoid_: Manual rank, arbitrary Work order
 
 **Tag**:
-A free editorial label applied to content (e.g. a News item, Case Study, Zine Article) for categorization, shown as a pill on cards. Authored as a small reusable taxonomy. Distinct from a Capability (a named service offering) and from Deliverables — a Tag is an editorial classification, not an offering.
+A reusable optional editorial label applied to Articles and Case Studies for categorization. Content may have at most two Tags. Mixed Article lists show the required Type badge plus at most one Tag; type-specific lists hide the Type badge and show up to two Tags. Case Study cards show up to two Tags and no Type badge. Labels appear at the top-left of the Media Frame. A Tag is distinct from a Capability and from Deliverables.
 _Avoid_: Category, capability, keyword
 
 ### Forms
@@ -133,7 +141,7 @@ A client brand's two accent colors, chosen per Case Study, used to theme that Ca
 _Avoid_: Theme color, highlight color, swatch
 
 **Section Theme**:
-A role enum (`light`, `dark`, `primary`, `secondary`) carried on each body block. Resolved to `--bg`/`--fg` CSS custom properties by the `Section` wrapper component. `primary`/`secondary` resolve to the case study's brand colors; foreground is auto-derived by WCAG relative luminance (threshold 0.5).
+A role enum (`light`, `dark`, `primary`, `secondary`) carried by a themed section or module. Resolved to `--bg`/`--fg` CSS custom properties by the `Section` wrapper component. `primary`/`secondary` resolve to the case study's brand colors; foreground is auto-derived by WCAG relative luminance (threshold 0.5).
 _Avoid_: Color mode, variant, style
 
 **Surface Role**:
@@ -196,9 +204,17 @@ _Avoid_: Spring motion, arbitrary easing
 The reusable visual container for image or video media. It establishes sizing, crop, media overlays, loading priority, and visibility-aware playback without knowing the content type or destination of its parent. Hidden video is always paused, including inactive media, offscreen media, and media in a background browser tab.
 _Avoid_: Card media, thumbnail component, image card
 
-**Editorial Card**:
-A compositional card pattern that combines a Media Frame with content-specific metadata and linking. Work, News, Editorial Article, Zine Article, and Next Project cards are content adapters of this pattern, not a single universal content model.
-_Avoid_: Universal card, News Card (when the content type is not News)
+**Content Card**:
+A listing and browse composition that combines a Media Frame with a fixed Info block supplied by a content-specific adapter. It is used by News, Editorial Article, Zine Article, and Case Study cards. Each card has Card Width, Media Aspect Ratio, and Info Position settings. Card Width applies to the whole card; Info Position is below, left, or right of media. Content adapters remain separate rather than forming a universal content model.
+_Avoid_: Editorial Card, universal card, using card controls for detail-page layout
+
+**Card Width**:
+The fraction of the listing container occupied by a whole Content Card, including media and its Info block. Allowed desktop values are `1/4`, `1/3`, `1/2`, `2/3`, `3/4`, and `full`. Cards become full width below 1024px except in explicit horizontal carousels.
+_Avoid_: Media width, full/half-only card size
+
+**Info Position**:
+The placement of a Content Card's fixed Info block relative to its media: `below`, `left`, or `right`. Left and right require Card Width of at least `1/2`; all positions become below on mobile.
+_Avoid_: Detail-page block alignment, freely authored card metadata
 
 **Surface Section**:
 A full-width page band that establishes a Surface Role, readable foreground, and shared vertical rhythm. It composes content modules such as a Contact Band or Results rather than owning their content or layout.
@@ -216,19 +232,23 @@ _Avoid_: Static page, hardcoded page
 A page content model in which CMS authors arrange an ordered, allowlisted set of content modules. Used for modular landing pages where order is an editorial decision.
 _Avoid_: Page builder, free-form layout
 
-**Body Block**:
-A typed content block within the flexible body of a News item, Editorial Article, or Zine Article. Body Blocks do not define the Case Study Spine, which is a fixed named composition.
-_Avoid_: Case Study section, Case Study Spine
+**Content Layout Row**:
+The shared detail-page composition used in Article bodies and inside all five fixed Case Study Spine sections. A row contains one or two Media or Text blocks, with authored fractional widths. Two-block widths total `full`; one narrow block may align left, center, or right. This composition reuses Media Asset and Media Frame but does not share Content Card layout controls.
+_Avoid_: Content Card, page builder, reorderable Case Study section
+
+**Article Body**:
+The ordered sequence of Content Layout Rows authored for News, Editorial Articles, and Zine Articles. Editorial and Zine bodies are required; a News body is optional when external coverage supplies its content.
+_Avoid_: Legacy Body Blocks, Case Study Spine
 
 ## Example dialogue
 
-> **Dev:** The new filterable page — is that for Team Members or Creators?
-> **Domain expert:** Creators. The Creative Collective. They're external — not on our team.
+> **Dev:** The new filterable page, is that for Team Members or Creators?
+> **Domain expert:** Creators. The Creative Collective. They're external, not on our team.
 > **Dev:** Got it. And the People page?
-> **Domain expert:** That's Team Members — the internal Superbloom staff.
+> **Domain expert:** That's Team Members, the internal Superbloom staff.
 > **Dev:** Is Brand Salon its own nav section or under Capabilities?
 > **Domain expert:** Under Capabilities. It's one of our Capabilities. We might document more over time but the type is the same.
 > **Dev:** Does the Index Page include Zine Articles?
-> **Domain expert:** No. Index is News and Editorial Articles only. Zine Articles stay in the Zine section.
+> **Domain expert:** Yes. Index includes News, Editorial Articles, and Zine Articles. Editors may narrow the All section with one optional Tag.
 > **Dev:** Where do we link to the Shop?
 > **Domain expert:** It's in the main nav. Shop is a first-class section, not an external link.

@@ -2,13 +2,14 @@
 
 > A text + media split: headline, body, and CTA beside a featured media card.
 
+> **Scope notice:** This evidence describes a homepage composition only. It is not an Article or Case Study authoring module. The [CMS Content Composition implementation specification](./cms-content-composition-spec.md) replaces its former detail-page overlap with Content Layout Row.
+
 - **Figma:** [node 6251-1308](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6251-1308&m=dev) (source component named "Home-Why")
-- **Maps to:** unbuilt as a homepage block; partially overlaps the `textAndMedia`
-  layout of `mediaSection` / `MediaSection.astro`. Belongs in `homepage.sections[]`.
+- **Maps to:** unbuilt as a homepage block. Belongs in `homepage.sections[]`.
 
 ## Description
 
-A text + media split — a headline, body, and CTA on one side, a featured media card
+A text + media split with a headline, body, and CTA on one side and a featured media card
 (4:5) on the other.
 
 ## Fields
@@ -33,12 +34,11 @@ _Fields marked with an asterisk are required._
 
 ## Implementation status / gaps
 
-Unbuilt as a homepage block. Overlaps but does not match existing pieces:
+Unbuilt as a homepage block:
 
-- **vs `mediaSection` (`textAndMedia`):** that layout pairs portable-text `text`
-  with media but has **no headline and no CTA**, and lives in a Case Study `body[]`,
-  not the homepage. This section needs a Headline (`H4`), Body, and a CTA
-  (label + link).
+- This section needs a Headline (`H4`), Body, and a CTA (label + link).
+- Do not implement it through legacy Article media sections or Case Study layout
+  objects. Article bodies and Case Study Spine sections use Content Layout Row.
 - **No homepage text/media block.** `homepage.sections[]` accepts only `heroBlock`,
   `capesBlock`, `contactBlock`. A new block type would be required.
 - **CTA:** use the approved `Button` primitive. Its variant follows the composed

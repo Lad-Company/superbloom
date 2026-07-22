@@ -2,13 +2,15 @@
 
 > Two side-by-side cards that link out.
 
+> **Scope notice:** This is a non-editorial cross-navigation pattern. It is not an Article or Case Study authoring module. The [CMS Content Composition implementation specification](./cms-content-composition-spec.md) replaces any inferred detail-page role with Content Layout Row.
+
 - **Figma:** [node 6182-1279](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6182-1279&m=dev) (source component named "2-up" / About-2-up)
-- **Maps to:** unbuilt — no schema or component. A cross-navigation section, likely
+- **Maps to:** unbuilt; no schema or component. A cross-navigation section, likely
   used on About/landing pages.
 
 ## Description
 
-Two side-by-side cards that link out — each a media block with a headline and a
+Two side-by-side cards that link out. Each is a media block with a headline and a
 controlled `Button` variant.
 
 ## Fields
@@ -35,6 +37,8 @@ Entirely unbuilt.
 - **No "crosslink" model.** Each card is a link to another page/section with its own
   media + headline + CTA. No schema represents this; would need a new block type
   (and a home for it, e.g. an About page document or a homepage section).
+- Do not add this pattern to Article bodies or Case Study Spine sections. Those
+  detail-page contexts use Content Layout Row.
 - **Button:** use the approved `Button` primitive. Variant selection is determined
   by the composed Surface Role, not a legacy CSS class.
 - Media supports overlay tags (`.d1-label`) but the documented fields list only the

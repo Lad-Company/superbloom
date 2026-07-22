@@ -1,61 +1,37 @@
 # Work Index
 
-> The Work index: an editorial grid of all Case Studies in mixed card layouts.
+**Status:** Target contract, not an implementation-status claim
 
-- **Figma:** [Our Work](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-367&m=dev)
-- **Maps to:** `apps/web/src/pages/work/index.astro` · schema: `caseStudy` · route: `/work`
+**Route:** `/work`
 
-## Description
+**Current design authority:** [Figma nodes 1:4790 and 1:4816](https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4816&m=dev)
 
-An editorial grid of Case Studies in mixed layouts. The page headline is owned by
-the Work template. Case Studies are laid out in rows that alternate between
-two small cards side by side and a single large (full-width) card.
+**Complete contract:** [CMS Content Composition implementation specification](./cms-content-composition-spec.md)
 
-## Fields
+The Our Work page is the browse page for published Case Studies.
 
-Per work item (card):
+## Fixed structure
 
-- Media* — image/video, one of three aspect ratios: `1:1`, `16:9`, `4:5`
-- Headline*
-- Tags — up to 2 (dedicated `tags` field)
-- Card size — `large` / `small` (optional; layout-position-derived when unset)
+1. **Featured** is optional and hidden when empty. Editors manually order 1-4
+   unique Case Studies. Every card fully configures width, media aspect ratio,
+   and Info position. Featured always uses masonry and has no list defaults.
+2. **All** is required. It is a live row-flow list of all published Case Studies
+   except those in Featured. Editors set one list default for card width, media
+   aspect ratio, and Info position, then may apply partial per-item overrides.
+   Items cannot be pinned, manually excluded, or manually ranked.
 
-Page-level:
+All sorts by required Case Study publication date, newest by default or oldest.
+There is no Tag source filter on Work.
 
-- Work item — minimum of 5
+## Cards and loading
 
-_Fields marked with an asterisk are required._
+Case Studies use the Content Card contract through a Case Study-specific adapter.
+Cards show 0-2 Tags in the media-frame top-left and never show a Type badge.
+Publication date drives sorting but is not displayed on Case Study cards.
 
-## Behavior
+The first All page is server-rendered. A real Load More pagination link is the
+no-JavaScript baseline, with endless scrolling as progressive enhancement.
+Batch size is frontend-owned and not configurable in the CMS.
 
-- Rows mix large and small cards (a full-width large card alternates with rows of
-  two small cards).
-- Each card overlays its tags (the `.d1-label` pill) at the top of the media.
-- Reflows to a single column on mobile.
-
-### Responsive
-
-- **Desktop (1440):** multi-column grid; small cards sit two per row, large cards
-  span full width. Headline at `H3` (~120px). Page margin 32px, gutter 24px.
-- **Mobile (375):** single column; all cards stack full width. Headline at `H3`
-  mobile (~48px). Page margin 12px.
-
-## Implementation status / gaps
-
-The Case Study card fields and editor-controlled ordering recorded in ADR-0012
-remain valid. The current visual source is the linked Our Work screen.
-
-- **Page:** `work/index.astro` is a dark `Section` with an H1 hero + Work grid;
-  grid, reusing `ContactBlock` + `Footer`. Hero/heading copy comes from the
-  `workIndex` singleton (fallbacks hardcoded). The **featured carousel** above
-  the grid is deferred.
-- **Card boundary:** Work uses a `WorkCard` content adapter that composes
-  `EditorialCard` and `MediaFrame`. It does not share a universal card contract
-  with News.
-- **Schema (`caseStudy`):** added `cardMedia` (mux.video|image, max 1),
-  `cardAspectRatio` (`1:1`/`16:9`/`4:5`/`2:1`), `tags` (ref→`tag`, max 2),
-  `cardSize` (`full`/`half`, default `half`), and `orderRank`
-  (`@sanity/orderable-document-list`). `summary` reused. `title` → headline.
-- **Row layout:** cards are packed in `orderRank` order — a `full` card takes its
-  own row; consecutive `half` cards pair two-per-row; single column on mobile.
-- **Min 5 work items:** a page-level display rule, not a schema constraint.
+On mobile, row and masonry cards become full width and left/right Info positions
+revert to Info below.

@@ -1,5 +1,13 @@
 # Editorial Article as a separate content model
 
+> **Status: Fully superseded by ADR-0020.**
+>
+> The separate authored document models decided here are no longer current. News, Editorial, and Zine use one `article` document with a required hidden `articleType` discriminator. Separate Studio views and create actions preset and hide the discriminator, while distinct routes and content adapters preserve each editorial identity. Index includes all three Article types.
+>
+> The text below is retained only as historical rationale. Do not use it as implementation guidance. See ADR-0020 and `docs/design-system/cms-content-composition-spec.md`.
+
+## Historical record
+
 Editorial Article is a standalone long-form content type distinct from News, even though both models share much of their schema and rendering. Editors choose between News and Editorial Article based on editorial intent rather than an enforced semantic rule. This preserves editorial flexibility while maintaining the CONTEXT.md glossary distinction.
 
 **Why a separate model**: The team's mental model treats News and Editorial Articles as different publication types with different editorial purposes. News is press, announcements, and coverage of Superbloom; Editorial Articles are standalone long-form editorial pieces. While they share the same Article Detail presentation, body schema, and Index Page appearance, they remain distinct authored types in Sanity Studio. This separation respects the glossary and gives editors clear type choices without forcing a technical discriminator field.

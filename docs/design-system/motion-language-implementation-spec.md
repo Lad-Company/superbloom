@@ -31,7 +31,7 @@ The system is not a collection of page-specific effects. It is a small set of pr
 | `src/layouts/Layout.astro` | Loads only global route-transition and reduced-motion bootstrap behavior. |
 | `src/components/Navigation.astro` | Uses Text Link and Contained Control primitives. Navbar routes trigger Route Transition. |
 | `src/components/MediaFrame.astro` | Owns visibility-aware media playback. Motion may reveal or parallax its wrapper but must not duplicate playback ownership. |
-| `src/components/EditorialCard.astro`, `WorkCard.astro`, `NewsCard.astro`, `ZineArticleCard.astro` | Use the Card recipe: Surface Wipe, media crop shift, and metadata reveal. |
+| Current card implementation files, including `src/components/EditorialCard.astro`, `WorkCard.astro`, `NewsCard.astro`, and `ZineArticleCard.astro` | Use the Content Card recipe: Surface Wipe, media crop shift, and Info reveal. The CMS composition contract governs their target interface. |
 | `src/components/blocks/Capes.astro` | Becomes the first Pinned Storytelling reference recipe. Preserve the existing active-media model and replace one-off timing with shared tokens. |
 | `SurfaceSection`, `Section` | Keep Surface Role and contrast ownership. Motion components must consume `--bg`, `--fg`, and derived opacity variables rather than raw hues. |
 
@@ -194,7 +194,7 @@ Do not parallax body copy, form fields, navigation labels, or essential controls
 4. Load route and prepare the destination hero.
 5. Run destination Type Reveal after panel release.
 
-### Editorial Card Recipe
+### Content Card Recipe
 
 1. Card surface receives Surface Wipe.
 2. Media Frame wrapper crops or translates by no more than 3%.

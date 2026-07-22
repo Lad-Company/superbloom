@@ -1,6 +1,14 @@
 # Compositional design-system boundaries
 
-> **Partially superseded:** ADR-0017 defines the fixed Case Study Spine, replaces Outcomes with Results and Related Work with Next Project, and removes generic narrative Body Blocks from the Case Study composition.
+> **Amended and partially superseded by ADR-0017 and ADR-0020.**
+>
+> **Replaced decisions:** `EditorialCard` is renamed Content Card. Article bodies and the content inside all five Case Study Spine sections now share Content Layout Row rather than separate detail-page media layout systems. Article identities share one `article` storage model with distinct adapters, views, and routes. Outcomes is Results; Related Work is Next Project; generic Case Study Body Blocks are removed.
+>
+> **Preserved decisions:** `SurfaceSection`, `PageGrid`, `MediaFrame`, the Shared Site Shell, focused content adapters, fixed compositions, and the prohibition on a universal content model or configurable mega-section remain. Content Card and Content Layout Row remain distinct compositions even though both reuse Media Asset and Media Frame.
+>
+> The text below records historical boundaries and terminology. It is not current guidance where it conflicts with ADR-0017, ADR-0020, or `docs/design-system/cms-content-composition-spec.md`.
+
+## Historical record
 
 Superbloom’s design system is composed from small primitives and named modules:
 

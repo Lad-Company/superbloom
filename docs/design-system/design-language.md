@@ -4,7 +4,11 @@
 
 This is the approved direction for the reusable web system. Evidence precedence is:
 
-1. The supplied Figma screens:
+1. The current composition authority:
+   [CMS Content Composition Figma](https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4790&m=dev)
+   at nodes 1:4790 and 1:4816, as interpreted by the
+   [CMS Content Composition implementation specification](./cms-content-composition-spec.md).
+2. The earlier supplied Figma screens, where they do not conflict:
    [Zine](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-500&m=dev),
    [Index](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-600&m=dev),
    [Article Detail](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-652&m=dev),
@@ -12,8 +16,8 @@ This is the approved direction for the reusable web system. Evidence precedence 
    [Who We Are](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-245&m=dev),
    [Our Work](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-367&m=dev), and
    [Homepage](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-374&m=dev).
-2. Stable decisions recorded in ADRs and `CONTEXT.md`.
-3. Current code, as an implementation inventory only.
+3. Stable decisions recorded in ADRs and `CONTEXT.md`.
+4. Current code, as an implementation inventory only.
 
 Do not infer new visual rules from existing code when it contradicts the first two sources. Motion has no current authority and is deliberately deferred to a new prototype session.
 
@@ -72,6 +76,10 @@ The responsive system has three ranges:
 - **Small, <768px**: stack editorial grids, except intentional browseable carousels.
 
 Use container-aware component rules where possible. Components may not introduce arbitrary breakpoints.
+For Content Cards and Content Layout Rows, the composition contract takes effect
+below 1024px: ordinary cards become full width with Info below, and two-block
+detail rows stack full width in authored order. Explicit horizontal carousels
+remain narrow on mobile.
 
 ## Component taxonomy
 
@@ -92,8 +100,12 @@ Use container-aware component rules where possible. Components may not introduce
 
 - **Shared site shell**: Navigation, ContactBand, Footer.
 - **Heroes**: Media Hero, Page Hero, Case Hero. They share primitives but remain named modules.
-- **Editorial Cards**: `EditorialCard` composes a `MediaFrame`; `WorkCard`, `NewsCard`, `EditorialArticleCard`, `ZineArticleCard`, and Next Project are content adapters.
-- **Article Detail**: shared long-form presentation module for Zine Articles, News, and Editorial Articles. It does not merge their content models.
+- **Content Cards**: the shared listing composition uses `MediaFrame`;
+  Work, News, Editorial Article, Zine Article, and Next Project remain
+  content-specific adapters.
+- **Article Detail**: shared long-form presentation module for Zine Articles,
+  News, and Editorial Articles. These use one Article model with an internal
+  type discriminator, separate Studio views, type routes, and adapter behavior.
 - **Case Study**: Case Hero, Case Study Spine (five fixed sections), Press, Next Project.
 - **FactCardGrid**: the Who We Are facts pattern.
 - **Results**: Case Study Results section pattern. It is distinct from FactCardGrid.
@@ -107,11 +119,29 @@ Compose `SurfaceSection` + `PageGrid` + a named module. Do not add a configurabl
 
 - **Fixed Composition**: templates own order and allowed variants. Use for art-directed narrative pages such as Who We Are and Case Study.
 - **Editorial Composition**: CMS authors order an allowlisted sequence of modules. Use for modular landing pages such as Homepage.
-- **Index Page**: the dedicated browse page for long-form editorial content at `/index`. It lists News and Editorial Articles in one reverse-chronological feed by publication date, never Zine Articles or Case Studies.
+- **Content Card**: listing composition for linked News, Editorial, Zine Article,
+  and Case Study cards. It owns card width, media aspect ratio, and Info position.
+- **Content Layout Row**: detail-page composition of one or two Media or Text
+  blocks. It is used in Article bodies and may support every fixed Case Study
+  Spine section without replacing Results stats.
+- **Index Page**: the mixed Article browse page at `/index`. It has fixed
+  Featured then All sections and includes News, Editorial, and Zine Articles,
+  never Case Studies. All sorts by publication date newest or oldest and may be
+  narrowed by one CMS-selected Tag source rule.
+- **Our Work Page**: the Case Study browse page at `/work`. It has fixed Featured
+  then All sections. All is a live date-sorted list with no pins or Tag filter.
 - **Case Study Spine**: five required fixed sections (Highlights, Challenge, Unexpected Insight, Big Idea, Results) whose meaning, navigation labels, and order are locked.
-- **Article Body Sections**: ordered body blocks for News, Editorial Articles, and Zine Articles. Use `articleTextSection` and `articleMediaSection` with allowlisted layout variants.
-- **Media ratios**: 16:9, 1:1, 4:5, 9:16, 3:2, plus `natural` only for Article Detail body media.
+- **Article Body**: ordered Content Layout Rows for News, Editorial, and Zine
+  Articles. Each row contains one or two Media or Text blocks.
+- **Shared fractions**: `1/4`, `1/3`, `1/2`, `2/3`, `3/4`, and `full`.
+- **Media ratios**: `intrinsic`, `1:1`, `4:5`, `9:16`, `3:2`, `16:9`, and `2:1`
+  in every media context.
+- **Card Info position**: `below`, `left`, or `right`. Left/right requires a card
+  width of at least `1/2` and reverts to below on mobile.
 - **Tags**: taxonomy is content meaning. Overlay and inline are presentation contexts. Tag documents do not control raw display color.
+- **Card badges**: all labels appear in the media-frame top-left. Mixed Article
+  lists show Type plus at most one Tag. Type-specific lists hide Type and show up
+  to two Tags. Case Study cards show up to two Tags and no Type badge.
 - **NarrativeSectionNav**: only templates with named, anchorable sections use it (e.g., Case Study Spine). Render normal anchor links first, then enhance active state.
 
 ## Interaction rules
@@ -150,8 +180,9 @@ This is an implementation inventory, not authorization to migrate it in place.
 - `packages/schemas/src/tag.ts` still gives editorial taxonomy a raw display-color
   field.
 
-The next implementation phase must replace these contracts deliberately, preserving
-the valid Case Study card-media, tag-taxonomy, and ordering decisions in ADR-0012.
+The next implementation phase must replace these contracts deliberately,
+preserving valid Case Study card media and Tag taxonomy while replacing legacy
+manual ranking with the approved Featured and live All list contracts.
 
 ## Prioritized implementation plan
 
@@ -160,7 +191,10 @@ the valid Case Study card-media, tag-taxonomy, and ordering decisions in ADR-001
 3. Migrate hue-named CMS themes to constrained semantic Surface Roles, including schema, content migration, queries, and scoped CSS resolution.
 4. Build primitives: SurfaceSection, PageGrid, MediaFrame, Button, Icon, TagList, form controls, and Metric. Test light, dark, brand, and case surfaces.
 5. Replace duplicated shared-site-shell code with Navigation, ContactBand, Footer, and the accessible compact mobile menu.
-6. Split the current Card into MediaFrame, EditorialCard, and content adapters. Add controlled media ratios and progressive CardCarousel.
-7. Implement named hero modules, FactCardGrid, Results, Article Detail, Article body section layout variants, and Case Study Spine navigation.
+6. Split the current Card into MediaFrame, Content Card presentation, and
+   content-type adapters. Add the approved settings inheritance and preserve
+   CardCarousel as the explicit narrow-mobile exception.
+7. Implement named hero modules, FactCardGrid, Results, Article Detail, Content
+   Layout Rows, and Case Study Spine navigation.
 8. Refactor fixed and editorial CMS templates to consume the new module contracts. Preserve the distinction between template-owned and CMS-ordered composition.
 9. Validate all desktop, compact, and small layouts against the supplied Figma screens, and validate keyboard access, contrast warnings/overrides, static no-JavaScript content, and reduced-motion behavior.

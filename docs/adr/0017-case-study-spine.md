@@ -1,5 +1,15 @@
 # Case Study Spine as a fixed named composition
 
+> **Amended and partially superseded by ADR-0020.**
+>
+> **Replaced decisions:** Each Spine section no longer owns an ordered list of Case Study-only standardized media layouts. All five sections use the shared Content Layout Row composition also used by Article bodies. News no longer has a standalone document schema or legacy Body Blocks.
+>
+> **Preserved decisions:** The Case Study Spine remains fixed as Highlights, Challenge, Unexpected Insight, Big Idea, and Results, in that order, with locked names and navigation. Results retains its required stats treatment; Content Layout Rows add supporting narrative or media and do not replace stats. Press, Next Project, brand color, Surface Role, and `CaseStudyComposition` decisions remain.
+>
+> The text below records the original decision and migration rationale. Use ADR-0020 and `docs/design-system/cms-content-composition-spec.md` for current section content authoring.
+
+## Historical record
+
 Case Studies use five required sections whose meaning, visible eyebrow, navigation label, and order match the signed-off July 2026 Figma: Highlights, Challenge, Unexpected Insight, Big Idea, and Results. Sanity models these as named fields rather than a page-wide Body Block array; each section has purpose-specific fields and an ordered list of the standardized media layouts. This keeps the Case Study Spine fixed while retaining art direction within each section.
 
 One `CaseStudyComposition` module owns Case Hero, Brand Color resolution, the Case Study Spine, Press, Next Project, and navigation state behind one seam. The route owns data fetching and not-found handling, while the Shared Site Shell remains outside. News keeps its separate flexible Body Blocks and no longer shares top-level rendering with Case Studies.

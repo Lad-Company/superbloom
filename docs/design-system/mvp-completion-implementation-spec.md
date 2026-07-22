@@ -3,6 +3,8 @@
 **Status:** Ready for implementation  
 **Decision source:** Composite of all ADRs and design-system specs  
 
+> **Composition authority:** The [CMS Content Composition implementation specification](./cms-content-composition-spec.md) governs Article models, Content Cards, Content Layout Rows, Index and Work sections, Zine Issue membership and reading formats, and prelaunch migration policy. Where this umbrella checklist or a linked component document differs, use the unified specification.
+
 ## Goal
 
 Complete all remaining work required to ship the Superbloom MVP site. This umbrella spec identifies gaps across routes, content, forms, observability, SEO, and QA that are not covered by dedicated implementation specs. Use this as the final checklist before launch readiness.
@@ -43,7 +45,7 @@ It does not cover:
 
 - **Status:** Unbuilt; spec exists in [home-zine.md](./home-zine.md)
 - **Required changes:**
-  - Implement after Zine Issue schema exists (see [zine-implementation-spec.md](./zine-implementation-spec.md))
+  - Implement against the current Issue contract in the [Zine companion specification](./zine-implementation-spec.md) and the authoritative [CMS Content Composition specification](./cms-content-composition-spec.md)
   - Add `homeZine` block to `homepage.sections[]` allowlist
   - Implement `HomeZine.astro` component with Issue reference, promo headline/intro/media/CTA
   - Fixed green brand color (`#99a224`)
@@ -123,7 +125,7 @@ It does not cover:
   - OG tags: `og:title`, `og:description`, `og:image` (use featured image or page-specific media), `og:url` (canonical)
   - Twitter Card tags: `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`
 - **No custom SEO fields per content type in MVP**: editors do not override title/description/OG per document; all derived from existing content fields
-- **Fallbacks:** site-wide default title suffix ("— Superbloom"), default OG image (Superbloom logo or homepage hero media)
+- **Fallbacks:** site-wide default title suffix ("| Superbloom"), default OG image (Superbloom logo or homepage hero media)
 - **Implementation:** add `<SEOHead>` component to all page layouts, accepting page-specific props
 
 ### Canonical URLs
@@ -248,13 +250,13 @@ Manual Studio content upload required before launch QA:
 - **Who We Are:**
   - Complete page content (facts, FAQs, disciplines, marquee)
 - **Index Page:**
-  - 4 News items
-  - 8 Editorial Articles
-  - Index Page singleton with lead + 3 secondary curated
+  - Published Articles across the needed `news`, `editorial`, and `zine` types
+  - Index Page Featured section manually curated with 1-4 fully configured unique cards
+  - Enough non-Featured Articles to verify All-section sorting and progressive pagination
 - **Zine:**
-  - 2 Zine Issues with 4 Zine Articles each
+  - Current and archived Issues with ordered Zine Article memberships
   - Zine landing current Issue selected
-  - PDF assets for both Issues
+  - Exactly one reading format per Issue: ISSUU URL or PDF asset
 - **Shop:**
   - 4 Shopify products:
     - Single variant product
@@ -276,8 +278,8 @@ Before launch, verify no dead links:
 - All external links tested (social, policy pages, external coverage)
 - Case Study Next Project references valid Case Studies
 - Related items references valid documents
-- Zine Article Issue references valid Issues
-- Index Page featured references valid News/Editorial Articles
+- Every published Zine Article is referenced by exactly one valid Issue
+- Index Page Featured references valid shared Articles and excludes duplicates
 
 ## Responsive, accessibility, performance QA
 
