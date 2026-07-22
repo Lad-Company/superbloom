@@ -18,6 +18,26 @@ const mediaProjection = `{
   decorative
 }`;
 
+export const contentLayoutRowsProjection = `
+  _type,
+  _key,
+  alignment,
+  fullBleed,
+  blocks[]{
+    _type,
+    _key,
+    width,
+    _type == "contentLayoutMedia" => {
+      aspectRatio,
+      "media": media${mediaProjection}
+    },
+    _type == "contentLayoutText" => {
+      heading,
+      text
+    }
+  }
+`;
+
 const editorialCardProjection = `
   _id,
   _type,
@@ -194,6 +214,9 @@ const caseStudyMediaLayoutsProjection = `
     },
     _type == "caseStudyPairedPortraitMedia" => {
       "media": mediaBoxes[]${mediaProjection}
+    },
+    _type == "contentLayoutRow" => {
+      ${contentLayoutRowsProjection}
     }
   }
 `;
@@ -226,7 +249,10 @@ export const caseStudyBySlugQuery = defineQuery(`
     },
     results{
       backgroundColor,
-      stats[]{ _key, value, label }
+      stats[]{ _key, value, label },
+      supportingRows[]{
+        ${contentLayoutRowsProjection}
+      }
     },
     press[0...3]->{
       title,
@@ -269,6 +295,9 @@ const articleBodyProjection = `
       layout,
       "media": media${mediaProjection},
       "pairedMedia": pairedMedia[]${mediaProjection}
+    },
+    _type == "contentLayoutRow" => {
+      ${contentLayoutRowsProjection}
     }
   }
 `

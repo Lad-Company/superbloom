@@ -1,6 +1,7 @@
 ---
 import MediaFrame from '../MediaFrame.astro';
 import PortableText from '../PortableText.astro';
+import ContentLayoutRow from '../ContentLayoutRow.astro';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
 
 type CaseStudy = NonNullable<CaseStudyBySlugQueryResult>;
@@ -41,6 +42,8 @@ const { layout, title } = Astro.props;
     ))}
   </div>
 )}
+
+{layout._type === 'contentLayoutRow' && <ContentLayoutRow row={layout} mediaTitle={title} />}
 
 <style>
   .full-bleed,

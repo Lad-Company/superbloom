@@ -57,6 +57,12 @@ export const caseStudyResults = defineType({
           .required()
           .custom(validateStatsCardinality),
     }),
+    defineField({
+      name: 'supportingRows',
+      title: 'Supporting Content',
+      type: 'array',
+      of: [{type: 'contentLayoutRow'}],
+    }),
   ],
   preview: {
     select: {backgroundColor: 'backgroundColor', count: 'stats.length'},

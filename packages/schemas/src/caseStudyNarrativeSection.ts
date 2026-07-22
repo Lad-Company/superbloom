@@ -22,6 +22,7 @@ export const caseStudyNarrativeSection = defineType({
         {type: 'caseStudyFullBleedMedia'},
         {type: 'caseStudyTextMedia'},
         {type: 'caseStudyPairedPortraitMedia'},
+        {type: 'contentLayoutRow'},
       ],
     }),
   ],

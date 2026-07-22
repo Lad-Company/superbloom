@@ -23,6 +23,9 @@ import {zineLanding} from './zineLanding'
 import {homeZine} from './homeZine'
 import {indexPage} from './indexPage'
 import {siteSettings} from './siteSettings'
+import {contentLayoutMedia} from './contentLayoutMedia'
+import {contentLayoutText} from './contentLayoutText'
+import {contentLayoutRow} from './contentLayoutRow'
 
 export const schemaTypes = [
   capability,
@@ -50,4 +53,7 @@ export const schemaTypes = [
   homeZine,
   indexPage,
   siteSettings,
+  contentLayoutMedia,
+  contentLayoutText,
+  contentLayoutRow,
 ]

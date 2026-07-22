@@ -66,7 +66,11 @@ export const article = defineType({
     defineField({
       name: 'body',
       type: 'array',
-      of: [{type: 'articleTextSection'}, {type: 'articleMediaSection'}],
+      of: [
+        {type: 'articleTextSection'},
+        {type: 'articleMediaSection'},
+        {type: 'contentLayoutRow'},
+      ],
       validation: (rule) =>
         rule.custom((value, context) => {
           const articleType = (context.document as {articleType?: string})?.articleType

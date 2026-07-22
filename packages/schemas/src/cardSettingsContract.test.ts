@@ -3,9 +3,9 @@ import {
   validateCardSettingsInfoPosition,
   validateFeaturedCardFullyConfigured,
   validateContentDefaultsCompleteness,
-  validateTwoBlockRowWidths,
   validateResolvedCardSettings,
 } from './cardSettingsContract'
+import {validateTwoBlockRowWidths} from './contentLayoutContract'
 
 describe('Card Settings Contract Validators', () => {
   describe('validateCardSettingsInfoPosition', () => {

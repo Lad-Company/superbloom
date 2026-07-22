@@ -1,0 +1,163 @@
+---
+import type {TypedObject} from 'astro-portabletext/types';
+import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro';
+import PortableText from './PortableText.astro';
+import {
+  getContentLayoutRowClassNames,
+  isContentLayoutFullBleed,
+  type ContentLayoutAlignment,
+  type ContentLayoutWidth,
+} from '../lib/contentLayout';
+
+type MediaBlock = {
+  _type: 'contentLayoutMedia';
+  _key?: string | null;
+  width?: ContentLayoutWidth | null;
+  aspectRatio?: MediaRatio | null;
+  media?: Media | null;
+};
+
+type TextBlock = {
+  _type: 'contentLayoutText';
+  _key?: string | null;
+  width?: ContentLayoutWidth | null;
+  heading?: string | null;
+  text?: TypedObject[] | null;
+};
+
+export interface ContentLayoutRowValue {
+  _type: 'contentLayoutRow';
+  _key?: string | null;
+  blocks?: Array<MediaBlock | TextBlock> | null;
+  alignment?: ContentLayoutAlignment | null;
+  fullBleed?: boolean | null;
+}
+
+interface Props {
+  row: ContentLayoutRowValue;
+  mediaTitle?: string | null;
+}
+
+const {row, mediaTitle} = Astro.props;
+const blocks = row.blocks ?? [];
+const classes = getContentLayoutRowClassNames({blocks, alignment: row.alignment, fullBleed: row.fullBleed});
+const fullBleed = isContentLayoutFullBleed({blocks, alignment: row.alignment, fullBleed: row.fullBleed});
+---
+
+{blocks.length > 0 && (
+  <div class:list={[classes.row, {'full-bleed': fullBleed}]}>
+    {blocks.map((block, index) => (
+      <div class:list={classes.blocks[index]}>
+        {block._type === 'contentLayoutMedia' && (
+          <MediaFrame
+            media={block.media}
+            ratio={block.aspectRatio ?? '16:9'}
+            title={mediaTitle}
+          />
+        )}
+        {block._type === 'contentLayoutText' && (
+          <div class="content-layout-text">
+            {block.heading && <h2>{block.heading}</h2>}
+            <PortableText value={block.text ?? []} />
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+)}
+
+<style>
+  .content-layout-row {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--page-gutter);
+  }
+  .content-layout-row.single {
+    display: flex;
+  }
+  .single.align-left {
+    justify-content: flex-start;
+  }
+  .single.align-center {
+    justify-content: center;
+  }
+  .single.align-right {
+    justify-content: flex-end;
+  }
+  .content-layout-block {
+    min-width: 0;
+  }
+  .width-1-4 {
+    grid-column: span 3;
+  }
+  .width-1-3 {
+    grid-column: span 4;
+  }
+  .width-1-2 {
+    grid-column: span 6;
+  }
+  .width-2-3 {
+    grid-column: span 8;
+  }
+  .width-3-4 {
+    grid-column: span 9;
+  }
+  .width-full {
+    grid-column: 1 / -1;
+  }
+  .single .width-1-4 {
+    width: 25%;
+  }
+  .single .width-1-3 {
+    width: calc(100% / 3);
+  }
+  .single .width-1-2 {
+    width: 50%;
+  }
+  .single .width-2-3 {
+    width: calc(200% / 3);
+  }
+  .single .width-3-4 {
+    width: 75%;
+  }
+  .single .width-full {
+    width: 100%;
+  }
+  .full-bleed {
+    width: 100vw;
+    max-width: none;
+    margin-inline: calc(50% - 50vw);
+  }
+  .content-layout-text {
+    overflow-wrap: anywhere;
+  }
+  .content-layout-text h2 {
+    margin: 0 0 0.5em;
+  }
+  .content-layout-text :global(a:focus-visible) {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+  @media (max-width: 1023px) {
+    .content-layout-row,
+    .content-layout-row.single {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    .content-layout-block,
+    .width-1-4,
+    .width-1-3,
+    .width-1-2,
+    .width-2-3,
+    .width-3-4,
+    .width-full {
+      width: 100%;
+      grid-column: 1;
+    }
+    .full-bleed {
+      width: 100%;
+      margin-inline: 0;
+    }
+  }
+</style>

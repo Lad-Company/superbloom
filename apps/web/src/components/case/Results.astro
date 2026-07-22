@@ -1,6 +1,7 @@
 ---
 import Metric from '../Metric.astro';
 import SurfaceSection from '../SurfaceSection.astro';
+import ContentLayoutRow from '../ContentLayoutRow.astro';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
 
 type ResultsData = NonNullable<NonNullable<CaseStudyBySlugQueryResult>['results']>;
@@ -25,6 +26,9 @@ const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-
         </li>
       ))}
     </ul>
+    {(results.supportingRows ?? []).map((row) => (
+      <ContentLayoutRow row={row} />
+    ))}
   </div>
 </SurfaceSection>
 

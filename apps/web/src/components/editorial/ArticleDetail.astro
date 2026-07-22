@@ -5,6 +5,7 @@ import ArticleBodyRenderer from './ArticleBodyRenderer.astro';
 import MixedArticleCard from '../MixedArticleCard.astro';
 import ContentCardList from '../ContentCardList.astro';
 import TagList from '../TagList.astro';
+import type {ContentLayoutRowValue} from '../ContentLayoutRow.astro';
 import type {TypedObject} from 'astro-portabletext/types';
 import type {
   CardWidth,
@@ -34,6 +35,7 @@ type RelatedItem = {
 };
 type BodyBlock =
   | {_type: 'articleTextSection'; heading?: string | null; text?: PortableBlock[] | null}
+  | ContentLayoutRowValue
   | {
       _type: 'articleMediaSection';
       layout?: 'full-width' | 'editorial-rail' | 'paired' | null;

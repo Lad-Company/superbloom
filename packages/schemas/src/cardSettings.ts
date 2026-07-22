@@ -1,4 +1,7 @@
 import {defineField} from 'sanity'
+import {MEDIA_ASPECT_RATIOS, type MediaAspectRatio} from './mediaAspectRatio'
+
+export {MEDIA_ASPECT_RATIOS, type MediaAspectRatio} from './mediaAspectRatio'
 
 /**
  * Canonical card configuration settings shared across all content types.
@@ -6,11 +9,9 @@ import {defineField} from 'sanity'
  */
 
 export type CardWidth = '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
-export type MediaAspectRatio = 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
 export type InfoPosition = 'below' | 'left' | 'right'
 
 export const CARD_WIDTHS: CardWidth[] = ['1/4', '1/3', '1/2', '2/3', '3/4', 'full']
-export const MEDIA_ASPECT_RATIOS: MediaAspectRatio[] = ['intrinsic', '1:1', '4:5', '9:16', '3:2', '16:9', '2:1']
 export const INFO_POSITIONS: InfoPosition[] = ['below', 'left', 'right']
 
 export const DEFAULTS = {

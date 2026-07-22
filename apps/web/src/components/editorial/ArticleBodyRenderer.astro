@@ -1,11 +1,13 @@
 ---
 import ArticleTextSection from './ArticleTextSection.astro';
 import ArticleMediaSection from './ArticleMediaSection.astro';
+import ContentLayoutRow, {type ContentLayoutRowValue} from '../ContentLayoutRow.astro';
 import type {Media} from '../MediaFrame.astro';
 import type {TypedObject} from 'astro-portabletext/types';
 
 type Block =
   | {_type: 'articleTextSection'; heading?: string | null; text?: TypedObject[] | null}
+  | ContentLayoutRowValue
   | {
       _type: 'articleMediaSection';
       layout?: 'full-width' | 'editorial-rail' | 'paired' | null;
@@ -27,3 +29,16 @@ const {block} = Astro.props;
 {block._type === 'articleMediaSection' && (
   <ArticleMediaSection layout={block.layout} media={block.media} pairedMedia={block.pairedMedia} />
 )}
+
+{block._type === 'contentLayoutRow' && (block.blocks?.length ?? 0) > 0 && (
+  <div class="content-layout-row-shell">
+    <ContentLayoutRow row={block} />
+  </div>
+)}
+
+<style>
+  .content-layout-row-shell {
+    width: min(100% - (2 * var(--page-inset)), 1440px);
+    margin: var(--space-xl) auto;
+  }
+</style>

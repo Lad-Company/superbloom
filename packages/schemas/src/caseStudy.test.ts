@@ -84,13 +84,14 @@ describe('Case Study Spine Schema', () => {
       expect(mediaField?.type).toBe('array')
     })
 
-    it('limits media layouts to three approved types', () => {
+    it('keeps legacy media layouts while adding Content Layout Rows', () => {
       const mediaField = caseStudyNarrativeSection.fields?.find((f) => f.name === 'mediaLayouts')
       const layoutTypes = (mediaField as any)?.of?.map?.((item: any) => item.type) ?? []
       expect(layoutTypes).toEqual([
         'caseStudyFullBleedMedia',
         'caseStudyTextMedia',
         'caseStudyPairedPortraitMedia',
+        'contentLayoutRow',
       ])
     })
   })

@@ -116,35 +116,3 @@ export const validateResolvedCardOverride = async (
 
   return validateResolvedCardSettings(item, list, result.content, result.global)
 }
-
-/**
- * Validate two-block Content Layout Row widths total full width.
- * Spec: "When a row has two blocks, their combined widths must total full."
- */
-export const validateTwoBlockRowWidths = (
-  blocks: unknown,
-): string | boolean => {
-  if (!Array.isArray(blocks) || blocks.length !== 2) return true
-
-  const b = blocks as Array<Record<string, unknown>>
-  const widths = b.map((block) => block.width as string).filter(Boolean)
-
-  if (widths.length !== 2) return true // both blocks must have explicit widths
-
-  const width1 = widths[0]
-  const width2 = widths[1]
-
-  const widthPairs: Array<[string, string]> = [
-    ['1/4', '3/4'],
-    ['1/3', '2/3'],
-    ['1/2', '1/2'],
-    ['2/3', '1/3'],
-    ['3/4', '1/4'],
-  ]
-
-  const isValid = widthPairs.some(
-    ([w1, w2]) => (width1 === w1 && width2 === w2) || (width1 === w2 && width2 === w1),
-  )
-
-  return isValid || 'Two-block row widths must total full width (e.g., 1/3 + 2/3, 1/2 + 1/2)'
-}
