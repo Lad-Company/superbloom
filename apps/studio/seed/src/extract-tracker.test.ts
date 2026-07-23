@@ -42,6 +42,14 @@ Reference [site](https://example.com/work).
     ])
   })
 
+  it('keeps non-media links visible in diagnostics', () => {
+    const result = extractTracker('# Tracker\n[site](https://example.com/work)\n')
+
+    expect(result.diagnostics).toEqual([
+      expect.objectContaining({code: 'non-media-link', source: expect.objectContaining({lineStart: 2})}),
+    ])
+  })
+
   it('retains URLs containing parentheses', () => {
     const result = extractTracker('# Tracker\n[media](https://cdn.example.com/file(1).jpg)\n')
 

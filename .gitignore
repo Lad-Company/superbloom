@@ -11,5 +11,6 @@ dist/
 .astro/
 .sanity/
 apps/studio/backups/
+apps/studio/seed/cache/
 .vercel/
 *.log

@@ -32,9 +32,40 @@ export type MediaInventoryEntry = LinkInventoryEntry & {
 
 export type Diagnostic = {
   level: 'warning'
-  code: 'ambiguous-link' | 'invalid-url'
+  code: 'ambiguous-link' | 'invalid-url' | 'non-media-link'
   message: string
   source: SourceRef
+}
+
+export type RetrievalDiagnostic = {
+  level: 'warning'
+  code: 'retrieval-failed' | 'unsupported-media' | 'invalid-drive-resource' | 'unresolved-source'
+  message: string
+  url: string
+  sourceRefs: SourceRef[]
+}
+
+export type MediaDimensions = {
+  width: number
+  height: number
+}
+
+export type RetrievedMedia = {
+  checksum: string
+  cachePath: string
+  mimeType: string
+  dimensions?: MediaDimensions
+  durationSeconds?: number
+  provenance: MediaInventoryEntry[]
+  selectedUses: string[]
+  upload: {
+    status: 'pending'
+  }
+}
+
+export type MediaRetrievalResult = {
+  media: RetrievedMedia[]
+  diagnostics: RetrievalDiagnostic[]
 }
 
 export type ExtractionResult = {

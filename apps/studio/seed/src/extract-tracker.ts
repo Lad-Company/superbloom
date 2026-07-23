@@ -86,6 +86,13 @@ export function extractTracker(markdown: string): ExtractionResult {
           message: `${category === 'google-drive' ? 'Google Drive' : 'Vimeo'} resource requires retrieval to determine usable media.`,
           source,
         })
+      } else if (category === 'reference') {
+        diagnostics.push({
+          level: 'warning',
+          code: 'non-media-link',
+          message: 'Linked resource is not a direct media candidate.',
+          source,
+        })
       }
     }
   }
