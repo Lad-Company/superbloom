@@ -12,6 +12,8 @@
     "backup:zine": "sanity exec migrations/backup-zine-data.ts",
     "backup:index": "sanity exec migrations/backup-index-page-data.ts",
     "migrate:index": "pnpm run backup:index && sanity exec migrations/migrate-index-page.ts",
+    "backup:work": "sanity exec migrations/backup-work-index-data.ts",
+    "migrate:work": "pnpm run backup:work && sanity exec migrations/migrate-work-index.ts",
     "migrate:zine": "sanity exec migrations/migrate-zine-issues.ts",
     "migrate:article-body": "sanity exec migrations/migrate-article-body.ts",
     "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts"

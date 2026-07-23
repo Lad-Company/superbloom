@@ -28,6 +28,9 @@ export {migrateLegacyArticleBlock} from './articleMigration'
 export type {LegacyArticleBlock} from './articleMigration'
 export {migrateLegacyIndexPage} from './indexPageMigration'
 export type {LegacyIndexPage} from './indexPageMigration'
+export {migrateLegacyWorkIndex} from './workIndexMigration'
+export {migrateLegacyWorkCard} from './workIndexMigration'
+export type {LegacyWorkCaseStudy, LegacyWorkIndex} from './workIndexMigration'
 
 export const schemaTypes = [
   capability,
