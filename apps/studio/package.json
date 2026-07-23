@@ -10,6 +10,8 @@
     "typegen": "sanity schema extract --path schema.json && sanity typegen generate",
     "audit:zine": "sanity exec migrations/audit-zine-membership.ts",
     "backup:zine": "sanity exec migrations/backup-zine-data.ts",
+    "backup:index": "sanity exec migrations/backup-index-page-data.ts",
+    "migrate:index": "pnpm run backup:index && sanity exec migrations/migrate-index-page.ts",
     "migrate:zine": "sanity exec migrations/migrate-zine-issues.ts",
     "migrate:article-body": "sanity exec migrations/migrate-article-body.ts",
     "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts"

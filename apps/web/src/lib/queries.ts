@@ -395,7 +395,7 @@ export const zineArticleBySlugQuery = defineQuery(`
 `);
 
 export const indexPageQuery = defineQuery(`
-  *[_type == "indexPage"][0]{
+  *[_id == "indexPage"][0]{
     featured[]{
       _key,
       cardWidth,

@@ -1,5 +1,4 @@
 import {defineField, defineType} from 'sanity'
-import {orderRankField} from '@sanity/orderable-document-list'
 import {
   validateIndexPageFeaturedCardsUnique,
   validateIndexPageFeaturedCount,

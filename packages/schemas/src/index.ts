@@ -26,6 +26,8 @@ export {migrateLegacyCaseStudyBlock} from './caseStudyMigration'
 export type {LegacyCaseStudyBlock} from './caseStudyMigration'
 export {migrateLegacyArticleBlock} from './articleMigration'
 export type {LegacyArticleBlock} from './articleMigration'
+export {migrateLegacyIndexPage} from './indexPageMigration'
+export type {LegacyIndexPage} from './indexPageMigration'
 
 export const schemaTypes = [
   capability,
