@@ -4,6 +4,27 @@
 **Decision date:** 2026-07-22
 **Audience:** Engineers preparing the CMS dataset used to validate design fidelity and motion before content authoring begins.
 
+## Implementation status, 2026-07-23
+
+Commit `d52be9f` establishes a reviewable source baseline:
+
+- `apps/studio/seed/source/content-master.md` is the committed tracker snapshot, tied to the canonical Google Doc by `source-metadata.json` and SHA-256 checksum `9c30c0571b2281819c3d1ebfea3ce62fed18bc48e4b4789625b298865526dcae`.
+- `apps/studio/seed/generated/` contains the source outline, link and media inventories, retrieval diagnostics, and a schema-valid starter manifest.
+- Media retrieval did not produce usable image, video, or PDF assets. The diagnostics preserve inaccessible and unsupported source links, so no fabricated asset references are present.
+
+The committed manifest is a **structural review baseline**, not the complete Section 4 dataset. It currently contains the seven configured representative targets and must be expanded before planning or publishing to cover six Case Studies, six News articles, one Zine Issue, three Zine articles, and complete singleton content.
+
+### Manual manifest-completion procedure
+
+Until a configured manifest-generation endpoint exists, use a read-only chat subagent to inventory the tracker rather than fabricate an opaque output:
+
+1. Give the subagent the committed snapshot and require exact source line ranges, source text, URLs, and explicit gaps for each candidate.
+2. Use the inventory to author fields in `starter-manifest.json`. Mark direct text as `source`, structural reformatting as `derived`, and every newly invented value as `inferred` with rationale.
+3. Do not assign a `mediaBox` field from a source URL alone. Use only a checksum from `retrieved-media-manifest.json`, or leave the required-media gap visible for the resolver to reject.
+4. Validate the completed artifact with `validateStarterManifest` before marking it reviewed.
+
+The initial inventory identified source material for the six named Case Studies, six News candidates, Issue No. 5 of the Zine, and the three Zine articles “Jealous Much?”, “Made to Bloom”, and “Who Gets the Light?”. It is planning evidence only until those records are added to the manifest with field-level provenance.
+
 ## 1. Purpose
 
 Create a repeatable, intentionally destructive CMS seed pipeline that transforms the Superbloom Website Content Master Tracker into a complete, published starter dataset.
