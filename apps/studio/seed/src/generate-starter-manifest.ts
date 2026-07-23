@@ -130,7 +130,7 @@ export function configuredGenerator(environment = process.env): StarterGenerator
       body: JSON.stringify({
         model: environment.SEED_LLM_MODEL,
         instruction:
-          'Return only a starter manifest JSON object. Populate complete candidate content for every configured target. Infer values missing from the tracker and give each inferred field a rationale. Every candidate field requires provenance.',
+          'Return only a starter manifest JSON object. Populate complete candidate content for every configured target. For the six Case Studies (Tyson, Silversea, Deel, Simon Malls, Voodoo Ranger, Jimmy Dean), include title, client, summary, capabilities, optional tags, publicationDate, cardWidth, mediaAspectRatio, infoPosition, primaryColor, optional secondaryColor, highlights, challenge, unexpectedInsight, bigIdea, results, optional press, and optional nextProject. Use a retrieved-media checksum for every cardMedia and leadMedia use. Every inferred value needs provenance with a rationale. Press values must identify articleType "news", and nextProject must not be the candidate itself.',
         input,
       }),
     })

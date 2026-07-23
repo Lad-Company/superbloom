@@ -23,6 +23,7 @@
     "seed:build-manifest": "sanity exec seed/src/build-manifest.ts",
     "seed:retrieve-media": "sanity exec seed/src/retrieve-manifest.ts",
     "seed:generate-manifest": "sanity exec seed/src/generate-starter-manifest.ts",
+    "seed:resolve-case-studies": "sanity exec seed/src/resolve-case-studies.ts",
     "typecheck": "tsc -p seed/tsconfig.json",
     "test": "vitest run"
   },
