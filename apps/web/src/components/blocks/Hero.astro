@@ -14,7 +14,7 @@ const { heading, subheading, heroMedia } = Astro.props;
   <MediaFrame media={heroMedia} ratio="fill" title={heading} priority>
     <div class="scrim"></div>
     <div class="overlay">
-      <h1 class="type-h1">{heading}</h1>
+      <h1 class="type-h1" data-motion-text data-unit="chars" data-blur data-scroll="false">{heading}</h1>
       {subheading && <p class="type-caption sub">{subheading}</p>}
     </div>
   </MediaFrame>

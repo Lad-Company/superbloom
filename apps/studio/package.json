@@ -18,7 +18,9 @@
     "migrate:work": "pnpm run backup:work && sanity exec migrations/migrate-work-index.ts",
     "migrate:zine": "sanity exec migrations/migrate-zine-issues.ts",
     "migrate:article-body": "sanity exec migrations/migrate-article-body.ts",
-    "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts"
+    "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts",
+    "seed:capabilities": "sanity dataset import seed-capabilities.ndjson production --replace",
+    "seed:tyson": "sanity exec migrations/seed-tyson.ts"
   },
   "dependencies": {
     "@sanity/color-input": "^5.0.4",

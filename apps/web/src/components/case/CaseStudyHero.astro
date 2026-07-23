@@ -14,7 +14,7 @@ const { client, title, capabilities = [] } = Astro.props;
 
 <header class="hero">
   {client && <p class="client type-h5">{client}</p>}
-  <h1 class="title type-h1">{title}</h1>
+  <h1 class="title type-h1" data-motion-text data-unit="chars" data-blur data-scroll="false">{title}</h1>
   {capabilities && capabilities.length > 0 && (
     <ul class="capabilities type-label" aria-label="Capabilities">
       {capabilities.map((capability) => <li>{capability.title}</li>)}
@@ -26,7 +26,7 @@ const { client, title, capabilities = [] } = Astro.props;
   .hero {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xl);
+    gap: var(--space-s);
     min-height: 700px;
     padding: 200px var(--page-inset) var(--space-2xl);
   }

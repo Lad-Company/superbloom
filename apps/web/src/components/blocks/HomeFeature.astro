@@ -1,0 +1,66 @@
+---
+import SurfaceSection from '../SurfaceSection.astro';
+import MediaFrame from '../MediaFrame.astro';
+import type { Media } from '../MediaFrame.astro';
+
+interface Props {
+  headline: string;
+  body?: string | null;
+  media?: Media | null;
+}
+
+const { headline, body, media } = Astro.props;
+---
+
+<SurfaceSection role="light">
+  <div class="feature">
+    <div class="text">
+      <h2 class="type-h2" data-motion-text data-unit="words" data-scroll="true">{headline}</h2>
+      {body && <p class="body type-body">{body}</p>}
+    </div>
+    {media && (
+      <div class="visual">
+        <MediaFrame {media} ratio="3:2" title={headline} />
+      </div>
+    )}
+  </div>
+</SurfaceSection>
+
+<style>
+  .feature {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2xl);
+    padding: var(--space-4xl) var(--page-inset);
+    min-height: 600px;
+    align-items: center;
+  }
+  .text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+  h2 {
+    margin: 0;
+  }
+  .body {
+    margin: 0;
+    color: var(--fg-60);
+    max-width: 40ch;
+  }
+  @media (max-width: 1023px) {
+    .feature {
+      grid-template-columns: 1fr;
+      min-height: unset;
+      padding: var(--space-3xl) var(--space-2xs);
+    }
+    .visual {
+      display: none;
+    }
+  }
+  @media (max-width: 767px) {
+    .feature {
+      padding: var(--space-2xl) var(--space-3xs);
+    }
+  }
+</style>

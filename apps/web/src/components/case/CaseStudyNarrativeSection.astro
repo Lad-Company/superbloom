@@ -20,8 +20,10 @@ const { id, label, section, title } = Astro.props;
 <SurfaceSection role="light" id={id} tabindex={-1} class="narrative-surface">
   <div class="narrative-section">
     <div class="copy">
-      <h2 class="type-h5">{label}</h2>
-      <PortableText value={section.summary ?? []} class="summary" />
+      <div class="content">
+        <h2 class="type-eyebrow">{label}</h2>
+        <PortableText value={section.summary ?? []} class="summary" />
+      </div>
     </div>
     {(section.mediaLayouts ?? []).map((row) => (
       <ContentLayoutRow row={row} mediaTitle={title} />
@@ -44,13 +46,19 @@ const { id, label, section, title } = Astro.props;
     grid-template-columns: minmax(240px, 1fr) minmax(0, 3fr);
     gap: var(--page-gutter);
   }
+  .content {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
   h2 {
     margin: 0;
   }
   .summary {
     max-width: 960px;
     padding-right: var(--space-xl);
-    font-size: 28px;
+    font-size: 36px;
     font-weight: 500;
     line-height: 1.28;
     letter-spacing: -0.02em;
@@ -64,6 +72,9 @@ const { id, label, section, title } = Astro.props;
       grid-template-columns: 1fr;
       gap: var(--space-xs);
     }
+    .content {
+      grid-column: 1;
+    }
     .summary {
       padding-right: 0;
     }
@@ -71,9 +82,6 @@ const { id, label, section, title } = Astro.props;
   @media (max-width: 767px) {
     .narrative-section {
       padding-top: var(--space-2xl);
-    }
-    h2 {
-      font-size: 44px;
     }
     .summary {
       font-size: 24px;

@@ -13,20 +13,20 @@ const links = [
 ---
 
 <nav class:list={['navigation', role]} aria-label="Primary navigation">
-  <a href="/" class="logo type-eyebrow">Superbloom House</a>
+  <a href="/" class="logo type-eyebrow" data-route-link>Superbloom House</a>
   <ul class="desktop-links">
     {
       links.map((link) => (
         <li>
-          <a href={link.href} class="type-eyebrow">{link.label}</a>
+          <a href={link.href} class="type-eyebrow underline-draw" data-route-link>{link.label}</a>
         </li>
       ))
     }
   </ul>
   <div class="desktop-actions">
-    <a href="#contact" class="btn btn-secondary type-label">Let's Chat</a>
-    <a href="/shop" class="btn btn-tertiary type-label">Shop</a>
-    <a href="/cart" class="cart-link type-label" aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a>
+    <a href="#contact" class="btn btn-secondary surface-wipe type-label" data-motion-control>Let's Chat</a>
+    <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control>Shop</a>
+    <a href="/cart" class="cart-link underline-draw type-label" aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a>
   </div>
   <details class="compact-menu">
     <summary class="type-label">Menu</summary>
@@ -35,14 +35,14 @@ const links = [
         {
           links.map((link) => (
             <li>
-              <a href={link.href} class="type-label">{link.label}</a>
+              <a href={link.href} class="type-label underline-draw" data-route-link>{link.label}</a>
             </li>
           ))
         }
       </ul>
-      <a href="#contact" class="btn btn-secondary type-label">Let's Chat</a>
-      <a href="/shop" class="btn btn-tertiary type-label">Shop</a>
-      <a href="/cart" class="type-label">Cart <span data-cart-count>0</span></a>
+      <a href="#contact" class="btn btn-secondary surface-wipe type-label" data-motion-control>Let's Chat</a>
+      <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control>Shop</a>
+      <a href="/cart" class="type-label underline-draw">Cart <span data-cart-count>0</span></a>
     </div>
   </details>
 </nav>
@@ -99,26 +99,38 @@ const links = [
   .light .btn-secondary {
     background: #ffffff;
     color: #000000;
+    --wipe-surface: #000000;
+    --wipe-ink: #ffffff;
   }
   .light .btn-tertiary {
     background: rgba(255, 255, 255, 0.2);
     color: #ffffff;
+    --wipe-surface: #ffffff;
+    --wipe-ink: #000000;
   }
   .dark .btn-secondary {
     background: #000000;
     color: #ffffff;
+    --wipe-surface: #ffffff;
+    --wipe-ink: #000000;
   }
   .dark .btn-tertiary {
     background: rgba(0, 0, 0, 0.2);
     color: #000000;
+    --wipe-surface: #000000;
+    --wipe-ink: #ffffff;
   }
   .surface .btn-secondary {
     background: var(--fg);
     color: var(--bg);
+    --wipe-surface: var(--bg);
+    --wipe-ink: var(--fg);
   }
   .surface .btn-tertiary {
     background: var(--fg-12);
     color: var(--fg);
+    --wipe-surface: var(--fg);
+    --wipe-ink: var(--bg);
   }
   .compact-menu { display: none; }
 
@@ -160,10 +172,14 @@ const links = [
     .compact-panel .btn-secondary {
       background: var(--fg);
       color: var(--bg);
+      --wipe-surface: var(--bg);
+      --wipe-ink: var(--fg);
     }
     .compact-panel .btn-tertiary {
       background: var(--fg-12);
       color: var(--fg);
+      --wipe-surface: var(--fg);
+      --wipe-ink: var(--bg);
     }
   }
 

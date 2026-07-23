@@ -24,14 +24,34 @@ export const homepage = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'feature',
+      title: '4. Feature',
+      type: 'homeFeatureBlock',
+    }),
+    defineField({
+      name: 'work',
+      title: '5. Our Work',
+      type: 'homeWorkBlock',
+    }),
+    defineField({
+      name: 'why',
+      title: '6. Creative Collective',
+      type: 'homeWhyBlock',
+    }),
+    defineField({
       name: 'zine',
-      title: '4. Zine',
+      title: '7. Zine',
       type: 'homeZine',
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'testimonials',
+      title: '8. Testimonials',
+      type: 'homeTestimonialsBlock',
+    }),
+    defineField({
       name: 'contact',
-      title: '5. Contact',
+      title: '9. Contact',
       type: 'contactBlock',
       validation: (rule) => rule.required(),
     }),

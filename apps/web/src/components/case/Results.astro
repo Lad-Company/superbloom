@@ -18,7 +18,7 @@ const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-
 
 <SurfaceSection role={role} id={id} tabindex={-1} class="results-surface">
   <div class="results">
-    <h2 class="type-h5">{label}</h2>
+    <h2 class="type-eyebrow">{label}</h2>
     <ul>
       {(results.stats ?? []).map((stat) => (
         <li>
@@ -39,7 +39,7 @@ const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-
   .results {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xl);
+    gap: var(--space-m);
     margin-top: var(--space-4xl);
     padding: var(--space-2xl) var(--page-inset) var(--space-3xl);
   }

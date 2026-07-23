@@ -80,6 +80,33 @@ export const homepageQuery = defineQuery(`
         ${editorialCardProjection}
       }
     },
+    feature{
+      headline,
+      body,
+      "media": media${mediaProjection}
+    },
+    work{
+      headline,
+      ctaLabel,
+      "items": items[]->{
+        _id,
+        title,
+        "slug": slug.current,
+        summary,
+        cardWidth,
+        mediaAspectRatio,
+        infoPosition,
+        tags[]->{ title, color },
+        "media": cardMedia${mediaProjection}
+      }
+    },
+    why{
+      headline,
+      body,
+      ctaLabel,
+      ctaHref,
+      "media": media${mediaProjection}
+    },
     zine{
       "issue": issue->{ "slug": slug.current },
       "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,
@@ -87,6 +114,12 @@ export const homepageQuery = defineQuery(`
       promoIntro,
       "promoMedia": promoMedia${mediaProjection},
       ctaLabel
+    },
+    testimonials{
+      headline,
+      items[]{ _key, quote, attribution },
+      ctaLabel,
+      ctaHref
     },
     contact{ _type },
     "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults

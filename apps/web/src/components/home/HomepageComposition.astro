@@ -2,7 +2,11 @@
 import Hero from '../blocks/Hero.astro';
 import Capes from '../blocks/Capes.astro';
 import NewsCarousel from '../blocks/NewsCarousel.astro';
+import HomeFeature from '../blocks/HomeFeature.astro';
+import HomeWork from '../blocks/HomeWork.astro';
+import HomeWhy from '../blocks/HomeWhy.astro';
 import HomeZine from '../blocks/HomeZine.astro';
+import HomeTestimonials from '../blocks/HomeTestimonials.astro';
 import ContactBand from '../ContactBand.astro';
 import type { HomepageQueryResult } from '../../sanity.types';
 
@@ -26,13 +30,6 @@ const moduleSurfaceRoles = {
   />
 )}
 
-{homepage.capabilities && (
-  <Capes
-    headline={homepage.capabilities.headline}
-    capabilities={homepage.capabilities.capabilities ?? []}
-  />
-)}
-
 {homepage.news && (
   <NewsCarousel
     headline={homepage.news.headline}
@@ -44,6 +41,39 @@ const moduleSurfaceRoles = {
   />
 )}
 
+{homepage.feature && (
+  <HomeFeature
+    headline={homepage.feature.headline ?? ''}
+    body={homepage.feature.body}
+    media={homepage.feature.media}
+  />
+)}
+
+{homepage.capabilities && (
+  <Capes
+    headline={homepage.capabilities.headline}
+    capabilities={homepage.capabilities.capabilities ?? []}
+  />
+)}
+
+{homepage.work && (
+  <HomeWork
+    headline={homepage.work.headline}
+    ctaLabel={homepage.work.ctaLabel}
+    items={homepage.work.items ?? []}
+  />
+)}
+
+{homepage.why && (
+  <HomeWhy
+    headline={homepage.why.headline ?? ''}
+    body={homepage.why.body}
+    ctaLabel={homepage.why.ctaLabel}
+    ctaHref={homepage.why.ctaHref}
+    media={homepage.why.media}
+  />
+)}
+
 {homepage.zine && (
   <HomeZine
     issue={homepage.zine.issue}
@@ -52,6 +82,15 @@ const moduleSurfaceRoles = {
     promoIntro={homepage.zine.promoIntro}
     promoMedia={homepage.zine.promoMedia}
     ctaLabel={homepage.zine.ctaLabel}
+  />
+)}
+
+{homepage.testimonials && (
+  <HomeTestimonials
+    headline={homepage.testimonials.headline}
+    items={homepage.testimonials.items ?? []}
+    ctaLabel={homepage.testimonials.ctaLabel}
+    ctaHref={homepage.testimonials.ctaHref}
   />
 )}
 

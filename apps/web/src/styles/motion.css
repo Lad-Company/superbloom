@@ -1,0 +1,87 @@
+/* Controlled Anticipation — shared motion primitives.
+   Underline Draw and Surface Wipe are CSS so they work without JavaScript and
+   remain active under reduced motion. Type Reveal and scroll choreography are
+   JavaScript primitives in src/lib/motion and are gated by reduced motion. */
+
+/* Text Link — Underline Draw */
+.underline-draw {
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+}
+.underline-draw::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.12em;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--motion-quick) var(--motion-ease-out);
+}
+.underline-draw:hover::after,
+.underline-draw:focus-visible::after,
+.underline-draw[aria-current]::after {
+  transform: scaleX(1);
+}
+
+/* Contained Control — Surface Wipe + instant press feedback */
+.surface-wipe {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    color var(--motion-quick) var(--motion-ease-out),
+    transform var(--motion-instant) var(--motion-ease-out);
+}
+.surface-wipe::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--wipe-surface, currentColor);
+  transform: scaleY(0);
+  transform-origin: bottom center;
+  transition: transform var(--motion-quick) var(--motion-ease-out);
+}
+.surface-wipe:hover,
+.surface-wipe:focus-visible {
+  color: var(--wipe-ink, var(--bg));
+}
+.surface-wipe:hover::before,
+.surface-wipe:focus-visible::before {
+  transform: scaleY(1);
+}
+.surface-wipe.is-pressed {
+  transform: scale(0.98);
+}
+
+/* Type Reveal gating: only hide when JavaScript is available so no-JS and
+   reduced-motion visitors always get the final, readable content. */
+html.js [data-motion-text] {
+  opacity: 0;
+}
+
+/* Route Transition overlay (navbar routes only) */
+.route-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--route-transition-surface, #000);
+  transform: translateY(100%);
+  pointer-events: none;
+}
+html.route-entering .route-transition {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .surface-wipe.is-pressed {
+    transform: none;
+  }
+  .route-transition {
+    display: none;
+  }
+}

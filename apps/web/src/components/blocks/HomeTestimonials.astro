@@ -1,0 +1,79 @@
+---
+import SurfaceSection from '../SurfaceSection.astro';
+import Button from '../Button.astro';
+
+interface Testimonial {
+  _key?: string | null;
+  quote: string | null;
+  attribution?: string | null;
+}
+
+interface Props {
+  headline?: string | null;
+  items: Testimonial[];
+  ctaLabel?: string | null;
+  ctaHref?: string | null;
+}
+
+const { headline = "What They're Saying", items, ctaLabel, ctaHref } = Astro.props;
+---
+
+<SurfaceSection role="dark">
+  <div class="testimonials">
+    <h2 class="type-h2" data-motion-text data-unit="words" data-scroll="true">{headline}</h2>
+    {items.length > 0 && (
+      <ul class="items">
+        {items.map((item) => (
+          <li class="item">
+            <blockquote class="type-body quote">&ldquo;{item.quote ?? ''}&rdquo;</blockquote>
+            {item.attribution && <p class="type-eyebrow attribution">{item.attribution}</p>}
+          </li>
+        ))}
+      </ul>
+    )}
+    {ctaLabel && ctaHref && <Button href={ctaHref} label={ctaLabel} />}
+  </div>
+</SurfaceSection>
+
+<style>
+  .testimonials {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    padding: var(--space-4xl) var(--page-inset);
+  }
+  h2 {
+    margin: 0;
+  }
+  .items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-xl) var(--page-gutter);
+  }
+  .item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3xs);
+  }
+  .quote {
+    margin: 0;
+    font-style: italic;
+  }
+  .attribution {
+    margin: 0;
+    color: var(--fg-60);
+  }
+  @media (max-width: 1023px) {
+    .testimonials {
+      padding: var(--space-3xl) var(--space-2xs);
+    }
+  }
+  @media (max-width: 767px) {
+    .testimonials {
+      padding: var(--space-2xl) var(--space-3xs);
+    }
+    .items {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

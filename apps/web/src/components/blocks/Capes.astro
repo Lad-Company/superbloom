@@ -124,14 +124,11 @@ const displayedCapabilities = capabilities.slice(0, 6);
 </style>
 
 <script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { initPinnedStory } from '../../lib/motion';
 
-  gsap.registerPlugin(ScrollTrigger);
+  const cleanups: Array<() => void> = [];
 
-  const sections = document.querySelectorAll<HTMLElement>('[data-capes]');
-
-  sections.forEach((section) => {
+  document.querySelectorAll<HTMLElement>('[data-capes]').forEach((section) => {
     const frames = section.querySelectorAll<HTMLElement>('media-frame');
     const pin = section.querySelector<HTMLElement>('[data-pin]');
     const count = frames.length;
@@ -145,23 +142,8 @@ const displayedCapabilities = capabilities.slice(0, 6);
       });
     };
 
-    const mm = gsap.matchMedia();
-
-    mm.add('(prefers-reduced-motion: no-preference)', () => {
-      const st = ScrollTrigger.create({
-        trigger: section,
-        start: 'top top',
-        end: `+=${count * 100}%`,
-        pin,
-        scrub: true,
-        onUpdate: (self) => {
-          const i = Math.min(count - 1, Math.floor(self.progress * count));
-          setActive(i);
-        },
-      });
-      return () => st.kill();
-    });
-
-    setActive(0);
+    cleanups.push(initPinnedStory({ section, pin, chapters: count, onChapter: setActive }));
   });
+
+  window.addEventListener('pagehide', () => cleanups.forEach((cleanup) => cleanup()));
 </script>

@@ -1,8 +1,10 @@
 ---
 import '../styles/fonts.css';
 import '../styles/tokens.css';
+import '../styles/motion.css';
 import SEOHead from '../components/SEOHead.astro';
 import CartDrawer from '../components/cart/CartDrawer.astro';
+import RouteTransition from '../components/motion/RouteTransition.astro';
 
 interface Props {
   title?: string;
@@ -28,10 +30,26 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <SEOHead title={title} description={description} canonicalUrl={canonical} image={image} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        root.classList.add('js');
+        try {
+          if (sessionStorage.getItem('sbh:route-transition') === '1') {
+            root.classList.add('route-entering');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <slot />
+    <RouteTransition />
     <CartDrawer />
+    <script>
+      import { initMotion } from '../lib/motion';
+      initMotion();
+    </script>
     <style is:global>
       *,
       *::before,

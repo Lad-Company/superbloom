@@ -1,0 +1,29 @@
+---
+type Tag = 'span' | 'div' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
+interface Props {
+  as?: Tag;
+  unit?: 'lines' | 'words' | 'chars';
+  /** Reveal on scroll into view. Set false to reveal immediately (e.g. heroes). */
+  scroll?: boolean;
+  /** Hero-only blur-to-focus. Reserved for large display moments. */
+  blur?: boolean;
+  start?: string;
+  class?: string;
+}
+
+const { as: Tag = 'span', unit = 'lines', scroll = true, blur = false, start, class: className } = Astro.props;
+---
+
+<Tag
+  class:list={['motion-text', className]}
+  data-motion-text
+  data-unit={unit}
+  data-scroll={String(scroll)}
+  data-blur={blur ? '' : undefined}
+  data-start={start}
+>
+  <slot />
+</Tag>
+<!-- Reveal behavior is driven centrally by initMotion() in Layout. -->
+

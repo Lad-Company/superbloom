@@ -1,0 +1,74 @@
+---
+import SurfaceSection from '../SurfaceSection.astro';
+import ContentCardList from '../ContentCardList.astro';
+import WorkCard from '../WorkCard.astro';
+import Button from '../Button.astro';
+import type { Media } from '../MediaFrame.astro';
+import type { CardWidth, InfoPosition, MediaAspectRatio } from '../../lib/contentCard';
+
+interface WorkItem {
+  _id: string | null;
+  title: string | null;
+  slug: string | null;
+  summary: string | null;
+  cardWidth?: CardWidth | null;
+  mediaAspectRatio?: MediaAspectRatio | null;
+  infoPosition?: InfoPosition | null;
+  tags: Array<{ title: string | null; color: string | null }> | null;
+  media: Media | null;
+}
+
+interface Props {
+  headline?: string | null;
+  ctaLabel?: string | null;
+  items: WorkItem[];
+}
+
+const { headline = 'Our Work', ctaLabel = 'See All Work', items } = Astro.props;
+---
+
+<SurfaceSection role="light">
+  <div class="work">
+    <div class="header">
+      <h2 class="type-h2" data-motion-text data-unit="words" data-scroll="true">
+        {headline}
+      </h2>
+      <Button href="/work" label={ctaLabel ?? 'See All Work'} />
+    </div>
+    {items.length > 0 && (
+      <ContentCardList>
+        {items.map((item) => <WorkCard {item} />)}
+      </ContentCardList>
+    )}
+  </div>
+</SurfaceSection>
+
+<style>
+  .work {
+    padding: var(--space-4xl) var(--page-inset);
+  }
+  .header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--page-gutter);
+    margin-bottom: var(--space-xl);
+  }
+  h2 {
+    margin: 0;
+  }
+  @media (max-width: 1023px) {
+    .work {
+      padding: var(--space-3xl) var(--space-2xs);
+    }
+  }
+  @media (max-width: 767px) {
+    .work {
+      padding: var(--space-2xl) var(--space-3xs);
+    }
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

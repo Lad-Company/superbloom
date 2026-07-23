@@ -1,0 +1,13 @@
+---
+// Single shared Route Transition overlay. Mounted once in Layout. Only links
+// marked with data-route-link (the Shared Site Shell navigation) trigger it.
+---
+
+<div class="route-transition" data-route-transition aria-hidden="true"></div>
+
+<script>
+  import { initRouteTransition } from '../../lib/motion';
+
+  const overlay = document.querySelector<HTMLElement>('[data-route-transition]');
+  if (overlay) initRouteTransition(overlay);
+</script>
