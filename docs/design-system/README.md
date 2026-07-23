@@ -14,6 +14,7 @@ authorize implementation changes.
 | Component | Figma | Maps to | Status |
 | --- | --- | --- | --- |
 | [CMS Content Composition](./cms-content-composition-spec.md) | [Index](https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4790&m=dev) | Content Card · Content Layout Row · shared CMS contracts | Approved for issue decomposition |
+| [CMS Starter Seed](./cms-starter-seed-implementation-spec.md) | None | Tracker extraction · media ingestion · published visual-validation dataset | Approved for issue decomposition |
 | [Work Index](./work-index.md) | [Current composition](https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4790&m=dev) | `/work` · `caseStudy` | Redesign specified |
 | [Case Study](./case-study-spine-implementation-spec.md) | [Case Study](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-87&m=dev) | `/work/[slug]` · Case Study Spine | Composition update specified |
 | [Who We Are](./who-we-are.md) | [Who We Are](https://www.figma.com/design/rCLSJfHWU1ka3YiAl1sNPU/-e--Superbloom---Work-Share?node-id=2554-245&m=dev) | `/who-we-are` | Implemented |
@@ -35,6 +36,7 @@ authorize implementation changes.
 Full implementation specifications with schema, queries, components, tests, and acceptance criteria:
 
 - [CMS Content Composition](./cms-content-composition-spec.md), approved for issue decomposition
+- [CMS Starter Seed](./cms-starter-seed-implementation-spec.md), approved for issue decomposition
 - [Case Study Spine](./case-study-spine-implementation-spec.md), composition update specified
 - [Zine](./zine-implementation-spec.md), current companion contract
 - [Shop (functional)](./shop-functional-implementation-spec.md), ready for implementation (visual design deferred)
