@@ -76,7 +76,7 @@ export const homepageQuery = defineQuery(`
       headline,
       listDefaults,
       itemOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },
-      "items": *[_type == "article" && articleType == "news"] | order(publicationDate desc)[0...8]{
+      "items": items[]->{
         ${editorialCardProjection}
       }
     },

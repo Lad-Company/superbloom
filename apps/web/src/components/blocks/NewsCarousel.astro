@@ -16,14 +16,9 @@ interface Props {
   globalSettings?: PartialContentCardSettings;
 }
 
-const { headline, items, role, listDefaults: listSettings, itemOverrides, globalSettings } = Astro.props;
-const [featured, ...rest] = items;
-const overrideFor = (id?: string | null) =>
-  itemOverrides?.find((override) => override.articleId === id);
-const carouselSettings = (id?: string | null): ContentCardSettingsInput => ({
-  ...overrideFor(id),
-  infoPosition: 'below',
-});
+const { headline, items: itemsInput, role, listDefaults: listSettings, itemOverrides, globalSettings } = Astro.props;
+const items = itemsInput ?? [];
+const overrides = new Map(itemOverrides?.map((override) => [override.articleId, override]));
 ---
 
 {
@@ -31,10 +26,9 @@ const carouselSettings = (id?: string | null): ContentCardSettingsInput => ({
     <SurfaceSection role={role} class="news">
       <div class="inner">
         {headline && <h2 class="type-h6 headline">{headline}</h2>}
-        <CardCarousel label={headline ?? 'Latest news'}>
-          {featured && <NewsCard item={featured} class="featured" settings={carouselSettings(featured._id)} listSettings={listSettings} globalSettings={globalSettings} showCopy />}
-          {rest.map((item) => (
-            <NewsCard item={item} class="standard" settings={carouselSettings(item._id)} listSettings={listSettings} globalSettings={globalSettings} />
+        <CardCarousel label={headline ?? 'News'}>
+          {items.map((item) => (
+            <NewsCard item={item} settings={overrides.get(item._id)} listSettings={listSettings} globalSettings={globalSettings} showCopy />
           ))}
         </CardCarousel>
       </div>

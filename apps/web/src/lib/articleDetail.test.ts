@@ -10,6 +10,7 @@ const source = readFileSync(
   new URL('../components/editorial/ArticleDetail.astro', import.meta.url),
   'utf8',
 )
+const homepageQuerySource = readFileSync(new URL('./queries.ts', import.meta.url), 'utf8')
 
 describe('Article Detail contract', () => {
   it('renders identity and Publication Date with semantic time markup', () => {
@@ -38,5 +39,16 @@ describe('Article Detail contract', () => {
       expect(query).toContain('contentLayoutRow')
       expect(query).toContain('relatedItems')
     }
+  })
+
+  it('renders authored related items as a shared More Stories carousel', () => {
+    expect(source).toContain("import CardCarousel from '../CardCarousel.astro'")
+    expect(source).toContain('heading="More stories"')
+    expect(source).toContain('relatedItems.length === 3')
+  })
+
+  it('uses the homepage authored News list instead of implicit latest items', () => {
+    expect(homepageQuerySource).toContain('"items": items[]->{')
+    expect(homepageQuerySource).not.toContain('articleType == "news"] | order(publicationDate desc)[0...8]')
   })
 })

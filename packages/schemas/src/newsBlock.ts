@@ -12,6 +12,19 @@ export const newsBlock = defineType({
       type: 'string',
     }),
     defineField({
+      name: 'items',
+      title: 'News Items',
+      type: 'array',
+      of: [
+        {
+          type: 'reference',
+          to: [{type: 'article'}],
+          options: {filter: 'articleType == "news"'},
+        },
+      ],
+      validation: (rule) => rule.unique().required().min(1),
+    }),
+    defineField({
       name: 'listDefaults',
       title: 'List Defaults',
       type: 'object',
@@ -48,6 +61,6 @@ export const newsBlock = defineType({
   ],
   preview: {
     select: {title: 'headline'},
-    prepare: ({title}) => ({title: title || 'News', subtitle: 'News (latest)'}),
+    prepare: ({title}) => ({title: title || 'News', subtitle: 'Authored list'}),
   },
 })

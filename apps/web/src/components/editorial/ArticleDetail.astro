@@ -3,7 +3,7 @@ import MediaFrame, {type Media} from '../MediaFrame.astro';
 import PortableText from '../PortableText.astro';
 import ArticleBodyRenderer from './ArticleBodyRenderer.astro';
 import MixedArticleCard from '../MixedArticleCard.astro';
-import ContentCardList from '../ContentCardList.astro';
+import CardCarousel from '../CardCarousel.astro';
 import TagList from '../TagList.astro';
 import type {ContentLayoutRowValue} from '../ContentLayoutRow.astro';
 import type {TypedObject} from 'astro-portabletext/types';
@@ -55,7 +55,7 @@ interface Props {
 const {article} = Astro.props;
 const body = article.body ?? [];
 const coverage = article.articleType === 'news' ? article.externalCoverage ?? [] : [];
-const relatedItems = article.relatedItems?.length === 3 ? article.relatedItems : [];
+const relatedItems = article.relatedItems ?? [];
 
 const typeLabels: Record<'news' | 'editorial' | 'zine', string> = {
   news: 'News',
@@ -115,13 +115,12 @@ const publicationDate = article.publicationDate
   )}
 
   {relatedItems.length === 3 && (
-    <nav class="related-items" aria-labelledby="related-items-heading">
-      <h2 id="related-items-heading" class="type-h5">Related items</h2>
-      <ContentCardList class="related-grid">
+    <nav class="related-items" aria-label="More stories">
+      <CardCarousel label="More stories" heading="More stories">
         {relatedItems.map((item) => (
           <MixedArticleCard item={item} globalSettings={article.globalCardDefaults} showCopy />
         ))}
-      </ContentCardList>
+      </CardCarousel>
     </nav>
   )}
 </article>
@@ -151,10 +150,16 @@ const publicationDate = article.publicationDate
   }
 
   .overview,
-  .external-coverage,
-  .related-items {
+  .external-coverage {
     width: min(100% - (2 * var(--page-inset)), 960px);
     margin: var(--space-2xl) auto;
+  }
+
+  .related-items {
+    margin-top: var(--space-2xl);
+    padding: var(--space-2xl) var(--page-inset);
+    background: #000;
+    color: #fff;
   }
 
   .external-coverage ul {
@@ -170,10 +175,6 @@ const publicationDate = article.publicationDate
     color: inherit;
     text-decoration: underline;
     text-underline-offset: 0.15em;
-  }
-
-  .related-grid {
-    margin-top: var(--space-xs);
   }
 
   .sr-only {

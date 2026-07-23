@@ -1,18 +1,92 @@
 ---
 interface Props {
   label: string;
+  heading?: string | null;
   class?: string;
 }
 
-const { label, class: className } = Astro.props;
+const { label, heading, class: className } = Astro.props;
 ---
 
-<div class:list={['card-carousel', className]} role="region" tabindex="0" aria-label={label}>
-  <slot />
-</div>
+<card-carousel class:list={['card-carousel', className]} aria-label={label}>
+  {heading && (
+    <div class="header">
+      <h2 class="heading type-h5">{heading}</h2>
+      <div class="controls" aria-label={`${heading} controls`}>
+        <button class="control previous" type="button" aria-label={`Previous ${heading}`}>←</button>
+        <button class="control next" type="button" aria-label={`Next ${heading}`}>→</button>
+      </div>
+    </div>
+  )}
+  <div class="track" role="region" tabindex="0" aria-label={label}>
+    <slot />
+  </div>
+</card-carousel>
+
+<script>
+  class CardCarouselElement extends HTMLElement {
+    private track?: HTMLElement;
+
+    connectedCallback() {
+      this.track = this.querySelector('.track') ?? undefined;
+      this.dataset.enhanced = 'true';
+      this.querySelector('.previous')?.addEventListener('click', () => this.scrollCards(-1));
+      this.querySelector('.next')?.addEventListener('click', () => this.scrollCards(1));
+    }
+
+    private scrollCards(direction: 1 | -1) {
+      const amount = (this.track?.firstElementChild as HTMLElement | null)?.offsetWidth ?? 0;
+      this.track?.scrollBy({left: direction * amount, behavior: 'smooth'});
+    }
+  }
+
+  if (!customElements.get('card-carousel')) {
+    customElements.define('card-carousel', CardCarouselElement);
+  }
+</script>
 
 <style>
   .card-carousel {
+    display: block;
+  }
+
+  .header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--page-gutter);
+    margin-bottom: var(--space-xs);
+  }
+
+  .heading {
+    margin: 0;
+  }
+
+  .controls {
+    display: flex;
+    gap: var(--space-3xs);
+  }
+
+  card-carousel:not([data-enhanced]) .controls {
+    display: none;
+  }
+
+  .control {
+    width: 40px;
+    height: 40px;
+    border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
+    border-radius: var(--radius-button);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .control:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
+  .track {
     display: flex;
     gap: var(--page-gutter);
     overflow-x: auto;
@@ -20,45 +94,57 @@ const { label, class: className } = Astro.props;
     scroll-snap-type: x proximity;
   }
 
-  .card-carousel > :global(.editorial-card) {
+  .track > :global(.content-card) {
     flex: 0 0 auto;
     scroll-snap-align: start;
   }
 
-  .card-carousel > :global(.featured) {
-    width: 451px;
+  .track > :global(.content-card[data-card-width='1/4']) {
+    width: min(23.3vw, 335px);
   }
 
-  .card-carousel > :global(.standard) {
-    width: 335px;
+  .track > :global(.content-card[data-card-width='1/3']) {
+    width: min(30.75vw, 443px);
+  }
+
+  .track > :global(.content-card[data-card-width='1/2']) {
+    width: min(44vw, 634px);
+  }
+
+  .track > :global(.content-card[data-card-width='2/3']) {
+    width: min(58vw, 835px);
+  }
+
+  .track > :global(.content-card[data-card-width='3/4']) {
+    width: min(70vw, 1008px);
+  }
+
+  .track > :global(.content-card[data-card-width='full']) {
+    width: min(88vw, 1267px);
   }
 
   @media (max-width: 959px) {
-    .card-carousel {
+    .track {
       gap: 16px;
     }
 
-    .card-carousel > :global(.featured) {
-      width: 360px;
-    }
-
-    .card-carousel > :global(.standard) {
-      width: 268px;
+    .track > :global(.content-card[data-card-width]) {
+      width: min(56vw, 360px);
     }
   }
 
   @media (max-width: 599px) {
-    .card-carousel {
+    .header {
+      align-items: start;
+    }
+
+    .track {
       gap: 12px;
       padding-right: 12px;
     }
 
-    .card-carousel > :global(.featured) {
-      width: 280px;
-    }
-
-    .card-carousel > :global(.standard) {
-      width: 200px;
+    .track > :global(.content-card[data-card-width]) {
+      width: min(76vw, 280px);
     }
   }
 </style>
