@@ -18,7 +18,11 @@
     "migrate:work": "pnpm run backup:work && sanity exec migrations/migrate-work-index.ts",
     "migrate:zine": "sanity exec migrations/migrate-zine-issues.ts",
     "migrate:article-body": "sanity exec migrations/migrate-article-body.ts",
-    "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts"
+    "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts",
+    "seed:refresh-source": "sanity exec seed/src/refresh-source.ts",
+    "seed:build-manifest": "sanity exec seed/src/build-manifest.ts",
+    "typecheck": "tsc -p seed/tsconfig.json",
+    "test": "vitest run"
   },
   "dependencies": {
     "@sanity/color-input": "^5.0.4",
@@ -29,5 +33,10 @@
     "sanity": "^4.0.0",
     "sanity-plugin-mux-input": "^3.0.5",
     "styled-components": "^6.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "typescript": "^6.0.3",
+    "vitest": "^1.6.1"
   }
 }
