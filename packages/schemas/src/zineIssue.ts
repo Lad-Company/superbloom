@@ -4,6 +4,7 @@ import {
   validatePortableTextNonEmpty,
   validateArticlesMinOneAndUnique,
   validateArticlesNotInAnotherIssue,
+  validateIssuuUrl,
   validateIssuuOrPdfRequired,
 } from './zineContract'
 import {cardWidthField, infoPositionField, mediaAspectRatioField} from './cardSettings'
@@ -101,6 +102,7 @@ export const zineIssue = defineType({
       name: 'issuuUrl',
       title: 'ISSUU Flipbook URL',
       type: 'url',
+      validation: (rule) => rule.custom((value) => (value ? validateIssuuUrl(value) : true)),
       description: 'Paste the public ISSUU publication or embed URL. Provide either ISSUU or PDF, not both.',
     }),
     defineField({

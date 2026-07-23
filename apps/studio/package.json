@@ -9,6 +9,8 @@
     "deploy": "sanity deploy",
     "typegen": "sanity schema extract --path schema.json && sanity typegen generate",
     "audit:zine": "sanity exec migrations/audit-zine-membership.ts",
+    "backup:zine": "sanity exec migrations/backup-zine-data.ts",
+    "migrate:zine": "sanity exec migrations/migrate-zine-issues.ts",
     "migrate:article-body": "sanity exec migrations/migrate-article-body.ts",
     "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts"
   },

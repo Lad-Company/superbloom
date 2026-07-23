@@ -5,6 +5,7 @@ import {
   validateReferencesUnique,
   validateArticlesMinOneAndUnique,
   validateArticlesNotInAnotherIssue,
+  validateZineArticleIssueMembership,
   validateIssuuUrl,
   validateIssuuOrPdfRequired,
 } from './zineContract'
@@ -147,6 +148,61 @@ describe('Zine Contract Validators', () => {
     it('accepts publication and embed URLs', () => {
       expect(validateIssuuUrl('https://issuu.com/superbloom/docs/issue-one')).toBe(true)
       expect(validateIssuuUrl('https://e.issuu.com/embed.html?d=issue-one')).toBe(true)
+    })
+  })
+
+  describe('validateZineArticleIssueMembership', () => {
+    const document = {_id: 'drafts.article-1', articleType: 'zine'}
+
+    it('allows Zine Articles with exactly one Issue', async () => {
+      await expect(
+        validateZineArticleIssueMembership(document, {
+          getClient: () => ({fetch: async () => [{_id: 'issue-1', title: 'Issue One'}]}),
+        }),
+      ).resolves.toBe(true)
+    })
+
+    it('blocks Zine Articles with no published Issue', async () => {
+      await expect(
+        validateZineArticleIssueMembership(document, {
+          getClient: () => ({fetch: async () => []}),
+        }),
+      ).resolves.toContain('exactly one')
+    })
+
+    it('blocks Zine Articles in multiple published Issues', async () => {
+      await expect(
+        validateZineArticleIssueMembership(document, {
+          getClient: () => ({
+            fetch: async () => [
+              {_id: 'issue-1', title: 'Issue One'},
+              {_id: 'issue-2', title: 'Issue Two'},
+            ],
+          }),
+        }),
+      ).resolves.toContain('Issue One, Issue Two')
+    })
+
+    it('treats draft and published copies as one Issue', async () => {
+      await expect(
+        validateZineArticleIssueMembership(document, {
+          getClient: () => ({
+            fetch: async () => [
+              {_id: 'issue-1', title: 'Issue One'},
+              {_id: 'drafts.issue-1', title: 'Issue One'},
+            ],
+          }),
+        }),
+      ).resolves.toBe(true)
+    })
+
+    it('ignores non-Zine Articles', async () => {
+      await expect(
+        validateZineArticleIssueMembership(
+          {_id: 'article-1', articleType: 'editorial'},
+          {getClient: () => ({fetch: async () => 0})},
+        ),
+      ).resolves.toBe(true)
     })
   })
 

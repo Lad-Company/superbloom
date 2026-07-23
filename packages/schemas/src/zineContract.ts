@@ -3,7 +3,7 @@ type PortableTextBlock = {children?: Array<{text?: string}>}
 type ValidationContext = {
   document?: {_id?: string; _type?: string}
   getClient?: (options: {apiVersion: string}) => {
-    fetch: (query: string, params: Record<string, unknown>) => Promise<number>
+    fetch: (query: string, params: Record<string, unknown>) => Promise<unknown>
   }
 }
 
@@ -60,9 +60,37 @@ export const validateArticlesNotInAnotherIssue = async (
     .fetch(
       'count(*[_type == "zineIssue" && !(_id in [$documentId, $draftId]) && references($articleIds)])',
       {articleIds, documentId, draftId: `drafts.${documentId}`},
-    )
+    ) as number
 
   return existingIssueCount === 0 || 'One or more selected articles already belong to another Issue.'
+}
+
+export const validateZineArticleIssueMembership = async (
+  document: unknown,
+  context: ValidationContext,
+) => {
+  const article = document as {_id?: string; articleType?: string} | undefined
+  if (article?.articleType !== 'zine' || !article._id || !context.getClient) return true
+
+  const articleId = article._id.replace(/^drafts\./, '')
+  const issues = await context
+    .getClient({apiVersion: '2026-06-01'})
+    .fetch(
+      '*[_type == "zineIssue" && references($articleId)]{_id, title}',
+      {articleId},
+    )
+  const issueTitles = new Map<string, string>()
+  for (const issue of issues as Array<{_id?: string; title?: string}>) {
+    const issueId = issue._id?.replace(/^drafts\./, '')
+    if (issueId) issueTitles.set(issueId, issue.title ?? issueId)
+  }
+
+  if (issueTitles.size === 1) return true
+
+  const guidance = issueTitles.size > 0
+    ? ` Found ${issueTitles.size}: ${[...issueTitles.values()].join(', ')}.`
+    : ''
+  return `Zine Articles must belong to exactly one Issue.${guidance}`
 }
 
 export const validateIssuuUrl = (value: unknown) => {

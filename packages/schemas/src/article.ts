@@ -6,6 +6,7 @@ import {
   validateExternalCoverage,
   validateScopedSlugUniqueness,
 } from './articleContract'
+import {validateZineArticleIssueMembership} from './zineContract'
 import {cardWidthField, mediaAspectRatioField, infoPositionField, validateInfoPositionWithWidth} from './cardSettings'
 
 export const article = defineType({
@@ -122,8 +123,9 @@ export const article = defineType({
     }),
   ],
   validation: (rule) =>
-    rule.custom((document) => {
+    rule.custom((document, context) => {
       const doc = document as {
+        _id?: string
         articleType?: string
         cardWidth?: string
         infoPosition?: string
@@ -132,7 +134,12 @@ export const article = defineType({
       }
       const settingsResult = validateInfoPositionWithWidth({parent: doc})
       if (settingsResult !== true) return settingsResult
-      return validateExternalCoverage(doc.externalCoverage, {parent: doc})
+      const coverageResult = validateExternalCoverage(doc.externalCoverage, {parent: doc})
+      if (coverageResult !== true) return coverageResult
+      return validateZineArticleIssueMembership(doc, {
+        document: doc,
+        getClient: (options) => context.getClient(options),
+      })
     }),
   preview: {
     select: {title: 'title', subtitle: 'publicationDate', type: 'articleType'},
