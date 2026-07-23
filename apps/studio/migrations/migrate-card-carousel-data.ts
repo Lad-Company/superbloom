@@ -1,6 +1,9 @@
 import {getCliClient} from 'sanity/cli'
 
-const client = getCliClient({apiVersion: '2026-07-23'})
+const client = getCliClient({
+  apiVersion: '2026-07-23',
+  token: process.env.SANITY_API_TOKEN,
+})
 
 async function main() {
   const homepage = await client.fetch<{_id: string; news?: {items?: unknown[]}} | null>(

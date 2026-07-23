@@ -22,7 +22,7 @@ export const newsBlock = defineType({
           options: {filter: 'articleType == "news"'},
         },
       ],
-      validation: (rule) => rule.unique().required().min(1),
+      validation: (rule) => rule.unique(),
     }),
     defineField({
       name: 'listDefaults',
