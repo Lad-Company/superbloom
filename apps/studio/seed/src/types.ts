@@ -80,3 +80,81 @@ export type SourceMetadata = {
   refreshedAt: string
   sourceUrl: string
 }
+
+export type StarterTarget = {
+  id: string
+  documentType:
+    | 'homepage'
+    | 'workIndex'
+    | 'whoWeAre'
+    | 'indexPage'
+    | 'article'
+    | 'caseStudy'
+    | 'zineIssue'
+  figmaUrl: string
+}
+
+export type StarterCoverage = {
+  targets: StarterTarget[]
+}
+
+export type ManifestProvenance = {
+  kind: 'source' | 'derived' | 'inferred'
+  sources: SourceRef[]
+  rationale?: string
+}
+
+export type ManifestField = {
+  value: unknown
+  provenance: ManifestProvenance
+}
+
+export type StarterCandidate = {
+  targetId: string
+  documentType: StarterTarget['documentType']
+  fields: Record<string, ManifestField>
+}
+
+export type StarterMediaUse = {
+  checksum: string
+  targetId: string
+  field: string
+  provenance: ManifestProvenance
+}
+
+export type StarterManifestInputs = {
+  googleDoc: {
+    url: string
+    checksum: string
+  }
+  trackerExport: {
+    path: string
+    checksum: string
+  }
+  frameIo: string
+  googleDrive?: string
+}
+
+export type StarterManifest = {
+  schemaVersion: 1
+  generatedAt: string
+  sourceChecksum: string
+  inputs: StarterManifestInputs
+  coverage: StarterCoverage
+  candidates: StarterCandidate[]
+  media: StarterMediaUse[]
+}
+
+export type GenerationDiagnostic = {
+  level: 'warning' | 'error'
+  code: 'invalid-llm-output' | 'generation-failed'
+  message: string
+  generatedAt: string
+  sourceChecksum: string
+}
+
+export type GenerationDiagnostics = {
+  generatedAt: string
+  sourceChecksum: string
+  diagnostics: GenerationDiagnostic[]
+}

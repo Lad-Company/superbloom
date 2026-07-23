@@ -22,6 +22,7 @@
     "seed:refresh-source": "sanity exec seed/src/refresh-source.ts",
     "seed:build-manifest": "sanity exec seed/src/build-manifest.ts",
     "seed:retrieve-media": "sanity exec seed/src/retrieve-manifest.ts",
+    "seed:generate-manifest": "sanity exec seed/src/generate-starter-manifest.ts",
     "typecheck": "tsc -p seed/tsconfig.json",
     "test": "vitest run"
   },
