@@ -12,12 +12,7 @@ import {formSubmission} from './formSubmission'
 import {contactBlock} from './contactBlock'
 import {mediaBox} from './mediaBox'
 import {caseStudyNarrativeSection} from './caseStudyNarrativeSection'
-import {caseStudyFullBleedMedia} from './caseStudyFullBleedMedia'
-import {caseStudyTextMedia} from './caseStudyTextMedia'
-import {caseStudyPairedPortraitMedia} from './caseStudyPairedPortraitMedia'
 import {caseStudyResults} from './caseStudyResults'
-import {articleTextSection} from './articleTextSection'
-import {articleMediaSection} from './articleMediaSection'
 import {zineIssue} from './zineIssue'
 import {zineLanding} from './zineLanding'
 import {homeZine} from './homeZine'
@@ -26,6 +21,11 @@ import {siteSettings} from './siteSettings'
 import {contentLayoutMedia} from './contentLayoutMedia'
 import {contentLayoutText} from './contentLayoutText'
 import {contentLayoutRow} from './contentLayoutRow'
+
+export {migrateLegacyCaseStudyBlock} from './caseStudyMigration'
+export type {LegacyCaseStudyBlock} from './caseStudyMigration'
+export {migrateLegacyArticleBlock} from './articleMigration'
+export type {LegacyArticleBlock} from './articleMigration'
 
 export const schemaTypes = [
   capability,
@@ -42,12 +42,7 @@ export const schemaTypes = [
   contactBlock,
   mediaBox,
   caseStudyNarrativeSection,
-  caseStudyFullBleedMedia,
-  caseStudyTextMedia,
-  caseStudyPairedPortraitMedia,
   caseStudyResults,
-  articleTextSection,
-  articleMediaSection,
   zineIssue,
   zineLanding,
   homeZine,

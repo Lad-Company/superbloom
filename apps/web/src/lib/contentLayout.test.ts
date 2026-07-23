@@ -19,7 +19,7 @@ const articleRendererSource = readFileSync(
   'utf8',
 );
 const caseStudyRendererSource = readFileSync(
-  new URL('../components/case/CaseStudyMediaLayout.astro', import.meta.url),
+  new URL('../components/case/CaseStudyNarrativeSection.astro', import.meta.url),
   'utf8',
 );
 const resultsRendererSource = readFileSync(
@@ -64,8 +64,11 @@ describe('Content Layout Row rendering contract', () => {
       expect(contentLayoutRowsProjection).toContain(field);
     }
     expect(newsArticleBySlugQuery).toContain('contentLayoutRow');
-    expect(caseStudyBySlugQuery).toContain('contentLayoutRow');
+    expect(caseStudyBySlugQuery).toContain('mediaLayouts');
+    expect(caseStudyBySlugQuery).toContain('blocks[]');
     expect(caseStudyBySlugQuery).toContain('supportingRows');
+    expect(caseStudyBySlugQuery).not.toContain('caseStudyTextMedia');
+    expect(caseStudyBySlugQuery).toContain('@->articleType == "news"');
   });
 
   it('stacks in source order below 1024px and keeps links keyboard accessible', () => {
@@ -77,9 +80,11 @@ describe('Content Layout Row rendering contract', () => {
     expect(componentSource).toContain('a:focus-visible');
   });
 
-  it('renders rows alongside legacy Article and Case Study layouts', () => {
+  it('renders rows as the only Article and Case Study layout composition', () => {
     expect(articleRendererSource).toContain('<ContentLayoutRow');
     expect(caseStudyRendererSource).toContain('<ContentLayoutRow');
     expect(resultsRendererSource).toContain('<ContentLayoutRow');
+    expect(articleRendererSource).not.toContain('articleTextSection');
+    expect(caseStudyRendererSource).not.toContain('caseStudyTextMedia');
   });
 });

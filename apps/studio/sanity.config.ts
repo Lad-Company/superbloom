@@ -5,6 +5,7 @@ import {orderableDocumentListDeskItem} from '@sanity/orderable-document-list'
 import {colorInput} from '@sanity/color-input'
 import {schemaTypes} from '@superbloom/schemas'
 import {muxSchemaCompatibility} from './muxSchemaCompatibility'
+import {newsArticleView, editorialArticleView, zineArticleView} from './articleViews'
 
 export default defineConfig({
   name: 'superbloom',
@@ -51,7 +52,10 @@ export default defineConfig({
                 S.list()
                   .title('Content')
                   .items([
-                    S.documentTypeListItem('article').title('Articles'),
+                    newsArticleView(S),
+                    editorialArticleView(S),
+                    zineArticleView(S),
+                    S.divider(),
                     orderableDocumentListDeskItem({
                       type: 'caseStudy',
                       title: 'Case Studies',
@@ -92,5 +96,26 @@ export default defineConfig({
   ],
   schema: {
     types: schemaTypes,
+    templates: (templates) => [
+      ...templates.filter((template) => template.schemaType !== 'article'),
+      {
+        id: 'news-article',
+        title: 'News',
+        schemaType: 'article',
+        value: {articleType: 'news'},
+      },
+      {
+        id: 'editorial-article',
+        title: 'Editorial Article',
+        schemaType: 'article',
+        value: {articleType: 'editorial'},
+      },
+      {
+        id: 'zine-article',
+        title: 'Zine Article',
+        schemaType: 'article',
+        value: {articleType: 'zine'},
+      },
+    ],
   },
 })

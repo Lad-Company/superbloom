@@ -2,7 +2,7 @@ type Reference = {_ref?: string}
 type PortableTextBlock = {children?: Array<{text?: string}>}
 type ValidationContext = {
   document?: {_id?: string; _type?: string; articleType?: string; externalCoverage?: unknown[]}
-  parent?: {cardDestination?: string}
+  parent?: {articleType?: string; cardDestination?: string}
 }
 
 const hasPortableTextContent = (value: unknown) =>
@@ -49,6 +49,15 @@ export const validateRelatedItems = (items: unknown, context?: ValidationContext
 }
 
 export const validateExternalCoverage = (coverage: unknown, context: ValidationContext) => {
+  if (
+    context.parent?.articleType &&
+    context.parent.articleType !== 'news' &&
+    Array.isArray(coverage) &&
+    coverage.length > 0
+  ) {
+    return 'External coverage is only available for News.'
+  }
+
   if (!Array.isArray(coverage)) return context.parent?.cardDestination === 'external'
     ? 'External cards require exactly one primary coverage link.'
     : true
@@ -65,4 +74,37 @@ export const validateReferencesUnique = (items: unknown) => {
   if (!Array.isArray(items)) return true
   const references = items.map((item: Reference) => item._ref).filter(Boolean)
   return new Set(references).size === references.length || 'References must be unique.'
+}
+
+export const validateScopedSlugUniqueness = async (
+  slug: {current?: string},
+  context: {
+    getClient: (arg: {apiVersion: string}) => {
+      fetch: (query: string, params: Record<string, string>) => Promise<number>
+    }
+    document?: {_id?: string; articleType?: string}
+  },
+): Promise<string | boolean> => {
+  if (!slug?.current) return true
+
+  const client = context.getClient({apiVersion: '2026-07-22'})
+  const publishedId = context.document?._id?.replace(/^drafts\./, '')
+  const articleType = context.document?.articleType
+
+  if (!articleType || !publishedId) return true
+
+  const query = `count(*[
+    _type == "article" &&
+    articleType == $articleType &&
+    slug.current == $slugValue &&
+    !(_id in [$publishedId, $draftId])
+  ])`
+
+  const result = await client.fetch(query, {
+    articleType,
+    slugValue: slug.current,
+    publishedId,
+    draftId: `drafts.${publishedId}`,
+  })
+  return result === 0 || `Slug already exists for article type "${articleType}".`
 }

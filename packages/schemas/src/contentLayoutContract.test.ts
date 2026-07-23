@@ -74,7 +74,7 @@ describe('Content Layout Row contract', () => {
     })).toBe(true)
   })
 
-  it('registers one-or-two Media or Text blocks without removing legacy layouts', () => {
+  it('registers one-or-two Media or Text blocks and removes legacy layout types', () => {
     const blocks = contentLayoutRow.fields.find((field) => field.name === 'blocks')
     expect(blocks?.type).toBe('array')
     expect(blocks?.of?.map((member) => member.type)).toEqual([
@@ -87,32 +87,27 @@ describe('Content Layout Row contract', () => {
       'contentLayoutRow',
       'contentLayoutMedia',
       'contentLayoutText',
+    ]))
+    for (const legacyType of [
       'articleTextSection',
       'articleMediaSection',
       'caseStudyFullBleedMedia',
       'caseStudyTextMedia',
       'caseStudyPairedPortraitMedia',
-    ]))
+    ]) {
+      expect(registeredTypes).not.toContain(legacyType)
+    }
   })
 
-  it('makes rows authorable alongside legacy Article and Case Study layouts', () => {
+  it('makes rows authorable in Article bodies and Case Study sections', () => {
     const articleBody = article.fields.find((field) => field.name === 'body')
     const narrativeLayouts = caseStudyNarrativeSection.fields.find(
       (field) => field.name === 'mediaLayouts',
     )
     const resultsRows = caseStudyResults.fields.find((field) => field.name === 'supportingRows')
 
-    expect(articleBody?.of?.map((member) => member.type)).toEqual(expect.arrayContaining([
-      'articleTextSection',
-      'articleMediaSection',
-      'contentLayoutRow',
-    ]))
-    expect(narrativeLayouts?.of?.map((member) => member.type)).toEqual(expect.arrayContaining([
-      'caseStudyFullBleedMedia',
-      'caseStudyTextMedia',
-      'caseStudyPairedPortraitMedia',
-      'contentLayoutRow',
-    ]))
+    expect(articleBody?.of?.map((member) => member.type)).toEqual(['contentLayoutRow'])
+    expect(narrativeLayouts?.of?.map((member) => member.type)).toEqual(['contentLayoutRow'])
     expect(resultsRows?.of?.map((member) => member.type)).toEqual(['contentLayoutRow'])
   })
 

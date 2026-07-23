@@ -13,6 +13,7 @@ import type {
   MediaAspectRatio,
   PartialContentCardSettings,
 } from '../../lib/contentCard';
+import {formatPublicationDate} from '../../lib/publicationDate';
 
 type Tag = {title?: string | null; color?: string | null};
 type Coverage = {outlet?: string | null; url?: string | null; isPrimary?: boolean | null};
@@ -33,21 +34,14 @@ type RelatedItem = {
   cardMedia: Media | null;
   tags: Tag[] | null;
 };
-type BodyBlock =
-  | {_type: 'articleTextSection'; heading?: string | null; text?: PortableBlock[] | null}
-  | ContentLayoutRowValue
-  | {
-      _type: 'articleMediaSection';
-      layout?: 'full-width' | 'editorial-rail' | 'paired' | null;
-      media?: Media | null;
-      pairedMedia?: Media[] | null;
-    };
+type BodyBlock = ContentLayoutRowValue;
 
 interface Props {
   article: {
     _type: 'article';
     articleType?: 'news' | 'editorial' | 'zine' | null;
     title?: string | null;
+    publicationDate?: string | null;
     overview?: PortableBlock[] | null;
     leadMedia?: Media | null;
     body?: BodyBlock[] | null;
@@ -62,12 +56,32 @@ const {article} = Astro.props;
 const body = article.body ?? [];
 const coverage = article.articleType === 'news' ? article.externalCoverage ?? [] : [];
 const relatedItems = article.relatedItems?.length === 3 ? article.relatedItems : [];
+
+const typeLabels: Record<'news' | 'editorial' | 'zine', string> = {
+  news: 'News',
+  editorial: 'Editorial',
+  zine: 'Zine',
+};
+
+const typeLabel = article.articleType ? typeLabels[article.articleType] : null;
+
+const publicationDate = article.publicationDate
+  ? formatPublicationDate(article.publicationDate)
+  : null;
 ---
 
 <article class="article-detail">
   <header class="hero">
     {article.tags && <TagList tags={article.tags} />}
     <h1 class="type-h3">{article.title}</h1>
+    <div class="article-meta type-caption">
+      {typeLabel && <span class="article-type">{typeLabel}</span>}
+      {publicationDate && (
+        <time class="publication-date" datetime={publicationDate.dateTime}>
+          {publicationDate.label}
+        </time>
+      )}
+    </div>
   </header>
 
   {article.leadMedia && <MediaFrame media={article.leadMedia} ratio="16:9" title={article.title} priority />}
@@ -88,7 +102,8 @@ const relatedItems = article.relatedItems?.length === 3 ? article.relatedItems :
           <li>
             {link.url ? (
               <a href={link.url} target="_blank" rel="noopener noreferrer">
-                {link.outlet ?? link.url} <span class="sr-only">(opens in a new tab)</span>
+                {link.outlet ?? link.url} <span aria-hidden="true">↗</span>
+                <span class="sr-only">(opens in a new tab)</span>
               </a>
             ) : (
               <span>{link.outlet}</span>
@@ -125,6 +140,14 @@ const relatedItems = article.relatedItems?.length === 3 ? article.relatedItems :
   .hero :global(.tag-list) {
     position: static;
     margin-bottom: var(--space-3xs);
+  }
+
+  .article-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-xs);
+    color: var(--text-secondary);
   }
 
   .overview,

@@ -3,9 +3,6 @@ import {caseStudy} from './caseStudy'
 import {article} from './article'
 import {caseStudyNarrativeSection} from './caseStudyNarrativeSection'
 import {caseStudyResults} from './caseStudyResults'
-import {caseStudyFullBleedMedia} from './caseStudyFullBleedMedia'
-import {caseStudyTextMedia} from './caseStudyTextMedia'
-import {caseStudyPairedPortraitMedia} from './caseStudyPairedPortraitMedia'
 import {caseStudySections} from '../../../apps/web/src/lib/caseStudySections'
 
 describe('Case Study Spine Schema', () => {
@@ -84,15 +81,13 @@ describe('Case Study Spine Schema', () => {
       expect(mediaField?.type).toBe('array')
     })
 
-    it('keeps legacy media layouts while adding Content Layout Rows', () => {
+    it('uses only Content Layout Rows for narrative sections', () => {
       const mediaField = caseStudyNarrativeSection.fields?.find((f) => f.name === 'mediaLayouts')
       const layoutTypes = (mediaField as any)?.of?.map?.((item: any) => item.type) ?? []
-      expect(layoutTypes).toEqual([
-        'caseStudyFullBleedMedia',
-        'caseStudyTextMedia',
-        'caseStudyPairedPortraitMedia',
-        'contentLayoutRow',
-      ])
+      expect(layoutTypes).toEqual(['contentLayoutRow'])
+      expect(layoutTypes).not.toContain('caseStudyFullBleedMedia')
+      expect(layoutTypes).not.toContain('caseStudyTextMedia')
+      expect(layoutTypes).not.toContain('caseStudyPairedPortraitMedia')
     })
   })
 
@@ -118,35 +113,6 @@ describe('Case Study Spine Schema', () => {
     })
   })
 
-  describe('media layout schemas', () => {
-    it('caseStudyFullBleedMedia requires one mediaBox', () => {
-      const mediaField = caseStudyFullBleedMedia.fields?.find((f) => f.name === 'mediaBox')
-      expect(mediaField).toBeDefined()
-      expect(mediaField?.type).toBe('mediaBox')
-    })
-
-    it('caseStudyTextMedia requires text, mediaBox, position, and width', () => {
-      const textField = caseStudyTextMedia.fields?.find((f) => f.name === 'text')
-      const mediaField = caseStudyTextMedia.fields?.find((f) => f.name === 'mediaBox')
-      const posField = caseStudyTextMedia.fields?.find((f) => f.name === 'mediaPosition')
-      const widthField = caseStudyTextMedia.fields?.find((f) => f.name === 'mediaWidth')
-
-      expect(textField).toBeDefined()
-      expect(mediaField).toBeDefined()
-      expect(posField).toBeDefined()
-      expect(widthField).toBeDefined()
-
-      expect((posField as any)?.options?.list).toEqual(['left', 'right'])
-    })
-
-    it('caseStudyPairedPortraitMedia requires exactly 2 mediaBox entries', () => {
-      const mediaField = caseStudyPairedPortraitMedia.fields?.find((f) => f.name === 'mediaBoxes')
-      expect(mediaField).toBeDefined()
-      expect(mediaField?.type).toBe('array')
-      // Validation should enforce exactly 2 items via length(2)
-    })
-  })
-
   describe('contract: five spine sections required', () => {
     it('all five spine sections are present in schema', () => {
       const fieldNames = caseStudy.fields?.map((f) => f.name) ?? []
@@ -154,6 +120,14 @@ describe('Case Study Spine Schema', () => {
       spineFields.forEach((field) => {
         expect(fieldNames).toContain(field)
       })
+    })
+  })
+
+  describe('contract: publication date required', () => {
+    it('has required publicationDate field for sorting and card display', () => {
+      const pubDateField = caseStudy.fields?.find((f) => f.name === 'publicationDate')
+      expect(pubDateField).toBeDefined()
+      expect(pubDateField?.type).toBe('datetime')
     })
   })
 
@@ -235,12 +209,11 @@ describe('Case Study Spine Schema', () => {
   })
 
   describe('contract: case study media layout types not in articles', () => {
-    it('article body accepts only article section types', () => {
+    it('article body accepts only content layout rows', () => {
       const articleBodyField = article.fields?.find((f) => f.name === 'body')
       const ofTypes = (articleBodyField as any)?.of?.map?.((item: any) => item.type) ?? []
-      expect(ofTypes).toContain('articleTextSection')
-      expect(ofTypes).toContain('articleMediaSection')
-      // Case Study-only types should not be in News body
+      expect(ofTypes).toEqual(['contentLayoutRow'])
+      // Case Study-only types should not be in article body
       expect(ofTypes).not.toContain('caseStudyFullBleedMedia')
       expect(ofTypes).not.toContain('caseStudyTextMedia')
       expect(ofTypes).not.toContain('caseStudyPairedPortraitMedia')

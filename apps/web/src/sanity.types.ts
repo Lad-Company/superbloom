@@ -256,38 +256,6 @@ export type Slug = {
   source?: string;
 };
 
-export type ArticleMediaSection = {
-  _type: "articleMediaSection";
-  layout?: "full-width" | "editorial-rail" | "paired";
-  media?: MediaBox;
-  pairedMedia?: Array<{
-    _key: string;
-  } & MediaBox>;
-};
-
-export type ArticleTextSection = {
-  _type: "articleTextSection";
-  heading?: string;
-  text?: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
-};
-
 export type CaseStudyResults = {
   _type: "caseStudyResults";
   backgroundColor?: "primary" | "secondary";
@@ -300,43 +268,6 @@ export type CaseStudyResults = {
   supportingRows?: Array<{
     _key: string;
   } & ContentLayoutRow>;
-};
-
-export type CaseStudyPairedPortraitMedia = {
-  _type: "caseStudyPairedPortraitMedia";
-  mediaBoxes?: Array<{
-    _key: string;
-  } & MediaBox>;
-};
-
-export type CaseStudyTextMedia = {
-  _type: "caseStudyTextMedia";
-  text?: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
-  mediaBox?: MediaBox;
-  mediaPosition?: "left" | "right";
-  mediaWidth?: "half" | "three-quarters";
-};
-
-export type CaseStudyFullBleedMedia = {
-  _type: "caseStudyFullBleedMedia";
-  mediaBox?: MediaBox;
 };
 
 export type CaseStudyNarrativeSection = {
@@ -360,12 +291,6 @@ export type CaseStudyNarrativeSection = {
     _key: string;
   }>;
   mediaLayouts?: Array<{
-    _key: string;
-  } & CaseStudyFullBleedMedia | {
-    _key: string;
-  } & CaseStudyTextMedia | {
-    _key: string;
-  } & CaseStudyPairedPortraitMedia | {
     _key: string;
   } & ContentLayoutRow>;
 };
@@ -579,10 +504,6 @@ export type Article = {
     _key: string;
   }>;
   body?: Array<{
-    _key: string;
-  } & ArticleTextSection | {
-    _key: string;
-  } & ArticleMediaSection | {
     _key: string;
   } & ContentLayoutRow>;
   leadMedia?: MediaBox;
@@ -932,11 +853,11 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = ContentLayoutRow | ContentLayoutText | ContentLayoutMedia | SiteSettings | IndexPage | HomeZine | ZineLanding | ZineIssue | MediaBox | Slug | ArticleMediaSection | ArticleTextSection | CaseStudyResults | CaseStudyPairedPortraitMedia | CaseStudyTextMedia | CaseStudyFullBleedMedia | CaseStudyNarrativeSection | ContactBlock | FormSubmission | WhoWeAre | WorkIndex | Homepage | NewsBlock | CapesBlock | HeroBlock | Article | Tag | CaseStudy | Color | Capability | SanityImageCrop | SanityImageHotspot | RgbaColor | HsvaColor | HslaColor | MuxNonStandardInputReasons | MuxProgress | MuxVideo | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = ContentLayoutRow | ContentLayoutText | ContentLayoutMedia | SiteSettings | IndexPage | HomeZine | ZineLanding | ZineIssue | MediaBox | Slug | CaseStudyResults | CaseStudyNarrativeSection | ContactBlock | FormSubmission | WhoWeAre | WorkIndex | Homepage | NewsBlock | CapesBlock | HeroBlock | Article | Tag | CaseStudy | Color | Capability | SanityImageCrop | SanityImageHotspot | RgbaColor | HsvaColor | HslaColor | MuxNonStandardInputReasons | MuxProgress | MuxVideo | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ../web/src/lib/queries.ts
 // Variable: homepageQuery
-// Query: *[_type == "homepage"][0]{    hero{      heading,      subheading,      "heroMedia": heroMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    capabilities{      headline,      capabilities[]->{        title,        subtitle,        "slug": slug.current,        "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    news{      headline,      listDefaults,      itemOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },      "items": *[_type == "article" && articleType == "news"] | order(coalesce(publicationDate, _createdAt) desc)[0...8]{          _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  publicationDate,  cardDestination,  externalCoverage[]{ outlet, url, isPrimary },  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    zine{      "issue": issue->{ "slug": slug.current },      "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,      promoHeadline,      promoIntro,      "promoMedia": promoMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      ctaLabel    },    contact{ _type },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
+// Query: *[_type == "homepage"][0]{    hero{      heading,      subheading,      "heroMedia": heroMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    capabilities{      headline,      capabilities[]->{        title,        subtitle,        "slug": slug.current,        "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    news{      headline,      listDefaults,      itemOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },      "items": *[_type == "article" && articleType == "news"] | order(publicationDate desc)[0...8]{          _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  publicationDate,  cardDestination,  externalCoverage[]{ outlet, url, isPrimary },  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    zine{      "issue": issue->{ "slug": slug.current },      "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,      promoHeadline,      promoIntro,      "promoMedia": promoMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      ctaLabel    },    contact{ _type },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
 export type HomepageQueryResult = {
   hero: {
     heading: string | null;
@@ -1246,7 +1167,7 @@ export type WorkIndexQueryResult = {
   } | null;
 } | null;
 // Variable: caseStudiesNewestQuery
-// Query: *[_type == "caseStudy" && !(_id in $featuredIds)]    | order(coalesce(publicationDate, _createdAt) desc)[$offset...$end] {    _id,    title,    "slug": slug.current,    summary,    publicationDate,    cardWidth,    mediaAspectRatio,    infoPosition,    tags[]->{ title, color },    "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
+// Query: *[_type == "caseStudy" && !(_id in $featuredIds)]    | order(publicationDate desc)[$offset...$end] {    _id,    title,    "slug": slug.current,    summary,    publicationDate,    cardWidth,    mediaAspectRatio,    infoPosition,    tags[]->{ title, color },    "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
 export type CaseStudiesNewestQueryResult = Array<{
   _id: string;
   title: string | null;
@@ -1277,7 +1198,7 @@ export type CaseStudiesNewestQueryResult = Array<{
   } | null;
 }>;
 // Variable: caseStudiesOldestQuery
-// Query: *[_type == "caseStudy" && !(_id in $featuredIds)]    | order(coalesce(publicationDate, _createdAt) asc)[$offset...$end] {    _id,    title,    "slug": slug.current,    summary,    publicationDate,    cardWidth,    mediaAspectRatio,    infoPosition,    tags[]->{ title, color },    "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
+// Query: *[_type == "caseStudy" && !(_id in $featuredIds)]    | order(publicationDate asc)[$offset...$end] {    _id,    title,    "slug": slug.current,    summary,    publicationDate,    cardWidth,    mediaAspectRatio,    infoPosition,    tags[]->{ title, color },    "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
 export type CaseStudiesOldestQueryResult = Array<{
   _id: string;
   title: string | null;
@@ -1308,7 +1229,7 @@ export type CaseStudiesOldestQueryResult = Array<{
   } | null;
 }>;
 // Variable: caseStudyBySlugQuery
-// Query: *[_type == "caseStudy" && slug.current == $slug][0] {    title,    "slug": slug.current,    summary,    client,    capabilities[]->{ title },    "primaryColor": primaryColor.hex,    "secondaryColor": secondaryColor.hex,    "leadMedia": leadMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},    highlights{      summary,        mediaLayouts[]{    _type,    _key,    _type == "caseStudyFullBleedMedia" => {      "media": mediaBox{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "caseStudyTextMedia" => {      text,      mediaPosition,      mediaWidth,      "media": mediaBox{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "caseStudyPairedPortraitMedia" => {      "media": mediaBoxes[]{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }    }  }    },    challenge{      summary,        mediaLayouts[]{    _type,    _key,    _type == "caseStudyFullBleedMedia" => {      "media": mediaBox{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "caseStudyTextMedia" => {      text,      mediaPosition,      mediaWidth,      "media": mediaBox{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "caseStudyPairedPortraitMedia" => {      "media": mediaBoxes[]{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }    }  }    },    unexpectedInsight{      summary,        mediaLayouts[]{    _type,    _key,    _type == "caseStudyFullBleedMedia" => {      "media": mediaBox{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "caseStudyTextMedia" => {      text,      mediaPosition,      mediaWidth,      "media": mediaBox{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "caseStudyPairedPortraitMedia" => {      "media": mediaBoxes[]{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }    }  }    },    bigIdea{      summary,        mediaLayouts[]{    _type,    _key,    _type == "caseStudyFullBleedMedia" => {      "media": mediaBox{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "caseStudyTextMedia" => {      text,      mediaPosition,      mediaWidth,      "media": mediaBox{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "caseStudyPairedPortraitMedia" => {      "media": mediaBoxes[]{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }    }  }    },    results{      backgroundColor,      stats[]{ _key, value, label },      supportingRows[]{          _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }      }    },    press[0...3]->{      title,      "slug": slug.current,      overview,      publicationDate,      cardDestination,      articleType,      externalCoverage[]{ outlet, url, isPrimary },      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    nextProject->{      title,      "slug": slug.current,      summary,      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      "primaryColor": primaryColor.hex    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
+// Query: *[_type == "caseStudy" && slug.current == $slug][0] {    title,    "slug": slug.current,    summary,    client,    capabilities[]->{ title },    "primaryColor": primaryColor.hex,    "secondaryColor": secondaryColor.hex,    "leadMedia": leadMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},    highlights{      summary,        mediaLayouts[]{      _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }  }    },    challenge{      summary,        mediaLayouts[]{      _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }  }    },    unexpectedInsight{      summary,        mediaLayouts[]{      _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }  }    },    bigIdea{      summary,        mediaLayouts[]{      _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }  }    },    results{      backgroundColor,      stats[]{ _key, value, label },      supportingRows[]{          _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }      }    },    "press": press[0...3][@->articleType == "news"]->{      title,      "slug": slug.current,      overview,      publicationDate,      cardDestination,      articleType,      externalCoverage[]{ outlet, url, isPrimary },      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    nextProject->{      title,      "slug": slug.current,      summary,      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      "primaryColor": primaryColor.hex    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
 export type CaseStudyBySlugQueryResult = {
   title: string | null;
   slug: string | null;
@@ -1354,80 +1275,6 @@ export type CaseStudyBySlugQueryResult = {
       _key: string;
     }> | null;
     mediaLayouts: Array<{
-      _type: "caseStudyFullBleedMedia";
-      _key: string;
-      media: {
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      } | null;
-    } | {
-      _type: "caseStudyPairedPortraitMedia";
-      _key: string;
-      media: Array<{
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      }> | null;
-    } | {
-      _type: "caseStudyTextMedia";
-      _key: string;
-      text: Array<{
-        children?: Array<{
-          marks?: Array<string>;
-          text?: string;
-          _type: "span";
-          _key: string;
-        }>;
-        style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-        listItem?: "bullet" | "number";
-        markDefs?: Array<{
-          href?: string;
-          _type: "link";
-          _key: string;
-        }>;
-        level?: number;
-        _type: "block";
-        _key: string;
-      }> | null;
-      mediaPosition: "left" | "right" | null;
-      mediaWidth: "half" | "three-quarters" | null;
-      media: {
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      } | null;
-    } | {
       _type: "contentLayoutRow";
       _key: string;
       alignment: "center" | "left" | "right" | null;
@@ -1498,80 +1345,6 @@ export type CaseStudyBySlugQueryResult = {
       _key: string;
     }> | null;
     mediaLayouts: Array<{
-      _type: "caseStudyFullBleedMedia";
-      _key: string;
-      media: {
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      } | null;
-    } | {
-      _type: "caseStudyPairedPortraitMedia";
-      _key: string;
-      media: Array<{
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      }> | null;
-    } | {
-      _type: "caseStudyTextMedia";
-      _key: string;
-      text: Array<{
-        children?: Array<{
-          marks?: Array<string>;
-          text?: string;
-          _type: "span";
-          _key: string;
-        }>;
-        style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-        listItem?: "bullet" | "number";
-        markDefs?: Array<{
-          href?: string;
-          _type: "link";
-          _key: string;
-        }>;
-        level?: number;
-        _type: "block";
-        _key: string;
-      }> | null;
-      mediaPosition: "left" | "right" | null;
-      mediaWidth: "half" | "three-quarters" | null;
-      media: {
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      } | null;
-    } | {
       _type: "contentLayoutRow";
       _key: string;
       alignment: "center" | "left" | "right" | null;
@@ -1642,80 +1415,6 @@ export type CaseStudyBySlugQueryResult = {
       _key: string;
     }> | null;
     mediaLayouts: Array<{
-      _type: "caseStudyFullBleedMedia";
-      _key: string;
-      media: {
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      } | null;
-    } | {
-      _type: "caseStudyPairedPortraitMedia";
-      _key: string;
-      media: Array<{
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      }> | null;
-    } | {
-      _type: "caseStudyTextMedia";
-      _key: string;
-      text: Array<{
-        children?: Array<{
-          marks?: Array<string>;
-          text?: string;
-          _type: "span";
-          _key: string;
-        }>;
-        style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-        listItem?: "bullet" | "number";
-        markDefs?: Array<{
-          href?: string;
-          _type: "link";
-          _key: string;
-        }>;
-        level?: number;
-        _type: "block";
-        _key: string;
-      }> | null;
-      mediaPosition: "left" | "right" | null;
-      mediaWidth: "half" | "three-quarters" | null;
-      media: {
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      } | null;
-    } | {
       _type: "contentLayoutRow";
       _key: string;
       alignment: "center" | "left" | "right" | null;
@@ -1786,80 +1485,6 @@ export type CaseStudyBySlugQueryResult = {
       _key: string;
     }> | null;
     mediaLayouts: Array<{
-      _type: "caseStudyFullBleedMedia";
-      _key: string;
-      media: {
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      } | null;
-    } | {
-      _type: "caseStudyPairedPortraitMedia";
-      _key: string;
-      media: Array<{
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      }> | null;
-    } | {
-      _type: "caseStudyTextMedia";
-      _key: string;
-      text: Array<{
-        children?: Array<{
-          marks?: Array<string>;
-          text?: string;
-          _type: "span";
-          _key: string;
-        }>;
-        style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-        listItem?: "bullet" | "number";
-        markDefs?: Array<{
-          href?: string;
-          _type: "link";
-          _key: string;
-        }>;
-        level?: number;
-        _type: "block";
-        _key: string;
-      }> | null;
-      mediaPosition: "left" | "right" | null;
-      mediaWidth: "half" | "three-quarters" | null;
-      media: {
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      } | null;
-    } | {
       _type: "contentLayoutRow";
       _key: string;
       alignment: "center" | "left" | "right" | null;
@@ -2055,7 +1680,7 @@ export type CaseStudyBySlugQueryResult = {
   } | null;
 } | null;
 // Variable: newsArticleBySlugQuery
-// Query: *[_type == "article" && articleType == "news" && slug.current == $slug][0] {        _type,    articleType,    title,    "slug": slug.current,    publicationDate,    overview,    cardDestination,    tags[]->{ title, color },    externalCoverage[]{ _key, outlet, url, isPrimary },    "leadMedia": leadMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      body[]{    _type,    _key,    _type == "articleTextSection" => {      heading,      text    },    _type == "articleMediaSection" => {      layout,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      "pairedMedia": pairedMedia[]{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }    }  },    relatedItems[]->{      _id,      _type,      articleType,      title,      "slug": slug.current,      "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,      overview,      publicationDate,      cardDestination,      articleType,      externalCoverage[]{ outlet, url, isPrimary },      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
+// Query: *[_type == "article" && articleType == "news" && slug.current == $slug][0] {        _type,    articleType,    title,    "slug": slug.current,    publicationDate,    overview,    cardDestination,    tags[]->{ title, color },    externalCoverage[]{ _key, outlet, url, isPrimary },    "leadMedia": leadMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      body[]{    _type,    _key,    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }    }  },    relatedItems[]->{      _id,      _type,      articleType,      title,      "slug": slug.current,      publicationDate,      "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,      overview,      cardDestination,      externalCoverage[]{ outlet, url, isPrimary },      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
 export type NewsArticleBySlugQueryResult = {
   _type: "article";
   articleType: "editorial" | "news" | "zine" | null;
@@ -2107,62 +1732,6 @@ export type NewsArticleBySlugQueryResult = {
     decorative: boolean | null;
   } | null;
   body: Array<{
-    _type: "articleMediaSection";
-    _key: string;
-    layout: "editorial-rail" | "full-width" | "paired" | null;
-    media: {
-      asset: {
-        _type: "image";
-        url: string | null;
-        width: number | null;
-        height: number | null;
-        altText: string | null;
-      } | {
-        _type: "mux.video";
-        playbackId: string | null;
-        aspectRatio: string | null;
-      } | null;
-      altText: string | null;
-      decorative: boolean | null;
-    } | null;
-    pairedMedia: Array<{
-      asset: {
-        _type: "image";
-        url: string | null;
-        width: number | null;
-        height: number | null;
-        altText: string | null;
-      } | {
-        _type: "mux.video";
-        playbackId: string | null;
-        aspectRatio: string | null;
-      } | null;
-      altText: string | null;
-      decorative: boolean | null;
-    }> | null;
-  } | {
-    _type: "articleTextSection";
-    _key: string;
-    heading: string | null;
-    text: Array<{
-      children?: Array<{
-        marks?: Array<string>;
-        text?: string;
-        _type: "span";
-        _key: string;
-      }>;
-      style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-      listItem?: "bullet" | "number";
-      markDefs?: Array<{
-        href?: string;
-        _type: "link";
-        _key: string;
-      }>;
-      level?: number;
-      _type: "block";
-      _key: string;
-    }> | null;
-  } | {
     _type: "contentLayoutRow";
     _key: string;
     alignment: "center" | "left" | "right" | null;
@@ -2218,6 +1787,7 @@ export type NewsArticleBySlugQueryResult = {
     articleType: "editorial" | "news" | "zine" | null;
     title: string | null;
     slug: string | null;
+    publicationDate: string | null;
     issueSlug: string | null;
     overview: Array<{
       children?: Array<{
@@ -2237,7 +1807,6 @@ export type NewsArticleBySlugQueryResult = {
       _type: "block";
       _key: string;
     }> | null;
-    publicationDate: string | null;
     cardDestination: "external" | "internal" | null;
     externalCoverage: Array<{
       outlet: string | null;
@@ -2274,7 +1843,7 @@ export type NewsArticleBySlugQueryResult = {
   } | null;
 } | null;
 // Variable: editorialArticleBySlugQuery
-// Query: *[_type == "article" && articleType == "editorial" && slug.current == $slug][0] {        _type,    articleType,    title,    "slug": slug.current,    publicationDate,    overview,    cardDestination,    tags[]->{ title, color },    externalCoverage[]{ _key, outlet, url, isPrimary },    "leadMedia": leadMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      body[]{    _type,    _key,    _type == "articleTextSection" => {      heading,      text    },    _type == "articleMediaSection" => {      layout,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      "pairedMedia": pairedMedia[]{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }    }  },    relatedItems[]->{      _id,      _type,      articleType,      title,      "slug": slug.current,      "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,      overview,      publicationDate,      cardDestination,      articleType,      externalCoverage[]{ outlet, url, isPrimary },      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
+// Query: *[_type == "article" && articleType == "editorial" && slug.current == $slug][0] {        _type,    articleType,    title,    "slug": slug.current,    publicationDate,    overview,    cardDestination,    tags[]->{ title, color },    externalCoverage[]{ _key, outlet, url, isPrimary },    "leadMedia": leadMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      body[]{    _type,    _key,    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }    }  },    relatedItems[]->{      _id,      _type,      articleType,      title,      "slug": slug.current,      publicationDate,      "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,      overview,      cardDestination,      externalCoverage[]{ outlet, url, isPrimary },      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
 export type EditorialArticleBySlugQueryResult = {
   _type: "article";
   articleType: "editorial" | "news" | "zine" | null;
@@ -2326,62 +1895,6 @@ export type EditorialArticleBySlugQueryResult = {
     decorative: boolean | null;
   } | null;
   body: Array<{
-    _type: "articleMediaSection";
-    _key: string;
-    layout: "editorial-rail" | "full-width" | "paired" | null;
-    media: {
-      asset: {
-        _type: "image";
-        url: string | null;
-        width: number | null;
-        height: number | null;
-        altText: string | null;
-      } | {
-        _type: "mux.video";
-        playbackId: string | null;
-        aspectRatio: string | null;
-      } | null;
-      altText: string | null;
-      decorative: boolean | null;
-    } | null;
-    pairedMedia: Array<{
-      asset: {
-        _type: "image";
-        url: string | null;
-        width: number | null;
-        height: number | null;
-        altText: string | null;
-      } | {
-        _type: "mux.video";
-        playbackId: string | null;
-        aspectRatio: string | null;
-      } | null;
-      altText: string | null;
-      decorative: boolean | null;
-    }> | null;
-  } | {
-    _type: "articleTextSection";
-    _key: string;
-    heading: string | null;
-    text: Array<{
-      children?: Array<{
-        marks?: Array<string>;
-        text?: string;
-        _type: "span";
-        _key: string;
-      }>;
-      style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-      listItem?: "bullet" | "number";
-      markDefs?: Array<{
-        href?: string;
-        _type: "link";
-        _key: string;
-      }>;
-      level?: number;
-      _type: "block";
-      _key: string;
-    }> | null;
-  } | {
     _type: "contentLayoutRow";
     _key: string;
     alignment: "center" | "left" | "right" | null;
@@ -2437,6 +1950,7 @@ export type EditorialArticleBySlugQueryResult = {
     articleType: "editorial" | "news" | "zine" | null;
     title: string | null;
     slug: string | null;
+    publicationDate: string | null;
     issueSlug: string | null;
     overview: Array<{
       children?: Array<{
@@ -2456,7 +1970,6 @@ export type EditorialArticleBySlugQueryResult = {
       _type: "block";
       _key: string;
     }> | null;
-    publicationDate: string | null;
     cardDestination: "external" | "internal" | null;
     externalCoverage: Array<{
       outlet: string | null;
@@ -2775,7 +2288,7 @@ export type IssueArchiveQueryResult = Array<{
   } | null;
 }>;
 // Variable: zineArticleBySlugQuery
-// Query: *[_type == "zineIssue" && slug.current == $issueSlug][0]{    title,    "issueSlug": slug.current,    "article": *[      _type == "article" &&      articleType == "zine" &&      slug.current == $articleSlug &&      _id in ^.articles[]._ref    ][0]{          _type,    articleType,    title,    "slug": slug.current,    publicationDate,    overview,    cardDestination,    tags[]->{ title, color },    externalCoverage[]{ _key, outlet, url, isPrimary },    "leadMedia": leadMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      body[]{    _type,    _key,    _type == "articleTextSection" => {      heading,      text    },    _type == "articleMediaSection" => {      layout,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      "pairedMedia": pairedMedia[]{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }    }  },    relatedItems[]->{      _id,      _type,      articleType,      title,      "slug": slug.current,      "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,      overview,      publicationDate,      cardDestination,      articleType,      externalCoverage[]{ outlet, url, isPrimary },      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults    }  }
+// Query: *[_type == "zineIssue" && slug.current == $issueSlug][0]{    title,    "issueSlug": slug.current,    "article": *[      _type == "article" &&      articleType == "zine" &&      slug.current == $articleSlug &&      _id in ^.articles[]._ref    ][0]{          _type,    articleType,    title,    "slug": slug.current,    publicationDate,    overview,    cardDestination,    tags[]->{ title, color },    externalCoverage[]{ _key, outlet, url, isPrimary },    "leadMedia": leadMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      body[]{    _type,    _key,    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      heading,      text    }  }    }  },    relatedItems[]->{      _id,      _type,      articleType,      title,      "slug": slug.current,      publicationDate,      "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,      overview,      cardDestination,      externalCoverage[]{ outlet, url, isPrimary },      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults    }  }
 export type ZineArticleBySlugQueryResult = {
   title: string | null;
   issueSlug: string | null;
@@ -2830,62 +2343,6 @@ export type ZineArticleBySlugQueryResult = {
       decorative: boolean | null;
     } | null;
     body: Array<{
-      _type: "articleMediaSection";
-      _key: string;
-      layout: "editorial-rail" | "full-width" | "paired" | null;
-      media: {
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      } | null;
-      pairedMedia: Array<{
-        asset: {
-          _type: "image";
-          url: string | null;
-          width: number | null;
-          height: number | null;
-          altText: string | null;
-        } | {
-          _type: "mux.video";
-          playbackId: string | null;
-          aspectRatio: string | null;
-        } | null;
-        altText: string | null;
-        decorative: boolean | null;
-      }> | null;
-    } | {
-      _type: "articleTextSection";
-      _key: string;
-      heading: string | null;
-      text: Array<{
-        children?: Array<{
-          marks?: Array<string>;
-          text?: string;
-          _type: "span";
-          _key: string;
-        }>;
-        style?: "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-        listItem?: "bullet" | "number";
-        markDefs?: Array<{
-          href?: string;
-          _type: "link";
-          _key: string;
-        }>;
-        level?: number;
-        _type: "block";
-        _key: string;
-      }> | null;
-    } | {
       _type: "contentLayoutRow";
       _key: string;
       alignment: "center" | "left" | "right" | null;
@@ -2941,6 +2398,7 @@ export type ZineArticleBySlugQueryResult = {
       articleType: "editorial" | "news" | "zine" | null;
       title: string | null;
       slug: string | null;
+      publicationDate: string | null;
       issueSlug: string | null;
       overview: Array<{
         children?: Array<{
@@ -2960,7 +2418,6 @@ export type ZineArticleBySlugQueryResult = {
         _type: "block";
         _key: string;
       }> | null;
-      publicationDate: string | null;
       cardDestination: "external" | "internal" | null;
       externalCoverage: Array<{
         outlet: string | null;
@@ -3082,7 +2539,7 @@ export type IndexPageQueryResult = {
   } | null;
 } | null;
 // Variable: indexViewAllNewestQuery
-// Query: *[    _type == "article" &&    articleType in ["news", "editorial", "zine"] &&    !(_id in $featuredIds) &&    (!defined($tagId) || $tagId in tags[]._ref)  ] | order(coalesce(publicationDate, _createdAt) desc)[$offset...$end]{      _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  publicationDate,  cardDestination,  externalCoverage[]{ outlet, url, isPrimary },  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
+// Query: *[    _type == "article" &&    articleType in ["news", "editorial", "zine"] &&    !(_id in $featuredIds) &&    (!defined($tagId) || $tagId in tags[]._ref)  ] | order(publicationDate desc)[$offset...$end]{      _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  publicationDate,  cardDestination,  externalCoverage[]{ outlet, url, isPrimary },  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
 export type IndexViewAllNewestQueryResult = Array<{
   _id: string;
   _type: "article";
@@ -3139,7 +2596,7 @@ export type IndexViewAllNewestQueryResult = Array<{
   } | null;
 }>;
 // Variable: indexViewAllOldestQuery
-// Query: *[    _type == "article" &&    articleType in ["news", "editorial", "zine"] &&    !(_id in $featuredIds) &&    (!defined($tagId) || $tagId in tags[]._ref)  ] | order(coalesce(publicationDate, _createdAt) asc)[$offset...$end]{      _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  publicationDate,  cardDestination,  externalCoverage[]{ outlet, url, isPrimary },  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
+// Query: *[    _type == "article" &&    articleType in ["news", "editorial", "zine"] &&    !(_id in $featuredIds) &&    (!defined($tagId) || $tagId in tags[]._ref)  ] | order(publicationDate asc)[$offset...$end]{      _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  publicationDate,  cardDestination,  externalCoverage[]{ outlet, url, isPrimary },  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
 export type IndexViewAllOldestQueryResult = Array<{
   _id: string;
   _type: "article";
@@ -3241,21 +2698,21 @@ export type SitemapQueryResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "\n  *[_type == \"homepage\"][0]{\n    hero{\n      heading,\n      subheading,\n      \"heroMedia\": heroMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    capabilities{\n      headline,\n      capabilities[]->{\n        title,\n        subtitle,\n        \"slug\": slug.current,\n        \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n      }\n    },\n    news{\n      headline,\n      listDefaults,\n      itemOverrides[]{ \"articleId\": article._ref, cardWidth, mediaAspectRatio, infoPosition },\n      \"items\": *[_type == \"article\" && articleType == \"news\"] | order(coalesce(publicationDate, _createdAt) desc)[0...8]{\n        \n  _id,\n  _type,\n  articleType,\n  title,\n  \"slug\": slug.current,\n  overview,\n  publicationDate,\n  cardDestination,\n  externalCoverage[]{ outlet, url, isPrimary },\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n\n      }\n    },\n    zine{\n      \"issue\": issue->{ \"slug\": slug.current },\n      \"currentIssueSlug\": *[_type == \"zineLanding\"][0].currentIssue->slug.current,\n      promoHeadline,\n      promoIntro,\n      \"promoMedia\": promoMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n      ctaLabel\n    },\n    contact{ _type },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n  }\n": HomepageQueryResult;
+    "\n  *[_type == \"homepage\"][0]{\n    hero{\n      heading,\n      subheading,\n      \"heroMedia\": heroMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    capabilities{\n      headline,\n      capabilities[]->{\n        title,\n        subtitle,\n        \"slug\": slug.current,\n        \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n      }\n    },\n    news{\n      headline,\n      listDefaults,\n      itemOverrides[]{ \"articleId\": article._ref, cardWidth, mediaAspectRatio, infoPosition },\n      \"items\": *[_type == \"article\" && articleType == \"news\"] | order(publicationDate desc)[0...8]{\n        \n  _id,\n  _type,\n  articleType,\n  title,\n  \"slug\": slug.current,\n  overview,\n  publicationDate,\n  cardDestination,\n  externalCoverage[]{ outlet, url, isPrimary },\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n\n      }\n    },\n    zine{\n      \"issue\": issue->{ \"slug\": slug.current },\n      \"currentIssueSlug\": *[_type == \"zineLanding\"][0].currentIssue->slug.current,\n      promoHeadline,\n      promoIntro,\n      \"promoMedia\": promoMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n      ctaLabel\n    },\n    contact{ _type },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n  }\n": HomepageQueryResult;
     "\n  *[_type == \"whoWeAre\"][0]{\n    heroHeading,\n    featuredMedia{\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    marquee{ text },\n    introStatement,\n    statCards[]{\n      _key,\n      label,\n      value,\n      description,\n      items\n    },\n    advantageHeadline,\n    advantageBlocks[]{\n      _key,\n      heading,\n      body,\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    disciplines[]{\n      _key,\n      title,\n      description\n    },\n    ctas[]{\n      _key,\n      heading,\n      label,\n      href,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    faqs[]{\n      _key,\n      question,\n      answer\n    }\n  }\n": WhoWeAreQueryResult;
     "\n  *[_type == \"workIndex\"][0]{\n    heroHeading,\n    allWorkHeading,\n    featured[]{\n      _key,\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      \"item\": caseStudy->{\n        _id,\n        title,\n        \"slug\": slug.current,\n        summary,\n        publicationDate,\n        cardWidth,\n        mediaAspectRatio,\n        infoPosition,\n        tags[]->{ title, color },\n        \"media\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n      }\n    },\n    allSection{\n      listDefaults,\n      itemOverrides[]{ \"itemId\": caseStudy._ref, cardWidth, mediaAspectRatio, infoPosition }\n    },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n  }\n": WorkIndexQueryResult;
-    "\n  *[_type == \"caseStudy\" && !(_id in $featuredIds)]\n    | order(coalesce(publicationDate, _createdAt) desc)[$offset...$end] {\n    _id,\n    title,\n    \"slug\": slug.current,\n    summary,\n    publicationDate,\n    cardWidth,\n    mediaAspectRatio,\n    infoPosition,\n    tags[]->{ title, color },\n    \"media\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n  }\n": CaseStudiesNewestQueryResult;
-    "\n  *[_type == \"caseStudy\" && !(_id in $featuredIds)]\n    | order(coalesce(publicationDate, _createdAt) asc)[$offset...$end] {\n    _id,\n    title,\n    \"slug\": slug.current,\n    summary,\n    publicationDate,\n    cardWidth,\n    mediaAspectRatio,\n    infoPosition,\n    tags[]->{ title, color },\n    \"media\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n  }\n": CaseStudiesOldestQueryResult;
-    "\n  *[_type == \"caseStudy\" && slug.current == $slug][0] {\n    title,\n    \"slug\": slug.current,\n    summary,\n    client,\n    capabilities[]->{ title },\n    \"primaryColor\": primaryColor.hex,\n    \"secondaryColor\": secondaryColor.hex,\n    \"leadMedia\": leadMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n    highlights{\n      summary,\n      \n  mediaLayouts[]{\n    _type,\n    _key,\n    _type == \"caseStudyFullBleedMedia\" => {\n      \"media\": mediaBox{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"caseStudyTextMedia\" => {\n      text,\n      mediaPosition,\n      mediaWidth,\n      \"media\": mediaBox{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"caseStudyPairedPortraitMedia\" => {\n      \"media\": mediaBoxes[]{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutRow\" => {\n      \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n    }\n  }\n\n    },\n    challenge{\n      summary,\n      \n  mediaLayouts[]{\n    _type,\n    _key,\n    _type == \"caseStudyFullBleedMedia\" => {\n      \"media\": mediaBox{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"caseStudyTextMedia\" => {\n      text,\n      mediaPosition,\n      mediaWidth,\n      \"media\": mediaBox{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"caseStudyPairedPortraitMedia\" => {\n      \"media\": mediaBoxes[]{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutRow\" => {\n      \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n    }\n  }\n\n    },\n    unexpectedInsight{\n      summary,\n      \n  mediaLayouts[]{\n    _type,\n    _key,\n    _type == \"caseStudyFullBleedMedia\" => {\n      \"media\": mediaBox{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"caseStudyTextMedia\" => {\n      text,\n      mediaPosition,\n      mediaWidth,\n      \"media\": mediaBox{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"caseStudyPairedPortraitMedia\" => {\n      \"media\": mediaBoxes[]{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutRow\" => {\n      \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n    }\n  }\n\n    },\n    bigIdea{\n      summary,\n      \n  mediaLayouts[]{\n    _type,\n    _key,\n    _type == \"caseStudyFullBleedMedia\" => {\n      \"media\": mediaBox{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"caseStudyTextMedia\" => {\n      text,\n      mediaPosition,\n      mediaWidth,\n      \"media\": mediaBox{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"caseStudyPairedPortraitMedia\" => {\n      \"media\": mediaBoxes[]{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutRow\" => {\n      \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n    }\n  }\n\n    },\n    results{\n      backgroundColor,\n      stats[]{ _key, value, label },\n      supportingRows[]{\n        \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n      }\n    },\n    press[0...3]->{\n      title,\n      \"slug\": slug.current,\n      overview,\n      publicationDate,\n      cardDestination,\n      articleType,\n      externalCoverage[]{ outlet, url, isPrimary },\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      tags[]->{ title, color },\n      \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    nextProject->{\n      title,\n      \"slug\": slug.current,\n      summary,\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      tags[]->{ title, color },\n      \"media\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n      \"primaryColor\": primaryColor.hex\n    },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n  }\n": CaseStudyBySlugQueryResult;
-    "\n  *[_type == \"article\" && articleType == \"news\" && slug.current == $slug][0] {\n    \n    _type,\n    articleType,\n    title,\n    \"slug\": slug.current,\n    publicationDate,\n    overview,\n    cardDestination,\n    tags[]->{ title, color },\n    externalCoverage[]{ _key, outlet, url, isPrimary },\n    \"leadMedia\": leadMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n    \n  body[]{\n    _type,\n    _key,\n    _type == \"articleTextSection\" => {\n      heading,\n      text\n    },\n    _type == \"articleMediaSection\" => {\n      layout,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n      \"pairedMedia\": pairedMedia[]{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutRow\" => {\n      \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n    }\n  }\n,\n    relatedItems[]->{\n      _id,\n      _type,\n      articleType,\n      title,\n      \"slug\": slug.current,\n      \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n      overview,\n      publicationDate,\n      cardDestination,\n      articleType,\n      externalCoverage[]{ outlet, url, isPrimary },\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      tags[]->{ title, color },\n      \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n\n  }\n": NewsArticleBySlugQueryResult;
-    "\n  *[_type == \"article\" && articleType == \"editorial\" && slug.current == $slug][0] {\n    \n    _type,\n    articleType,\n    title,\n    \"slug\": slug.current,\n    publicationDate,\n    overview,\n    cardDestination,\n    tags[]->{ title, color },\n    externalCoverage[]{ _key, outlet, url, isPrimary },\n    \"leadMedia\": leadMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n    \n  body[]{\n    _type,\n    _key,\n    _type == \"articleTextSection\" => {\n      heading,\n      text\n    },\n    _type == \"articleMediaSection\" => {\n      layout,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n      \"pairedMedia\": pairedMedia[]{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutRow\" => {\n      \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n    }\n  }\n,\n    relatedItems[]->{\n      _id,\n      _type,\n      articleType,\n      title,\n      \"slug\": slug.current,\n      \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n      overview,\n      publicationDate,\n      cardDestination,\n      articleType,\n      externalCoverage[]{ outlet, url, isPrimary },\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      tags[]->{ title, color },\n      \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n\n  }\n": EditorialArticleBySlugQueryResult;
+    "\n  *[_type == \"caseStudy\" && !(_id in $featuredIds)]\n    | order(publicationDate desc)[$offset...$end] {\n    _id,\n    title,\n    \"slug\": slug.current,\n    summary,\n    publicationDate,\n    cardWidth,\n    mediaAspectRatio,\n    infoPosition,\n    tags[]->{ title, color },\n    \"media\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n  }\n": CaseStudiesNewestQueryResult;
+    "\n  *[_type == \"caseStudy\" && !(_id in $featuredIds)]\n    | order(publicationDate asc)[$offset...$end] {\n    _id,\n    title,\n    \"slug\": slug.current,\n    summary,\n    publicationDate,\n    cardWidth,\n    mediaAspectRatio,\n    infoPosition,\n    tags[]->{ title, color },\n    \"media\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n  }\n": CaseStudiesOldestQueryResult;
+    "\n  *[_type == \"caseStudy\" && slug.current == $slug][0] {\n    title,\n    \"slug\": slug.current,\n    summary,\n    client,\n    capabilities[]->{ title },\n    \"primaryColor\": primaryColor.hex,\n    \"secondaryColor\": secondaryColor.hex,\n    \"leadMedia\": leadMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n    highlights{\n      summary,\n      \n  mediaLayouts[]{\n    \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n  }\n\n    },\n    challenge{\n      summary,\n      \n  mediaLayouts[]{\n    \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n  }\n\n    },\n    unexpectedInsight{\n      summary,\n      \n  mediaLayouts[]{\n    \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n  }\n\n    },\n    bigIdea{\n      summary,\n      \n  mediaLayouts[]{\n    \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n  }\n\n    },\n    results{\n      backgroundColor,\n      stats[]{ _key, value, label },\n      supportingRows[]{\n        \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n      }\n    },\n    \"press\": press[0...3][@->articleType == \"news\"]->{\n      title,\n      \"slug\": slug.current,\n      overview,\n      publicationDate,\n      cardDestination,\n      articleType,\n      externalCoverage[]{ outlet, url, isPrimary },\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      tags[]->{ title, color },\n      \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    nextProject->{\n      title,\n      \"slug\": slug.current,\n      summary,\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      tags[]->{ title, color },\n      \"media\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n      \"primaryColor\": primaryColor.hex\n    },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n  }\n": CaseStudyBySlugQueryResult;
+    "\n  *[_type == \"article\" && articleType == \"news\" && slug.current == $slug][0] {\n    \n    _type,\n    articleType,\n    title,\n    \"slug\": slug.current,\n    publicationDate,\n    overview,\n    cardDestination,\n    tags[]->{ title, color },\n    externalCoverage[]{ _key, outlet, url, isPrimary },\n    \"leadMedia\": leadMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n    \n  body[]{\n    _type,\n    _key,\n    _type == \"contentLayoutRow\" => {\n      \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n    }\n  }\n,\n    relatedItems[]->{\n      _id,\n      _type,\n      articleType,\n      title,\n      \"slug\": slug.current,\n      publicationDate,\n      \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n      overview,\n      cardDestination,\n      externalCoverage[]{ outlet, url, isPrimary },\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      tags[]->{ title, color },\n      \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n\n  }\n": NewsArticleBySlugQueryResult;
+    "\n  *[_type == \"article\" && articleType == \"editorial\" && slug.current == $slug][0] {\n    \n    _type,\n    articleType,\n    title,\n    \"slug\": slug.current,\n    publicationDate,\n    overview,\n    cardDestination,\n    tags[]->{ title, color },\n    externalCoverage[]{ _key, outlet, url, isPrimary },\n    \"leadMedia\": leadMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n    \n  body[]{\n    _type,\n    _key,\n    _type == \"contentLayoutRow\" => {\n      \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n    }\n  }\n,\n    relatedItems[]->{\n      _id,\n      _type,\n      articleType,\n      title,\n      \"slug\": slug.current,\n      publicationDate,\n      \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n      overview,\n      cardDestination,\n      externalCoverage[]{ outlet, url, isPrimary },\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      tags[]->{ title, color },\n      \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n\n  }\n": EditorialArticleBySlugQueryResult;
     "\n  *[_type == \"zineLanding\"][0]{\n    \"currentIssue\": currentIssue->{\n      \n  title,\n  \"slug\": slug.current,\n  \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n  \"heroMedia\": heroMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n  editorLetter,\n  articles[]->{\n    \n  _id,\n  _type,\n  articleType,\n  title,\n  \"slug\": slug.current,\n  overview,\n  publicationDate,\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  tags[]->{ title, color },\n  \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n\n  },\n  listDefaults,\n  articleOverrides[]{ \"articleId\": article._ref, cardWidth, mediaAspectRatio, infoPosition },\n  issuuUrl,\n  \"pdfUrl\": pdfAsset.asset->url,\n  \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n\n    },\n    \"pastIssues\": *[_type == \"zineIssue\" && _id != ^.currentIssue._ref] | order(orderRank) {\n      title,\n      \"slug\": slug.current,\n      \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    }\n  }\n": ZineLandingQueryResult;
     "\n  *[_type == \"zineIssue\" && slug.current == $slug][0]{\n    \n  title,\n  \"slug\": slug.current,\n  \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n  \"heroMedia\": heroMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n  editorLetter,\n  articles[]->{\n    \n  _id,\n  _type,\n  articleType,\n  title,\n  \"slug\": slug.current,\n  overview,\n  publicationDate,\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  tags[]->{ title, color },\n  \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n\n  },\n  listDefaults,\n  articleOverrides[]{ \"articleId\": article._ref, cardWidth, mediaAspectRatio, infoPosition },\n  issuuUrl,\n  \"pdfUrl\": pdfAsset.asset->url,\n  \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n\n  }\n": IssueBySlugQueryResult;
     "\n  *[_type == \"zineIssue\" && slug.current != $slug] | order(orderRank) {\n    title,\n    \"slug\": slug.current,\n    \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n  }\n": IssueArchiveQueryResult;
-    "\n  *[_type == \"zineIssue\" && slug.current == $issueSlug][0]{\n    title,\n    \"issueSlug\": slug.current,\n    \"article\": *[\n      _type == \"article\" &&\n      articleType == \"zine\" &&\n      slug.current == $articleSlug &&\n      _id in ^.articles[]._ref\n    ][0]{\n      \n    _type,\n    articleType,\n    title,\n    \"slug\": slug.current,\n    publicationDate,\n    overview,\n    cardDestination,\n    tags[]->{ title, color },\n    externalCoverage[]{ _key, outlet, url, isPrimary },\n    \"leadMedia\": leadMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n    \n  body[]{\n    _type,\n    _key,\n    _type == \"articleTextSection\" => {\n      heading,\n      text\n    },\n    _type == \"articleMediaSection\" => {\n      layout,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n      \"pairedMedia\": pairedMedia[]{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutRow\" => {\n      \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n    }\n  }\n,\n    relatedItems[]->{\n      _id,\n      _type,\n      articleType,\n      title,\n      \"slug\": slug.current,\n      \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n      overview,\n      publicationDate,\n      cardDestination,\n      articleType,\n      externalCoverage[]{ outlet, url, isPrimary },\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      tags[]->{ title, color },\n      \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n\n    }\n  }\n": ZineArticleBySlugQueryResult;
+    "\n  *[_type == \"zineIssue\" && slug.current == $issueSlug][0]{\n    title,\n    \"issueSlug\": slug.current,\n    \"article\": *[\n      _type == \"article\" &&\n      articleType == \"zine\" &&\n      slug.current == $articleSlug &&\n      _id in ^.articles[]._ref\n    ][0]{\n      \n    _type,\n    articleType,\n    title,\n    \"slug\": slug.current,\n    publicationDate,\n    overview,\n    cardDestination,\n    tags[]->{ title, color },\n    externalCoverage[]{ _key, outlet, url, isPrimary },\n    \"leadMedia\": leadMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n    \n  body[]{\n    _type,\n    _key,\n    _type == \"contentLayoutRow\" => {\n      \n  _type,\n  _key,\n  alignment,\n  fullBleed,\n  blocks[]{\n    _type,\n    _key,\n    width,\n    _type == \"contentLayoutMedia\" => {\n      aspectRatio,\n      \"media\": media{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    _type == \"contentLayoutText\" => {\n      heading,\n      text\n    }\n  }\n\n    }\n  }\n,\n    relatedItems[]->{\n      _id,\n      _type,\n      articleType,\n      title,\n      \"slug\": slug.current,\n      publicationDate,\n      \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n      overview,\n      cardDestination,\n      externalCoverage[]{ outlet, url, isPrimary },\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      tags[]->{ title, color },\n      \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n\n    }\n  }\n": ZineArticleBySlugQueryResult;
     "\n  *[_type == \"indexPage\"][0]{\n    featured[]{\n      _key,\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      \"item\": article->{\n        \n  _id,\n  _type,\n  articleType,\n  title,\n  \"slug\": slug.current,\n  overview,\n  publicationDate,\n  cardDestination,\n  externalCoverage[]{ outlet, url, isPrimary },\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n\n      }\n    },\n    allSection{\n      listDefaults,\n      \"tagId\": tagFilter._ref,\n      itemOverrides[]{ \"itemId\": article._ref, cardWidth, mediaAspectRatio, infoPosition }\n    },\n    \"globalCardDefaults\": *[_type == \"siteSettings\"][0].cardDefaults\n  }\n": IndexPageQueryResult;
-    "\n  *[\n    _type == \"article\" &&\n    articleType in [\"news\", \"editorial\", \"zine\"] &&\n    !(_id in $featuredIds) &&\n    (!defined($tagId) || $tagId in tags[]._ref)\n  ] | order(coalesce(publicationDate, _createdAt) desc)[$offset...$end]{\n    \n  _id,\n  _type,\n  articleType,\n  title,\n  \"slug\": slug.current,\n  overview,\n  publicationDate,\n  cardDestination,\n  externalCoverage[]{ outlet, url, isPrimary },\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n\n  }\n": IndexViewAllNewestQueryResult;
-    "\n  *[\n    _type == \"article\" &&\n    articleType in [\"news\", \"editorial\", \"zine\"] &&\n    !(_id in $featuredIds) &&\n    (!defined($tagId) || $tagId in tags[]._ref)\n  ] | order(coalesce(publicationDate, _createdAt) asc)[$offset...$end]{\n    \n  _id,\n  _type,\n  articleType,\n  title,\n  \"slug\": slug.current,\n  overview,\n  publicationDate,\n  cardDestination,\n  externalCoverage[]{ outlet, url, isPrimary },\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n\n  }\n": IndexViewAllOldestQueryResult;
+    "\n  *[\n    _type == \"article\" &&\n    articleType in [\"news\", \"editorial\", \"zine\"] &&\n    !(_id in $featuredIds) &&\n    (!defined($tagId) || $tagId in tags[]._ref)\n  ] | order(publicationDate desc)[$offset...$end]{\n    \n  _id,\n  _type,\n  articleType,\n  title,\n  \"slug\": slug.current,\n  overview,\n  publicationDate,\n  cardDestination,\n  externalCoverage[]{ outlet, url, isPrimary },\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n\n  }\n": IndexViewAllNewestQueryResult;
+    "\n  *[\n    _type == \"article\" &&\n    articleType in [\"news\", \"editorial\", \"zine\"] &&\n    !(_id in $featuredIds) &&\n    (!defined($tagId) || $tagId in tags[]._ref)\n  ] | order(publicationDate asc)[$offset...$end]{\n    \n  _id,\n  _type,\n  articleType,\n  title,\n  \"slug\": slug.current,\n  overview,\n  publicationDate,\n  cardDestination,\n  externalCoverage[]{ outlet, url, isPrimary },\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  \"issueSlug\": *[_type == \"zineIssue\" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  \"cardMedia\": cardMedia{\n  \"asset\": asset[0]{\n    _type,\n    _type == \"image\" => {\n      \"url\": asset->url,\n      \"width\": asset->metadata.dimensions.width,\n      \"height\": asset->metadata.dimensions.height,\n      \"altText\": asset->altText\n    },\n    _type == \"mux.video\" => {\n      \"playbackId\": asset->playbackId,\n      \"aspectRatio\": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n\n  }\n": IndexViewAllOldestQueryResult;
     "\n  *[_type == \"siteSettings\"][0]{\n    instagramUrl,\n    linkedInUrl,\n    vimeoUrl,\n    youTubeUrl,\n    cardDefaults\n  }\n": SiteSettingsQueryResult;
     "\n  {\n    \"caseStudies\": *[_type == \"caseStudy\" && defined(slug.current)]{\n      \"path\": \"/work/\" + slug.current,\n      \"updatedAt\": _updatedAt\n    },\n    \"news\": *[_type == \"article\" && articleType == \"news\" && defined(slug.current)]{\n      \"path\": \"/news/\" + slug.current,\n      \"updatedAt\": _updatedAt\n    },\n    \"articles\": *[_type == \"article\" && articleType == \"editorial\" && defined(slug.current)]{\n      \"path\": \"/articles/\" + slug.current,\n      \"updatedAt\": _updatedAt\n    },\n    \"pastIssues\": *[\n      _type == \"zineIssue\" &&\n      defined(slug.current) &&\n      _id != *[_type == \"zineLanding\"][0].currentIssue._ref\n    ]{\n      \"path\": \"/zine/issues/\" + slug.current,\n      \"updatedAt\": _updatedAt\n    },\n    \"zineArticles\": *[_type == \"zineIssue\" && defined(slug.current)]{\n      \"issueSlug\": slug.current,\n      \"updatedAt\": _updatedAt,\n      \"articles\": articles[]->{ \"slug\": slug.current, \"updatedAt\": _updatedAt }\n    }\n  }\n": SitemapQueryResult;
   }

@@ -89,6 +89,47 @@ export function validateNextProjectNotSelf(
   return true
 }
 
+export async function validatePressNewsReferences(
+  press: unknown,
+  context: {
+    getClient: (config: {apiVersion: string}) => {
+      fetch: (query: string, params?: Record<string, unknown>) => Promise<unknown>
+    }
+  }
+): Promise<string | boolean> {
+  if (!Array.isArray(press) || press.length === 0) return true
+
+  const ids = press
+    .map((item) =>
+      item && typeof item === 'object' && '_ref' in item && typeof item._ref === 'string'
+        ? item._ref
+        : null,
+    )
+    .filter((id): id is string => Boolean(id))
+  if (ids.length !== press.length) return 'Every Press reference must resolve to a News item.'
+
+  const client = context.getClient({apiVersion: '2026-07-22'})
+  const result = await client.fetch(
+    `*[_id in $ids]{_id, articleType}`,
+    {ids},
+  )
+  if (
+    !Array.isArray(result) ||
+    result.length !== ids.length ||
+    result.some(
+      (document) =>
+        !document ||
+        typeof document !== 'object' ||
+        !('articleType' in document) ||
+        document.articleType !== 'news',
+    )
+  ) {
+    return 'Every Press reference must resolve to a News item.'
+  }
+
+  return true
+}
+
 export function validateStatsCardinality(stats: unknown): string | boolean {
   if (!Array.isArray(stats)) return 'Stats must be an array'
   if (stats.length < 1 || stats.length > 4) {

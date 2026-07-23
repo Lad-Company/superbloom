@@ -4,6 +4,7 @@ import {
   resolveContentCardSettings,
   type PartialContentCardSettings,
 } from '../lib/contentCard';
+import { formatPublicationDate } from '../lib/publicationDate';
 
 interface Props {
   href: string;
@@ -44,11 +45,7 @@ const resolved = resolveContentCardSettings({
   list: listSettings,
   item: settings,
 });
-const formattedDate = publicationDate
-  ? new Intl.DateTimeFormat('en-US', {year: 'numeric', month: 'long', day: 'numeric'}).format(
-      new Date(publicationDate),
-    )
-  : null;
+const formattedDate = publicationDate ? formatPublicationDate(publicationDate) : null;
 ---
 
 <a
@@ -66,7 +63,11 @@ const formattedDate = publicationDate
   <div class="content">
     {title && <p class="headline type-h6">{title}</p>}
     {summary && <p class="summary type-caption">{summary}</p>}
-    {formattedDate && <time class="publication-date type-caption" datetime={publicationDate}>{formattedDate}</time>}
+    {formattedDate && (
+      <time class="publication-date type-caption" datetime={formattedDate.dateTime}>
+        {formattedDate.label}
+      </time>
+    )}
     {externalLabel && (
       <p class="external-label type-caption">
         {externalLabel} <span aria-hidden="true">↗</span>

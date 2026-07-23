@@ -7,6 +7,7 @@ import {
   validatePressUnique,
   validatePressCardinality,
   validateNextProjectNotSelf,
+  validatePressNewsReferences,
 } from './caseStudyContract'
 import {cardWidthField, mediaAspectRatioField, infoPositionField, validateInfoPositionWithWidth} from './cardSettings'
 
@@ -129,7 +130,8 @@ export const caseStudy = defineType({
       validation: (rule) =>
         rule
           .custom(validatePressUnique)
-          .custom(validatePressCardinality),
+          .custom(validatePressCardinality)
+          .custom(validatePressNewsReferences),
     }),
     defineField({
       name: 'nextProject',

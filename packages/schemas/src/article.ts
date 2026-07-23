@@ -4,6 +4,7 @@ import {
   validatePortableTextNonEmpty,
   validateRelatedItems,
   validateExternalCoverage,
+  validateScopedSlugUniqueness,
 } from './articleContract'
 import {cardWidthField, mediaAspectRatioField, infoPositionField, validateInfoPositionWithWidth} from './cardSettings'
 
@@ -22,7 +23,7 @@ export const article = defineType({
       name: 'slug',
       type: 'slug',
       options: {source: 'title'},
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.required().custom(validateScopedSlugUniqueness),
     }),
     defineField({
       name: 'articleType',
@@ -31,6 +32,7 @@ export const article = defineType({
       options: {list: ['news', 'editorial', 'zine'], layout: 'radio'},
       validation: (rule) => rule.required(),
       description: 'Determines routing and field visibility. news = /news/, editorial = /articles/, zine = /zine/issues/[issue]/[article]/',
+      hidden: true,
     }),
     defineField({
       name: 'tags',
@@ -67,8 +69,6 @@ export const article = defineType({
       name: 'body',
       type: 'array',
       of: [
-        {type: 'articleTextSection'},
-        {type: 'articleMediaSection'},
         {type: 'contentLayoutRow'},
       ],
       validation: (rule) =>
@@ -101,6 +101,7 @@ export const article = defineType({
         },
       ],
       description: 'Optional for News articles. Links to external coverage of this story.',
+      hidden: ({document}) => document?.articleType !== 'news',
     }),
     defineField({
       name: 'cardDestination',
@@ -123,6 +124,7 @@ export const article = defineType({
   validation: (rule) =>
     rule.custom((document) => {
       const doc = document as {
+        articleType?: string
         cardWidth?: string
         infoPosition?: string
         cardDestination?: string

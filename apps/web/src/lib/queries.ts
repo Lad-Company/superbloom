@@ -76,7 +76,7 @@ export const homepageQuery = defineQuery(`
       headline,
       listDefaults,
       itemOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },
-      "items": *[_type == "article" && articleType == "news"] | order(coalesce(publicationDate, _createdAt) desc)[0...8]{
+      "items": *[_type == "article" && articleType == "news"] | order(publicationDate desc)[0...8]{
         ${editorialCardProjection}
       }
     },
@@ -169,7 +169,7 @@ export const workIndexQuery = defineQuery(`
 
 export const caseStudiesNewestQuery = defineQuery(`
   *[_type == "caseStudy" && !(_id in $featuredIds)]
-    | order(coalesce(publicationDate, _createdAt) desc)[$offset...$end] {
+    | order(publicationDate desc)[$offset...$end] {
     _id,
     title,
     "slug": slug.current,
@@ -185,7 +185,7 @@ export const caseStudiesNewestQuery = defineQuery(`
 
 export const caseStudiesOldestQuery = defineQuery(`
   *[_type == "caseStudy" && !(_id in $featuredIds)]
-    | order(coalesce(publicationDate, _createdAt) asc)[$offset...$end] {
+    | order(publicationDate asc)[$offset...$end] {
     _id,
     title,
     "slug": slug.current,
@@ -201,23 +201,7 @@ export const caseStudiesOldestQuery = defineQuery(`
 
 const caseStudyMediaLayoutsProjection = `
   mediaLayouts[]{
-    _type,
-    _key,
-    _type == "caseStudyFullBleedMedia" => {
-      "media": mediaBox${mediaProjection}
-    },
-    _type == "caseStudyTextMedia" => {
-      text,
-      mediaPosition,
-      mediaWidth,
-      "media": mediaBox${mediaProjection}
-    },
-    _type == "caseStudyPairedPortraitMedia" => {
-      "media": mediaBoxes[]${mediaProjection}
-    },
-    _type == "contentLayoutRow" => {
-      ${contentLayoutRowsProjection}
-    }
+    ${contentLayoutRowsProjection}
   }
 `;
 
@@ -254,7 +238,7 @@ export const caseStudyBySlugQuery = defineQuery(`
         ${contentLayoutRowsProjection}
       }
     },
-    press[0...3]->{
+    "press": press[0...3][@->articleType == "news"]->{
       title,
       "slug": slug.current,
       overview,
@@ -287,15 +271,6 @@ const articleBodyProjection = `
   body[]{
     _type,
     _key,
-    _type == "articleTextSection" => {
-      heading,
-      text
-    },
-    _type == "articleMediaSection" => {
-      layout,
-      "media": media${mediaProjection},
-      "pairedMedia": pairedMedia[]${mediaProjection}
-    },
     _type == "contentLayoutRow" => {
       ${contentLayoutRowsProjection}
     }
@@ -320,11 +295,10 @@ const articleProjection = `
       articleType,
       title,
       "slug": slug.current,
+      publicationDate,
       "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,
       overview,
-      publicationDate,
       cardDestination,
-      articleType,
       externalCoverage[]{ outlet, url, isPrimary },
       cardWidth,
       mediaAspectRatio,
@@ -446,7 +420,7 @@ export const indexViewAllNewestQuery = defineQuery(`
     articleType in ["news", "editorial", "zine"] &&
     !(_id in $featuredIds) &&
     (!defined($tagId) || $tagId in tags[]._ref)
-  ] | order(coalesce(publicationDate, _createdAt) desc)[$offset...$end]{
+  ] | order(publicationDate desc)[$offset...$end]{
     ${editorialCardProjection}
   }
 `);
@@ -457,7 +431,7 @@ export const indexViewAllOldestQuery = defineQuery(`
     articleType in ["news", "editorial", "zine"] &&
     !(_id in $featuredIds) &&
     (!defined($tagId) || $tagId in tags[]._ref)
-  ] | order(coalesce(publicationDate, _createdAt) asc)[$offset...$end]{
+  ] | order(publicationDate asc)[$offset...$end]{
     ${editorialCardProjection}
   }
 `);

@@ -16,12 +16,9 @@ export const caseStudyNarrativeSection = defineType({
     }),
     defineField({
       name: 'mediaLayouts',
-      title: 'Media Layouts',
+      title: 'Content',
       type: 'array',
       of: [
-        {type: 'caseStudyFullBleedMedia'},
-        {type: 'caseStudyTextMedia'},
-        {type: 'caseStudyPairedPortraitMedia'},
         {type: 'contentLayoutRow'},
       ],
     }),

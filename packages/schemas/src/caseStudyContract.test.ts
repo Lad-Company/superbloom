@@ -1,4 +1,4 @@
-import {describe, it, expect} from 'vitest'
+import {describe, it, expect, vi} from 'vitest'
 import {
   isValidHexColor,
   validateColorRequired,
@@ -7,6 +7,7 @@ import {
   validateCapabilitiesCardinality,
   validatePressUnique,
   validatePressCardinality,
+  validatePressNewsReferences,
   validateNextProjectNotSelf,
   validateStatsCardinality,
   validateStatComplete,
@@ -188,6 +189,35 @@ describe('Case Study Contract Validators', () => {
         const press = Array.from({length: i}, (_, j) => ({_ref: `news-${j}`}))
         expect(validatePressCardinality(press)).toBe(true)
       }
+    })
+  })
+
+  describe('validatePressNewsReferences', () => {
+    it('accepts Press references that all resolve to News', async () => {
+      const fetch = vi.fn().mockResolvedValue([
+        {_id: 'news-1', articleType: 'news'},
+        {_id: 'news-2', articleType: 'news'},
+      ])
+
+      await expect(
+        validatePressNewsReferences(
+          [{_ref: 'news-1'}, {_ref: 'news-2'}],
+          {getClient: () => ({fetch})},
+        ),
+      ).resolves.toBe(true)
+    })
+
+    it('rejects non-News and unresolved Press references', async () => {
+      const fetch = vi.fn().mockResolvedValue([
+        {_id: 'article-1', articleType: 'editorial'},
+      ])
+
+      await expect(
+        validatePressNewsReferences(
+          [{_ref: 'article-1'}, {_ref: 'missing'}],
+          {getClient: () => ({fetch})},
+        ),
+      ).resolves.toContain('resolve to a News item')
     })
   })
 

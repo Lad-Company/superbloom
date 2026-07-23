@@ -8,7 +8,9 @@
     "build": "sanity build",
     "deploy": "sanity deploy",
     "typegen": "sanity schema extract --path schema.json && sanity typegen generate",
-    "audit:zine": "sanity exec migrations/audit-zine-membership.ts"
+    "audit:zine": "sanity exec migrations/audit-zine-membership.ts",
+    "migrate:article-body": "sanity exec migrations/migrate-article-body.ts",
+    "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts"
   },
   "dependencies": {
     "@sanity/color-input": "^5.0.4",
