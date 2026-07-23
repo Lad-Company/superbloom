@@ -1,7 +1,7 @@
 import {mkdir, readFile, writeFile} from 'node:fs/promises'
 import {resolve} from 'node:path'
-import {extractTracker} from './extract-tracker'
-import {checksum} from './refresh-source'
+import {extractTracker} from './extract-tracker.ts'
+import {checksum} from './refresh-source.ts'
 import type {SourceMetadata} from './types'
 
 const seedDirectory = resolve(import.meta.dirname, '..')

@@ -14,7 +14,7 @@ Reference [site](https://example.com/work).
 `)
 
     expect(result.outline).toEqual([
-      expect.objectContaining({heading: 'Work', source: expect.objectContaining({headingPath: ['Work']})}),
+      expect.objectContaining({heading: 'Work', source: expect.objectContaining({headingPath: ['Work'], lineEnd: 5})}),
       expect.objectContaining({
         heading: 'Tyson',
         source: expect.objectContaining({headingPath: ['Work', 'Tyson'], lineStart: 2, lineEnd: 5}),
@@ -57,6 +57,23 @@ Reference [site](https://example.com/work).
       expect.objectContaining({url: 'https://cdn.example.com/file(1).jpg', mediaKind: 'image'}),
     ])
   })
+
+  it('uses standalone bold text as a top-level tracker heading', () => {
+    const result = extractTracker('**Website Content**\n\n**Homepage**\nCopy\n')
+
+    expect(result.outline).toEqual([
+      expect.objectContaining({
+        heading: 'Website Content',
+        depth: 1,
+        source: expect.objectContaining({lineEnd: 2, text: '**Website Content**\n'}),
+      }),
+      expect.objectContaining({
+        heading: 'Homepage',
+        depth: 1,
+        source: expect.objectContaining({headingPath: ['Homepage'], lineEnd: 5, text: '**Homepage**\nCopy\n'}),
+      }),
+    ])
+  })
 })
 
 describe('refreshSource', () => {
@@ -79,6 +96,27 @@ describe('refreshSource', () => {
       ).rejects.toThrow('does not contain a Markdown heading')
 
       await expect(readFile(outputPath, 'utf8')).resolves.toBe('# Previous snapshot\n')
+    } finally {
+      await rm(directory, {recursive: true, force: true})
+    }
+  })
+
+  it('accepts a tracker with standalone bold headings', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'superbloom-seed-'))
+    const sourcePath = join(directory, 'download.md')
+    const outputPath = join(directory, 'content-master.md')
+    const metadataPath = join(directory, 'source-metadata.json')
+    try {
+      await writeFile(sourcePath, '**Website Content**\n')
+
+      await refreshSource({
+        sourcePath,
+        sourceUrl: 'https://docs.google.com/document/d/tracker',
+        outputPath,
+        outputMetadataPath: metadataPath,
+      })
+
+      await expect(readFile(outputPath, 'utf8')).resolves.toBe('**Website Content**\n')
     } finally {
       await rm(directory, {recursive: true, force: true})
     }

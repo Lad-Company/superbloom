@@ -47,7 +47,7 @@ export async function refreshSource({
 
 export function validateMarkdown(contents: string, sourcePath: string): void {
   if (!contents.trim()) throw new Error(`Source snapshot is empty: ${sourcePath}`)
-  if (!/^#{1,6}\s+\S/m.test(contents)) {
+  if (!/^(?:#{1,6}\s+\S.*|\*\*\S(?:.*?\S)?\*\*)\s*$/m.test(contents)) {
     throw new Error(`Source snapshot does not contain a Markdown heading: ${sourcePath}`)
   }
 }

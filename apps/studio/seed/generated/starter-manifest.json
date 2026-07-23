@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-23T10:13:20.839Z",
+  "sourceChecksum": "9c30c0571b2281819c3d1ebfea3ce62fed18bc48e4b4789625b298865526dcae",
+  "inputs": {
+    "googleDoc": {
+      "url": "https://docs.google.com/document/d/1By8UepsZ6PuB3THFO8O_n9mTZLPC0-91E-tUQRi1ydk/edit?usp=sharing",
+      "checksum": "9c30c0571b2281819c3d1ebfea3ce62fed18bc48e4b4789625b298865526dcae"
+    },
+    "trackerExport": {
+      "path": "source/content-master.md",
+      "checksum": "9c30c0571b2281819c3d1ebfea3ce62fed18bc48e4b4789625b298865526dcae"
+    },
+    "frameIo": "https://next.frame.io/share/b65a33b0-903d-494f-a85f-9036fb046673/",
+    "googleDrive": "https://drive.google.com/drive/folders/1eXLRidA2RUIM97abqOkvBnTBlSWmvPtn?usp=sharing"
+  },
+  "coverage": {
+    "targets": [
+      {"id": "zine", "documentType": "zineIssue", "figmaUrl": "https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4690&m=dev"},
+      {"id": "index", "documentType": "indexPage", "figmaUrl": "https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4790&m=dev"},
+      {"id": "article-detail", "documentType": "article", "figmaUrl": "https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4841&m=dev"},
+      {"id": "case-study-example", "documentType": "caseStudy", "figmaUrl": "https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4552&m=dev"},
+      {"id": "who-we-are", "documentType": "whoWeAre", "figmaUrl": "https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4656&m=dev"},
+      {"id": "our-work", "documentType": "workIndex", "figmaUrl": "https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4670&m=dev"},
+      {"id": "home", "documentType": "homepage", "figmaUrl": "https://www.figma.com/design/pAnkxyDKUGGPGmzpp6r87X/SBH-Temp?node-id=1-4677&m=dev"}
+    ]
+  },
+  "candidates": [
+    {
+      "targetId": "zine",
+      "documentType": "zineIssue",
+      "fields": {
+        "title": {"value": "ZINE ISSUE NO.5 - THE GARDENING ISSUE", "provenance": {"kind": "source", "sources": [{"lineStart": 167, "lineEnd": 171, "headingPath": ["Featured Zine"], "text": "ZINE ISSUE NO.5 - THE GARDENING ISSUE"}]}},
+        "editorLetter": {"value": "This issue explores the parallels between gardening and creativity.", "provenance": {"kind": "derived", "sources": [{"lineStart": 168, "lineEnd": 171, "headingPath": ["Featured Zine"], "text": "This issue explores the parallels between gardening and creativity."}]}}
+      }
+    },
+    {
+      "targetId": "index",
+      "documentType": "indexPage",
+      "fields": {
+        "headline": {"value": "WHAT THEY'VE BEEN SAYING", "provenance": {"kind": "source", "sources": [{"lineStart": 743, "lineEnd": 743, "headingPath": ["WHO WE ARE"], "text": "WHAT THEY'VE BEEN SAYING"}]}}
+      }
+    },
+    {
+      "targetId": "article-detail",
+      "documentType": "article",
+      "fields": {
+        "title": {"value": "JEALOUS MUCH?", "provenance": {"kind": "source", "sources": [{"lineStart": 845, "lineEnd": 850, "headingPath": ["WHO WE ARE"], "text": "JEALOUS MUCH?"}]}},
+        "articleType": {"value": "zine", "provenance": {"kind": "derived", "sources": [{"lineStart": 845, "lineEnd": 850, "headingPath": ["WHO WE ARE"], "text": "JEALOUS MUCH?"}]}},
+        "overview": {"value": "For comedian, actress, writer and professional cultural ranter Joanna Hausmann, no garden is too sacred to skewer.", "provenance": {"kind": "source", "sources": [{"lineStart": 847, "lineEnd": 850, "headingPath": ["WHO WE ARE"], "text": "For comedian, actress, writer and professional cultural ranter Joanna Hausmann, no garden is too sacred to skewer."}]}}
+      }
+    },
+    {
+      "targetId": "case-study-example",
+      "documentType": "caseStudy",
+      "fields": {
+        "title": {"value": "RESTORING A POULTRY ICON", "provenance": {"kind": "source", "sources": [{"lineStart": 279, "lineEnd": 285, "headingPath": ["TYSON FOODS CASE STUDY"], "text": "RESTORING A POULTRY ICON"}]}},
+        "client": {"value": "TYSON CHICKEN", "provenance": {"kind": "source", "sources": [{"lineStart": 277, "lineEnd": 279, "headingPath": ["TYSON FOODS CASE STUDY"], "text": "TYSON CHICKEN"}]}},
+        "summary": {"value": "Tyson Chicken - Restoring a 90 year American icon", "provenance": {"kind": "derived", "sources": [{"lineStart": 86, "lineEnd": 91, "headingPath": ["Our Work"], "text": "Tyson Chicken - Restoring a 90 year American icon"}]}}
+      }
+    },
+    {
+      "targetId": "who-we-are",
+      "documentType": "whoWeAre",
+      "fields": {
+        "headline": {"value": "AUDIENCES MOVE FAST. WE HELP YOU FASTER.", "provenance": {"kind": "source", "sources": [{"lineStart": 758, "lineEnd": 764, "headingPath": ["WHO WE ARE"], "text": "AUDIENCES MOVE FAST. WE HELP YOU FASTER."}]}},
+        "introduction": {"value": "SuperBloom is an independent creative company built to move brands beyond advertising.", "provenance": {"kind": "source", "sources": [{"lineStart": 706, "lineEnd": 710, "headingPath": ["WHO WE ARE"], "text": "SuperBloom is an independent creative company built to move brands beyond advertising."}]}}
+      }
+    },
+    {
+      "targetId": "our-work",
+      "documentType": "workIndex",
+      "fields": {
+        "headline": {"value": "UNEXPECTED MINDS. UNIGNORABLE WORK.", "provenance": {"kind": "source", "sources": [{"lineStart": 236, "lineEnd": 242, "headingPath": ["OUR WORK"], "text": "UNEXPECTED MINDS. UNIGNORABLE WORK."}]}}
+      }
+    },
+    {
+      "targetId": "home",
+      "documentType": "homepage",
+      "fields": {
+        "headline": {"value": "WE CREATE THE UNEXPECTED", "provenance": {"kind": "source", "sources": [{"lineStart": 22, "lineEnd": 24, "headingPath": ["HOMEPAGE"], "text": "WE CREATE THE UNEXPECETED"}]}},
+        "positioningHeadline": {"value": "BUILT FOR BRANDS WITH BIGGER AMBITIONS", "provenance": {"kind": "source", "sources": [{"lineStart": 57, "lineEnd": 62, "headingPath": ["Positioning Headline"], "text": "BUILT FOR BRANDS WITH BIGGER AMBITIONS"}]}}
+      }
+    }
+  ],
+  "media": []
+}

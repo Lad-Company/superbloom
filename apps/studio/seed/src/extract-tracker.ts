@@ -12,6 +12,8 @@ const markdownLinkPattern = /\[([^\]]*)\]\(((?:[^()\s]|\([^()]*\))+)(?:\s+["'][^
 const directMediaPattern = /\.(avif|gif|jpe?g|png|svg|webp|mp4|mov|m4v|webm|pdf)(?:$|\?)/i
 const imagePattern = /\.(avif|gif|jpe?g|png|svg|webp)(?:$|\?)/i
 const videoPattern = /\.(mp4|mov|m4v|webm)(?:$|\?)/i
+const atxHeadingPattern = /^(#{1,6})\s+(.+?)\s*$/
+const boldHeadingPattern = /^\*\*(\S(?:.*?\S)?)\*\*\s*$/
 
 type Heading = {
   depth: number
@@ -27,23 +29,27 @@ export function extractTracker(markdown: string): ExtractionResult {
   const diagnostics: Diagnostic[] = []
 
   for (const [index, line] of lines.entries()) {
-    const heading = /^(#{1,6})\s+(.+?)\s*$/.exec(line)
-    if (!heading) continue
+    const atxHeading = atxHeadingPattern.exec(line)
+    const boldHeading = boldHeadingPattern.exec(line)
+    if (!atxHeading && !boldHeading) continue
 
-    const entry: Heading = {
-      depth: heading[1].length,
-      text: heading[2],
+    headings.push({
+      depth: atxHeading ? atxHeading[1].length : 1,
+      text: atxHeading ? atxHeading[2] : boldHeading![1],
       line: index + 1,
-    }
-    headings.push(entry)
+    })
+  }
+
+  for (const [index, entry] of headings.entries()) {
+    const lineEnd = sectionEndLine(headings, entry, lines.length)
     outline.push({
       depth: entry.depth,
       heading: entry.text,
       source: {
         lineStart: entry.line,
-        lineEnd: sectionEndLine(headings, entry, lines.length),
-        headingPath: headingPath(headings),
-        text: line,
+        lineEnd,
+        headingPath: headingPath(headings.slice(0, index + 1)),
+        text: lines.slice(entry.line - 1, lineEnd).join('\n'),
       },
     })
   }
