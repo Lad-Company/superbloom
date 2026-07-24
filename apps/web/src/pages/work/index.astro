@@ -8,42 +8,39 @@ import ContentCardList from '../../components/ContentCardList.astro';
 import WorkCard from '../../components/WorkCard.astro';
 import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro';
 import { sanityClient } from '../../lib/sanity';
-import { workIndexQuery, caseStudiesNewestQuery, caseStudiesOldestQuery } from '../../lib/queries';
+import { workIndexQuery, caseStudiesNewestQuery } from '../../lib/queries';
 import type {
   CaseStudiesNewestQueryResult,
-  CaseStudiesOldestQueryResult,
   WorkIndexQueryResult,
 } from '../../sanity.types';
 import type { PartialContentCardSettings } from '../../lib/contentCard';
 
 const BATCH_SIZE = 12;
-const sort = Astro.url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest';
 const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
 const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 const recordLimit = page * BATCH_SIZE;
 const workIndex = await sanityClient.fetch<WorkIndexQueryResult>(workIndexQuery);
 const featured = workIndex?.featured?.filter((entry) => entry?.item) ?? [];
 const featuredIds = featured.map((entry) => entry.item?._id).filter((id): id is string => Boolean(id));
-const query = sort === 'oldest' ? caseStudiesOldestQuery : caseStudiesNewestQuery;
-const fetchedCaseStudies = await sanityClient.fetch<
-  CaseStudiesNewestQueryResult | CaseStudiesOldestQueryResult
->(query, {featuredIds, offset: 0, end: recordLimit + 1});
+const fetchedCaseStudies = await sanityClient.fetch<CaseStudiesNewestQueryResult>(
+  caseStudiesNewestQuery,
+  {featuredIds, offset: 0, end: recordLimit + 1}
+);
 const caseStudies = fetchedCaseStudies.slice(0, recordLimit);
 const hasMore = fetchedCaseStudies.length > recordLimit;
 const listSettings = workIndex?.allSection?.listDefaults as PartialContentCardSettings;
 const globalSettings = workIndex?.globalCardDefaults as PartialContentCardSettings;
 const overrideFor = (id: string) =>
   workIndex?.allSection?.itemOverrides?.find((override) => override?.itemId === id) as PartialContentCardSettings;
-const queryFor = (nextPage: number, nextSort = sort) => {
+const queryFor = (nextPage: number) => {
   const params = new URLSearchParams();
-  if (nextSort === 'oldest') params.set('sort', nextSort);
   if (nextPage > 1) params.set('page', String(nextPage));
   const search = params.toString();
   return search ? `/work?${search}` : '/work';
 };
 
 const heroHeading = workIndex?.heroHeading ?? 'Unexpected minds. Unignorable work.';
-const allWorkHeading = workIndex?.allWorkHeading ?? 'All work';
+const allWorkHeading = 'All Work';
 
 ---
 
@@ -55,8 +52,7 @@ const allWorkHeading = workIndex?.allWorkHeading ?? 'All work';
     </div>
 
     {featured.length > 0 && (
-      <section class="featured-work" aria-labelledby="featured-work-heading">
-        <h2 id="featured-work-heading" class="type-h3">Featured</h2>
+      <section class="featured-work" aria-label="Featured work">
         <ContentCardList featured>
           {featured.map((entry) => (
             <WorkCard
@@ -72,10 +68,6 @@ const allWorkHeading = workIndex?.allWorkHeading ?? 'All work';
     <div class="all-work">
       <div class="all-work-header">
         <h2 class="type-h3 all-work-heading">{allWorkHeading}</h2>
-        <nav class="sort" aria-label="Sort Case Studies">
-          <a class="type-label" href={queryFor(1, 'newest')} aria-current={sort === 'newest' ? 'page' : undefined}>Newest</a>
-          <a class="type-label" href={queryFor(1, 'oldest')} aria-current={sort === 'oldest' ? 'page' : undefined}>Oldest</a>
-        </nav>
       </div>
       <ContentCardList class="all-card-list">
         {caseStudies.map((cs) => (
@@ -97,52 +89,37 @@ const allWorkHeading = workIndex?.allWorkHeading ?? 'All work';
 
 <style>
   .hero {
-    padding: var(--space-3xl) var(--space-xs) 0;
+    padding: var(--space-2xl) var(--page-inset) 0;
   }
   .hero-heading {
     margin: 0;
-    max-width: 14ch;
+    max-width: 21ch;
   }
   .all-work {
     display: grid;
     gap: var(--space-xl);
     min-width: 0;
-    padding: var(--space-4xl) 0;
+    padding: var(--space-4xl) var(--page-inset);
   }
   .featured-work {
     display: grid;
-    gap: var(--space-xl);
-    padding: var(--space-4xl) var(--page-inset) 0;
+    padding: var(--space-xl) var(--page-inset) 0;
   }
   .all-work-header {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    padding-inline: var(--page-inset);
-  }
-  .sort {
-    display: flex;
-    gap: var(--space-3xs);
-  }
-  .all-work :global(.load-more) {
-    margin-left: var(--page-inset);
   }
   .all-work-heading {
     margin: 0;
   }
   @media (max-width: 1023px) {
     .hero {
-      padding: 120px var(--space-3xs) 0;
-    }
-    .all-work-heading {
-      padding: 0;
+      padding: var(--space-2xl) var(--space-3xs) 0;
     }
     .featured-work,
-    .all-work-header {
+    .all-work {
       padding-inline: var(--space-3xs);
-    }
-    .all-work-header {
-      flex-wrap: wrap;
     }
   }
 </style>

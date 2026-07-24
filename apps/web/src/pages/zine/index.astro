@@ -14,16 +14,32 @@ if (!zineLanding?.currentIssue) {
   Astro.response.status = 404;
   return Astro.rewrite('/404');
 }
+
+const introFallbackMedia = [zineLanding.currentIssue.heroMedia, zineLanding.currentIssue.cardMedia].filter(
+  (media): media is NonNullable<typeof media> => media !== null,
+);
+const currentIssueHref =
+  zineLanding.currentIssue.pdfUrl ?? zineLanding.currentIssue.issuuUrl ?? '/zine';
 ---
 
 <Layout
   title={zineLanding.currentIssue.title ?? 'Zine'}
-  description={seoDescription(zineLanding.currentIssue.editorLetter)}
+  description={seoDescription(zineLanding.currentIssue.editorLetter?.body)}
   image={seoImage(zineLanding.currentIssue.heroMedia)}
   canonicalUrl="/zine"
 >
   <Navigation role="light" />
-  <IssueDetail issue={zineLanding.currentIssue} pastIssues={zineLanding.pastIssues ?? []} />
+  <IssueDetail
+    issue={zineLanding.currentIssue}
+    pastIssues={zineLanding.pastIssues ?? []}
+    landingIntro={{
+      heading: zineLanding.intro?.heading,
+      imageLayers: zineLanding.intro?.imageLayers,
+      fallbackMedia: introFallbackMedia,
+      ctaLabel: zineLanding.intro?.ctaLabel,
+      ctaHref: currentIssueHref,
+    }}
+  />
   <ContactBand role="brand-deep" />
   <Footer />
 </Layout>

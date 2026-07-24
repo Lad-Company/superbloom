@@ -7,6 +7,7 @@ import CaseStudyComposition from '../../components/case/CaseStudyComposition.ast
 import { sanityClient } from '../../lib/sanity';
 import { caseStudyBySlugQuery } from '../../lib/queries';
 import { seoDescription, seoImage } from '../../lib/seo';
+import { fgForHex } from '../../lib/luminance';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
 
 const { slug } = Astro.params;
@@ -16,6 +17,8 @@ if (!caseStudy) {
   Astro.response.status = 404;
   return Astro.rewrite('/404');
 }
+
+const navigationLogoVariant = fgForHex(caseStudy.primaryColor ?? '#ffffff') === '#ffffff' ? 'light' : 'dark';
 ---
 
 <Layout
@@ -24,7 +27,7 @@ if (!caseStudy) {
   image={seoImage(caseStudy.leadMedia)}
 >
   <CaseStudyComposition caseStudy={caseStudy}>
-    <Navigation slot="navigation" role="surface" />
+    <Navigation slot="navigation" role="surface" logoVariant={navigationLogoVariant} />
   </CaseStudyComposition>
   <ContactBand role="brand-deep" />
   <Footer />

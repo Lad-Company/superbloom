@@ -1,7 +1,10 @@
 ---
 import MediaFrame, {type Media} from '../MediaFrame.astro';
+import Button from '../Button.astro';
 import PinnedHorizontalRail from '../PinnedHorizontalRail.astro';
 import PortableText from '../PortableText.astro';
+import TagList from '../TagList.astro';
+import ZineLandingIntro from './ZineLandingIntro.astro';
 import ZineArticleCard from './ZineArticleCard.astro';
 import PastIssues from './PastIssues.astro';
 import type {TypedObject} from 'astro-portabletext/types';
@@ -38,7 +41,13 @@ interface Props {
     slug?: string | null;
     cardMedia?: Media | null;
     heroMedia?: Media | null;
-    editorLetter?: TextBlock[] | null;
+    editorLetter?: {
+      labels?: string[] | null;
+      heading?: string | null;
+      body?: TextBlock[] | null;
+      media?: Media | null;
+      ctaLabel?: string | null;
+    } | null;
     articles?: Article[] | null;
     listDefaults?: PartialContentCardSettings;
     articleOverrides?: Array<{articleId?: string | null} & ContentCardSettingsInput> | null;
@@ -47,35 +56,26 @@ interface Props {
     globalCardDefaults?: PartialContentCardSettings;
   };
   pastIssues?: PastIssue[];
+  landingIntro?: {
+    heading?: string | null;
+    imageLayers?: Media[] | null;
+    fallbackMedia?: Media[];
+    ctaLabel?: string | null;
+    ctaHref: string;
+  };
 }
 
-const {issue, pastIssues = []} = Astro.props;
+const {issue, pastIssues = [], landingIntro} = Astro.props;
 const articles = issue.articles ?? [];
+const editorLetterLabels = issue.editorLetter?.labels?.map((title) => ({title}));
+const readZineHref = issue.pdfUrl ?? issue.issuuUrl ?? null;
 const overrideFor = (id?: string | null) =>
   issue.articleOverrides?.find((override) => override.articleId === id);
-const issuuEmbedUrl = (() => {
-  if (!issue.issuuUrl) return null;
-
-  try {
-    const url = new URL(issue.issuuUrl);
-    if (url.hostname === 'e.issuu.com') return url.toString();
-
-    const [, publisher, docs, publication] = url.pathname.split('/');
-    if (docs === 'docs' && publisher && publication) {
-      const params = new URLSearchParams({d: publication, u: publisher});
-      return `https://e.issuu.com/embed.html?${params}`;
-    }
-  } catch {
-    return null;
-  }
-
-  return issue.issuuUrl;
-})();
 ---
 
 <article class="issue-detail">
-  <header class="hero" data-issue-depth>
-    <div class="hero-media" data-depth="0.2">
+  <header class="hero">
+    <div class="hero-media">
       <MediaFrame
         media={issue.heroMedia}
         ratio="16:9"
@@ -85,35 +85,36 @@ const issuuEmbedUrl = (() => {
     </div>
     <div class="hero-copy">
       <h1 class="type-h1">{issue.title}</h1>
-      <a class="explore" href="#flipbook">Explore the Issue</a>
+      {readZineHref && <a class="explore" href={readZineHref} target="_blank" rel="noopener noreferrer">Explore the Issue</a>}
     </div>
   </header>
 
+  {landingIntro && <ZineLandingIntro {...landingIntro} />}
+
   {issue.editorLetter && (
     <section class="editor-letter" aria-labelledby="editor-letter-heading">
-      <div>
-        <h2 id="editor-letter-heading" class="type-h3">Letter from the Editor</h2>
-        <PortableText value={issue.editorLetter} />
+      <div class="editor-letter-media">
+        <MediaFrame
+          media={issue.editorLetter.media ?? issue.heroMedia}
+          ratio="1:1"
+          title={issue.editorLetter.heading}
+        >
+          <TagList slot="overlay" tags={editorLetterLabels} />
+        </MediaFrame>
       </div>
-    </section>
-  )}
-
-  {issuuEmbedUrl && (
-    <section id="flipbook" class="flipbook" aria-labelledby="flipbook-heading">
-      <h2 id="flipbook-heading" class="type-h3">Read the Zine</h2>
-      <iframe
-        src={issuuEmbedUrl}
-        title={`${issue.title ?? 'Zine'} flipbook`}
-        allow="clipboard-write; fullscreen"
-        allowfullscreen
-        loading="lazy"
-      />
-    </section>
-  )}
-  {issue.pdfUrl && (
-    <section id="flipbook" class="flipbook" aria-labelledby="flipbook-heading">
-      <h2 id="flipbook-heading" class="type-h3">Read the Zine</h2>
-      <a href={issue.pdfUrl} target="_blank" rel="noopener noreferrer">Read the Zine <span class="sr-only">(opens in a new tab)</span></a>
+      <div class="editor-letter-copy">
+        <h2 id="editor-letter-heading" class="type-h3">{issue.editorLetter.heading}</h2>
+        {issue.editorLetter.body && <PortableText value={issue.editorLetter.body} class="type-body" />}
+        {issue.editorLetter.ctaLabel && readZineHref && (
+          <Button
+            href={readZineHref}
+            label={issue.editorLetter.ctaLabel}
+            outlineOnWipe
+            target="_blank"
+            rel="noopener noreferrer"
+          />
+        )}
+      </div>
     </section>
   )}
 
@@ -179,39 +180,56 @@ const issuuEmbedUrl = (() => {
   }
 
   .editor-letter {
-    padding: var(--space-4xl) var(--page-inset);
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    align-items: center;
+    gap: clamp(var(--space-l), 10vw, var(--space-4xl));
+    padding: clamp(var(--space-3xl), 14vw, 240px) var(--page-inset);
     background: #c3e4d3;
     color: #000;
   }
 
-  .editor-letter > div {
+  .editor-letter-copy {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xs);
-    max-width: 640px;
+    align-items: start;
+    gap: var(--space-2xs);
+    max-width: 540px;
   }
 
-  .flipbook {
-    padding: var(--space-4xl) var(--page-inset);
-    background: #000;
-    color: #fff;
+  .editor-letter-copy :global(.portable-text) {
+    max-width: 480px;
   }
 
-  .flipbook iframe {
-    width: 100%;
-    height: min(80svh, 900px);
-    margin-top: var(--space-xl);
-    border: 0;
+  .editor-letter-copy :global(.portable-text p) {
+    margin: 0;
+  }
+
+  .editor-letter-media :global(.tag-list) {
+    --bg: #000;
+    --border-subtle: 0;
+    --frosted-layer: #000;
   }
 
   .stories {
     padding: var(--space-4xl) var(--page-inset);
-    color: #fff;
-    background: #000;
+    --bg: #000;
+    --fg: #fff;
+    --fg-60: rgba(255, 255, 255, 0.6);
+    color: var(--fg);
+    background: var(--bg);
   }
 
-  .article-rail {
+  :global(.article-rail) {
     margin-top: var(--space-xl);
+  }
+
+  :global(.article-rail .controls) {
+    position: absolute;
+    top: calc(-1 * (var(--space-xl) + var(--space-xs-4)));
+    right: 0;
+    margin: 0;
+    padding: 0;
   }
 
   .sr-only {
@@ -223,25 +241,23 @@ const issuuEmbedUrl = (() => {
     white-space: nowrap;
   }
 
+  @media (max-width: 767px) {
+    .editor-letter {
+      grid-template-columns: 1fr;
+      gap: var(--space-m);
+      padding-block: var(--space-xl);
+    }
+
+    .editor-letter-copy {
+      max-width: none;
+    }
+
+    :global(.article-rail .controls) {
+      position: static;
+      justify-content: flex-start;
+      margin-top: var(--space-xs);
+    }
+  }
+
 </style>
 
-<script>
-  import { initDepthLayer } from '../../lib/motion';
-
-  const cleanups: Array<() => void> = [];
-  const initDepthLayers = () => document.querySelectorAll<HTMLElement>('[data-issue-depth]').forEach((scope) => {
-    if (scope.dataset.depthInitialized) return;
-    scope.dataset.depthInitialized = 'true';
-    const destroy = initDepthLayer(scope);
-    cleanups.push(() => {
-      destroy();
-      delete scope.dataset.depthInitialized;
-    });
-  });
-
-  initDepthLayers();
-  window.addEventListener('pagehide', () => cleanups.splice(0).forEach((cleanup) => cleanup()));
-  window.addEventListener('pageshow', (event) => {
-    if (event.persisted) initDepthLayers();
-  });
-</script>

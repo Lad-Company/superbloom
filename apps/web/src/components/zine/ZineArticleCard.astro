@@ -19,6 +19,7 @@ interface Props {
     title?: string | null;
     slug?: string | null;
     overview?: OverviewBlock[] | null;
+    cardCtaLabel?: string | null;
     publicationDate?: string | null;
     cardWidth?: CardWidth | null;
     mediaAspectRatio?: MediaAspectRatio | null;
@@ -49,6 +50,7 @@ const summary = article.overview
   listSettings={listSettings}
   globalSettings={globalSettings}
   summary={summary}
+  ctaLabel={article.cardCtaLabel ?? 'Read more'}
   publicationDate={article.publicationDate}
   cardId={article._id}
 >

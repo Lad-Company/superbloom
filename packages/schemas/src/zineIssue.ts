@@ -43,9 +43,44 @@ export const zineIssue = defineType({
     defineField({
       name: 'editorLetter',
       title: 'Letter from the Editor',
-      type: 'array',
-      of: [{type: 'block'}],
-      validation: (rule) => rule.required().custom(validatePortableTextNonEmpty),
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'media',
+          title: 'Image',
+          type: 'mediaBox',
+          validation: (rule) => rule.required(),
+        }),
+        defineField({
+          name: 'labels',
+          title: 'Labels',
+          type: 'array',
+          of: [{type: 'string'}],
+          validation: (rule) => rule.max(2),
+        }),
+        defineField({
+          name: 'heading',
+          title: 'Title',
+          type: 'string',
+          initialValue: 'Letter from the Editor',
+          validation: (rule) => rule.required(),
+        }),
+        defineField({
+          name: 'body',
+          title: 'Description',
+          type: 'array',
+          of: [{type: 'block'}],
+          validation: (rule) => rule.required().custom(validatePortableTextNonEmpty),
+        }),
+        defineField({
+          name: 'ctaLabel',
+          title: 'CTA Label',
+          type: 'string',
+          initialValue: 'Read the Zine',
+          validation: (rule) => rule.required(),
+        }),
+      ],
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'articles',

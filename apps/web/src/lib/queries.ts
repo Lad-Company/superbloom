@@ -45,6 +45,7 @@ const editorialCardProjection = `
   title,
   "slug": slug.current,
   overview,
+  cardCtaLabel,
   publicationDate,
   cardDestination,
   externalCoverage[]{ outlet, url, isPrimary },
@@ -369,7 +370,13 @@ const zineIssueProjection = `
   "slug": slug.current,
   "cardMedia": cardMedia${mediaProjection},
   "heroMedia": heroMedia${mediaProjection},
-  editorLetter,
+  editorLetter{
+    labels,
+    heading,
+    body,
+    "media": media${mediaProjection},
+    ctaLabel
+  },
   articles[]->{
     ${zineArticleCardProjection}
   },
@@ -389,6 +396,11 @@ export const zineLandingQuery = defineQuery(`
       title,
       "slug": slug.current,
       "cardMedia": cardMedia${mediaProjection}
+    },
+    intro{
+      heading,
+      "imageLayers": imageLayers[]${mediaProjection},
+      ctaLabel
     }
   }
 `);

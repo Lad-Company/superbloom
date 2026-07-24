@@ -22,7 +22,7 @@ const money = (value: Product['priceRange']['minVariantPrice']) =>
               <img src={product.featuredImage.url} alt={product.featuredImage.altText ?? product.title} loading="lazy" />
             ) : <div class="placeholder" aria-hidden="true" />}
             {!product.availableForSale && <span class="sold-out">Sold out</span>}
-            <h2>{product.title}</h2>
+            <h2 class="type-h7">{product.title}</h2>
             <p>{money(product.priceRange.minVariantPrice)}</p>
           </a>
         </article>
@@ -57,7 +57,7 @@ const money = (value: Product['priceRange']['minVariantPrice']) =>
         const image = product.featuredImage
           ? `<img src="${product.featuredImage.url}" alt="${product.featuredImage.altText ?? product.title}" loading="lazy">`
           : '<div class="placeholder" aria-hidden="true"></div>';
-        card.innerHTML = `<a href="/shop/products/${product.handle}">${image}${!product.availableForSale ? '<span class="sold-out">Sold out</span>' : ''}<h2>${product.title}</h2><p>${money(product.priceRange.minVariantPrice.amount, product.priceRange.minVariantPrice.currencyCode)}</p></a>`;
+        card.innerHTML = `<a href="/shop/products/${product.handle}">${image}${!product.availableForSale ? '<span class="sold-out">Sold out</span>' : ''}<h2 class="type-h7">${product.title}</h2><p>${money(product.priceRange.minVariantPrice.amount, product.priceRange.minVariantPrice.currencyCode)}</p></a>`;
         container?.append(card);
       });
       if (pageInfo.hasNextPage && pageInfo.endCursor) button.href = `/shop?after=${encodeURIComponent(pageInfo.endCursor)}`;
@@ -70,13 +70,12 @@ const money = (value: Product['priceRange']['minVariantPrice']) =>
 </script>
 
 <style>
-  .shop-grid { padding: var(--space-4xl) var(--page-inset); }
+  .shop-grid { padding: var(--space-s) var(--page-inset); }
   .products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2xs); }
   .product { position: relative; }
   .product a { text-decoration: none; }
   .product img, .placeholder { aspect-ratio: 1; width: 100%; object-fit: cover; background: var(--fg-12); border-radius: var(--radius-media); }
   .product h2, .product p { margin: var(--space-3xs) 0 0; }
-  .product h2 { font-size: 1rem; }
   .product p { color: var(--fg-60); }
   .sold-out { position: absolute; top: var(--space-3xs); right: var(--space-3xs); padding: 6px 8px; background: var(--bg); }
   .load-more { display: block; width: fit-content; margin: var(--space-xl) auto 0; padding: var(--space-3xs) 16px; background: var(--fg); color: var(--bg); text-decoration: none; border-radius: var(--radius-control); }

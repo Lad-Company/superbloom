@@ -11,6 +11,10 @@ const homeWorkComponentSource = readFileSync(
   new URL('../../../apps/web/src/components/blocks/HomeWork.astro', import.meta.url),
   'utf8',
 )
+const homeZineComponentSource = readFileSync(
+  new URL('../../../apps/web/src/components/blocks/HomeZine.astro', import.meta.url),
+  'utf8',
+)
 const homepageQuerySource = readFileSync(
   new URL('../../../apps/web/src/lib/queries.ts', import.meta.url),
   'utf8',
@@ -34,5 +38,10 @@ describe('Homepage CMS contract', () => {
     expect(homeWorkSchemaSource).toContain('infoPositionField({required: true})')
     expect(homeWorkComponentSource).toContain('<ContentCardList')
     expect(homeWorkComponentSource).toContain('settings={entry}')
+  })
+
+  it('renders the Zine promo at a compact US Letter-like ratio', () => {
+    expect(homeZineComponentSource).toContain('ratio="4:5"')
+    expect(homeZineComponentSource).toContain('grid-template-columns: minmax(0, 540px) minmax(0, 1fr)')
   })
 })

@@ -19,8 +19,7 @@ try {
   <Navigation role="surface" />
   <main>
     <header class="shop-header">
-      <p class="type-eyebrow">Superbloom House</p>
-      <h1 class="type-h1">Shop</h1>
+      <h1 class="type-h7">Shop</h1>
     </header>
     {error ? <p class="message">Unable to load products. Please try again.</p> : result && <ProductGrid products={result.products} nextCursor={result.pageInfo.endCursor} hasNextPage={result.pageInfo.hasNextPage} />}
   </main>
@@ -28,7 +27,15 @@ try {
 </Layout>
 
 <style>
-  .shop-header { padding: calc(var(--space-4xl) + var(--space-xl)) var(--page-inset) var(--space-xl); }
-  .shop-header p, .shop-header h1 { margin: 0; }
+  :global(body) {
+    --bg: #000000;
+    --fg: #ffffff;
+    --fg-12: rgba(255, 255, 255, 0.12);
+    --fg-60: rgba(255, 255, 255, 0.6);
+    background: #000000;
+    color: #ffffff;
+  }
+  .shop-header { padding: 120px var(--page-inset) var(--space-s); }
+  .shop-header h1 { margin: 0; }
   .message { padding: var(--space-xl) var(--page-inset); }
 </style>

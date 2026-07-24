@@ -1,9 +1,13 @@
 ---
 interface Props {
   role?: 'light' | 'dark' | 'surface';
+  logoVariant?: 'light' | 'dark';
 }
 
-const { role = 'light' } = Astro.props;
+const { role = 'light', logoVariant = role === 'light' ? 'light' : 'dark' } = Astro.props;
+const logoSrc = logoVariant === 'light'
+  ? '/superbloom-house-logo.svg'
+  : '/superbloom-house-logo-black.svg';
 const links = [
   { label: 'Our Work', href: '/work' },
   { label: 'Who We Are', href: '/who-we-are' },
@@ -14,7 +18,7 @@ const links = [
 
 <nav class:list={['navigation', role]} aria-label="Primary navigation">
   <a href="/" class="logo" data-route-link aria-label="Superbloom House">
-    <img src="/superbloom-house-logo.svg" alt="" width="697" height="41" />
+    <img src={logoSrc} alt="" width="697" height="41" />
   </a>
   <ul class="desktop-links">
     {

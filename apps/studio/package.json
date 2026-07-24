@@ -17,6 +17,8 @@
     "backup:work": "sanity exec migrations/backup-work-index-data.ts",
     "migrate:work": "pnpm run backup:work && sanity exec migrations/migrate-work-index.ts",
     "migrate:zine": "sanity exec migrations/migrate-zine-issues.ts",
+    "migrate:zine-landing": "sanity exec migrations/migrate-zine-landing-content.ts",
+    "migrate:zine-landing-intro": "sanity exec migrations/migrate-zine-landing-intro.ts",
     "migrate:article-body": "sanity exec migrations/migrate-article-body.ts",
     "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts",
     "seed:capabilities": "sanity dataset import seed-capabilities.ndjson production --replace",
@@ -30,7 +32,7 @@
     "react-dom": "^19.0.0",
     "sanity": "^4.0.0",
     "sanity-plugin-mux-input": "^3.0.5",
-    "styled-components": "^6.1.0"
+    "styled-components": "^6.1.15"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",

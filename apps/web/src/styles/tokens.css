@@ -26,7 +26,7 @@
   /* Radius */
   --radius-control: 6px;
   --radius-input: 8px;
-  --radius-media: var(--radius-control);
+  --radius-media: 0;
 
   /* Borders and layers */
   --border-subtle: 1px solid var(--bg-20);

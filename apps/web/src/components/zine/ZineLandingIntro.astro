@@ -1,0 +1,222 @@
+---
+import MediaFrame, {type Media} from '../MediaFrame.astro';
+import PointerMediaGroup from '../PointerMediaGroup.astro';
+
+interface Props {
+  heading?: string | null;
+  imageLayers?: Media[] | null;
+  fallbackMedia?: Media[];
+  ctaLabel?: string | null;
+  ctaHref: string;
+}
+
+const {
+  heading,
+  imageLayers,
+  fallbackMedia = [],
+  ctaLabel,
+  ctaHref,
+} = Astro.props;
+const resolvedHeading =
+  heading ?? 'Original stories, interviews, and visual essays from the creative collective on what helps ideas grow.';
+const resolvedImageLayers = imageLayers ?? [];
+const sourceLayers = resolvedImageLayers.length > 0 ? resolvedImageLayers : fallbackMedia;
+const layers =
+  sourceLayers.length > 0
+    ? Array.from({length: 4}, (_, index) => sourceLayers[index % sourceLayers.length])
+    : [];
+const resolvedCtaLabel = ctaLabel ?? 'Explore the issue';
+const depths = [25, 45, 70, 100];
+---
+
+<section class="zine-landing-intro" data-pointer-scope aria-labelledby="zine-landing-intro-heading">
+  <PointerMediaGroup class="media-layers">
+    {layers.slice(0, 4).map((media, index) => (
+      <div class:list={['media-layer', `layer-${index + 1}`]}>
+        <div class="media-motion" data-pointer-depth={depths[index]}>
+          <MediaFrame media={media} ratio="fill" title="" />
+        </div>
+      </div>
+    ))}
+  </PointerMediaGroup>
+
+  <div class="content">
+    <h2 id="zine-landing-intro-heading">{resolvedHeading}</h2>
+    <a class="intro-cta" href={ctaHref} target="_blank" rel="noopener noreferrer">
+      <span>{resolvedCtaLabel}</span>
+    </a>
+  </div>
+</section>
+
+<style>
+  .zine-landing-intro {
+    position: relative;
+    display: flex;
+    align-items: start;
+    min-height: clamp(460px, 56vw, 760px);
+    overflow: hidden;
+    padding: clamp(140px, 16vw, 240px) var(--page-inset) var(--space-l);
+    --bg: #000;
+    --fg: #fff;
+    background: var(--bg);
+    color: var(--fg);
+    isolation: isolate;
+  }
+
+  .media-layers {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .media-layer {
+    position: absolute;
+    overflow: hidden;
+  }
+
+  .media-motion,
+  .media-motion :global(.media-frame) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .media-motion :global(.media-frame) {
+    border-radius: 0;
+  }
+
+  .layer-1 {
+    top: 14%;
+    left: 27%;
+    width: min(27vw, 390px);
+    aspect-ratio: 1.2;
+  }
+
+  .layer-2 {
+    top: 26%;
+    left: 50%;
+    width: min(29vw, 420px);
+    aspect-ratio: 1.1;
+  }
+
+  .layer-3 {
+    top: 40%;
+    right: 8%;
+    width: min(20vw, 290px);
+    aspect-ratio: 0.85;
+  }
+
+  .layer-4 {
+    top: 5%;
+    right: -2%;
+    width: min(17vw, 250px);
+    aspect-ratio: 0.75;
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: var(--space-xs);
+    width: 100%;
+  }
+
+  h2 {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    font-family: var(--font-display-tight);
+    font-size: clamp(52px, 8.5vw, 128px);
+    font-weight: 750;
+    line-height: 0.88;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .intro-cta {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 14px 20px;
+    background: #fff;
+    color: #000;
+    border-radius: var(--radius-control);
+    font-size: 18px;
+    font-family: var(--font-interface);
+    font-weight: 750;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    text-transform: uppercase;
+    box-shadow: inset 0 0 0 1px #000;
+    transition:
+      color var(--motion-quick) var(--motion-ease-out),
+      box-shadow var(--motion-quick) var(--motion-ease-out);
+  }
+
+  .intro-cta::before {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: #000;
+    content: '';
+    transform: scaleY(0);
+    transform-origin: bottom center;
+    transition: transform var(--motion-quick) var(--motion-ease-out);
+  }
+
+  .intro-cta span {
+    position: relative;
+    z-index: 1;
+  }
+
+  .intro-cta:hover,
+  .intro-cta:focus-visible {
+    color: #fff;
+    box-shadow: inset 0 0 0 1px #fff;
+  }
+
+  .intro-cta:hover::before,
+  .intro-cta:focus-visible::before {
+    transform: scaleY(1);
+  }
+
+  @media (max-width: 767px) {
+    .zine-landing-intro {
+      min-height: 580px;
+      padding: 128px var(--page-inset) var(--space-m);
+    }
+
+    .layer-1 {
+      top: 10%;
+      left: 35%;
+      width: 58vw;
+    }
+
+    .layer-2 {
+      top: 25%;
+      left: 55%;
+      width: 56vw;
+    }
+
+    .layer-3 {
+      top: 43%;
+      right: -8%;
+      width: 44vw;
+    }
+
+    .layer-4 {
+      display: none;
+    }
+
+    h2 {
+      width: 100%;
+      max-width: none;
+      font-size: clamp(52px, 13vw, 80px);
+    }
+  }
+</style>
