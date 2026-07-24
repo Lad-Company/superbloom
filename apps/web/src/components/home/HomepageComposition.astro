@@ -2,7 +2,6 @@
 import Hero from '../blocks/Hero.astro';
 import Capes from '../blocks/Capes.astro';
 import NewsCarousel from '../blocks/NewsCarousel.astro';
-import HomeFeature from '../blocks/HomeFeature.astro';
 import HomeWork from '../blocks/HomeWork.astro';
 import HomeWhy from '../blocks/HomeWhy.astro';
 import HomeZine from '../blocks/HomeZine.astro';
@@ -15,7 +14,9 @@ interface Props {
 }
 
 const { homepage } = Astro.props;
-const workItems = homepage.work?.items?.length ? homepage.work.items : homepage.fallbackWork ?? [];
+const workItems = (homepage.work?.items ?? []).filter(
+  (entry): entry is typeof entry & { item: NonNullable<typeof entry.item> } => entry.item !== null,
+);
 const creativeHeadline = homepage.why?.headline ?? 'The Creative Collective.';
 const creativeBody =
   homepage.why?.body ??
@@ -45,13 +46,6 @@ const moduleSurfaceRoles = {
     role={moduleSurfaceRoles.newsBlock}
   />
 )}
-
-<HomeFeature
-  headline={homepage.feature?.headline ?? 'Built for brands with bigger ambitions.'}
-  body={homepage.feature?.body}
-  primaryMedia={homepage.feature?.primaryMedia ?? homepage.fallbackWork?.[0]?.media}
-  secondaryMedia={homepage.feature?.secondaryMedia ?? homepage.fallbackWork?.[1]?.media}
-/>
 
 {homepage.capabilities && (
   <Capes

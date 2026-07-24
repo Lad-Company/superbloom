@@ -66,12 +66,12 @@ const displayedCapabilities = capabilities.slice(0, 8);
   .pin {
     position: relative;
     height: 100vh;
-    overflow: clip;
   }
 
   .media-stack {
     position: absolute;
     inset: 0;
+    overflow: clip;
   }
 
   .frame {
@@ -142,10 +142,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
   }
 
   .list-clip {
-    overflow: hidden;
-    max-height: calc(100vh - var(--space-4xl) - var(--space-2xl));
-    /* Leave room so the active item doesn't clip at top when list scrolls */
-    padding-top: var(--space-3xs);
+    overflow: visible;
   }
 
   .list {
@@ -220,7 +217,13 @@ const displayedCapabilities = capabilities.slice(0, 8);
       }
     };
 
-    const destroyPinnedStory = initPinnedStory({ section, pin, chapters: count, onChapter: setActive });
+    const destroyPinnedStory = initPinnedStory({
+      section,
+      pin,
+      chapters: count,
+      onChapter: setActive,
+      chapterScroll: 40,
+    });
     const destroyDepthLayer = initDepthLayer(section);
     cleanups.push(() => {
       destroyPinnedStory();

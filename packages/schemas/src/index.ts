@@ -16,7 +16,6 @@ import {caseStudyResults} from './caseStudyResults'
 import {zineIssue} from './zineIssue'
 import {zineLanding} from './zineLanding'
 import {homeZine} from './homeZine'
-import {homeFeatureBlock} from './homeFeatureBlock'
 import {homeWorkBlock} from './homeWorkBlock'
 import {homeWhyBlock} from './homeWhyBlock'
 import {homeTestimonialsBlock} from './homeTestimonialsBlock'
@@ -56,7 +55,6 @@ export const schemaTypes = [
   zineIssue,
   zineLanding,
   homeZine,
-  homeFeatureBlock,
   homeWorkBlock,
   homeWhyBlock,
   homeTestimonialsBlock,

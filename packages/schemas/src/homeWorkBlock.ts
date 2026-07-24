@@ -1,4 +1,10 @@
 import {defineField, defineType} from 'sanity'
+import {cardWidthField, infoPositionField, mediaAspectRatioField} from './cardSettings'
+import {validateFeaturedCardFullyConfigured} from './cardSettingsContract'
+import {
+  validateWorkIndexFeaturedCardsUnique,
+  validateWorkIndexFeaturedCount,
+} from './workIndexContract'
 
 export const homeWorkBlock = defineType({
   name: 'homeWorkBlock',
@@ -20,8 +26,31 @@ export const homeWorkBlock = defineType({
       name: 'items',
       title: 'Case Studies',
       type: 'array',
-      of: [{type: 'reference', to: [{type: 'caseStudy'}]}],
-      validation: (rule) => rule.max(4).unique(),
+      of: [
+        {
+          type: 'object',
+          name: 'homeCaseStudy',
+          fields: [
+            defineField({
+              name: 'caseStudy',
+              type: 'reference',
+              to: [{type: 'caseStudy'}],
+              validation: (rule) => rule.required(),
+            }),
+            cardWidthField({required: true}),
+            mediaAspectRatioField({required: true}),
+            infoPositionField({required: true}),
+          ],
+          validation: (rule) => rule.custom(validateFeaturedCardFullyConfigured),
+          preview: {
+            select: {title: 'caseStudy.title'},
+          },
+        },
+      ],
+      validation: (rule) => [
+        rule.custom(validateWorkIndexFeaturedCount),
+        rule.custom(validateWorkIndexFeaturedCardsUnique),
+      ],
     }),
   ],
   preview: {

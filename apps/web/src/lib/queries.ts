@@ -80,37 +80,25 @@ export const homepageQuery = defineQuery(`
         ${editorialCardProjection}
       }
     },
-    feature{
-      headline,
-      body,
-      "primaryMedia": coalesce(primaryMedia, media)${mediaProjection},
-      "secondaryMedia": secondaryMedia${mediaProjection}
-    },
     work{
       headline,
       ctaLabel,
-      "items": items[0...4]->{
-        _id,
-        title,
-        "slug": slug.current,
-        summary,
+      "items": items[0...4]{
         cardWidth,
         mediaAspectRatio,
         infoPosition,
-        tags[]->{ title, color },
-        "media": cardMedia${mediaProjection}
+        "item": caseStudy->{
+          _id,
+          title,
+          "slug": slug.current,
+          summary,
+          cardWidth,
+          mediaAspectRatio,
+          infoPosition,
+          tags[]->{ title, color },
+          "media": cardMedia${mediaProjection}
+        }
       }
-    },
-    "fallbackWork": *[_type == "caseStudy"] | order(_createdAt asc)[0...4]{
-      _id,
-      title,
-      "slug": slug.current,
-      summary,
-      cardWidth,
-      mediaAspectRatio,
-      infoPosition,
-      tags[]->{ title, color },
-      "media": cardMedia${mediaProjection}
     },
     why{
       headline,

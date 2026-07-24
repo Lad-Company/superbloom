@@ -7,5 +7,11 @@ export { initRouteTransition, ROUTE_REVEALED_EVENT, type RouteTransitionOptions 
 export { initPinnedStory, type PinnedStoryOptions } from './pinnedStory';
 export { initSmoothScroll, getLenis } from './smoothScroll';
 export { initDepthLayer } from './depthLayer';
-export { initHorizontalRail, type HorizontalRailHandle } from './horizontalRail';
+export {
+  initHorizontalRail,
+  initScrollDrivenTrack,
+  type HorizontalRailHandle,
+  type ScrollDrivenTrackHandle,
+  type ScrollDrivenTrackOptions,
+} from './horizontalRail';
 export { initMotion } from './bootstrap';

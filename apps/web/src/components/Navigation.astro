@@ -13,7 +13,9 @@ const links = [
 ---
 
 <nav class:list={['navigation', role]} aria-label="Primary navigation">
-  <a href="/" class="logo type-eyebrow" data-route-link>Superbloom House</a>
+  <a href="/" class="logo" data-route-link aria-label="Superbloom House">
+    <img src="/superbloom-house-logo.svg" alt="" width="697" height="41" />
+  </a>
   <ul class="desktop-links">
     {
       links.map((link) => (
@@ -77,11 +79,10 @@ const links = [
     position: absolute;
     inset: 0 0 auto;
     z-index: 10;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--page-gutter);
-    padding: var(--space-xs);
+    padding: 19px var(--page-gutter);
     width: 100%;
   }
   .light { color: #ffffff; }
@@ -89,16 +90,28 @@ const links = [
   .surface { color: var(--fg); }
   .logo,
   a { text-decoration: none; }
-  .logo { flex-shrink: 0; }
+  .logo {
+    flex-shrink: 0;
+    width: 248px;
+  }
+  .logo img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
   .desktop-links,
   .desktop-actions {
     display: flex;
     align-items: center;
   }
-  .desktop-links { gap: var(--space-2xs); }
+  .desktop-links {
+    justify-content: space-evenly;
+    gap: 0;
+  }
   .desktop-actions {
-    gap: var(--page-gutter);
+    gap: var(--space-3xs);
     flex-shrink: 0;
+    justify-self: end;
   }
   .btn {
     padding: var(--space-3xs) 16px;
@@ -146,7 +159,11 @@ const links = [
   .compact-menu { display: none; }
 
   @media (max-width: 1023px) {
-    .navigation { padding: var(--space-2xs); }
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-2xs);
+    }
     .desktop-links,
     .desktop-actions { display: none; }
     .compact-menu {

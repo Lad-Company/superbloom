@@ -11,10 +11,7 @@ const { text } = Astro.props;
 </div>
 
 <script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-  gsap.registerPlugin(ScrollTrigger);
+  import { initScrollDrivenTrack } from '../lib/motion';
 
   const cleanups: Array<() => void> = [];
 
@@ -24,24 +21,16 @@ const { text } = Astro.props;
     if (!text) return;
     track.dataset.marqueeInitialized = 'true';
 
-    const mm = gsap.matchMedia();
-    mm.add('(prefers-reduced-motion: no-preference)', () => {
-      const tween = gsap.to(text, {
-        xPercent: -33.333,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: track,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 0.6,
-          invalidateOnRefresh: true,
-        },
-      });
-      return () => tween.scrollTrigger?.kill();
+    const scrollDrivenTrack = initScrollDrivenTrack({
+      trigger: track,
+      viewport: track,
+      track: text,
+      getX: () => -text.scrollWidth / 3,
+      end: '+=100%',
     });
 
     cleanups.push(() => {
-      mm.revert();
+      scrollDrivenTrack.destroy();
       delete track.dataset.marqueeInitialized;
     });
   });
