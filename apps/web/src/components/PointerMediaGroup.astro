@@ -11,34 +11,89 @@ const { class: className } = Astro.props;
 </div>
 
 <script>
-  const mm = window.matchMedia('(prefers-reduced-motion: reduce)');
+  import gsap from 'gsap';
+  import { POINTER } from '../lib/motion';
 
-  document.querySelectorAll<HTMLElement>('[data-pointer-group]').forEach((group) => {
+  const mm = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const cleanups: Array<() => void> = [];
+
+  const initPointerGroups = () => document.querySelectorAll<HTMLElement>('[data-pointer-group]').forEach((group) => {
+    if (group.dataset.pointerInitialized) return;
     const items = Array.from(group.querySelectorAll<HTMLElement>('[data-pointer-depth]'));
     if (!items.length) return;
+    group.dataset.pointerInitialized = 'true';
 
-    const reset = () => items.forEach((item) => item.style.removeProperty('transform'));
+    const scope = group.closest<HTMLElement>('[data-pointer-scope]') ?? group;
+    const depths = items.map((item) => Number(item.dataset.pointerDepth ?? 0));
+    const maxDepth = Math.max(...depths, 1);
+    const bounds = scope.getBoundingClientRect();
 
-    const handleMove = (event: PointerEvent) => {
-      if (mm.matches) return;
-      const bounds = group.getBoundingClientRect();
-      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
-      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-      items.forEach((item) => {
-        const depth = Number(item.dataset.pointerDepth ?? 0);
-        item.style.transform = `translate3d(${x * depth}px, ${y * depth}px, 0)`;
+    const layers = items.map((item, index) => {
+      const strength = depths[index] / maxDepth;
+      const amplitudeX = bounds.width * POINTER.frontTravel * (POINTER.depthFalloff + (1 - POINTER.depthFalloff) * strength);
+      const duration = POINTER.lagDeep - (POINTER.lagDeep - POINTER.lagFront) * strength;
+      const restingX = (1 - strength) * -bounds.width * 0.08;
+      const restingY = (1 - strength) * bounds.height * 0.04;
+
+      if (!mm.matches) {
+        gsap.set(item, {
+          x: restingX,
+          y: restingY,
+          zIndex: Math.round(strength * 10),
+          scale: 0.94 + strength * 0.06,
+          filter: strength < 1 ? `blur(${Math.round((1 - strength) * 4)}px)` : 'none',
+        });
+      }
+
+      return {
+        amplitudeX,
+        amplitudeY: amplitudeX * 0.6,
+        restingX,
+        restingY,
+        x: gsap.quickTo(item, 'x', { duration, ease: 'power3.out' }),
+        y: gsap.quickTo(item, 'y', { duration, ease: 'power3.out' }),
+      };
+    });
+
+    const reset = () => {
+      layers.forEach((layer) => {
+        layer.x(layer.restingX);
+        layer.y(layer.restingY);
       });
     };
 
-    group.addEventListener('pointermove', handleMove);
-    group.addEventListener('pointerleave', reset);
-    mm.addEventListener('change', reset);
+    const handleMove = (event: PointerEvent) => {
+      if (mm.matches) return;
+      const currentBounds = scope.getBoundingClientRect();
+      const x = (event.clientX - currentBounds.left) / currentBounds.width - 0.5;
+      const y = (event.clientY - currentBounds.top) / currentBounds.height - 0.5;
+      layers.forEach((layer) => {
+        layer.x(layer.restingX + x * layer.amplitudeX);
+        layer.y(layer.restingY + y * layer.amplitudeY);
+      });
+    };
 
-    window.addEventListener('pagehide', () => {
-      group.removeEventListener('pointermove', handleMove);
-      group.removeEventListener('pointerleave', reset);
-      mm.removeEventListener('change', reset);
-    }, { once: true });
+    const onMotionChange = () => {
+      if (!mm.matches) return;
+      items.forEach((item) => gsap.set(item, { clearProps: 'transform,filter,zIndex' }));
+    };
+
+    scope.addEventListener('pointermove', handleMove);
+    scope.addEventListener('pointerleave', reset);
+    mm.addEventListener('change', onMotionChange);
+
+    cleanups.push(() => {
+      scope.removeEventListener('pointermove', handleMove);
+      scope.removeEventListener('pointerleave', reset);
+      mm.removeEventListener('change', onMotionChange);
+      delete group.dataset.pointerInitialized;
+    });
+  });
+
+  initPointerGroups();
+  window.addEventListener('pagehide', () => cleanups.splice(0).forEach((cleanup) => cleanup()));
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) initPointerGroups();
   });
 </script>
 
@@ -48,18 +103,12 @@ const { class: className } = Astro.props;
   }
 
   .pointer-group :global([data-pointer-depth]) {
-    transition: transform var(--motion-standard) var(--motion-ease-out);
     will-change: transform;
-  }
-
-  .pointer-group:hover :global([data-pointer-depth]) {
-    transition-duration: var(--motion-quick);
   }
 
   @media (prefers-reduced-motion: reduce) {
     .pointer-group :global([data-pointer-depth]) {
       transform: none !important;
-      transition: none;
     }
   }
 </style>

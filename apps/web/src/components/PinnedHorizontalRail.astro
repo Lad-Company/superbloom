@@ -23,19 +23,23 @@ const { label, class: className, showControls = false } = Astro.props;
 </section>
 
 <script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-  gsap.registerPlugin(ScrollTrigger);
+  import { initHorizontalRail } from '../lib/motion';
 
   const cleanups: Array<() => void> = [];
 
-  document.querySelectorAll<HTMLElement>('[data-pinned-horizontal-rail]').forEach((section) => {
+  const initRails = () => document.querySelectorAll<HTMLElement>('[data-pinned-horizontal-rail]').forEach((section) => {
+    if (section.dataset.railInitialized) return;
     const rail = section.querySelector<HTMLElement>('[data-rail]');
     const track = section.querySelector<HTMLElement>('[data-track]');
     if (!rail || !track) return;
+    section.dataset.railInitialized = 'true';
 
+    const horizontalRail = initHorizontalRail(section, rail, track);
     const scrollCards = (direction: -1 | 1) => {
+      if (section.classList.contains('is-scroll-jacked')) {
+        direction === -1 ? horizontalRail.previous() : horizontalRail.next();
+        return;
+      }
       const amount = (track.firstElementChild as HTMLElement | null)?.offsetWidth ?? 0;
       track.scrollBy({left: direction * amount, behavior: 'smooth'});
     };
@@ -44,30 +48,19 @@ const { label, class: className, showControls = false } = Astro.props;
     section.querySelector('.previous')?.addEventListener('click', previous);
     section.querySelector('.next')?.addEventListener('click', next);
 
-    const media = gsap.matchMedia();
-    media.add('(min-width: 1024px) and (prefers-reduced-motion: no-preference)', () => {
-      const trigger = ScrollTrigger.create({
-        trigger: section,
-        start: 'top top',
-        end: () => `+=${Math.max(track.scrollWidth - track.clientWidth, window.innerHeight)}`,
-        pin: rail,
-        scrub: true,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          track.scrollLeft = (track.scrollWidth - track.clientWidth) * self.progress;
-        },
-      });
-      return () => trigger.kill();
-    });
-
     cleanups.push(() => {
+      horizontalRail.destroy();
       section.querySelector('.previous')?.removeEventListener('click', previous);
       section.querySelector('.next')?.removeEventListener('click', next);
-      media.revert();
+      delete section.dataset.railInitialized;
     });
   });
 
-  window.addEventListener('pagehide', () => cleanups.forEach((cleanup) => cleanup()));
+  initRails();
+  window.addEventListener('pagehide', () => cleanups.splice(0).forEach((cleanup) => cleanup()));
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) initRails();
+  });
 </script>
 
 <style>
@@ -77,6 +70,7 @@ const { label, class: className, showControls = false } = Astro.props;
 
   .rail {
     position: relative;
+    overflow: hidden;
   }
 
   .track {
@@ -90,6 +84,11 @@ const { label, class: className, showControls = false } = Astro.props;
 
   .track::-webkit-scrollbar {
     display: none;
+  }
+
+  .is-scroll-jacked .track {
+    overflow: visible;
+    scroll-snap-type: none;
   }
 
   .track > :global(.content-card) {

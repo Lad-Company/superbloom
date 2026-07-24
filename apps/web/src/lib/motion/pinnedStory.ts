@@ -1,6 +1,6 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { prefersReducedMotion } from './config';
+import { prefersReducedMotion, SCROLL } from './config';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,6 +15,8 @@ export interface PinnedStoryOptions {
   onChapter: (index: number) => void;
   /** Scroll length per chapter as a percentage of viewport height. */
   chapterScroll?: number;
+  /** GSAP scrub value — true for direct, number for lag in seconds. */
+  scrub?: boolean | number;
 }
 
 /**
@@ -23,7 +25,7 @@ export interface PinnedStoryOptions {
  * the first chapter is shown in normal document flow.
  */
 export function initPinnedStory(options: PinnedStoryOptions): () => void {
-  const { section, pin, chapters, onChapter, chapterScroll = 100 } = options;
+  const { section, pin, chapters, onChapter, chapterScroll = 100, scrub = SCROLL.scrubLag } = options;
 
   if (chapters < 2) {
     onChapter(0);
@@ -39,7 +41,9 @@ export function initPinnedStory(options: PinnedStoryOptions): () => void {
       start: 'top top',
       end: `+=${chapters * chapterScroll}%`,
       pin,
-      scrub: true,
+      scrub,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
       onUpdate: (self) => {
         const index = Math.min(chapters - 1, Math.floor(self.progress * chapters));
         onChapter(index);

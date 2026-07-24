@@ -47,8 +47,13 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
     <RouteTransition />
     <CartDrawer />
     <script>
-      import { initMotion } from '../lib/motion';
+      import { initMotion, initSmoothScroll } from '../lib/motion';
+      let destroySmoothScroll = initSmoothScroll();
       initMotion();
+      window.addEventListener('pagehide', () => destroySmoothScroll());
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) destroySmoothScroll = initSmoothScroll();
+      });
     </script>
     <style is:global>
       *,

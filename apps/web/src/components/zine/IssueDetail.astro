@@ -1,6 +1,6 @@
 ---
 import MediaFrame, {type Media} from '../MediaFrame.astro';
-import ContentCardList from '../ContentCardList.astro';
+import PinnedHorizontalRail from '../PinnedHorizontalRail.astro';
 import PortableText from '../PortableText.astro';
 import ZineArticleCard from './ZineArticleCard.astro';
 import PastIssues from './PastIssues.astro';
@@ -74,13 +74,15 @@ const issuuEmbedUrl = (() => {
 ---
 
 <article class="issue-detail">
-  <header class="hero">
-    <MediaFrame
-      media={issue.heroMedia}
-      ratio="16:9"
-      title={issue.title}
-      priority
-    />
+  <header class="hero" data-issue-depth>
+    <div class="hero-media" data-depth="0.2">
+      <MediaFrame
+        media={issue.heroMedia}
+        ratio="16:9"
+        title={issue.title}
+        priority
+      />
+    </div>
     <div class="hero-copy">
       <h1 class="type-h1">{issue.title}</h1>
       <a class="explore" href="#flipbook">Explore the Issue</a>
@@ -119,7 +121,7 @@ const issuuEmbedUrl = (() => {
     <h2 id="stories-heading" class="type-h3">More stories</h2>
     {
       issue.slug && (
-        <ContentCardList class="article-grid">
+        <PinnedHorizontalRail class="article-rail" label="More stories" showControls>
           {articles.map((article) => (
             <ZineArticleCard
               article={article}
@@ -129,7 +131,7 @@ const issuuEmbedUrl = (() => {
               globalSettings={issue.globalCardDefaults}
             />
           ))}
-        </ContentCardList>
+        </PinnedHorizontalRail>
       )
     }
   </section>
@@ -145,7 +147,7 @@ const issuuEmbedUrl = (() => {
     background: #000;
   }
 
-  .hero :global(.media-frame) {
+  .hero-media :global(.media-frame) {
     max-height: 90svh;
     border-radius: 0;
   }
@@ -174,12 +176,6 @@ const issuuEmbedUrl = (() => {
   h1,
   h2 {
     margin: 0;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    :global(html) {
-      scroll-behavior: smooth;
-    }
   }
 
   .editor-letter {
@@ -214,7 +210,7 @@ const issuuEmbedUrl = (() => {
     background: #000;
   }
 
-  .article-grid {
+  .article-rail {
     margin-top: var(--space-xl);
   }
 
@@ -228,3 +224,24 @@ const issuuEmbedUrl = (() => {
   }
 
 </style>
+
+<script>
+  import { initDepthLayer } from '../../lib/motion';
+
+  const cleanups: Array<() => void> = [];
+  const initDepthLayers = () => document.querySelectorAll<HTMLElement>('[data-issue-depth]').forEach((scope) => {
+    if (scope.dataset.depthInitialized) return;
+    scope.dataset.depthInitialized = 'true';
+    const destroy = initDepthLayer(scope);
+    cleanups.push(() => {
+      destroy();
+      delete scope.dataset.depthInitialized;
+    });
+  });
+
+  initDepthLayers();
+  window.addEventListener('pagehide', () => cleanups.splice(0).forEach((cleanup) => cleanup()));
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) initDepthLayers();
+  });
+</script>

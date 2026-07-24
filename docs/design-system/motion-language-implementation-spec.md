@@ -16,7 +16,7 @@ The system is not a collection of page-specific effects. It is a small set of pr
 
 ## Non-negotiable rules
 
-- Use GSAP and ScrollTrigger only. Do not use Lenis, Motion, Framer Motion, or synthetic smooth scrolling. This retains native scrolling, restoration, anchors, and the existing ADR 0007 decision.
+- Use GSAP, ScrollTrigger, and the shared Lenis smooth-scroll module defined by ADR 0021. Do not use Motion or Framer Motion. Lenis is disabled for reduced-motion and no-JS contexts, which retain native scrolling, restoration, and anchors.
 - Create every GSAP timeline inside `gsap.matchMedia()` so reduced-motion behavior is a first-class path.
 - Use transforms, opacity, `clip-path`, and CSS variables. Do not animate layout properties such as `top`, `left`, `width`, `height`, `margin`, or `padding`.
 - Do not animate a whole page with generic fades. Every animation needs a named primitive and a clear state change.
@@ -287,7 +287,7 @@ When `prefers-reduced-motion: reduce` matches:
 
 ## Migration plan
 
-1. Remove Lenis from the prototype and package manifest. Retain GSAP/ScrollTrigger only.
+1. Promote Lenis from the prototype into `src/lib/motion/smoothScroll.ts` per ADR 0021, synchronized to GSAP's ticker and disabled for reduced-motion.
 2. Add motion tokens and the `src/lib/motion/` shared layer.
 3. Convert Navigation, Button, and card components to Text Link and Contained Control primitives.
 4. Add `LoadingSurface` around selected Media Frame and async states.

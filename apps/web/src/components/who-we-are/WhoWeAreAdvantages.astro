@@ -1,0 +1,236 @@
+---
+import MediaFrame, { type Media, type MediaRatio } from '../MediaFrame.astro';
+
+interface AdvantageBlock {
+  _key?: string;
+  heading: string | null;
+  body?: string | null;
+  media?: Media | null;
+  aspectRatio?: MediaRatio | null;
+}
+
+interface Props {
+  headline: string;
+  blocks: AdvantageBlock[];
+}
+
+const { headline, blocks } = Astro.props;
+---
+
+<section class="advantages-section" data-advantages data-depth-scope>
+  <div class="advantages-pin" data-advantages-pin>
+    <div class="advantages-header">
+      <p class="type-h3">{headline}</p>
+    </div>
+    <div class="advantages-slides" data-advantages-slides>
+      {blocks.map((block) => (
+        <article class="advantage-item" data-advantage-item>
+          <div class="item-text">
+            {block.heading && <p class="item-heading type-h4">{block.heading}</p>}
+            {block.body && <p class="item-body type-h6">{block.body}</p>}
+          </div>
+          <div class="item-media" data-depth="0.2">
+            <MediaFrame
+              media={block.media ?? null}
+              ratio={block.aspectRatio ?? '1:1'}
+              title={block.heading ?? undefined}
+            />
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { EASE, initDepthLayer, MOTION, SCROLL } from '../../lib/motion';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const cleanups: Array<() => void> = [];
+  const initAdvantages = () => document.querySelectorAll<HTMLElement>('[data-advantages]').forEach((section) => {
+    if (section.dataset.advantagesInitialized) return;
+    const pin = section.querySelector<HTMLElement>('[data-advantages-pin]');
+    const slidesContainer = section.querySelector<HTMLElement>('[data-advantages-slides]');
+    if (!pin || !slidesContainer) return;
+    section.dataset.advantagesInitialized = 'true';
+
+    const items = Array.from(section.querySelectorAll<HTMLElement>('[data-advantage-item]'));
+    const destroyDepthLayer = initDepthLayer(section);
+
+    if (items.length < 2) {
+      cleanups.push(() => {
+        destroyDepthLayer();
+        delete section.dataset.advantagesInitialized;
+      });
+      return;
+    }
+
+    const mm = gsap.matchMedia();
+
+    mm.add('(min-width: 769px) and (prefers-reduced-motion: no-preference)', () => {
+      section.classList.add('is-jacked');
+      gsap.set(slidesContainer, { position: 'relative' });
+      items.forEach((item, i) => {
+        gsap.set(item, {
+          position: 'absolute',
+          inset: 0,
+          autoAlpha: i === 0 ? 1 : 0,
+          y: i === 0 ? 0 : 30,
+        });
+      });
+
+      let currentIndex = 0;
+
+      const showChapter = (index: number) => {
+        if (index === currentIndex) return;
+        const prev = items[currentIndex];
+        const next = items[index];
+
+        gsap.to(prev, { autoAlpha: 0, y: -30, duration: MOTION.standard, ease: EASE.out });
+        gsap.fromTo(next, { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: MOTION.standard, ease: EASE.out });
+
+        currentIndex = index;
+      };
+
+      const trigger = ScrollTrigger.create({
+        trigger: section,
+        start: 'top top',
+        end: `+=${items.length * 100}%`,
+        pin,
+        scrub: SCROLL.scrubLag,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const index = Math.min(items.length - 1, Math.floor(self.progress * items.length));
+          showChapter(index);
+        },
+      });
+
+      return () => {
+        trigger.kill();
+        section.classList.remove('is-jacked');
+        gsap.set(slidesContainer, { clearProps: 'all' });
+        items.forEach((item) => gsap.set(item, { clearProps: 'all' }));
+        currentIndex = 0;
+      };
+    });
+
+    cleanups.push(() => {
+      destroyDepthLayer();
+      mm.revert();
+      delete section.dataset.advantagesInitialized;
+    });
+  });
+
+  initAdvantages();
+  window.addEventListener('pagehide', () => cleanups.splice(0).forEach((cleanup) => cleanup()));
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) initAdvantages();
+  });
+</script>
+
+<style>
+  .advantages-section {
+    --bg: #000000;
+    --fg: #ffffff;
+    --fg-12: rgba(255, 255, 255, 0.12);
+    background: var(--bg);
+    color: var(--fg);
+  }
+
+  .advantages-pin {
+    background: var(--bg);
+    color: var(--fg);
+    display: flex;
+    flex-direction: column;
+    /* Explicit height so GSAP measures the pinned element correctly and
+       flex: 1 on .advantages-slides resolves to a definite value. */
+    height: 100svh;
+    padding: var(--space-4xl) var(--page-inset);
+    gap: var(--space-2xl);
+    box-sizing: border-box;
+  }
+
+  .advantages-header p {
+    margin: 0;
+  }
+
+  .advantages-slides {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .advantage-item {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .item-text {
+    flex: 1 0 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-right: var(--space-3xl);
+  }
+
+  .item-heading,
+  .item-body {
+    margin: 0;
+  }
+
+  .item-media {
+    flex: 1 0 0;
+    min-width: 0;
+  }
+
+  .item-media :global(.media-frame) {
+    width: 100%;
+    border-radius: var(--radius-media);
+  }
+
+  /* Jacked layout: items fill the slides container; media clips to available height. */
+  .advantages-section.is-jacked [data-advantage-item] {
+    height: 100%;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .advantages-section.is-jacked .item-media {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .advantages-section.is-jacked .item-media :global(.media-frame) {
+    height: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .advantages-pin {
+      height: auto;
+      padding: var(--space-2xl) var(--space-3xs);
+    }
+
+    .advantages-slides {
+      overflow: visible;
+    }
+
+    .advantage-item {
+      flex-direction: column;
+      padding-top: var(--space-4xl);
+    }
+
+    .advantage-item:first-child {
+      padding-top: 0;
+    }
+
+    .item-text {
+      padding-right: 0;
+    }
+  }
+</style>

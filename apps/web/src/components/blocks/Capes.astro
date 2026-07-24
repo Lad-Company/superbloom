@@ -17,9 +17,9 @@ const { headline, capabilities } = Astro.props;
 const displayedCapabilities = capabilities.slice(0, 8);
 ---
 
-<section class="capes" data-capes>
+<section class="capes" data-capes data-depth-scope>
   <div class="pin" data-pin>
-    <div class="media-stack">
+    <div class="media-stack" data-depth="0.2">
       {
         displayedCapabilities.map((cap, i) => (
           <div class:list={['frame', { 'is-active': i === 0 }]} data-capes-frame>
@@ -143,6 +143,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
 
   .list-clip {
     overflow: hidden;
+    max-height: calc(100vh - var(--space-4xl) - var(--space-2xl));
     /* Leave room so the active item doesn't clip at top when list scrolls */
     padding-top: var(--space-3xs);
   }
@@ -154,7 +155,6 @@ const displayedCapabilities = capabilities.slice(0, 8);
     margin: 0;
     padding: 0;
     list-style: none;
-    transition: transform var(--motion-standard) var(--motion-ease-out);
   }
 
   .list li {
@@ -180,11 +180,13 @@ const displayedCapabilities = capabilities.slice(0, 8);
 </style>
 
 <script>
-  import { initPinnedStory } from '../../lib/motion';
+  import gsap from 'gsap';
+  import { initDepthLayer, initPinnedStory } from '../../lib/motion';
 
   const cleanups: Array<() => void> = [];
 
-  document.querySelectorAll<HTMLElement>('[data-capes]').forEach((section) => {
+  const initCapes = () => document.querySelectorAll<HTMLElement>('[data-capes]').forEach((section) => {
+    if (section.dataset.capesInitialized) return;
     const frames = section.querySelectorAll<HTMLElement>('[data-capes-frame]');
     const listItems = section.querySelectorAll<HTMLElement>('[data-cap]');
     const contextualCopy = section.querySelectorAll<HTMLElement>('[data-context-copy]');
@@ -193,6 +195,9 @@ const displayedCapabilities = capabilities.slice(0, 8);
     const pin = section.querySelector<HTMLElement>('[data-pin]');
     const count = frames.length;
     if (!count || !pin) return;
+    section.dataset.capesInitialized = 'true';
+
+    const scrollListY = list ? gsap.quickTo(list, 'y', { duration: 0.55, ease: 'power2.out' }) : null;
 
     const setActive = (i: number) => {
       frames.forEach((frame, idx) => {
@@ -203,21 +208,30 @@ const displayedCapabilities = capabilities.slice(0, 8);
       listItems.forEach((item, idx) => item.classList.toggle('is-active', idx === i));
       contextualCopy.forEach((copy, idx) => copy.classList.toggle('is-active', idx === i));
 
-      // Translate list so the active item remains within the visible clip area
-      if (list && listClip) {
+      if (scrollListY && list && listClip) {
         const activeItem = listItems[i] as HTMLElement | undefined;
         if (activeItem) {
           const clipHeight = listClip.clientHeight;
           const itemOffset = activeItem.offsetTop;
           const itemHeight = activeItem.offsetHeight;
           const target = Math.max(0, itemOffset - (clipHeight / 2 - itemHeight / 2));
-          list.style.transform = `translateY(${-target}px)`;
+          scrollListY(-target);
         }
       }
     };
 
-    cleanups.push(initPinnedStory({ section, pin, chapters: count, onChapter: setActive }));
+    const destroyPinnedStory = initPinnedStory({ section, pin, chapters: count, onChapter: setActive });
+    const destroyDepthLayer = initDepthLayer(section);
+    cleanups.push(() => {
+      destroyPinnedStory();
+      destroyDepthLayer();
+      delete section.dataset.capesInitialized;
+    });
   });
 
-  window.addEventListener('pagehide', () => cleanups.forEach((cleanup) => cleanup()));
+  initCapes();
+  window.addEventListener('pagehide', () => cleanups.splice(0).forEach((cleanup) => cleanup()));
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) initCapes();
+  });
 </script>

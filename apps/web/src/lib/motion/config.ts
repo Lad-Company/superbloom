@@ -16,6 +16,18 @@ export const STAGGER = {
   standard: 0.048,
 } as const;
 
+export const SCROLL = {
+  lerp: 0.1,
+  scrubLag: 0.6,
+} as const;
+
+export const POINTER = {
+  frontTravel: 0.55,
+  depthFalloff: 0.6,
+  lagFront: 0.35,
+  lagDeep: 0.9,
+} as const;
+
 export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
 export function reducedMotionQuery(): MediaQueryList {

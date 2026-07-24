@@ -6,9 +6,54 @@ interface Props {
 const { text } = Astro.props;
 ---
 
-<div class="marquee-track" aria-hidden="true">
-  <p class="marquee-text">{text}&nbsp;&nbsp;{text}&nbsp;&nbsp;{text}</p>
+<div class="marquee-track" aria-hidden="true" data-marquee>
+  <p class="marquee-text" data-marquee-text>{text}&nbsp;&nbsp;{text}&nbsp;&nbsp;{text}</p>
 </div>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const cleanups: Array<() => void> = [];
+
+  const initMarquees = () => document.querySelectorAll<HTMLElement>('[data-marquee]').forEach((track) => {
+    if (track.dataset.marqueeInitialized) return;
+    const text = track.querySelector<HTMLElement>('[data-marquee-text]');
+    if (!text) return;
+    track.dataset.marqueeInitialized = 'true';
+
+    const mm = gsap.matchMedia();
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      const tween = gsap.to(text, {
+        xPercent: -33.333,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: track,
+          start: 'top top',
+          end: () => `+=${Math.max(window.innerHeight, text.scrollWidth / 2)}`,
+          pin: true,
+          scrub: 0.6,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        },
+      });
+      return () => tween.scrollTrigger?.kill();
+    });
+
+    cleanups.push(() => {
+      mm.revert();
+      delete track.dataset.marqueeInitialized;
+    });
+  });
+
+  initMarquees();
+  window.addEventListener('pagehide', () => cleanups.splice(0).forEach((cleanup) => cleanup()));
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) initMarquees();
+  });
+</script>
 
 <style>
   .marquee-track {
@@ -24,5 +69,6 @@ const { text } = Astro.props;
     text-transform: uppercase;
     color: var(--fg);
     white-space: nowrap;
+    will-change: transform;
   }
 </style>

@@ -15,25 +15,50 @@ const { headline, body, primaryMedia, secondaryMedia } = Astro.props;
 ---
 
 <SurfaceSection role="light">
-  <div class="feature">
+  <div class="feature" data-pointer-scope data-home-feature-depth>
     <div class="text">
       <h2 class="type-h2" data-motion-text data-unit="words" data-scroll="true">{headline}</h2>
       {body && <p class="body type-body">{body}</p>}
     </div>
     <PointerMediaGroup class="visuals">
       {primaryMedia && (
-        <div class="primary" data-pointer-depth="32">
-          <MediaFrame media={primaryMedia} ratio="1:1" title={headline} />
+        <div class="primary-depth" data-depth="0.35">
+          <div class="primary" data-pointer-depth="70">
+            <MediaFrame media={primaryMedia} ratio="1:1" title={headline} />
+          </div>
         </div>
       )}
       {secondaryMedia && (
-        <div class="secondary" data-pointer-depth="20">
-          <MediaFrame media={secondaryMedia} ratio="3:2" title={headline} />
+        <div class="secondary-depth" data-depth="0.7">
+          <div class="secondary" data-pointer-depth="35">
+            <MediaFrame media={secondaryMedia} ratio="3:2" title={headline} />
+          </div>
         </div>
       )}
     </PointerMediaGroup>
   </div>
 </SurfaceSection>
+
+<script>
+  import { initDepthLayer } from '../../lib/motion';
+
+  const cleanups: Array<() => void> = [];
+  const initDepthLayers = () => document.querySelectorAll<HTMLElement>('[data-home-feature-depth]').forEach((scope) => {
+    if (scope.dataset.depthInitialized) return;
+    scope.dataset.depthInitialized = 'true';
+    const destroy = initDepthLayer(scope);
+    cleanups.push(() => {
+      destroy();
+      delete scope.dataset.depthInitialized;
+    });
+  });
+
+  initDepthLayers();
+  window.addEventListener('pagehide', () => cleanups.splice(0).forEach((cleanup) => cleanup()));
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) initDepthLayers();
+  });
+</script>
 
 <style>
   .feature {
@@ -42,11 +67,15 @@ const { headline, body, primaryMedia, secondaryMedia } = Astro.props;
     gap: var(--space-2xl);
     padding: var(--space-4xl) var(--page-inset) var(--space-3xl);
     align-items: start;
+    position: relative;
+    overflow: visible;
   }
   .text {
     display: flex;
     flex-direction: column;
     gap: var(--space-2xs);
+    position: relative;
+    z-index: 0;
   }
   h2 {
     margin: 0;
@@ -60,21 +89,34 @@ const { headline, body, primaryMedia, secondaryMedia } = Astro.props;
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto;
+    row-gap: var(--space-3xl);
     align-items: start;
     min-height: min(50vw, 705px);
+    position: relative;
+    z-index: 1;
+    overflow: visible;
+    --radius-media: 0;
   }
-  .primary {
+  .primary-depth {
+    position: relative;
+    z-index: 2;
     grid-column: 1 / -1;
     grid-row: 1;
     width: min(100%, 444px);
     justify-self: end;
   }
-  .secondary {
+  .secondary-depth {
+    position: relative;
+    z-index: 1;
     grid-column: 1;
     grid-row: 2;
     width: min(100%, 391px);
     margin-top: 0;
     align-self: end;
+  }
+  .primary,
+  .secondary {
+    width: 100%;
   }
   @media (max-width: 1023px) {
     .feature {
@@ -97,11 +139,11 @@ const { headline, body, primaryMedia, secondaryMedia } = Astro.props;
       grid-template-columns: 2fr 1.5fr;
       gap: var(--space-2xs);
     }
-    .primary {
+    .primary-depth {
       grid-column: 1 / -1;
       width: 74%;
     }
-    .secondary {
+    .secondary-depth {
       grid-column: 1;
       width: 100%;
     }
