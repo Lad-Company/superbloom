@@ -18,19 +18,56 @@ const { heading = 'FAQ', items } = Astro.props;
   <ul class="faq-list">
     {items.map((item) => (
       <li>
-        <details class="faq-item">
+        <details class="faq-item" data-faq-item>
           <summary class="faq-question">
             <span class="question-text type-h6">{item.question}</span>
             <span class="icon" aria-hidden="true">+</span>
           </summary>
           {item.answer && (
-            <p class="faq-answer type-caption">{item.answer}</p>
+            <div class="faq-body" data-faq-body>
+              <p class="faq-answer type-caption">{item.answer}</p>
+            </div>
           )}
         </details>
       </li>
     ))}
   </ul>
 </div>
+
+<script>
+  import gsap from 'gsap';
+  import { EASE, MOTION, prefersReducedMotion } from '../lib/motion/config';
+
+  if (!prefersReducedMotion()) {
+    document.querySelectorAll<HTMLDetailsElement>('[data-faq-item]').forEach((details) => {
+      const summary = details.querySelector<HTMLElement>('.faq-question');
+      const body = details.querySelector<HTMLElement>('[data-faq-body]');
+      const icon = details.querySelector<HTMLElement>('.icon');
+      if (!summary || !body) return;
+
+      // Keep body hidden until opened; GSAP manages the height.
+      gsap.set(body, { height: 0, overflow: 'hidden' });
+
+      summary.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        if (!details.open) {
+          details.open = true;
+          gsap.to(body, { height: 'auto', duration: MOTION.standard, ease: EASE.out });
+          if (icon) gsap.to(icon, { rotation: 45, duration: MOTION.quick, ease: EASE.out });
+        } else {
+          gsap.to(body, {
+            height: 0,
+            duration: MOTION.standard,
+            ease: EASE.out,
+            onComplete: () => { details.open = false; },
+          });
+          if (icon) gsap.to(icon, { rotation: 0, duration: MOTION.quick, ease: EASE.out });
+        }
+      });
+    });
+  }
+</script>
 
 <style>
   .faq {
@@ -55,9 +92,6 @@ const { heading = 'FAQ', items } = Astro.props;
   .faq-item {
     border-top: 1px solid var(--fg-12);
   }
-  .faq-item[open] .icon {
-    content: '−';
-  }
   .faq-question {
     display: flex;
     align-items: center;
@@ -80,15 +114,25 @@ const { heading = 'FAQ', items } = Astro.props;
     flex-shrink: 0;
     font-family: var(--font-body);
     font-weight: 400;
-    transition: transform 0.2s ease;
+    display: inline-block;
   }
-  details[open] .icon {
-    transform: rotate(45deg);
+  .faq-body {
+    overflow: hidden;
   }
   .faq-answer {
     margin: 0;
     padding-bottom: var(--space-xs);
     color: var(--fg-60);
+  }
+  /* No-JS: show answers in natural flow */
+  html:not(.js) .faq-body {
+    height: auto !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-body {
+      height: auto !important;
+    }
   }
   @media (max-width: 768px) {
     .faq {

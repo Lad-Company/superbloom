@@ -1,0 +1,74 @@
+---
+import PointerMediaGroup from '../PointerMediaGroup.astro';
+import MediaFrame, { type Media, type MediaRatio } from '../MediaFrame.astro';
+
+interface Props {
+  statement: string;
+  media?: Media | null;
+  ratio?: MediaRatio;
+}
+
+const { statement, media, ratio = '4:5' } = Astro.props;
+---
+
+<div class="intro" data-pointer-scope>
+  <PointerMediaGroup>
+    <p class="intro-statement type-h4">{statement}</p>
+    {media && (
+      <div class="intro-float-anchor">
+        <div class="intro-float" data-pointer-depth="30">
+          <MediaFrame media={media} ratio={ratio} title="" />
+        </div>
+      </div>
+    )}
+  </PointerMediaGroup>
+</div>
+
+<style>
+  .intro {
+    padding: var(--space-4xl) var(--page-inset);
+  }
+
+  .intro :global(.pointer-group) {
+    position: relative;
+  }
+
+  .intro-statement {
+    margin: 0;
+    max-width: 24ch;
+  }
+
+  /*
+   * Separate the CSS positioning transform from the GSAP pointer-depth transform.
+   * The anchor handles absolute positioning; the inner float receives GSAP x/y
+   * so there is no conflict with transform: translateY(-50%).
+   */
+  .intro-float-anchor {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: clamp(180px, 22vw, 320px);
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .intro-float {
+    width: 100%;
+  }
+
+  .intro-float :global(.media-frame) {
+    border-radius: var(--radius-media);
+  }
+
+  @media (max-width: 768px) {
+    .intro {
+      padding: var(--space-2xl) var(--space-3xs);
+    }
+
+    .intro-float-anchor {
+      display: none;
+    }
+  }
+</style>

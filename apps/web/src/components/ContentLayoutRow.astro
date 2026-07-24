@@ -25,10 +25,16 @@ type TextBlock = {
   text?: TypedObject[] | null;
 };
 
+type SpacerBlock = {
+  _type: 'contentLayoutSpacer';
+  _key?: string | null;
+  width?: ContentLayoutWidth | null;
+};
+
 export interface ContentLayoutRowValue {
   _type: 'contentLayoutRow';
   _key?: string | null;
-  blocks?: Array<MediaBlock | TextBlock> | null;
+  blocks?: Array<MediaBlock | TextBlock | SpacerBlock> | null;
   alignment?: ContentLayoutAlignment | null;
   fullBleed?: boolean | null;
 }
@@ -47,7 +53,7 @@ const fullBleed = isContentLayoutFullBleed({blocks, alignment: row.alignment, fu
 {blocks.length > 0 && (
   <div class:list={[classes.row, {'full-bleed': fullBleed}]}>
     {blocks.map((block, index) => (
-      <div class:list={classes.blocks[index]}>
+      <div class:list={classes.blocks[index]} aria-hidden={block._type === 'contentLayoutSpacer' || undefined}>
         {block._type === 'contentLayoutMedia' && (
           <MediaFrame
             media={block.media}

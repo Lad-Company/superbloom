@@ -33,10 +33,40 @@ describe('Content Layout Row contract', () => {
     )
   })
 
-  it('requires one or two blocks', () => {
-    expect(validateContentLayoutRow({blocks: []})).toContain('one or two')
-    expect(validateContentLayoutRow({blocks: [{width: 'full'}, {width: '1/2'}, {width: '1/2'}]}))
-      .toContain('one or two')
+  it('requires between one and three blocks', () => {
+    expect(validateContentLayoutRow({blocks: []})).toContain('one, two, or three')
+    expect(validateContentLayoutRow({
+      blocks: [
+        {width: '1/4'},
+        {width: '1/4'},
+        {width: '1/4'},
+        {width: '1/4'},
+      ],
+    })).toContain('one, two, or three')
+  })
+
+  it('allows a three-block row only with one Spacer Block and full width coverage', () => {
+    expect(validateContentLayoutRow({
+      blocks: [
+        {_type: 'contentLayoutSpacer', width: '1/3'},
+        {_type: 'contentLayoutMedia', width: '1/3'},
+        {_type: 'contentLayoutMedia', width: '1/3'},
+      ],
+    })).toBe(true)
+    expect(validateContentLayoutRow({
+      blocks: [
+        {_type: 'contentLayoutText', width: '1/3'},
+        {_type: 'contentLayoutMedia', width: '1/3'},
+        {_type: 'contentLayoutMedia', width: '1/3'},
+      ],
+    })).toContain('require one Spacer Block')
+    expect(validateContentLayoutRow({
+      blocks: [
+        {_type: 'contentLayoutSpacer', width: '1/3'},
+        {_type: 'contentLayoutMedia', width: '1/3'},
+        {_type: 'contentLayoutMedia', width: '1/4'},
+      ],
+    })).toContain('widths totaling full width')
   })
 
   it('requires explicit widths for every block', () => {
@@ -74,12 +104,13 @@ describe('Content Layout Row contract', () => {
     })).toBe(true)
   })
 
-  it('registers one-or-two Media or Text blocks and removes legacy layout types', () => {
+  it('registers Media, Text, and Spacer blocks and removes legacy layout types', () => {
     const blocks = contentLayoutRow.fields.find((field) => field.name === 'blocks')
     expect(blocks?.type).toBe('array')
     expect(blocks?.of?.map((member) => member.type)).toEqual([
       'contentLayoutMedia',
       'contentLayoutText',
+      'contentLayoutSpacer',
     ])
 
     const registeredTypes = schemaTypes.map((type) => type.name)
@@ -87,6 +118,7 @@ describe('Content Layout Row contract', () => {
       'contentLayoutRow',
       'contentLayoutMedia',
       'contentLayoutText',
+      'contentLayoutSpacer',
     ]))
     for (const legacyType of [
       'articleTextSection',

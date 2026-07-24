@@ -6,6 +6,7 @@ import {colorInput} from '@sanity/color-input'
 import {schemaTypes} from '@superbloom/schemas'
 import {muxSchemaCompatibility} from './muxSchemaCompatibility'
 import {newsArticleView, editorialArticleView, zineArticleView} from './articleViews'
+import {legacyColorInput} from './legacyColorInput'
 
 export default defineConfig({
   name: 'superbloom',
@@ -56,12 +57,7 @@ export default defineConfig({
                     editorialArticleView(S),
                     zineArticleView(S),
                     S.divider(),
-                    orderableDocumentListDeskItem({
-                      type: 'caseStudy',
-                      title: 'Case Studies',
-                      S,
-                      context,
-                    }),
+                    S.documentTypeListItem('caseStudy').title('Case Studies'),
                     orderableDocumentListDeskItem({
                       type: 'zineIssue',
                       title: 'Zine Issues',
@@ -117,5 +113,11 @@ export default defineConfig({
         value: {articleType: 'zine'},
       },
     ],
+  },
+  form: {
+    components: {
+      input: (props) =>
+        props.schemaType.name === 'color' ? legacyColorInput(props) : props.renderDefault(props),
+    },
   },
 })

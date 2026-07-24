@@ -21,9 +21,13 @@ export const contentLayoutRow = defineType({
       name: 'blocks',
       title: 'Blocks',
       type: 'array',
-      of: [{type: 'contentLayoutMedia'}, {type: 'contentLayoutText'}],
+      of: [
+        {type: 'contentLayoutMedia'},
+        {type: 'contentLayoutText'},
+        {type: 'contentLayoutSpacer'},
+      ],
       validation: (rule) =>
-        rule.required().min(1).max(2).custom(validateTwoBlockRowWidths),
+        rule.required().min(1).max(3).custom(validateTwoBlockRowWidths),
     }),
     defineField({
       name: 'alignment',

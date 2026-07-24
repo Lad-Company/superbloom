@@ -18,7 +18,7 @@ const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-
 
 <SurfaceSection role={role} id={id} tabindex={-1} class="results-surface">
   <div class="results">
-    <h2 class="type-eyebrow">{label}</h2>
+    <h2 class="type-section-heading">{label}</h2>
     <ul>
       {(results.stats ?? []).map((stat) => (
         <li>

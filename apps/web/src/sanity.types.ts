@@ -19,9 +19,16 @@ export type ContentLayoutRow = {
     _key: string;
   } & ContentLayoutMedia | {
     _key: string;
-  } & ContentLayoutText>;
+  } & ContentLayoutText | {
+    _key: string;
+  } & ContentLayoutSpacer>;
   alignment?: "left" | "center" | "right";
   fullBleed?: boolean;
+};
+
+export type ContentLayoutSpacer = {
+  _type: "contentLayoutSpacer";
+  width?: "1/4" | "1/3" | "1/2" | "2/3" | "3/4" | "full";
 };
 
 export type ContentLayoutText = {
@@ -595,6 +602,7 @@ export type CaseStudy = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
+  orderRank?: string;
   title?: string;
   slug?: Slug;
   client?: string;
@@ -908,7 +916,7 @@ export type Geopoint = {
   alt?: number;
 };
 
-export type AllSanitySchemaTypes = ContentLayoutRow | ContentLayoutText | ContentLayoutMedia | SiteSettings | IndexPage | HomeTestimonialsBlock | HomeWhyBlock | HomeWorkBlock | HomeFeatureBlock | HomeZine | ZineLanding | ZineIssue | MediaBox | Slug | CaseStudyResults | CaseStudyNarrativeSection | ContactBlock | FormSubmission | WhoWeAre | WorkIndex | Homepage | NewsBlock | CapesBlock | HeroBlock | Article | Tag | CaseStudy | Color | Capability | SanityImageCrop | SanityImageHotspot | RgbaColor | HsvaColor | HslaColor | MuxNonStandardInputReasons | MuxProgress | MuxVideo | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
+export type AllSanitySchemaTypes = ContentLayoutRow | ContentLayoutSpacer | ContentLayoutText | ContentLayoutMedia | SiteSettings | IndexPage | HomeTestimonialsBlock | HomeWhyBlock | HomeWorkBlock | HomeFeatureBlock | HomeZine | ZineLanding | ZineIssue | MediaBox | Slug | CaseStudyResults | CaseStudyNarrativeSection | ContactBlock | FormSubmission | WhoWeAre | WorkIndex | Homepage | NewsBlock | CapesBlock | HeroBlock | Article | Tag | CaseStudy | Color | Capability | SanityImageCrop | SanityImageHotspot | RgbaColor | HsvaColor | HslaColor | MuxNonStandardInputReasons | MuxProgress | MuxVideo | MuxVideoAsset | MuxAssetData | MuxStaticRenditions | MuxStaticRenditionFile | MuxPlaybackId | MuxTrack | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageMetadata | SanityFileAsset | SanityAssetSourceData | SanityImageAsset | Geopoint;
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ../web/src/lib/queries.ts
 // Variable: homepageQuery
@@ -1485,6 +1493,10 @@ export type CaseStudyBySlugQueryResult = {
           decorative: boolean | null;
         } | null;
       } | {
+        _type: "contentLayoutSpacer";
+        _key: string;
+        width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
+      } | {
         _type: "contentLayoutText";
         _key: string;
         width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
@@ -1554,6 +1566,10 @@ export type CaseStudyBySlugQueryResult = {
           altText: string | null;
           decorative: boolean | null;
         } | null;
+      } | {
+        _type: "contentLayoutSpacer";
+        _key: string;
+        width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
       } | {
         _type: "contentLayoutText";
         _key: string;
@@ -1625,6 +1641,10 @@ export type CaseStudyBySlugQueryResult = {
           decorative: boolean | null;
         } | null;
       } | {
+        _type: "contentLayoutSpacer";
+        _key: string;
+        width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
+      } | {
         _type: "contentLayoutText";
         _key: string;
         width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
@@ -1695,6 +1715,10 @@ export type CaseStudyBySlugQueryResult = {
           decorative: boolean | null;
         } | null;
       } | {
+        _type: "contentLayoutSpacer";
+        _key: string;
+        width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
+      } | {
         _type: "contentLayoutText";
         _key: string;
         width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
@@ -1752,6 +1776,10 @@ export type CaseStudyBySlugQueryResult = {
           altText: string | null;
           decorative: boolean | null;
         } | null;
+      } | {
+        _type: "contentLayoutSpacer";
+        _key: string;
+        width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
       } | {
         _type: "contentLayoutText";
         _key: string;
@@ -1942,6 +1970,10 @@ export type NewsArticleBySlugQueryResult = {
         decorative: boolean | null;
       } | null;
     } | {
+      _type: "contentLayoutSpacer";
+      _key: string;
+      width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
+    } | {
       _type: "contentLayoutText";
       _key: string;
       width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
@@ -2104,6 +2136,10 @@ export type EditorialArticleBySlugQueryResult = {
         altText: string | null;
         decorative: boolean | null;
       } | null;
+    } | {
+      _type: "contentLayoutSpacer";
+      _key: string;
+      width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
     } | {
       _type: "contentLayoutText";
       _key: string;
@@ -2552,6 +2588,10 @@ export type ZineArticleBySlugQueryResult = {
           altText: string | null;
           decorative: boolean | null;
         } | null;
+      } | {
+        _type: "contentLayoutSpacer";
+        _key: string;
+        width: "1/2" | "1/3" | "1/4" | "2/3" | "3/4" | "full" | null;
       } | {
         _type: "contentLayoutText";
         _key: string;

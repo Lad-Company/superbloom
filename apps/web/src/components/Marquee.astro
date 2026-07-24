@@ -31,11 +31,9 @@ const { text } = Astro.props;
         ease: 'none',
         scrollTrigger: {
           trigger: track,
-          start: 'top top',
-          end: () => `+=${Math.max(window.innerHeight, text.scrollWidth / 2)}`,
-          pin: true,
+          start: 'top bottom',
+          end: 'bottom top',
           scrub: 0.6,
-          anticipatePin: 1,
           invalidateOnRefresh: true,
         },
       });

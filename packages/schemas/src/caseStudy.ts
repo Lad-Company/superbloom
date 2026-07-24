@@ -17,6 +17,12 @@ export const caseStudy = defineType({
   type: 'document',
   fields: [
     defineField({
+      name: 'orderRank',
+      type: 'string',
+      hidden: true,
+      readOnly: true,
+    }),
+    defineField({
       name: 'title',
       type: 'string',
       validation: (rule) => rule.required(),

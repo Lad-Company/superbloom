@@ -2,7 +2,7 @@ export type ContentLayoutWidth = '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full';
 export type ContentLayoutAlignment = 'left' | 'center' | 'right';
 
 export type ContentLayoutBlock = {
-  _type: 'contentLayoutMedia' | 'contentLayoutText';
+  _type: 'contentLayoutMedia' | 'contentLayoutText' | 'contentLayoutSpacer';
   width?: ContentLayoutWidth | null;
 };
 

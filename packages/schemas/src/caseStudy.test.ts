@@ -7,6 +7,13 @@ import {caseStudySections} from '../../../apps/web/src/lib/caseStudySections'
 
 describe('Case Study Spine Schema', () => {
   describe('caseStudy document schema', () => {
+    it('keeps legacy order ranks hidden so existing documents remain editable', () => {
+      const orderRankField = caseStudy.fields?.find((f) => f.name === 'orderRank')
+      expect(orderRankField?.type).toBe('string')
+      expect(orderRankField?.hidden).toBe(true)
+      expect(orderRankField?.readOnly).toBe(true)
+    })
+
     it('has all five required narrative spine fields', () => {
       const fieldNames = caseStudy.fields?.map((f) => f.name) ?? []
       expect(fieldNames).toContain('highlights')

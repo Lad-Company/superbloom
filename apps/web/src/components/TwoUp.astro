@@ -43,6 +43,10 @@ const { items } = Astro.props;
     flex-direction: column;
     gap: 24px;
   }
+
+  .col :global(.btn) {
+    align-self: flex-start;
+  }
   .col :global(.media-frame) {
     border-radius: var(--radius-s);
   }

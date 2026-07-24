@@ -32,8 +32,10 @@ export default defineConfig({
     'type-h6': 'font-body font-medium text-[24px] leading-[1.2] tracking-[-0.48px]',
     'type-eyebrow':
       'font-interface font-[750] text-[17px] leading-none tracking-[0.34px] uppercase',
+    'type-section-heading':
+      'font-display-tight font-[750] text-[56px] leading-[0.88] tracking-[0] uppercase',
     'type-body': 'font-body font-medium text-[19px] leading-[1.3] tracking-[-0.38px]',
-    'type-caption': 'font-body font-medium text-[17px] leading-[1.3] tracking-[-0.34px]',
+    'type-caption': 'font-body font-medium text-[14px] leading-[1.3] tracking-[-0.28px]',
     'type-label':
       'font-interface font-[750] text-[17px] leading-none tracking-[0.34px] uppercase',
   },

@@ -38,6 +38,21 @@ describe('Content Layout Row rendering contract', () => {
     });
   });
 
+  it('maps a spacer to a grid block without visual or assistive content', () => {
+    expect(getContentLayoutRowClassNames({
+      blocks: [
+        {_type: 'contentLayoutSpacer', width: '1/3'},
+        {_type: 'contentLayoutMedia', width: '1/3'},
+        {_type: 'contentLayoutMedia', width: '1/3'},
+      ],
+    }).blocks).toEqual([
+      ['content-layout-block', 'width-1-3'],
+      ['content-layout-block', 'width-1-3'],
+      ['content-layout-block', 'width-1-3'],
+    ]);
+    expect(componentSource).toContain("aria-hidden={block._type === 'contentLayoutSpacer' || undefined}");
+  });
+
   it('allows full bleed only for qualifying Media', () => {
     expect(isContentLayoutFullBleed({
       blocks: [{_type: 'contentLayoutMedia', width: 'full'}],

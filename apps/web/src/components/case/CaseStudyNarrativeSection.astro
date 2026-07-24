@@ -21,7 +21,7 @@ const { id, label, section, title } = Astro.props;
   <div class="narrative-section">
     <div class="copy">
       <div class="content">
-        <h2 class="type-eyebrow">{label}</h2>
+        <h2 class="type-section-heading">{label}</h2>
         <PortableText value={section.summary ?? []} class="summary" />
       </div>
     </div>

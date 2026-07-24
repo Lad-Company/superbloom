@@ -4,13 +4,14 @@ import Footer from '../components/Footer.astro';
 import ContactBand from '../components/ContactBand.astro';
 import Marquee from '../components/Marquee.astro';
 import FactCardGrid from '../components/FactCardGrid.astro';
-import TextMedia from '../components/TextMedia.astro';
 import DisciplineList from '../components/DisciplineList.astro';
 import TwoUp from '../components/TwoUp.astro';
 import Faq from '../components/Faq.astro';
 import SurfaceSection from '../components/SurfaceSection.astro';
 import WhoWeAreFeaturedMedia from '../components/who-we-are/WhoWeAreFeaturedMedia.astro';
 import WhoWeAreHero from '../components/who-we-are/WhoWeAreHero.astro';
+import WhoWeAreIntro from '../components/who-we-are/WhoWeAreIntro.astro';
+import WhoWeAreAdvantages from '../components/who-we-are/WhoWeAreAdvantages.astro';
 import { sanityClient } from '../lib/sanity';
 import { whoWeAreQuery } from '../lib/queries';
 import type { WhoWeAreQueryResult } from '../sanity.types';
@@ -53,36 +54,16 @@ const faqs = page?.faqs ?? [];
   </SurfaceSection>
 
   <SurfaceSection role="dark">
-    <div class="intro">
-      <p class="intro-statement type-h4">{introStatement}</p>
-    </div>
+    <WhoWeAreIntro statement={introStatement} media={featuredMedia} />
   </SurfaceSection>
 
   {statCards.length > 0 && (
     <FactCardGrid cards={statCards} />
   )}
 
-  <SurfaceSection role="dark">
-    <div class="advantage-headline">
-      <p class="type-h3">{advantageHeadline}</p>
-    </div>
-    {advantageBlocks.map((block) => (
-      <TextMedia
-        heading={block.heading}
-        body={block.body ?? null}
-        media={block.media ?? null}
-        aspectRatio={block.aspectRatio ?? '1:1'}
-      />
-    ))}
-    {advantageBlocks.length === 0 && (
-      <TextMedia
-        heading="Everyone. Everywhere. All at once."
-        body="Moving together from day one, reducing handoffs, speeding up the process, and keeping ideas sharp from concept to launch."
-        media={null}
-        aspectRatio="1:1"
-      />
-    )}
-  </SurfaceSection>
+  {advantageBlocks.length > 0 && (
+    <WhoWeAreAdvantages headline={advantageHeadline} blocks={advantageBlocks} />
+  )}
 
   {disciplines.length > 0 && (
     <SurfaceSection role="dark">
@@ -109,28 +90,7 @@ const faqs = page?.faqs ?? [];
 </Layout>
 
 <style>
-  .intro {
-    padding: var(--space-4xl) var(--page-inset);
-  }
-  .intro-statement {
-    margin: 0;
-    max-width: 24ch;
-  }
-  .advantage-headline {
-    padding: var(--space-4xl) var(--page-inset) 0;
-  }
-  .advantage-headline p {
-    margin: 0;
-  }
   .discipline-section {
     padding: var(--space-4xl) 0;
-  }
-  @media (max-width: 768px) {
-    .intro {
-      padding: var(--space-2xl) var(--space-3xs);
-    }
-    .advantage-headline {
-      padding: var(--space-2xl) var(--space-3xs) 0;
-    }
   }
 </style>

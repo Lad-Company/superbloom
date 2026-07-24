@@ -18,7 +18,7 @@ const { cards } = Astro.props;
 const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
 ---
 
-<div class="fact-card-grid">
+<div class="fact-card-grid" data-fact-card-grid>
   {cards.map((card, index) => {
     const role = surfaceRoles[index % surfaceRoles.length];
 
@@ -38,6 +38,64 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
     );
   })}
 </div>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { EASE, MOTION, STAGGER, prefersReducedMotion } from '../lib/motion/config';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  document.querySelectorAll<HTMLElement>('[data-fact-card-grid]').forEach((grid) => {
+    if (prefersReducedMotion()) return;
+
+    const cards = Array.from(grid.querySelectorAll<HTMLElement>('.fact-card'));
+
+    gsap.fromTo(
+      cards,
+      { autoAlpha: 0, y: 40 },
+      {
+        autoAlpha: 1,
+        y: 0,
+        duration: MOTION.standard,
+        stagger: STAGGER.standard,
+        ease: EASE.out,
+        scrollTrigger: {
+          trigger: grid,
+          start: 'top 80%',
+          once: true,
+        },
+      }
+    );
+
+    cards.forEach((card) => {
+      const valueEl = card.querySelector<HTMLElement>('.value');
+      if (!valueEl) return;
+
+      const raw = valueEl.textContent?.trim() ?? '';
+      const match = raw.match(/^(\d+(?:\.\d+)?)(.*)$/);
+      if (!match) return;
+
+      const target = parseFloat(match[1]);
+      const suffix = match[2] ?? '';
+      const counter = { val: 0 };
+
+      gsap.to(counter, {
+        val: target,
+        duration: MOTION.chapter,
+        ease: EASE.out,
+        onUpdate() {
+          valueEl.textContent = `${Math.round(counter.val)}${suffix}`;
+        },
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 80%',
+          once: true,
+        },
+      });
+    });
+  });
+</script>
 
 <style>
   .fact-card-grid {
