@@ -1,5 +1,5 @@
 ---
-import PinnedHorizontalRail from '../PinnedHorizontalRail.astro';
+import CardCarousel from '../CardCarousel.astro';
 import NewsCard from '../NewsCard.astro';
 import SurfaceSection from '../SurfaceSection.astro';
 import type { HomepageQueryResult } from '../../sanity.types';
@@ -25,11 +25,11 @@ const overrides = new Map(itemOverrides?.map((override) => [override.articleId, 
   items.length > 0 && (
     <SurfaceSection role={role} class="news">
       <div class="inner">
-        <PinnedHorizontalRail class="news-rail" label={headline ?? 'News'}>
+        <CardCarousel class="news-carousel" label={headline ?? 'News'} heading={headline ?? 'News'}>
           {items.map((item) => (
             <NewsCard item={item} settings={overrides.get(item._id)} listSettings={listSettings} globalSettings={globalSettings} />
           ))}
-        </PinnedHorizontalRail>
+        </CardCarousel>
       </div>
     </SurfaceSection>
   )
@@ -37,7 +37,7 @@ const overrides = new Map(itemOverrides?.map((override) => [override.articleId, 
 
 <style>
   .inner {
-    padding: var(--space-2xl) 0 var(--space-2xl) var(--space-xs);
+    padding: var(--space-2xl) var(--page-inset);
   }
   .headline {
     margin: 0 0 var(--space-xs);
@@ -45,7 +45,7 @@ const overrides = new Map(itemOverrides?.map((override) => [override.articleId, 
 
   @media (max-width: 599px) {
     .inner {
-      padding-left: 12px;
+      padding-inline: 12px;
     }
   }
 </style>

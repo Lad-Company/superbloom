@@ -7,6 +7,8 @@ describe('Card Carousel', () => {
   it('uses native horizontal browsing with progressive arrow controls', () => {
     expect(source).toContain('overflow-x: auto')
     expect(source).toContain('scroll-snap-type: x proximity')
+    expect(source).toContain('scrollbar-width: none')
+    expect(source).toContain('.track::-webkit-scrollbar')
     expect(source).toContain('tabindex="0"')
     expect(source).toContain('scrollBy')
     expect(source).toContain("this.dataset.enhanced = 'true'")

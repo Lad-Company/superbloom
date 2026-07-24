@@ -92,6 +92,11 @@ const { label, heading, class: className } = Astro.props;
     overflow-x: auto;
     padding-right: var(--space-xs);
     scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .track::-webkit-scrollbar {
+    display: none;
   }
 
   .track > :global(.content-card) {

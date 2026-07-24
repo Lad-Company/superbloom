@@ -10,6 +10,10 @@ const source = readFileSync(
   new URL('../components/editorial/ArticleDetail.astro', import.meta.url),
   'utf8',
 )
+const homepageNewsSource = readFileSync(
+  new URL('../components/blocks/NewsCarousel.astro', import.meta.url),
+  'utf8',
+)
 const homepageQuerySource = readFileSync(new URL('./queries.ts', import.meta.url), 'utf8')
 
 describe('Article Detail contract', () => {
@@ -45,6 +49,13 @@ describe('Article Detail contract', () => {
     expect(source).toContain("import CardCarousel from '../CardCarousel.astro'")
     expect(source).toContain('heading="More stories"')
     expect(source).toContain('relatedItems.length === 3')
+    expect(source).toContain('--fg: #fff')
+  })
+
+  it('renders homepage News with the shared card carousel', () => {
+    expect(homepageNewsSource).toContain("import CardCarousel from '../CardCarousel.astro'")
+    expect(homepageNewsSource).toContain('<CardCarousel')
+    expect(homepageNewsSource).toContain('heading={headline ?? \'News\'}')
   })
 
   it('uses the homepage authored News list instead of implicit latest items', () => {
