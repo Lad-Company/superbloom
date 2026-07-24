@@ -67,7 +67,7 @@ export const homepageQuery = defineQuery(`
       headline,
       capabilities[]->{
         title,
-        subtitle,
+        "contextualCopy": coalesce(contextualCopy, subtitle),
         "slug": slug.current,
         "media": media${mediaProjection}
       }
@@ -83,12 +83,13 @@ export const homepageQuery = defineQuery(`
     feature{
       headline,
       body,
-      "media": media${mediaProjection}
+      "primaryMedia": coalesce(primaryMedia, media)${mediaProjection},
+      "secondaryMedia": secondaryMedia${mediaProjection}
     },
     work{
       headline,
       ctaLabel,
-      "items": items[]->{
+      "items": items[0...4]->{
         _id,
         title,
         "slug": slug.current,
@@ -100,6 +101,17 @@ export const homepageQuery = defineQuery(`
         "media": cardMedia${mediaProjection}
       }
     },
+    "fallbackWork": *[_type == "caseStudy"] | order(_createdAt asc)[0...4]{
+      _id,
+      title,
+      "slug": slug.current,
+      summary,
+      cardWidth,
+      mediaAspectRatio,
+      infoPosition,
+      tags[]->{ title, color },
+      "media": cardMedia${mediaProjection}
+    },
     why{
       headline,
       body,
@@ -107,6 +119,7 @@ export const homepageQuery = defineQuery(`
       ctaHref,
       "media": media${mediaProjection}
     },
+    "fallbackCreativeMedia": *[_type == "whoWeAre"][0].featuredMedia.media${mediaProjection},
     zine{
       "issue": issue->{ "slug": slug.current },
       "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,
@@ -114,12 +127,6 @@ export const homepageQuery = defineQuery(`
       promoIntro,
       "promoMedia": promoMedia${mediaProjection},
       ctaLabel
-    },
-    testimonials{
-      headline,
-      items[]{ _key, quote, attribution },
-      ctaLabel,
-      ctaHref
     },
     contact{ _type },
     "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults

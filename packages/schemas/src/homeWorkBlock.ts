@@ -14,14 +14,14 @@ export const homeWorkBlock = defineType({
       name: 'ctaLabel',
       title: 'CTA Label',
       type: 'string',
-      initialValue: 'See All Work',
+      initialValue: 'View all',
     }),
     defineField({
       name: 'items',
       title: 'Case Studies',
       type: 'array',
       of: [{type: 'reference', to: [{type: 'caseStudy'}]}],
-      validation: (rule) => rule.max(6).unique(),
+      validation: (rule) => rule.max(4).unique(),
     }),
   ],
   preview: {

@@ -1,0 +1,35 @@
+---
+import SurfaceSection from '../SurfaceSection.astro';
+import Button from '../Button.astro';
+---
+
+<SurfaceSection role="dark">
+  <div class="press">
+    <h2 class="type-h2" data-motion-text data-unit="words" data-scroll="true">What they’re saying</h2>
+    <Button href="/index" label="View all news & press" />
+  </div>
+</SurfaceSection>
+
+<style>
+  .press {
+    display: flex;
+    min-height: 580px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-m);
+    padding: var(--space-4xl) var(--page-inset);
+    text-align: center;
+  }
+
+  h2 {
+    margin: 0;
+  }
+
+  @media (max-width: 767px) {
+    .press {
+      min-height: 360px;
+      padding: var(--space-3xl) var(--space-3xs);
+    }
+  }
+</style>

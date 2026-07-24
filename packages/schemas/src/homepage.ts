@@ -45,13 +45,8 @@ export const homepage = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'testimonials',
-      title: '8. Testimonials',
-      type: 'homeTestimonialsBlock',
-    }),
-    defineField({
       name: 'contact',
-      title: '9. Contact',
+      title: '8. Contact',
       type: 'contactBlock',
       validation: (rule) => rule.required(),
     }),

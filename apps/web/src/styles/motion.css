@@ -31,7 +31,6 @@
 .surface-wipe {
   position: relative;
   overflow: hidden;
-  isolation: isolate;
   transition:
     color var(--motion-quick) var(--motion-ease-out),
     transform var(--motion-instant) var(--motion-ease-out);
@@ -40,11 +39,17 @@
   content: '';
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 1;
   background: var(--wipe-surface, currentColor);
   transform: scaleY(0);
   transform-origin: bottom center;
   transition: transform var(--motion-quick) var(--motion-ease-out);
+}
+/* Text label must sit above the wipe layer */
+.surface-wipe .btn__label,
+.surface-wipe .nav__label {
+  position: relative;
+  z-index: 2;
 }
 .surface-wipe:hover,
 .surface-wipe:focus-visible {

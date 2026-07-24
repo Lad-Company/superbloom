@@ -66,12 +66,9 @@ const summary = item.overview
   settings={settings}
   listSettings={listSettings}
   globalSettings={globalSettings}
-  summary={showCopy ? summary : undefined}
-  publicationDate={item.publicationDate}
   class={className}
   target={opensInNewTab ? '_blank' : undefined}
   rel={opensInNewTab ? 'noopener noreferrer' : undefined}
-  externalLabel={opensInNewTab ? 'Read externally (opens in a new tab)' : undefined}
   cardId={item._id}
 >
   <TagList slot="overlay" tags={item.tags} typeLabel={mixedList ? 'News' : undefined} maxTags={mixedList ? 1 : 2} />

@@ -1284,6 +1284,22 @@
           },
           "optional": true
         },
+        "primaryMedia": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "mediaBox"
+          },
+          "optional": true
+        },
+        "secondaryMedia": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "mediaBox"
+          },
+          "optional": true
+        },
         "media": {
           "type": "objectAttribute",
           "value": {
@@ -3739,14 +3755,6 @@
         },
         "optional": true
       },
-      "testimonials": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "inline",
-          "name": "homeTestimonialsBlock"
-        },
-        "optional": true
-      },
       "contact": {
         "type": "objectAttribute",
         "value": {
@@ -5275,6 +5283,13 @@
         "value": {
           "type": "inline",
           "name": "slug"
+        },
+        "optional": true
+      },
+      "contextualCopy": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
         },
         "optional": true
       },

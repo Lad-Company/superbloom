@@ -3,7 +3,7 @@ import MediaFrame, {type Media} from '../MediaFrame.astro';
 
 interface Capability {
   title: string | null;
-  subtitle?: string | null;
+  contextualCopy?: string | null;
   slug: string | null;
   media?: Media | null;
 }
@@ -14,7 +14,7 @@ interface Props {
 }
 
 const { headline, capabilities } = Astro.props;
-const displayedCapabilities = capabilities.slice(0, 6);
+const displayedCapabilities = capabilities.slice(0, 8);
 ---
 
 <section class="capes" data-capes>
@@ -22,29 +22,36 @@ const displayedCapabilities = capabilities.slice(0, 6);
     <div class="media-stack">
       {
         displayedCapabilities.map((cap, i) => (
-          <MediaFrame
-            media={cap.media}
-            ratio="fill"
-            active={i === 0}
-            class={`media-frame-item${i === 0 ? ' is-active' : ''}`}
-          >
-            <div class="scrim"></div>
-            <div class="overlay">
-              {headline && <p class="headline type-h6">{headline}</p>}
-              <ol class="list">
-                {
-                  displayedCapabilities.map((c, idx) => (
-                    <li class:list={['type-h3', { 'is-active': idx === i }]} data-cap data-index={idx}>
-                      <span>{c.title}</span>
-                      {c.subtitle && <span class="subtitle type-eyebrow">{c.subtitle}</span>}
-                    </li>
-                  ))
-                }
-              </ol>
-            </div>
-          </MediaFrame>
+          <div class:list={['frame', { 'is-active': i === 0 }]} data-capes-frame>
+            <MediaFrame media={cap.media} ratio="fill" active={i === 0}>
+              <div class="scrim"></div>
+            </MediaFrame>
+          </div>
         ))
       }
+    </div>
+    <div class="overlay">
+      <div class="context">
+        {headline && <p class="headline type-h6">{headline}</p>}
+        <div class="contextual-copy type-h6" aria-live="polite">
+          {displayedCapabilities.map((cap, index) => (
+            <p class:list={['copy', { 'is-active': index === 0 }]} data-context-copy data-index={index}>
+              {cap.contextualCopy}
+            </p>
+          ))}
+        </div>
+      </div>
+      <div class="list-clip">
+        <ol class="list" data-capes-list>
+          {
+            displayedCapabilities.map((cap, index) => (
+              <li class:list={['type-h3', { 'is-active': index === 0 }]} data-cap data-index={index}>
+                {cap.title}
+              </li>
+            ))
+          }
+        </ol>
+      </div>
     </div>
   </div>
 </section>
@@ -67,15 +74,20 @@ const displayedCapabilities = capabilities.slice(0, 6);
     inset: 0;
   }
 
-  .media-frame-item {
+  .frame {
     position: absolute;
     inset: 0;
     opacity: 0;
-    transition: opacity 0.5s ease;
+    transition: opacity var(--motion-standard) var(--motion-ease-out);
   }
 
-  .media-frame-item.is-active {
+  .frame.is-active {
     opacity: 1;
+  }
+
+  .frame :global(.media-frame) {
+    width: 100%;
+    height: 100%;
   }
 
   .scrim {
@@ -96,20 +108,56 @@ const displayedCapabilities = capabilities.slice(0, 6);
     pointer-events: none;
   }
 
+  .context {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
   .headline {
     margin: 0;
     max-width: 24ch;
+  }
+
+  .contextual-copy {
+    position: relative;
+    min-height: 4.8em;
+    max-width: 24ch;
+  }
+
+  .copy {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity var(--motion-standard) var(--motion-ease-out),
+      transform var(--motion-standard) var(--motion-ease-out);
+  }
+
+  .copy.is-active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .list-clip {
+    overflow: hidden;
+    /* Leave room so the active item doesn't clip at top when list scrolls */
+    padding-top: var(--space-3xs);
   }
 
   .list {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    transition: transform var(--motion-standard) var(--motion-ease-out);
   }
 
   .list li {
-    display: flex;
-    flex-direction: column;
     color: var(--bg-60);
     transition: color 0.4s ease;
   }
@@ -118,8 +166,16 @@ const displayedCapabilities = capabilities.slice(0, 6);
     color: var(--bg);
   }
 
-  .subtitle {
-    margin-top: var(--space-3xs);
+  @media (max-width: 767px) {
+    .overlay {
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+      padding: var(--space-2xl) var(--space-3xs);
+    }
+
+    .list {
+      gap: var(--space-3xs);
+    }
   }
 </style>
 
@@ -129,7 +185,11 @@ const displayedCapabilities = capabilities.slice(0, 6);
   const cleanups: Array<() => void> = [];
 
   document.querySelectorAll<HTMLElement>('[data-capes]').forEach((section) => {
-    const frames = section.querySelectorAll<HTMLElement>('media-frame');
+    const frames = section.querySelectorAll<HTMLElement>('[data-capes-frame]');
+    const listItems = section.querySelectorAll<HTMLElement>('[data-cap]');
+    const contextualCopy = section.querySelectorAll<HTMLElement>('[data-context-copy]');
+    const list = section.querySelector<HTMLElement>('[data-capes-list]');
+    const listClip = list?.parentElement;
     const pin = section.querySelector<HTMLElement>('[data-pin]');
     const count = frames.length;
     if (!count || !pin) return;
@@ -137,9 +197,23 @@ const displayedCapabilities = capabilities.slice(0, 6);
     const setActive = (i: number) => {
       frames.forEach((frame, idx) => {
         const isActive = idx === i;
-        frame.toggleAttribute('active', isActive);
         frame.classList.toggle('is-active', isActive);
+        frame.querySelector('media-frame')?.toggleAttribute('active', isActive);
       });
+      listItems.forEach((item, idx) => item.classList.toggle('is-active', idx === i));
+      contextualCopy.forEach((copy, idx) => copy.classList.toggle('is-active', idx === i));
+
+      // Translate list so the active item remains within the visible clip area
+      if (list && listClip) {
+        const activeItem = listItems[i] as HTMLElement | undefined;
+        if (activeItem) {
+          const clipHeight = listClip.clientHeight;
+          const itemOffset = activeItem.offsetTop;
+          const itemHeight = activeItem.offsetHeight;
+          const target = Math.max(0, itemOffset - (clipHeight / 2 - itemHeight / 2));
+          list.style.transform = `translateY(${-target}px)`;
+        }
+      }
     };
 
     cleanups.push(initPinnedStory({ section, pin, chapters: count, onChapter: setActive }));

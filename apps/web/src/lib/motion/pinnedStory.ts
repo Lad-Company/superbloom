@@ -9,7 +9,7 @@ export interface PinnedStoryOptions {
   section: HTMLElement;
   /** The element pinned within the section (not the whole document). */
   pin: HTMLElement;
-  /** Number of narrative chapters. The language allows two to four. */
+  /** Number of narrative chapters. */
   chapters: number;
   /** Called with the active chapter index as the region scrubs. */
   onChapter: (index: number) => void;
@@ -29,10 +29,6 @@ export function initPinnedStory(options: PinnedStoryOptions): () => void {
     onChapter(0);
     return () => {};
   }
-  if (chapters > 4 && import.meta.env?.DEV) {
-    console.warn(`[pinnedStory] ${chapters} chapters exceeds the recommended maximum of four.`);
-  }
-
   onChapter(0);
 
   const mm = gsap.matchMedia();

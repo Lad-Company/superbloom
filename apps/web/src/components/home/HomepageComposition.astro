@@ -6,7 +6,7 @@ import HomeFeature from '../blocks/HomeFeature.astro';
 import HomeWork from '../blocks/HomeWork.astro';
 import HomeWhy from '../blocks/HomeWhy.astro';
 import HomeZine from '../blocks/HomeZine.astro';
-import HomeTestimonials from '../blocks/HomeTestimonials.astro';
+import HomePressCta from '../blocks/HomePressCta.astro';
 import ContactBand from '../ContactBand.astro';
 import type { HomepageQueryResult } from '../../sanity.types';
 
@@ -15,6 +15,11 @@ interface Props {
 }
 
 const { homepage } = Astro.props;
+const workItems = homepage.work?.items?.length ? homepage.work.items : homepage.fallbackWork ?? [];
+const creativeHeadline = homepage.why?.headline ?? 'The Creative Collective.';
+const creativeBody =
+  homepage.why?.body ??
+  'One integrated creative agency model, powered by 300+ creative minds, built to help brands move faster, challenge convention, and create culturally relevant work.';
 
 const moduleSurfaceRoles = {
   newsBlock: 'light',
@@ -41,13 +46,12 @@ const moduleSurfaceRoles = {
   />
 )}
 
-{homepage.feature && (
-  <HomeFeature
-    headline={homepage.feature.headline ?? ''}
-    body={homepage.feature.body}
-    media={homepage.feature.media}
-  />
-)}
+<HomeFeature
+  headline={homepage.feature?.headline ?? 'Built for brands with bigger ambitions.'}
+  body={homepage.feature?.body}
+  primaryMedia={homepage.feature?.primaryMedia ?? homepage.fallbackWork?.[0]?.media}
+  secondaryMedia={homepage.feature?.secondaryMedia ?? homepage.fallbackWork?.[1]?.media}
+/>
 
 {homepage.capabilities && (
   <Capes
@@ -56,23 +60,21 @@ const moduleSurfaceRoles = {
   />
 )}
 
-{homepage.work && (
+{workItems.length > 0 && (
   <HomeWork
-    headline={homepage.work.headline}
-    ctaLabel={homepage.work.ctaLabel}
-    items={homepage.work.items ?? []}
+    headline={homepage.work?.headline ?? 'Our Work'}
+    ctaLabel={homepage.work?.ctaLabel ?? 'View all'}
+    items={workItems}
   />
 )}
 
-{homepage.why && (
-  <HomeWhy
-    headline={homepage.why.headline ?? ''}
-    body={homepage.why.body}
-    ctaLabel={homepage.why.ctaLabel}
-    ctaHref={homepage.why.ctaHref}
-    media={homepage.why.media}
-  />
-)}
+<HomeWhy
+  headline={creativeHeadline}
+  body={creativeBody}
+  ctaLabel={homepage.why?.ctaLabel ?? 'Explore our collective'}
+  ctaHref={homepage.why?.ctaHref ?? '/who-we-are'}
+  media={homepage.why?.media ?? homepage.fallbackCreativeMedia}
+/>
 
 {homepage.zine && (
   <HomeZine
@@ -85,13 +87,6 @@ const moduleSurfaceRoles = {
   />
 )}
 
-{homepage.testimonials && (
-  <HomeTestimonials
-    headline={homepage.testimonials.headline}
-    items={homepage.testimonials.items ?? []}
-    ctaLabel={homepage.testimonials.ctaLabel}
-    ctaHref={homepage.testimonials.ctaHref}
-  />
-)}
+<HomePressCta />
 
 {homepage.contact && <ContactBand role={moduleSurfaceRoles.contactBlock} />}

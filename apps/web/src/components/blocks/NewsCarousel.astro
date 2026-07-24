@@ -1,5 +1,5 @@
 ---
-import CardCarousel from '../CardCarousel.astro';
+import PinnedHorizontalRail from '../PinnedHorizontalRail.astro';
 import NewsCard from '../NewsCard.astro';
 import SurfaceSection from '../SurfaceSection.astro';
 import type { HomepageQueryResult } from '../../sanity.types';
@@ -25,12 +25,11 @@ const overrides = new Map(itemOverrides?.map((override) => [override.articleId, 
   items.length > 0 && (
     <SurfaceSection role={role} class="news">
       <div class="inner">
-        {headline && <h2 class="type-h6 headline">{headline}</h2>}
-        <CardCarousel label={headline ?? 'News'}>
+        <PinnedHorizontalRail class="news-rail" label={headline ?? 'News'}>
           {items.map((item) => (
-            <NewsCard item={item} settings={overrides.get(item._id)} listSettings={listSettings} globalSettings={globalSettings} showCopy />
+            <NewsCard item={item} settings={overrides.get(item._id)} listSettings={listSettings} globalSettings={globalSettings} />
           ))}
-        </CardCarousel>
+        </PinnedHorizontalRail>
       </div>
     </SurfaceSection>
   )

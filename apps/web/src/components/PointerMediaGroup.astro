@@ -1,0 +1,65 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['pointer-group', className]} data-pointer-group>
+  <slot />
+</div>
+
+<script>
+  const mm = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  document.querySelectorAll<HTMLElement>('[data-pointer-group]').forEach((group) => {
+    const items = Array.from(group.querySelectorAll<HTMLElement>('[data-pointer-depth]'));
+    if (!items.length) return;
+
+    const reset = () => items.forEach((item) => item.style.removeProperty('transform'));
+
+    const handleMove = (event: PointerEvent) => {
+      if (mm.matches) return;
+      const bounds = group.getBoundingClientRect();
+      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+      items.forEach((item) => {
+        const depth = Number(item.dataset.pointerDepth ?? 0);
+        item.style.transform = `translate3d(${x * depth}px, ${y * depth}px, 0)`;
+      });
+    };
+
+    group.addEventListener('pointermove', handleMove);
+    group.addEventListener('pointerleave', reset);
+    mm.addEventListener('change', reset);
+
+    window.addEventListener('pagehide', () => {
+      group.removeEventListener('pointermove', handleMove);
+      group.removeEventListener('pointerleave', reset);
+      mm.removeEventListener('change', reset);
+    }, { once: true });
+  });
+</script>
+
+<style>
+  .pointer-group {
+    display: block;
+  }
+
+  .pointer-group :global([data-pointer-depth]) {
+    transition: transform var(--motion-standard) var(--motion-ease-out);
+    will-change: transform;
+  }
+
+  .pointer-group:hover :global([data-pointer-depth]) {
+    transition-duration: var(--motion-quick);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pointer-group :global([data-pointer-depth]) {
+      transform: none !important;
+      transition: none;
+    }
+  }
+</style>

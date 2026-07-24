@@ -17,9 +17,23 @@ export const homeFeatureBlock = defineType({
       rows: 4,
     }),
     defineField({
-      name: 'media',
-      title: 'Media',
+      name: 'primaryMedia',
+      title: 'Square Media',
+      description: 'Upper-right square media in the homepage feature composition.',
       type: 'mediaBox',
+    }),
+    defineField({
+      name: 'secondaryMedia',
+      title: 'Landscape Media',
+      description: 'Lower-left landscape media in the homepage feature composition.',
+      type: 'mediaBox',
+    }),
+    defineField({
+      name: 'media',
+      title: 'Legacy Media',
+      description: 'Retained for existing content. Move this media to Square Media when editing.',
+      type: 'mediaBox',
+      hidden: true,
     }),
   ],
   preview: {

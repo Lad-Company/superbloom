@@ -22,17 +22,16 @@ const social = [
 const currentYear = new Date().getFullYear();
 ---
 
-<SurfaceSection role="dark">
+<SurfaceSection role="dark" class="footer-surface">
   <footer class="footer type-eyebrow">
     <div class="newsletter">
-      <a href="/" class="logo type-eyebrow">Superbloom House</a>
-      <p class="type-h3 nl-heading">Subscribe to our newsletter</p>
+      <p class="type-h3 nl-heading">Subscribe to<br />The Microdose</p>
       <form class="nl-form" id="newsletter-form">
         <label class="sr-only" for="newsletter-email">Email address</label>
-        <input class="nl-input type-eyebrow" id="newsletter-email" type="email" name="email" placeholder="Your email" autocomplete="email" required />
+        <input class="nl-input type-body" id="newsletter-email" type="email" name="email" placeholder="Email" autocomplete="email" required />
         <input class="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
         <input type="hidden" name="startedAt" />
-        <button class="nl-submit surface-wipe type-label" type="submit" data-motion-control>Submit</button>
+        <button class="nl-submit surface-wipe type-label" type="submit" data-motion-control><span class="btn__label">Submit</span></button>
         <p class="nl-status" aria-live="polite" role="status"></p>
       </form>
     </div>
@@ -126,36 +125,44 @@ const currentYear = new Date().getFullYear();
 </script>
 
 <style>
+  .footer-surface {
+    margin: 0 var(--space-xs) var(--space-xs);
+    border-radius: 24px;
+    overflow: hidden;
+  }
   .footer {
     padding: var(--space-4xl) var(--space-xs) var(--space-xs);
   }
   .newsletter {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
+    gap: var(--page-gutter);
+    align-items: start;
     padding: 0 0 var(--space-2xl);
     border-bottom: 1px solid var(--fg-12);
     margin-bottom: var(--space-2xl);
   }
-  .logo {
-    display: inline-block;
-    margin-bottom: var(--space-xs);
-    text-decoration: none;
-  }
   .nl-heading {
-    margin: 0 0 var(--space-xs);
+    margin: 0;
     max-width: 10ch;
     text-transform: uppercase;
   }
   .nl-form {
     display: flex;
-    gap: var(--page-gutter);
     align-items: center;
+    min-height: 56px;
+    padding: var(--space-xs-4);
+    border: 1px solid var(--fg-12);
+    border-radius: var(--radius-input);
+    position: relative;
   }
   .nl-input {
-    background: var(--fg-12);
-    border: 1px solid var(--fg-12);
-    border-radius: var(--radius-m);
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: 0;
     color: var(--fg);
     padding: var(--space-3xs) 16px;
-    min-width: 280px;
   }
   .nl-input::placeholder {
     color: var(--fg-60);
@@ -175,6 +182,9 @@ const currentYear = new Date().getFullYear();
     opacity: 0.5;
   }
   .nl-status {
+    position: absolute;
+    left: 0;
+    top: calc(100% + var(--space-xs-4));
     margin: 0;
     font-family: var(--font-body);
     font-size: 15px;
@@ -214,8 +224,15 @@ const currentYear = new Date().getFullYear();
     margin: 0;
   }
   @media (max-width: 1023px) {
+    .footer-surface {
+      margin: 0 var(--space-2xs) var(--space-2xs);
+    }
     .footer {
       padding: var(--space-3xl) var(--space-2xs) var(--space-2xs);
+    }
+    .newsletter {
+      grid-template-columns: 1fr;
+      gap: var(--space-xs);
     }
     .cols {
       display: grid;
@@ -224,6 +241,10 @@ const currentYear = new Date().getFullYear();
     }
   }
   @media (max-width: 767px) {
+    .footer-surface {
+      margin: 0 var(--space-3xs) var(--space-3xs);
+      border-radius: 16px;
+    }
     .footer {
       padding: var(--space-2xl) var(--space-3xs) var(--space-3xs);
     }
@@ -233,7 +254,6 @@ const currentYear = new Date().getFullYear();
     }
     .nl-form {
       align-items: stretch;
-      flex-direction: column;
     }
     .nl-input {
       min-width: 0;

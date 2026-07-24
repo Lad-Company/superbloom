@@ -11,9 +11,9 @@ const { href, label, class: className, target, rel } = Astro.props;
 ---
 
 {href ? (
-  <a class:list={['btn', 'surface-wipe', className]} href={href} target={target} rel={rel} data-motion-control>{label}</a>
+  <a class:list={['btn', 'surface-wipe', className]} href={href} target={target} rel={rel} data-motion-control><span class="btn__label">{label}</span></a>
 ) : (
-  <span class:list={['btn', 'surface-wipe', className]} data-motion-control>{label}</span>
+  <span class:list={['btn', 'surface-wipe', className]} data-motion-control><span class="btn__label">{label}</span></span>
 )}
 
 <style>

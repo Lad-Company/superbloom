@@ -17,10 +17,19 @@ export const capability = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'subtitle',
-      title: 'Subtitle',
+      name: 'contextualCopy',
+      title: 'Contextual Copy',
+      description: 'Shown in the sticky left panel while this capability is active.',
       type: 'text',
-      rows: 2,
+      rows: 3,
+    }),
+    defineField({
+      name: 'subtitle',
+      title: 'Legacy Contextual Copy',
+      description: 'Retained for existing capability records. Move this content to Contextual Copy when editing.',
+      type: 'text',
+      rows: 3,
+      hidden: true,
     }),
     defineField({
       name: 'media',
