@@ -20,7 +20,7 @@ const { headline, body, ctaLabel, ctaHref, media } = Astro.props;
     <div class="text">
       <h2 class="type-h2" data-motion-text data-unit="words" data-scroll="true">{headline}</h2>
       {body && <p class="body type-body">{body}</p>}
-      {ctaLabel && ctaHref && <Button href={ctaHref} label={ctaLabel} />}
+      {ctaLabel && ctaHref && <Button href={ctaHref} label={ctaLabel} outlineOnWipe />}
     </div>
     {media && (
       <div class="visual">

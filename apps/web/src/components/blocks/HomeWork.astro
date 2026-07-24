@@ -33,7 +33,7 @@ const displayedItems = items.slice(0, 4);
       <h2 class="type-h2" data-motion-text data-unit="words" data-scroll="true">
         {headline}
       </h2>
-      <Button href="/work" label={ctaLabel ?? 'View all'} />
+      <Button href="/work" label={ctaLabel ?? 'View all'} outlineOnWipe />
     </div>
     {displayedItems.length > 0 && (
       <div class="grid">

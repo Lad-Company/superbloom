@@ -24,9 +24,9 @@ const links = [
     }
   </ul>
   <div class="desktop-actions">
-    <a href="#contact" class="btn btn-secondary surface-wipe type-label" data-motion-control><span class="nav__label">Let's Chat</span></a>
+    <a href="#contact" class:list={['btn', 'btn-secondary', 'surface-wipe', 'type-label', {'wipe-outline': role === 'surface'}]} data-motion-control><span class="nav__label">Let's Chat</span></a>
     <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control><span class="nav__label">Shop</span></a>
-    <a href="/cart" class="cart-link underline-draw type-label" aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a>
+    <a href="/cart" class="cart-link underline-draw type-label" data-cart-link hidden aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a>
   </div>
   <details class="compact-menu">
     <summary class="type-label">Menu</summary>
@@ -40,21 +40,32 @@ const links = [
           ))
         }
       </ul>
-      <a href="#contact" class="btn btn-secondary surface-wipe type-label" data-motion-control><span class="nav__label">Let's Chat</span></a>
+      <a href="#contact" class:list={['btn', 'btn-secondary', 'surface-wipe', 'type-label', {'wipe-outline': role === 'surface'}]} data-motion-control><span class="nav__label">Let's Chat</span></a>
       <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control><span class="nav__label">Shop</span></a>
-      <a href="/cart" class="type-label underline-draw">Cart <span data-cart-count>0</span></a>
+      <a href="/cart" class="type-label underline-draw" data-cart-link hidden aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a>
     </div>
   </details>
 </nav>
 
 <script>
   const counts = document.querySelectorAll<HTMLElement>('[data-cart-count]');
+  const cartLinks = document.querySelectorAll<HTMLAnchorElement>('[data-cart-link]');
+
+  const updateCartLinks = (itemCount: number) => {
+    const isActive = itemCount > 0;
+    counts.forEach((count) => { count.textContent = String(itemCount); });
+    cartLinks.forEach((link) => {
+      link.hidden = !isActive;
+      link.setAttribute('aria-label', `Cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`);
+    });
+  };
+
   const refreshCartCount = async () => {
     try {
       const response = await fetch('/api/shop/cart/get.json');
       if (!response.ok) return;
       const cart = await response.json();
-      counts.forEach((count) => { count.textContent = String(cart.itemCount); });
+      updateCartLinks(cart.itemCount);
     } catch {}
   };
   refreshCartCount();

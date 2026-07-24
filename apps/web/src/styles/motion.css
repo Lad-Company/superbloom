@@ -45,6 +45,16 @@
   transform-origin: bottom center;
   transition: transform var(--motion-quick) var(--motion-ease-out);
 }
+.surface-wipe.wipe-outline::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  transition: border-color var(--motion-quick) var(--motion-ease-out);
+}
 /* Text label must sit above the wipe layer */
 .surface-wipe .btn__label,
 .surface-wipe .nav__label {
@@ -53,11 +63,15 @@
 }
 .surface-wipe:hover,
 .surface-wipe:focus-visible {
-  color: var(--wipe-ink, var(--bg));
+  color: var(--wipe-ink, var(--bg)) !important;
 }
 .surface-wipe:hover::before,
 .surface-wipe:focus-visible::before {
   transform: scaleY(1);
+}
+.surface-wipe.wipe-outline:hover::after,
+.surface-wipe.wipe-outline:focus-visible::after {
+  border-color: var(--wipe-outline, var(--wipe-ink, currentColor));
 }
 .surface-wipe.is-pressed {
   transform: scale(0.98);
