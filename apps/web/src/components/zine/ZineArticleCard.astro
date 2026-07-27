@@ -1,44 +1,55 @@
 ---
-import EditorialCard from '../EditorialCard.astro';
-import TagList from '../TagList.astro';
-import type {Media} from '../MediaFrame.astro';
-import type {TypedObject} from 'astro-portabletext/types';
+import EditorialCard from '../EditorialCard.astro'
+import TagList from '../TagList.astro'
+import type {Media} from '../MediaFrame.astro'
+import type {TypedObject} from 'astro-portabletext/types'
 import {
   type CardWidth,
   type InfoPosition,
   type MediaAspectRatio,
   type PartialContentCardSettings,
-} from '../../lib/contentCard';
+} from '../../lib/contentCard'
 
-type Tag = {title?: string | null; color?: string | null};
-type OverviewBlock = TypedObject & {children?: Array<{text?: string | null}>};
+type Tag = {title?: string | null; color?: string | null}
+type OverviewBlock = TypedObject & {children?: Array<{text?: string | null}>}
 
 interface Props {
   article: {
-    _id?: string | null;
-    title?: string | null;
-    slug?: string | null;
-    overview?: OverviewBlock[] | null;
-    cardCtaLabel?: string | null;
-    publicationDate?: string | null;
-    cardWidth?: CardWidth | null;
-    mediaAspectRatio?: MediaAspectRatio | null;
-    infoPosition?: InfoPosition | null;
-    cardMedia?: Media | null;
-    tags?: Tag[] | null;
-  };
-  issueSlug: string;
-  settings?: PartialContentCardSettings;
-  listSettings?: PartialContentCardSettings;
-  globalSettings?: PartialContentCardSettings;
-  mixedList?: boolean;
+    _id?: string | null
+    title?: string | null
+    slug?: string | null
+    overview?: OverviewBlock[] | null
+    cardCtaLabel?: string | null
+    publicationDate?: string | null
+    cardWidth?: CardWidth | null
+    mediaAspectRatio?: MediaAspectRatio | null
+    infoPosition?: InfoPosition | null
+    cardMedia?: Media | null
+    tags?: Tag[] | null
+  }
+  issueSlug: string
+  settings?: PartialContentCardSettings
+  listSettings?: PartialContentCardSettings
+  globalSettings?: PartialContentCardSettings
+  mixedList?: boolean
+  minimal?: boolean
+  dateFormat?: 'default' | 'index'
 }
 
-const {article, issueSlug, settings, listSettings, globalSettings, mixedList = false} = Astro.props;
+const {
+  article,
+  issueSlug,
+  settings,
+  listSettings,
+  globalSettings,
+  mixedList = false,
+  minimal = false,
+  dateFormat,
+} = Astro.props
 const summary = article.overview
   ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
   .join(' ')
-  .trim();
+  .trim()
 ---
 
 <EditorialCard
@@ -49,10 +60,16 @@ const summary = article.overview
   settings={settings}
   listSettings={listSettings}
   globalSettings={globalSettings}
-  summary={summary}
-  ctaLabel={article.cardCtaLabel ?? 'Read more'}
+  summary={minimal ? undefined : summary}
+  ctaLabel={minimal ? null : (article.cardCtaLabel ?? 'Read more')}
   publicationDate={article.publicationDate}
+  dateFormat={dateFormat}
   cardId={article._id}
 >
-  <TagList slot="overlay" tags={article.tags} typeLabel={mixedList ? 'Zine' : undefined} maxTags={mixedList ? 1 : 2} />
+  <TagList
+    slot="overlay"
+    tags={article.tags}
+    typeLabel={mixedList ? 'Zine' : undefined}
+    maxTags={mixedList ? 1 : 2}
+  />
 </EditorialCard>

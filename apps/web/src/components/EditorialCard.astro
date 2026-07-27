@@ -1,7 +1,7 @@
 ---
 import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro'
 import {resolveContentCardSettings, type PartialContentCardSettings} from '../lib/contentCard'
-import {formatPublicationDate} from '../lib/publicationDate'
+import {formatPublicationDate, formatPublicationDateIndex} from '../lib/publicationDate'
 
 interface Props {
   href: string
@@ -19,6 +19,7 @@ interface Props {
   settings?: PartialContentCardSettings
   listSettings?: PartialContentCardSettings
   globalSettings?: PartialContentCardSettings
+  dateFormat?: 'default' | 'index'
 }
 
 const {
@@ -37,6 +38,7 @@ const {
   settings,
   listSettings,
   globalSettings,
+  dateFormat = 'default',
 } = Astro.props
 const resolved = resolveContentCardSettings({
   global: globalSettings,
@@ -44,7 +46,8 @@ const resolved = resolveContentCardSettings({
   list: listSettings,
   item: settings,
 })
-const formattedDate = publicationDate ? formatPublicationDate(publicationDate) : null
+const formatDate = dateFormat === 'index' ? formatPublicationDateIndex : formatPublicationDate
+const formattedDate = publicationDate ? formatDate(publicationDate) : null
 ---
 
 <a

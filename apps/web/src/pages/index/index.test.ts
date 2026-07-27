@@ -14,4 +14,13 @@ describe('Index page', () => {
     expect(source).not.toContain('class="sort"')
     expect(source).not.toContain('aria-current={sort ===')
   })
+
+  it('renders Index items in minimal title-and-date form', () => {
+    expect(source).toContain('minimal')
+    expect(source).toContain('dateFormat="index"')
+  })
+
+  it('does not pass a Read More CTA to Index items', () => {
+    expect(source).not.toContain('showCopy')
+  })
 })

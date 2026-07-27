@@ -75,7 +75,8 @@ const queryFor = (nextPage: number, nextSort = sort) => {
                     item={item}
                     settings={settings}
                     globalSettings={globalSettings}
-                    showCopy
+                    minimal
+                    dateFormat="index"
                   />
                 )
               })}
@@ -99,7 +100,8 @@ const queryFor = (nextPage: number, nextSort = sort) => {
                   settings={settings}
                   listSettings={listSettings}
                   globalSettings={globalSettings}
-                  showCopy
+                  minimal
+                  dateFormat="index"
                 />
               )
             })

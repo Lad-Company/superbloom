@@ -1,42 +1,43 @@
 ---
-import EditorialCard from './EditorialCard.astro';
-import TagList from './TagList.astro';
-import type { Media } from './MediaFrame.astro';
+import EditorialCard from './EditorialCard.astro'
+import TagList from './TagList.astro'
+import type {Media} from './MediaFrame.astro'
 import {
   type CardWidth,
   type InfoPosition,
   type MediaAspectRatio,
   type PartialContentCardSettings,
-} from '../lib/contentCard';
+} from '../lib/contentCard'
 
 interface Tag {
-  title?: string | null;
-  color?: string | null;
+  title?: string | null
+  color?: string | null
 }
 
 interface NewsItem {
-  _id?: string | null;
-  title: string | null;
-  slug: string | null;
-  overview?: Array<{ children?: Array<{ text?: string | null }> }> | null;
-  publicationDate?: string | null;
-  cardDestination?: 'internal' | 'external' | null;
-  externalCoverage?: Array<{ url?: string | null; isPrimary?: boolean | null }> | null;
-  cardWidth?: CardWidth | null;
-  mediaAspectRatio?: MediaAspectRatio | null;
-  infoPosition?: InfoPosition | null;
-  tags: Tag[] | null;
-  cardMedia: Media | null;
+  _id?: string | null
+  title: string | null
+  slug: string | null
+  overview?: Array<{children?: Array<{text?: string | null}>}> | null
+  publicationDate?: string | null
+  cardDestination?: 'internal' | 'external' | null
+  externalCoverage?: Array<{url?: string | null; isPrimary?: boolean | null}> | null
+  cardWidth?: CardWidth | null
+  mediaAspectRatio?: MediaAspectRatio | null
+  infoPosition?: InfoPosition | null
+  tags: Tag[] | null
+  cardMedia: Media | null
 }
 
 interface Props {
-  item: NewsItem;
-  showCopy?: boolean;
-  class?: string;
-  settings?: PartialContentCardSettings;
-  listSettings?: PartialContentCardSettings;
-  globalSettings?: PartialContentCardSettings;
-  mixedList?: boolean;
+  item: NewsItem
+  showCopy?: boolean
+  class?: string
+  settings?: PartialContentCardSettings
+  listSettings?: PartialContentCardSettings
+  globalSettings?: PartialContentCardSettings
+  mixedList?: boolean
+  dateFormat?: 'default' | 'index'
 }
 
 const {
@@ -46,11 +47,14 @@ const {
   listSettings,
   globalSettings,
   mixedList = false,
-} = Astro.props;
-const internalHref = item.slug ? `/news/${item.slug}` : '#';
-const primaryCoverage = item.externalCoverage?.find((coverage) => coverage.isPrimary && coverage.url);
-const opensInNewTab = item.cardDestination === 'external' && Boolean(primaryCoverage?.url);
-const href = opensInNewTab ? primaryCoverage!.url! : internalHref;
+  dateFormat,
+} = Astro.props
+const internalHref = item.slug ? `/news/${item.slug}` : '#'
+const primaryCoverage = item.externalCoverage?.find(
+  (coverage) => coverage.isPrimary && coverage.url,
+)
+const opensInNewTab = item.cardDestination === 'external' && Boolean(primaryCoverage?.url)
+const href = opensInNewTab ? primaryCoverage!.url! : internalHref
 ---
 
 <EditorialCard
@@ -65,6 +69,13 @@ const href = opensInNewTab ? primaryCoverage!.url! : internalHref;
   target={opensInNewTab ? '_blank' : undefined}
   rel={opensInNewTab ? 'noopener noreferrer' : undefined}
   cardId={item._id}
+  publicationDate={dateFormat ? item.publicationDate : undefined}
+  dateFormat={dateFormat}
 >
-  <TagList slot="overlay" tags={item.tags} typeLabel={mixedList ? 'News' : undefined} maxTags={mixedList ? 1 : 2} />
+  <TagList
+    slot="overlay"
+    tags={item.tags}
+    typeLabel={mixedList ? 'News' : undefined}
+    maxTags={mixedList ? 1 : 2}
+  />
 </EditorialCard>
