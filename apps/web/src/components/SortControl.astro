@@ -4,114 +4,73 @@ export interface Props {
 }
 
 const {value = 'newest'} = Astro.props
-
-const options = [
-  {value: 'newest', label: 'Newest'},
-  {value: 'oldest', label: 'Oldest'},
-] as const
+const nextSort = value === 'newest' ? 'oldest' : 'newest'
+const href = nextSort === 'oldest' ? '/index?sort=oldest' : '/index'
+const actionLabel =
+  value === 'newest'
+    ? 'Sorted by date, newest first. Activate to sort oldest first.'
+    : 'Sorted by date, oldest first. Activate to sort newest first.'
 ---
 
-<form class="sort-control" method="get" action="/index" data-sort-control>
-  <label class="sort-control-label type-h5">
-    <span class="sort-label-text">Sort by</span>
-    <div class="sort-select-wrap">
-      <select name="sort" class="sort-select type-h5" data-sort-select>
-        {
-          options.map((option) => (
-            <option value={option.value} selected={option.value === value}>
-              {option.label}
-            </option>
-          ))
-        }
-      </select>
-      <span class="sort-arrow" aria-hidden="true">
-        <svg viewBox="0 0 18 9" width="18" height="9" fill="none">
-          <path
-            d="M1 1L9 8L17 1"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"></path>
-        </svg>
-      </span>
-    </div>
-  </label>
-  <button type="submit" class="sr-only">Apply sort</button>
-</form>
-
-<script>
-  document.querySelectorAll('[data-sort-control]').forEach((formElement) => {
-    const form = formElement as HTMLFormElement
-    const select = form.querySelector<HTMLSelectElement>('[data-sort-select]')
-    if (!select) return
-
-    select.addEventListener('change', () => {
-      form.submit()
-    })
-  })
-</script>
+<div class="sort-control">
+  <span class="sort-label type-h5">Sort by</span>
+  <a class="sort-toggle type-h5" href={href} data-sort-toggle aria-label={actionLabel}>
+    <span class="sort-toggle-text underline-draw">Date</span>
+    <span class="sort-arrow" data-direction={value} aria-hidden="true">
+      <svg viewBox="0 0 18 9" width="18" height="9" fill="none">
+        <path
+          d="M1 1L9 8L17 1"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </span>
+  </a>
+</div>
 
 <style>
-  .sort-control-label {
+  .sort-control {
     display: flex;
     align-items: center;
     gap: var(--space-s);
-    cursor: pointer;
   }
 
-  .sort-label-text {
+  .sort-label {
     color: var(--fg-30);
   }
 
-  .sort-select-wrap {
-    position: relative;
+  .sort-toggle {
     display: inline-flex;
     align-items: center;
-  }
-
-  .sort-select {
-    appearance: none;
-    background: transparent;
-    border: none;
+    gap: var(--space-3xs);
     color: var(--fg);
+    text-decoration: none;
     cursor: pointer;
-    font-family: inherit;
-    font-size: inherit;
-    font-weight: inherit;
-    line-height: inherit;
-    letter-spacing: inherit;
-    text-transform: inherit;
-    padding: 0 calc(44px + var(--space-3xs)) 0 0;
   }
 
-  .sort-select:focus-visible {
+  .sort-toggle:focus-visible {
     outline: 2px solid var(--fg);
     outline-offset: 4px;
   }
 
   .sort-arrow {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 44px;
-    height: 44px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    pointer-events: none;
+    width: 44px;
+    height: 44px;
     color: var(--fg);
+    transition: transform var(--motion-quick) var(--motion-ease-out);
   }
 
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+  .sort-arrow[data-direction='oldest'] {
+    transform: rotate(180deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sort-arrow {
+      transition: none;
+    }
   }
 </style>

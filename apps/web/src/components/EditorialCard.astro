@@ -79,7 +79,13 @@ const formattedDate = publicationDate ? formatDate(publicationDate) : null
         </p>
       )
     }
-    {ctaLabel && <span class="cta type-caption">{ctaLabel}</span>}
+    {
+      ctaLabel && (
+        <span class="cta surface-wipe">
+          <span class="btn__label">{ctaLabel}</span>
+        </span>
+      )
+    }
   </div>
 </a>
 
@@ -140,28 +146,39 @@ const formattedDate = publicationDate ? formatDate(publicationDate) : null
   .cta {
     align-self: start;
     margin-top: var(--space-xs-4);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: var(--space-3xs) 16px;
     border-radius: var(--radius-control);
-    background: #fff;
-    color: #000;
-    box-shadow: inset 0 0 0 1px #000;
+    background: var(--fg);
+    color: var(--bg);
     font-family: var(--font-interface);
     font-size: 17px;
     font-weight: 750;
     line-height: 1;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.34px;
     text-transform: uppercase;
-    transition:
-      background var(--motion-quick) var(--motion-ease-out),
-      color var(--motion-quick) var(--motion-ease-out),
-      box-shadow var(--motion-quick) var(--motion-ease-out);
+    white-space: nowrap;
+    --wipe-surface: var(--bg);
+    --wipe-ink: var(--fg);
   }
 
+  /* Reveal the shared Surface Wipe from card hover/focus, since the whole
+     card is the link and the CTA is not separately focusable. */
   .editorial-card:hover .cta,
   .editorial-card:focus-visible .cta {
-    background: #000;
-    color: #fff;
-    box-shadow: inset 0 0 0 1px #fff;
+    color: var(--wipe-ink, var(--bg));
+  }
+
+  .editorial-card:hover .cta::before,
+  .editorial-card:focus-visible .cta::before {
+    transform: scaleY(1);
+  }
+
+  .editorial-card:hover .cta::after,
+  .editorial-card:focus-visible .cta::after {
+    border-color: var(--surface-wipe-outline, var(--wipe-outline, transparent));
   }
 
   .publication-date {
