@@ -1,17 +1,18 @@
 ---
-import MediaFrame, { type Media, type MediaRatio } from '../MediaFrame.astro';
+import MediaFrame, {type Media, type MediaRatio} from '../MediaFrame.astro'
 
 interface Props {
-  media: Media | null;
-  ratio?: MediaRatio | null;
-  title: string;
+  media: Media | null
+  ratio?: MediaRatio | null
+  title: string
+  controls?: boolean
 }
 
-const { media, ratio = '16:9', title } = Astro.props;
+const {media, ratio = '16:9', title, controls = true} = Astro.props
 ---
 
 <section class="featured-media">
-  <MediaFrame media={media} ratio={ratio} title={title} />
+  <MediaFrame media={media} ratio={ratio} title={title} controls={controls} />
 </section>
 
 <style>

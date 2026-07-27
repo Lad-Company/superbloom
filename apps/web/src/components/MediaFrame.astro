@@ -1,28 +1,29 @@
 ---
-export type MediaRatio = 'intrinsic' | '1:1' | '16:9' | '4:5' | '9:16' | '3:2' | '2:1' | 'fill';
+export type MediaRatio = 'intrinsic' | '1:1' | '16:9' | '4:5' | '9:16' | '3:2' | '2:1' | 'fill'
 
 export interface ProjectedAsset {
-  _type: 'image' | 'mux.video';
-  url?: string | null;
-  width?: number | null;
-  height?: number | null;
-  playbackId?: string | null;
-  aspectRatio?: string | null;
+  _type: 'image' | 'mux.video'
+  url?: string | null
+  width?: number | null
+  height?: number | null
+  playbackId?: string | null
+  aspectRatio?: string | null
 }
 
 export interface Media {
-  asset?: ProjectedAsset | null;
-  altText?: string | null;
-  decorative?: boolean | null;
+  asset?: ProjectedAsset | null
+  altText?: string | null
+  decorative?: boolean | null
 }
 
 interface Props {
-  media?: Media | null;
-  ratio?: MediaRatio | null;
-  title?: string | null;
-  priority?: boolean;
-  active?: boolean;
-  class?: string;
+  media?: Media | null
+  ratio?: MediaRatio | null
+  title?: string | null
+  priority?: boolean
+  active?: boolean
+  controls?: boolean
+  class?: string
 }
 
 const {
@@ -31,135 +32,218 @@ const {
   title,
   priority = false,
   active = true,
+  controls = false,
   class: className,
-} = Astro.props;
+} = Astro.props
 
 const ratioMap: Record<MediaRatio, string> = {
-  'intrinsic': 'auto',
+  intrinsic: 'auto',
   '1:1': '1 / 1',
   '16:9': '16 / 9',
   '4:5': '4 / 5',
   '9:16': '9 / 16',
   '3:2': '3 / 2',
   '2:1': '2 / 1',
-  'fill': 'auto',
-};
+  fill: 'auto',
+}
 
-const asset = media?.asset;
-const altText = media?.altText;
-const isDecorative = media?.decorative ?? false;
-const mediaRatio = ratio ?? '16:9';
-const ratioValue = ratioMap[mediaRatio];
+const asset = media?.asset
+const altText = media?.altText
+const isDecorative = media?.decorative ?? false
+const mediaRatio = ratio ?? '16:9'
+const ratioValue = ratioMap[mediaRatio]
 const intrinsicVideoRatio =
   asset?._type === 'mux.video' && asset.aspectRatio?.match(/^\d+:\d+$/)
     ? asset.aspectRatio.replace(':', ' / ')
-    : '16 / 9';
+    : '16 / 9'
 const styleAttr =
   mediaRatio === 'fill' || (mediaRatio === 'intrinsic' && asset?._type !== 'mux.video')
     ? ''
-    : `aspect-ratio: ${mediaRatio === 'intrinsic' ? intrinsicVideoRatio : ratioValue};`;
+    : `aspect-ratio: ${mediaRatio === 'intrinsic' ? intrinsicVideoRatio : ratioValue};`
 const hasAsset =
   (asset?._type === 'image' && Boolean(asset.url)) ||
-  (asset?._type === 'mux.video' && Boolean(asset.playbackId));
+  (asset?._type === 'mux.video' && Boolean(asset.playbackId))
 const videoPoster =
   asset?._type === 'mux.video' && asset.playbackId
     ? `https://image.mux.com/${asset.playbackId}/thumbnail.jpg?time=0`
-    : undefined;
+    : undefined
 ---
 
 <media-frame
   active={active ? true : undefined}
-  class:list={['media-frame', className, { 'media-placeholder': !hasAsset, intrinsic: mediaRatio === 'intrinsic' }]}
+  class:list={[
+    'media-frame',
+    className,
+    {'media-placeholder': !hasAsset, intrinsic: mediaRatio === 'intrinsic'},
+  ]}
   style={styleAttr}
 >
-  {asset?._type === 'mux.video' && asset.playbackId && (
-    <mux-player
-      playback-id={asset.playbackId}
-      poster={videoPoster}
-      metadata-video-title={title ?? undefined}
-      stream-type="on-demand"
-      muted
-      loop
-      default-hidden-captions
-      preload={priority ? 'auto' : 'none'}
-    />
-  )}
-  {asset?._type === 'image' && asset.url && (
-    <img
-      src={asset.url}
-      alt={isDecorative ? '' : (altText ?? '')}
-      width={asset.width ?? undefined}
-      height={asset.height ?? undefined}
-      loading={priority ? 'eager' : 'lazy'}
-      fetchpriority={priority ? 'high' : 'auto'}
-    />
-  )}
-  {!hasAsset && <div class="placeholder-content"></div>}
+  {
+    asset?._type === 'mux.video' && asset.playbackId && (
+      <mux-player
+        playback-id={asset.playbackId}
+        poster={videoPoster}
+        metadata-video-title={title ?? undefined}
+        stream-type="on-demand"
+        muted
+        loop
+        default-hidden-captions
+        preload={priority ? 'auto' : 'none'}
+      />
+    )
+  }
+  {
+    asset?._type === 'image' && asset.url && (
+      <img
+        src={asset.url}
+        alt={isDecorative ? '' : (altText ?? '')}
+        width={asset.width ?? undefined}
+        height={asset.height ?? undefined}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : 'auto'}
+      />
+    )
+  }
+  {!hasAsset && <div class="placeholder-content" />}
   <slot />
+  {
+    asset?._type === 'mux.video' && asset.playbackId && controls && (
+      <button
+        type="button"
+        class="media-control surface-wipe"
+        data-media-control
+        data-motion-control
+        aria-label="Play video"
+        aria-pressed="false"
+      >
+        <span class="media-control__icon" aria-hidden="true">
+          <svg class="icon icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          <svg class="icon icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6 5h4v14H6zm8 0h4v14h-4z" />
+          </svg>
+        </span>
+      </button>
+    )
+  }
 </media-frame>
 
 <script>
-  import '@mux/mux-player';
+  import '@mux/mux-player'
 
   class MediaFrameElement extends HTMLElement {
-    static observedAttributes = ['active'];
+    static observedAttributes = ['active']
 
-    private observer: IntersectionObserver | null = null;
-    private player: HTMLVideoElement | null = null;
-    private motionPreference: MediaQueryList | null = null;
-    private isVisible = false;
-    private handleVisibilityChange = () => this.updatePlayback();
-    private handleMotionChange = () => this.updatePlayback();
+    private observer: IntersectionObserver | null = null
+    private player: HTMLVideoElement | null = null
+    private control: HTMLButtonElement | null = null
+    private motionPreference: MediaQueryList | null = null
+    private isVisible = false
+    private userIntent: 'paused' | 'playing' | null = null
+    private handleVisibilityChange = () => this.updatePlayback()
+    private handleMotionChange = () => this.updatePlayback()
+    private handlePlay = () => this.updateControl()
+    private handlePause = () => this.updateControl()
+    private handleControlClick = () => this.togglePlayback()
 
     connectedCallback() {
-      this.player = this.querySelector('mux-player') as HTMLVideoElement | null;
-      if (!this.player) return;
+      this.player = this.querySelector('mux-player') as HTMLVideoElement | null
+      this.control = this.querySelector('[data-media-control]') as HTMLButtonElement | null
 
-      this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (this.player) {
+        this.player.addEventListener('play', this.handlePlay)
+        this.player.addEventListener('pause', this.handlePause)
+      }
+
+      if (this.control) {
+        this.control.addEventListener('click', this.handleControlClick)
+        this.updateControl()
+      }
+
+      if (!this.player) return
+
+      this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
       this.observer = new IntersectionObserver(
         ([entry]) => {
-          this.isVisible = entry.isIntersecting;
-          this.updatePlayback();
+          this.isVisible = entry.isIntersecting
+          this.updatePlayback()
         },
-        { threshold: 0 }
-      );
-      this.observer.observe(this);
+        {threshold: 0},
+      )
+      this.observer.observe(this)
 
-      document.addEventListener('visibilitychange', this.handleVisibilityChange);
-      this.motionPreference.addEventListener('change', this.handleMotionChange);
+      document.addEventListener('visibilitychange', this.handleVisibilityChange)
+      this.motionPreference.addEventListener('change', this.handleMotionChange)
 
-      this.updatePlayback();
+      this.updatePlayback()
     }
 
     attributeChangedCallback() {
-      this.updatePlayback();
+      this.updatePlayback()
     }
 
     disconnectedCallback() {
-      this.observer?.disconnect();
-      document.removeEventListener('visibilitychange', this.handleVisibilityChange);
-      this.motionPreference?.removeEventListener('change', this.handleMotionChange);
+      this.observer?.disconnect()
+      document.removeEventListener('visibilitychange', this.handleVisibilityChange)
+      this.motionPreference?.removeEventListener('change', this.handleMotionChange)
+      this.player?.removeEventListener('play', this.handlePlay)
+      this.player?.removeEventListener('pause', this.handlePause)
+      this.control?.removeEventListener('click', this.handleControlClick)
     }
 
     private updatePlayback() {
-      if (!this.player) return;
+      if (!this.player) return
 
-      const isActive = this.hasAttribute('active');
-      const isDocVisible = document.visibilityState === 'visible';
-      const prefersReducedMotion = this.motionPreference?.matches ?? false;
+      const isActive = this.hasAttribute('active')
+      const isDocVisible = document.visibilityState === 'visible'
+      const prefersReducedMotion = this.motionPreference?.matches ?? false
+      const isPaused = this.player.paused ?? true
 
-      const shouldPlay = isActive && this.isVisible && isDocVisible && !prefersReducedMotion;
+      let shouldPlay = isActive && this.isVisible && isDocVisible && !prefersReducedMotion
 
-      if (shouldPlay) {
-        this.player.play?.().catch(() => {});
-      } else {
-        this.player.pause?.();
+      if (this.control) {
+        if (this.userIntent === 'paused') {
+          shouldPlay = false
+        } else if (this.userIntent === 'playing') {
+          shouldPlay = isActive && this.isVisible && isDocVisible
+        }
       }
+
+      if (shouldPlay && isPaused) {
+        this.player.play?.().catch(() => {})
+      } else if (!shouldPlay && !isPaused) {
+        this.player.pause?.()
+      }
+    }
+
+    private togglePlayback() {
+      if (!this.player) return
+
+      if (this.player.paused) {
+        this.userIntent = 'playing'
+        if (this.isVisible && document.visibilityState === 'visible') {
+          this.player.play?.().catch(() => {})
+        }
+      } else {
+        this.userIntent = 'paused'
+        this.player.pause?.()
+      }
+      this.updateControl()
+    }
+
+    private updateControl() {
+      if (!this.control || !this.player) return
+
+      const isPlaying = !this.player.paused
+      this.control.setAttribute('aria-label', isPlaying ? 'Pause video' : 'Play video')
+      this.control.setAttribute('aria-pressed', String(isPlaying))
+      this.control.dataset.state = isPlaying ? 'playing' : 'paused'
     }
   }
 
   if (!customElements.get('media-frame')) {
-    customElements.define('media-frame', MediaFrameElement);
+    customElements.define('media-frame', MediaFrameElement)
   }
 </script>
 
@@ -195,5 +279,53 @@ const videoPoster =
     width: 100%;
     height: 100%;
     background: linear-gradient(135deg, var(--fg-12) 0%, var(--fg-8) 100%);
+  }
+
+  .media-control {
+    position: absolute;
+    right: var(--space-3xs);
+    bottom: var(--space-3xs);
+    z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--fg);
+    color: var(--bg);
+    cursor: pointer;
+    --wipe-surface: var(--bg);
+    --wipe-ink: var(--fg);
+  }
+
+  .media-control__icon {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+  }
+
+  .media-control__icon svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transition: opacity var(--motion-quick) var(--motion-ease-out);
+  }
+
+  .media-control[data-state='playing'] .icon-play,
+  .media-control[data-state='paused'] .icon-pause {
+    opacity: 0;
+  }
+
+  .media-control:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
   }
 </style>
