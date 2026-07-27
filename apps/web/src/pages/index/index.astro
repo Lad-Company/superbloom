@@ -24,7 +24,7 @@ const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requeste
 const recordLimit = page * BATCH_SIZE
 
 const indexPage = await sanityClient.fetch<IndexPageQueryResult>(indexPageQuery)
-const pageHeader = indexPage?.header ?? 'Index'
+const pageHeader = indexPage?.header ?? 'What they\'ve been saying'
 const featured = indexPage?.featured?.filter((entry) => entry?.item) ?? []
 const featuredIds = featured
   .map((entry) => entry.item?._id)

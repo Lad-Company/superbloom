@@ -20,7 +20,7 @@ export const formatPublicationDateIndex = (value: string) => {
   const day = pad(date.getUTCDate())
   const year = pad(date.getUTCFullYear() % 100)
   return {
-    label: `${month} ${day} ${year}`,
+    label: `${month}.${day}.${year}`,
     dateTime: date.toISOString(),
   }
 }
