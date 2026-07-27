@@ -1,4 +1,5 @@
 ---
+
 ---
 
 <section class="contact">
@@ -39,7 +40,12 @@
           <span class="select-arrow" aria-hidden="true"></span>
         </div>
 
-        <textarea class="input input--message" name="message" placeholder="Message*" rows="3" required></textarea>
+        <textarea
+          class="input input--message"
+          name="message"
+          placeholder="Message*"
+          rows="3"
+          required></textarea>
       </div>
 
       <div class="contact-actions">
@@ -51,43 +57,43 @@
 </section>
 
 <script>
-  const form = document.getElementById('contact-form') as HTMLFormElement | null;
-  const status = document.getElementById('contact-status');
+  const form = document.getElementById('contact-form') as HTMLFormElement | null
+  const status = document.getElementById('contact-status')
 
   form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!form) return;
+    e.preventDefault()
+    if (!form) return
 
-    const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-    btn.disabled = true;
-    if (status) status.textContent = '';
+    const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement
+    btn.disabled = true
+    if (status) status.textContent = ''
 
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         body: new FormData(form),
-      });
-      const data = await res.json() as { ok?: boolean; error?: string };
+      })
+      const data = (await res.json()) as {ok?: boolean; error?: string}
       if (data.ok) {
-        form.reset();
+        form.reset()
         if (status) {
-          status.textContent = "Thanks \u2014 we\u2019ll be in touch.";
-          status.classList.remove('status--error');
-          status.classList.add('status--ok');
+          status.textContent = 'Thanks \u2014 we\u2019ll be in touch.'
+          status.classList.remove('status--error')
+          status.classList.add('status--ok')
         }
       } else {
-        throw new Error(data.error ?? 'Unknown error');
+        throw new Error(data.error ?? 'Unknown error')
       }
     } catch {
       if (status) {
-        status.textContent = 'Something went wrong. Please try again.';
-        status.classList.add('status--error');
-        status.classList.remove('status--ok');
+        status.textContent = 'Something went wrong. Please try again.'
+        status.classList.add('status--error')
+        status.classList.remove('status--ok')
       }
     } finally {
-      btn.disabled = false;
+      btn.disabled = false
     }
-  });
+  })
 </script>
 
 <style>
@@ -137,7 +143,7 @@
     height: 56px;
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: var(--radius-input);
+    border-radius: 0;
     color: var(--bg);
     font-family: var(--font-body);
     font-size: 19px;

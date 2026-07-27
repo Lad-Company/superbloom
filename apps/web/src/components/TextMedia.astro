@@ -1,14 +1,14 @@
 ---
-import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro';
+import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro'
 
 interface Props {
-  heading: string | null;
-  body?: string | null;
-  media?: Media | null;
-  aspectRatio?: MediaRatio | null;
+  heading: string | null
+  body?: string | null
+  media?: Media | null
+  aspectRatio?: MediaRatio | null
 }
 
-const { heading, body, media, aspectRatio = '1:1' } = Astro.props;
+const {heading, body, media, aspectRatio = '1:1'} = Astro.props
 ---
 
 <div class="text-media">
@@ -46,7 +46,6 @@ const { heading, body, media, aspectRatio = '1:1' } = Astro.props;
   }
   .media-col :global(.media-frame) {
     width: 100%;
-    border-radius: var(--radius-s);
   }
   @media (max-width: 768px) {
     .text-media {

@@ -1,25 +1,25 @@
 ---
-import SurfaceSection from './SurfaceSection.astro';
-import { sanityClient } from '../lib/sanity';
-import { siteSettingsQuery } from '../lib/queries';
-import type { SiteSettingsQueryResult } from '../sanity.types';
+import SurfaceSection from './SurfaceSection.astro'
+import {sanityClient} from '../lib/sanity'
+import {siteSettingsQuery} from '../lib/queries'
+import type {SiteSettingsQueryResult} from '../sanity.types'
 
 const nav = [
-  { label: 'Our Work', href: '/work' },
-  { label: 'Who We Are', href: '/who-we-are' },
-  { label: 'News & Press', href: '/index' },
-  { label: 'Zine', href: '/zine' },
-  { label: 'Shop', href: '/shop' },
-  { label: 'Edit', href: 'https://superbloom-cms.sanity.studio', external: true },
-];
-const siteSettings = await sanityClient.fetch<SiteSettingsQueryResult>(siteSettingsQuery);
+  {label: 'Our Work', href: '/work'},
+  {label: 'Who We Are', href: '/who-we-are'},
+  {label: 'News & Press', href: '/index'},
+  {label: 'Zine', href: '/zine'},
+  {label: 'Shop', href: '/shop'},
+  {label: 'Edit', href: 'https://superbloom-cms.sanity.studio', external: true},
+]
+const siteSettings = await sanityClient.fetch<SiteSettingsQueryResult>(siteSettingsQuery)
 const social = [
-  { label: 'Instagram', href: siteSettings?.instagramUrl },
-  { label: 'LinkedIn', href: siteSettings?.linkedInUrl },
-  { label: 'Vimeo', href: siteSettings?.vimeoUrl },
-  { label: 'YouTube', href: siteSettings?.youTubeUrl },
-].filter((link): link is { label: string; href: string } => Boolean(link.href));
-const currentYear = new Date().getFullYear();
+  {label: 'Instagram', href: siteSettings?.instagramUrl},
+  {label: 'LinkedIn', href: siteSettings?.linkedInUrl},
+  {label: 'Vimeo', href: siteSettings?.vimeoUrl},
+  {label: 'YouTube', href: siteSettings?.youTubeUrl},
+].filter((link): link is {label: string; href: string} => Boolean(link.href))
+const currentYear = new Date().getFullYear()
 ---
 
 <SurfaceSection role="dark" class="footer-surface">
@@ -28,10 +28,27 @@ const currentYear = new Date().getFullYear();
       <p class="type-h3 nl-heading">Subscribe to The Microdose</p>
       <form class="nl-form" id="newsletter-form">
         <label class="sr-only" for="newsletter-email">Email address</label>
-        <input class="nl-input type-body" id="newsletter-email" type="email" name="email" placeholder="Email" autocomplete="email" required />
-        <input class="honeypot" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <input
+          class="nl-input type-body"
+          id="newsletter-email"
+          type="email"
+          name="email"
+          placeholder="Email"
+          autocomplete="email"
+          required
+        />
+        <input
+          class="honeypot"
+          type="text"
+          name="website"
+          tabindex="-1"
+          autocomplete="off"
+          aria-hidden="true"
+        />
         <input type="hidden" name="startedAt" />
-        <button class="nl-submit surface-wipe type-label" type="submit" data-motion-control><span class="btn__label">Submit</span></button>
+        <button class="nl-submit surface-wipe type-label" type="submit" data-motion-control
+          ><span class="btn__label">Submit</span></button
+        >
         <p class="nl-status" aria-live="polite" role="status"></p>
       </form>
     </div>
@@ -51,21 +68,39 @@ const currentYear = new Date().getFullYear();
         </p>
       </div>
       <ul class="col">
-        {nav.map((item) => (
-          <li>
-            <a href={item.href} class="underline-draw" target={item.external ? '_blank' : undefined} rel={item.external ? 'noopener noreferrer' : undefined}>
-              {item.label}
-            </a>
-          </li>
-        ))}
+        {
+          nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class="underline-draw"
+                target={item.external ? '_blank' : undefined}
+                rel={item.external ? 'noopener noreferrer' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
       </ul>
-      {social.length > 0 && (
-        <ul class="col">
-          {social.map((item) => (
-            <li><a href={item.href} class="underline-draw" target="_blank" rel="noopener noreferrer">{item.label}</a></li>
-          ))}
-        </ul>
-      )}
+      {
+        social.length > 0 && (
+          <ul class="col">
+            {social.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  class="underline-draw"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
       <div class="col">
         <p>All content ©<br />Superbloom House {currentYear}</p>
       </div>
@@ -74,60 +109,64 @@ const currentYear = new Date().getFullYear();
 </SurfaceSection>
 
 <script>
-  const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
-  const status = form?.querySelector('.nl-status');
-  const startedAt = form?.elements.namedItem('startedAt') as HTMLInputElement | null;
+  const form = document.getElementById('newsletter-form') as HTMLFormElement | null
+  const status = form?.querySelector('.nl-status')
+  const startedAt = form?.elements.namedItem('startedAt') as HTMLInputElement | null
 
-  if (startedAt) startedAt.value = String(Date.now());
+  if (startedAt) startedAt.value = String(Date.now())
 
   form?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (!form.reportValidity()) return;
+    event.preventDefault()
+    if (!form.reportValidity()) return
 
-    const button = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-    button.disabled = true;
+    const button = form.querySelector('button[type="submit"]') as HTMLButtonElement
+    button.disabled = true
     if (status) {
-      status.textContent = 'Submitting…';
-      status.className = 'nl-status';
+      status.textContent = 'Submitting…'
+      status.className = 'nl-status'
     }
 
     try {
       const response = await fetch('/api/newsletter/subscribe.json', {
         method: 'POST',
         body: new FormData(form),
-      });
-      const data = await response.json() as {success?: boolean; error?: 'duplicate' | 'invalid' | 'network'};
+      })
+      const data = (await response.json()) as {
+        success?: boolean
+        error?: 'duplicate' | 'invalid' | 'network'
+      }
 
       if (data.success) {
-        form.reset();
-        if (startedAt) startedAt.value = String(Date.now());
+        form.reset()
+        if (startedAt) startedAt.value = String(Date.now())
         if (status) {
-          status.textContent = 'You’re subscribed.';
-          status.classList.add('nl-status--ok');
+          status.textContent = 'You’re subscribed.'
+          status.classList.add('nl-status--ok')
         }
       } else if (status) {
-        status.textContent = data.error === 'duplicate'
-          ? 'You’re already subscribed.'
-          : data.error === 'invalid'
-            ? 'Enter a valid email address.'
-            : 'Something went wrong. Please try again.';
-        status.classList.add('nl-status--error');
+        status.textContent =
+          data.error === 'duplicate'
+            ? 'You’re already subscribed.'
+            : data.error === 'invalid'
+              ? 'Enter a valid email address.'
+              : 'Something went wrong. Please try again.'
+        status.classList.add('nl-status--error')
       }
     } catch {
       if (status) {
-        status.textContent = 'Something went wrong. Please try again.';
-        status.className = 'nl-status nl-status--error';
+        status.textContent = 'Something went wrong. Please try again.'
+        status.className = 'nl-status nl-status--error'
       }
     } finally {
-      button.disabled = false;
+      button.disabled = false
     }
-  });
+  })
 </script>
 
 <style>
   .footer-surface {
     margin: 0 var(--space-xs) var(--space-xs);
-    border-radius: 24px;
+    border-radius: 0;
     overflow: hidden;
   }
   .footer {
@@ -153,7 +192,7 @@ const currentYear = new Date().getFullYear();
     min-height: 56px;
     padding: var(--space-xs-4);
     border: 1px solid var(--fg-12);
-    border-radius: var(--radius-input);
+    border-radius: 0;
     position: relative;
   }
   .nl-input {
@@ -171,7 +210,7 @@ const currentYear = new Date().getFullYear();
     background: var(--fg);
     color: var(--bg);
     border: none;
-    border-radius: var(--radius-s);
+    border-radius: var(--radius-control);
     padding: var(--space-3xs) 16px;
     cursor: pointer;
     --wipe-surface: var(--bg);
@@ -189,8 +228,12 @@ const currentYear = new Date().getFullYear();
     font-family: var(--font-body);
     font-size: 15px;
   }
-  .nl-status--ok { color: var(--fg-60); }
-  .nl-status--error { color: #ff6b6b; }
+  .nl-status--ok {
+    color: var(--fg-60);
+  }
+  .nl-status--error {
+    color: #ff6b6b;
+  }
   .honeypot,
   .sr-only {
     position: absolute;
@@ -243,7 +286,7 @@ const currentYear = new Date().getFullYear();
   @media (max-width: 767px) {
     .footer-surface {
       margin: 0 var(--space-3xs) var(--space-3xs);
-      border-radius: 16px;
+      border-radius: 0;
     }
     .footer {
       padding: var(--space-2xl) var(--space-3xs) var(--space-3xs);

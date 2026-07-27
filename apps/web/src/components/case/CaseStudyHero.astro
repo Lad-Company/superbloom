@@ -1,25 +1,31 @@
 ---
 interface Capability {
-  title: string | null;
+  title: string | null
 }
 
 interface Props {
-  client: string | null;
-  title: string | null;
-  capabilities?: Capability[] | null;
+  client: string | null
+  title: string | null
+  capabilities?: Capability[] | null
 }
 
-const { client, title, capabilities = [] } = Astro.props;
+const {client, title, capabilities = []} = Astro.props
 ---
 
 <header class="hero">
   {client && <p class="client type-h5">{client}</p>}
-  <h1 class="title type-h1" data-motion-text data-unit="chars" data-blur data-scroll="false">{title}</h1>
-  {capabilities && capabilities.length > 0 && (
-    <ul class="capabilities type-label" aria-label="Capabilities">
-      {capabilities.map((capability) => <li>{capability.title}</li>)}
-    </ul>
-  )}
+  <h1 class="title type-h1" data-motion-text data-unit="chars" data-blur data-scroll="false">
+    {title}
+  </h1>
+  {
+    capabilities && capabilities.length > 0 && (
+      <ul class="capabilities type-label" aria-label="Capabilities">
+        {capabilities.map((capability) => (
+          <li>{capability.title}</li>
+        ))}
+      </ul>
+    )
+  }
 </header>
 
 <style>
@@ -47,7 +53,6 @@ const { client, title, capabilities = [] } = Astro.props;
   .capabilities li {
     padding: 8px;
     border: 1px solid currentColor;
-    border-radius: var(--radius-input);
   }
   @media (max-width: 1023px) {
     .hero {

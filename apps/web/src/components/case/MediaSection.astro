@@ -1,51 +1,57 @@
 ---
-import MediaFrame, {type Media} from '../MediaFrame.astro';
-import PortableText from '../PortableText.astro';
-import type { TypedObject } from 'astro-portabletext/types';
+import MediaFrame, {type Media} from '../MediaFrame.astro'
+import PortableText from '../PortableText.astro'
+import type {TypedObject} from 'astro-portabletext/types'
 
-type Layout = 'fullBleed16x9' | 'pairedSquare' | 'textAndMedia';
+type Layout = 'fullBleed16x9' | 'pairedSquare' | 'textAndMedia'
 
 interface Props {
-  layout?: Layout | null;
-  media?: Media[] | null;
-  text?: TypedObject[] | null;
+  layout?: Layout | null
+  media?: Media[] | null
+  text?: TypedObject[] | null
 }
 
-const { layout = 'fullBleed16x9', media, text } = Astro.props;
+const {layout = 'fullBleed16x9', media, text} = Astro.props
 
-const items = media ?? [];
+const items = media ?? []
 ---
 
-{layout === 'fullBleed16x9' && (
-  <div class="full-bleed">
-    <MediaFrame media={items[0]} ratio="16:9" />
-  </div>
-)}
-
-{layout === 'pairedSquare' && (
-  <div class="paired">
-    {items.map((item) => (
-      <div class="pair-item">
-        <MediaFrame media={item} ratio="1:1" />
-      </div>
-    ))}
-  </div>
-)}
-
-{layout === 'textAndMedia' && (
-  <div class="text-and-media">
-    <div class="tam-text">
-      {text && text.length > 0 && <PortableText value={text} class="type-body" />}
+{
+  layout === 'fullBleed16x9' && (
+    <div class="full-bleed">
+      <MediaFrame media={items[0]} ratio="16:9" />
     </div>
-    <div class="tam-media">
+  )
+}
+
+{
+  layout === 'pairedSquare' && (
+    <div class="paired">
       {items.map((item) => (
-        <div class="tam-item">
-          <MediaFrame media={item} />
+        <div class="pair-item">
+          <MediaFrame media={item} ratio="1:1" />
         </div>
       ))}
     </div>
-  </div>
-)}
+  )
+}
+
+{
+  layout === 'textAndMedia' && (
+    <div class="text-and-media">
+      <div class="tam-text">
+        {text && text.length > 0 && <PortableText value={text} class="type-body" />}
+      </div>
+      <div class="tam-media">
+        {items.map((item) => (
+          <div class="tam-item">
+            <MediaFrame media={item} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 <style>
   .full-bleed :global(.media-frame) {
@@ -68,8 +74,5 @@ const items = media ?? [];
     gap: var(--page-gutter);
     padding: var(--space-2xl) var(--space-xs);
     align-items: center;
-  }
-  .tam-item :global(.media-frame) {
-    border-radius: var(--radius-s);
   }
 </style>

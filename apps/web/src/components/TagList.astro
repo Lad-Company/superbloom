@@ -1,16 +1,16 @@
 ---
 interface Tag {
-  title?: string | null;
+  title?: string | null
 }
 
 interface Props {
-  tags?: Tag[] | null;
-  typeLabel?: string;
-  maxTags?: number;
+  tags?: Tag[] | null
+  typeLabel?: string
+  maxTags?: number
 }
 
-const { tags = [], typeLabel, maxTags = 2 } = Astro.props;
-const tagList = (tags ?? []).slice(0, maxTags);
+const {tags = [], typeLabel, maxTags = 2} = Astro.props
+const tagList = (tags ?? []).slice(0, maxTags)
 ---
 
 {
@@ -38,7 +38,7 @@ const tagList = (tags ?? []).slice(0, maxTags);
   .tag {
     padding: 6px 10px;
     border: var(--border-subtle);
-    border-radius: 0;
+    border-radius: var(--radius-control);
     background: var(--frosted-layer);
     color: var(--bg);
     backdrop-filter: blur(var(--frosted-layer-blur));

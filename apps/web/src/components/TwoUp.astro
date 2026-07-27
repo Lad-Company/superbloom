@@ -1,32 +1,32 @@
 ---
-import MediaFrame, {type Media} from './MediaFrame.astro';
-import Button from './Button.astro';
+import MediaFrame, {type Media} from './MediaFrame.astro'
+import Button from './Button.astro'
 
 interface Cta {
-  _key?: string;
-  heading: string | null;
-  label?: string | null;
-  href?: string | null;
-  media?: Media | null;
+  _key?: string
+  heading: string | null
+  label?: string | null
+  href?: string | null
+  media?: Media | null
 }
 
 interface Props {
-  items: Cta[];
+  items: Cta[]
 }
 
-const { items } = Astro.props;
+const {items} = Astro.props
 ---
 
 <div class="two-up">
-  {items.map((item) => (
-    <div class="col">
-      <MediaFrame media={item.media} ratio="1:1" title={item.heading ?? undefined} />
-      {item.heading && <p class="heading type-h5">{item.heading}</p>}
-      {item.label && (
-        <Button href={item.href ?? '#'} label={item.label} />
-      )}
-    </div>
-  ))}
+  {
+    items.map((item) => (
+      <div class="col">
+        <MediaFrame media={item.media} ratio="1:1" title={item.heading ?? undefined} />
+        {item.heading && <p class="heading type-h5">{item.heading}</p>}
+        {item.label && <Button href={item.href ?? '#'} label={item.label} />}
+      </div>
+    ))
+  }
 </div>
 
 <style>
@@ -46,9 +46,6 @@ const { items } = Astro.props;
 
   .col :global(.btn) {
     align-self: flex-start;
-  }
-  .col :global(.media-frame) {
-    border-radius: var(--radius-s);
   }
   .heading {
     margin: 0;
