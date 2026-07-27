@@ -56,10 +56,16 @@ describe('Index Page migration', () => {
   it('preserves configured Index Page fields', () => {
     const featured = [{_key: 'existing', _type: 'featuredCard'}]
     const allSection = {
-      listDefaults: {cardWidth: 'full', mediaAspectRatio: '16:9', infoPosition: 'below'},
+      listDefaults: {
+        cardWidth: 'full' as const,
+        mediaAspectRatio: '16:9' as const,
+        infoPosition: 'below' as const,
+      },
     }
 
-    expect(migrateLegacyIndexPage({featured, allSection})).toEqual({featured, allSection})
+    const result = migrateLegacyIndexPage({featured, allSection})
+    expect(result.featured).toEqual(featured)
+    expect(result.allSection).toEqual(allSection)
   })
 
   it('removes duplicate legacy references before applying the four-card limit', () => {

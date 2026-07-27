@@ -17,17 +17,17 @@ export function isValidHexColor(color: unknown): boolean {
   return typeof hex === 'string' && HEX_PATTERN.test(hex)
 }
 
-export function validateHexColor(color: unknown): string | boolean {
+export function validateHexColor(color: unknown): true | string {
   return isValidHexColor(color) || 'Color must be a six-digit hex code (e.g., #fdd143)'
 }
 
-export function validateColorRequired(color: unknown): string | boolean {
+export function validateColorRequired(color: unknown): true | string {
   return validateHexColor(color)
 }
 
 export function validateSecondaryColorWithResults(
   context: {parent?: {secondaryColor?: unknown; results?: {backgroundColor?: string}}}
-): string | boolean {
+): true | string {
   const secondaryColor = context.parent?.secondaryColor
   const backgroundColor = context.parent?.results?.backgroundColor
 
@@ -38,14 +38,14 @@ export function validateSecondaryColorWithResults(
   return true
 }
 
-export function validateCapabilitiesUnique(capabilities: unknown): string | boolean {
+export function validateCapabilitiesUnique(capabilities: unknown): true | string {
   if (!Array.isArray(capabilities)) return true
   const refs = capabilities.map((cap) => (cap && typeof cap === 'object' && '_ref' in cap ? cap._ref : null))
   const uniqueRefs = new Set(refs.filter(Boolean))
   return uniqueRefs.size === refs.filter(Boolean).length || 'Capabilities must be unique'
 }
 
-export function validateCapabilitiesCardinality(capabilities: unknown): string | boolean {
+export function validateCapabilitiesCardinality(capabilities: unknown): true | string {
   if (!Array.isArray(capabilities)) return 'Capabilities must be an array'
   if (capabilities.length < 1 || capabilities.length > 6) {
     return 'Capabilities must contain 1–6 references'
@@ -53,14 +53,14 @@ export function validateCapabilitiesCardinality(capabilities: unknown): string |
   return true
 }
 
-export function validatePressUnique(press: unknown): string | boolean {
+export function validatePressUnique(press: unknown): true | string {
   if (!Array.isArray(press)) return true
   const refs = press.map((item) => (item && typeof item === 'object' && '_ref' in item ? item._ref : null))
   const uniqueRefs = new Set(refs.filter(Boolean))
   return uniqueRefs.size === refs.filter(Boolean).length || 'Press references must be unique'
 }
 
-export function validatePressCardinality(press: unknown): string | boolean {
+export function validatePressCardinality(press: unknown): true | string {
   if (!press) return true // optional, can be null/undefined
   if (!Array.isArray(press)) return 'Press must be an array'
   return press.length <= 3 || 'Press accepts at most three News references'
@@ -73,7 +73,7 @@ function normalizeDraftId(id: string): string {
 export function validateNextProjectNotSelf(
   nextProject: unknown,
   context: {document?: {_id?: string}}
-): string | boolean {
+): true | string {
   if (!nextProject || typeof nextProject !== 'object' || !('_ref' in nextProject)) {
     return true // optional, can be empty
   }
@@ -96,7 +96,7 @@ export async function validatePressNewsReferences(
       fetch: (query: string, params?: Record<string, unknown>) => Promise<unknown>
     }
   }
-): Promise<string | boolean> {
+): Promise<true | string> {
   if (!Array.isArray(press) || press.length === 0) return true
 
   const ids = press
@@ -130,7 +130,7 @@ export async function validatePressNewsReferences(
   return true
 }
 
-export function validateStatsCardinality(stats: unknown): string | boolean {
+export function validateStatsCardinality(stats: unknown): true | string {
   if (!Array.isArray(stats)) return 'Stats must be an array'
   if (stats.length < 1 || stats.length > 4) {
     return 'Results accepts 1–4 complete stats'
@@ -138,7 +138,7 @@ export function validateStatsCardinality(stats: unknown): string | boolean {
   return true
 }
 
-export function validateStatComplete(stat: unknown): string | boolean {
+export function validateStatComplete(stat: unknown): true | string {
   if (!stat || typeof stat !== 'object') return 'Stat must be an object'
   const s = stat as Record<string, unknown>
   if (!s.value || typeof s.value !== 'string') return 'Stat value is required'
@@ -146,7 +146,7 @@ export function validateStatComplete(stat: unknown): string | boolean {
   return true
 }
 
-export function validatePortableTextNonEmpty(portableText: unknown): string | boolean {
+export function validatePortableTextNonEmpty(portableText: unknown): true | string {
   if (!Array.isArray(portableText) || portableText.length === 0) {
     return 'This field is required and non-empty'
   }

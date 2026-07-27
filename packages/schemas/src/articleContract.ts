@@ -2,7 +2,7 @@ type Reference = {_ref?: string}
 type PortableTextBlock = {children?: Array<{text?: string}>}
 type ValidationContext = {
   document?: {_id?: string; _type?: string; articleType?: string; externalCoverage?: unknown[]}
-  parent?: {articleType?: string; cardDestination?: string}
+  parent?: unknown
 }
 
 const hasPortableTextContent = (value: unknown) =>
@@ -11,7 +11,7 @@ const hasPortableTextContent = (value: unknown) =>
     block.children?.some((child) => Boolean(child.text?.trim())),
   )
 
-export const validateArticleBody = (body: unknown, context: ValidationContext) => {
+export const validateArticleBody = (body: unknown, context: ValidationContext): true | string => {
   if (Array.isArray(body) && body.length > 0) return true
 
   const type = context.document?.articleType ?? context.document?._type
@@ -24,23 +24,29 @@ export const validateArticleBody = (body: unknown, context: ValidationContext) =
     : 'An article body is required.'
 }
 
-export const validateNewsContent = (document: {body?: unknown; externalCoverage?: unknown[]} | undefined) => {
+export const validateNewsContent = (
+  document: {body?: unknown; externalCoverage?: unknown[]} | undefined,
+): true | string => {
   if (Array.isArray(document?.body) && document.body.length > 0) return true
   if ((document?.externalCoverage?.length ?? 0) > 0) return true
   return 'Provide an article body or external coverage.'
 }
 
-export const validatePortableTextNonEmpty = (value: unknown) =>
+export const validatePortableTextNonEmpty = (value: unknown): true | string =>
   hasPortableTextContent(value) || 'This field is required.'
 
-export const validateRelatedItems = (items: unknown, context?: ValidationContext) => {
+export const validateRelatedItems = (
+  items: unknown,
+  context?: ValidationContext,
+): true | string => {
   if (!Array.isArray(items) || items.length === 0) return true
   if (items.length !== 3) return 'Related items must be empty or contain exactly three items.'
 
   const references = items.map((item: Reference) => item._ref).filter(Boolean)
   if (new Set(references).size !== references.length) return 'Related items must be unique.'
 
-  const currentId = context?.document?._id?.replace(/^drafts\./, '')
+  const docId = (context?.document as {_id?: string; _type?: string} | undefined)?._id
+  const currentId = docId?.replace(/^drafts\./, '')
   if (currentId && references.some((reference) => reference?.replace(/^drafts\./, '') === currentId)) {
     return 'An article cannot be related to itself.'
   }
@@ -48,43 +54,44 @@ export const validateRelatedItems = (items: unknown, context?: ValidationContext
   return true
 }
 
-export const validateExternalCoverage = (coverage: unknown, context: ValidationContext) => {
+export const validateExternalCoverage = (coverage: unknown, context: ValidationContext): true | string => {
+  const parent = context.parent as {articleType?: string; cardDestination?: string} | undefined
   if (
-    context.parent?.articleType &&
-    context.parent.articleType !== 'news' &&
+    parent?.articleType &&
+    parent.articleType !== 'news' &&
     Array.isArray(coverage) &&
     coverage.length > 0
   ) {
     return 'External coverage is only available for News.'
   }
 
-  if (!Array.isArray(coverage)) return context.parent?.cardDestination === 'external'
+  if (!Array.isArray(coverage)) return parent?.cardDestination === 'external'
     ? 'External cards require exactly one primary coverage link.'
     : true
 
   const primaryCount = coverage.filter((link: {isPrimary?: boolean}) => link.isPrimary).length
-  if (context.parent?.cardDestination === 'external' && primaryCount !== 1) {
+  if (parent?.cardDestination === 'external' && primaryCount !== 1) {
     return 'External cards require exactly one primary coverage link.'
   }
 
   return primaryCount <= 1 || 'Only one coverage link can be primary.'
 }
 
-export const validateReferencesUnique = (items: unknown) => {
+export const validateReferencesUnique = (items: unknown): true | string => {
   if (!Array.isArray(items)) return true
   const references = items.map((item: Reference) => item._ref).filter(Boolean)
   return new Set(references).size === references.length || 'References must be unique.'
 }
 
 export const validateScopedSlugUniqueness = async (
-  slug: {current?: string},
+  slug: {current?: string} | undefined,
   context: {
     getClient: (arg: {apiVersion: string}) => {
       fetch: (query: string, params: Record<string, string>) => Promise<number>
     }
     document?: {_id?: string; articleType?: string}
   },
-): Promise<string | boolean> => {
+): Promise<true | string> => {
   if (!slug?.current) return true
 
   const client = context.getClient({apiVersion: '2026-07-22'})

@@ -37,7 +37,10 @@ function legacyFeaturedArticles(page: LegacyIndexPage): Reference[] {
   })
 }
 
-export function migrateLegacyIndexPage(page: LegacyIndexPage) {
+export function migrateLegacyIndexPage(page: LegacyIndexPage): {
+  featured: unknown[]
+  allSection: AllSection
+} {
   const legacyItems = legacyFeaturedArticles(page)
   const allSection = page.allSection ?? {}
 
@@ -53,7 +56,7 @@ export function migrateLegacyIndexPage(page: LegacyIndexPage) {
           })),
     allSection: {
       ...allSection,
-      listDefaults: {...DEFAULTS, ...allSection.listDefaults},
+      listDefaults: {...DEFAULTS, ...allSection.listDefaults} as CardSettings,
     },
   }
 }

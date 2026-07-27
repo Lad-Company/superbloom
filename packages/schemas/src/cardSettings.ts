@@ -25,7 +25,7 @@ export const DEFAULTS = {
  */
 export const validateInfoPositionWithWidth = (
   context: {parent?: {infoPosition?: string; cardWidth?: string}},
-): string | boolean => {
+): true | string => {
   const {infoPosition, cardWidth} = context.parent || {}
 
   if (infoPosition === 'left' || infoPosition === 'right') {
@@ -89,14 +89,14 @@ export const cardSettingsFieldGroup = (options?: {title?: string; collapsed?: bo
     name: 'cardDefaults',
     title: options?.title || 'Card Settings Defaults',
     type: 'object',
-    collapsed: options?.collapsed ?? false,
+    options: {collapsed: options?.collapsed ?? false},
     fields: [
       cardWidthField({required: true}),
       mediaAspectRatioField({required: true}),
       infoPositionField({hidden: false, required: true}),
     ],
     validation: (rule) =>
-      rule.custom((value, context) => {
+      rule.custom((value, _context) => {
         if (!value) return true
         // Validate info position with card width at object level
         return validateInfoPositionWithWidth({parent: {

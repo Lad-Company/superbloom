@@ -19,8 +19,11 @@ export const mediaBox = defineType({
       description: 'Descriptive text for screen readers and when media fails to load.',
       validation: (rule) =>
         rule.custom((altText, context) => {
-          const asset = (context.parent?.asset as Array<{_type: string}> | undefined)?.[0]
-          if (asset?._type === 'image' && !context.parent?.decorative && !altText) {
+          const parent = context.parent as
+            | {asset?: Array<{_type: string}>; decorative?: boolean}
+            | undefined
+          const asset = parent?.asset?.[0]
+          if (asset?._type === 'image' && !parent?.decorative && !altText) {
             return 'Alt text is required for images unless marked as decorative'
           }
           return true
@@ -39,7 +42,7 @@ export const mediaBox = defineType({
       asset: 'asset.0._type',
       altText: 'altText',
     },
-    prepare: ({asset, altText}) => ({
+    prepare: ({asset, altText}: {asset?: string; altText?: string}) => ({
       title: altText || '(no alt text)',
       subtitle: asset === 'mux.video' ? 'Video' : 'Image',
     }),

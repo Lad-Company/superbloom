@@ -16,7 +16,7 @@ function referenceIds(items: unknown): string[] {
 /**
  * Featured section must have 0-4 Case Studies.
  */
-export function validateWorkIndexFeaturedCount(featured: unknown): string | boolean {
+export function validateWorkIndexFeaturedCount(featured: unknown): true | string {
   if (!Array.isArray(featured)) return true
   if (featured.length > 4) return 'Featured section can contain at most 4 Case Studies'
   return true
@@ -25,7 +25,7 @@ export function validateWorkIndexFeaturedCount(featured: unknown): string | bool
 /**
  * Featured Case Studies must be unique (no duplicate references).
  */
-export function validateWorkIndexFeaturedCardsUnique(featured: unknown): string | boolean {
+export function validateWorkIndexFeaturedCardsUnique(featured: unknown): true | string {
   if (!Array.isArray(featured)) return true
 
   const ids = referenceIds(featured)
@@ -38,7 +38,7 @@ export function validateWorkIndexFeaturedCardsUnique(featured: unknown): string 
 /**
  * Featured Case Studies must fully configure all three card settings.
  */
-export function validateWorkIndexFeaturedCardsFullyConfigured(cards: unknown[]): string | boolean {
+export function validateWorkIndexFeaturedCardsFullyConfigured(cards: unknown): true | string {
   if (!Array.isArray(cards)) return true
 
   for (const card of cards) {
@@ -52,11 +52,11 @@ export function validateWorkIndexFeaturedCardsFullyConfigured(cards: unknown[]):
 /**
  * All section list defaults must be complete if present.
  */
-export function validateWorkIndexAllListDefaults(defaults: unknown): string | boolean {
+export function validateWorkIndexAllListDefaults(defaults: unknown): true | string {
   return validateContentDefaultsCompleteness(defaults)
 }
 
-export function validateWorkIndexItemOverridesUnique(overrides: unknown): string | boolean {
+export function validateWorkIndexItemOverridesUnique(overrides: unknown): true | string {
   const ids = referenceIds(overrides)
   return new Set(ids).size === ids.length || 'Each Case Study can have only one item override'
 }

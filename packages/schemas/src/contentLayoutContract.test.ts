@@ -107,7 +107,8 @@ describe('Content Layout Row contract', () => {
   it('registers Media, Text, and Spacer blocks and removes legacy layout types', () => {
     const blocks = contentLayoutRow.fields.find((field) => field.name === 'blocks')
     expect(blocks?.type).toBe('array')
-    expect(blocks?.of?.map((member) => member.type)).toEqual([
+    const ofType = (blocks as {of?: Array<{type: string}>} | undefined)?.of
+    expect(ofType?.map((member) => member.type)).toEqual([
       'contentLayoutMedia',
       'contentLayoutText',
       'contentLayoutSpacer',
@@ -138,26 +139,34 @@ describe('Content Layout Row contract', () => {
     )
     const resultsRows = caseStudyResults.fields.find((field) => field.name === 'supportingRows')
 
-    expect(articleBody?.of?.map((member) => member.type)).toEqual(['contentLayoutRow'])
-    expect(narrativeLayouts?.of?.map((member) => member.type)).toEqual(['contentLayoutRow'])
-    expect(resultsRows?.of?.map((member) => member.type)).toEqual(['contentLayoutRow'])
+    const bodyOf = (articleBody as {of?: Array<{type: string}>} | undefined)?.of
+    const narrativeOf = (narrativeLayouts as {of?: Array<{type: string}>} | undefined)?.of
+    const resultsOf = (resultsRows as {of?: Array<{type: string}>} | undefined)?.of
+
+    expect(bodyOf?.map((member) => member.type)).toEqual(['contentLayoutRow'])
+    expect(narrativeOf?.map((member) => member.type)).toEqual(['contentLayoutRow'])
+    expect(resultsOf?.map((member) => member.type)).toEqual(['contentLayoutRow'])
   })
 
   it('reuses mediaBox and the global Media Frame aspect ratios', () => {
     expect(contentLayoutMedia.fields.find((field) => field.name === 'media')?.type).toBe('mediaBox')
     const aspectRatio = contentLayoutMedia.fields.find((field) => field.name === 'aspectRatio')
-    expect(aspectRatio?.options?.list).toHaveLength(7)
+    const list = (aspectRatio?.options as {list?: unknown[]} | undefined)?.list
+    expect(list).toHaveLength(7)
   })
 
   it('provides optional heading and required rich text with emphasis, links, and lists', () => {
     const heading = contentLayoutText.fields.find((field) => field.name === 'heading')
     const text = contentLayoutText.fields.find((field) => field.name === 'text')
-    const block = text?.of?.[0]
+    const block = (text as {of?: Array<{type: string; marks?: unknown}>} | undefined)?.of?.[0]
 
     expect(heading?.validation).toBeUndefined()
     expect(text?.validation).toBeTypeOf('function')
     expect(block?.type).toBe('block')
-    expect(block?.marks?.decorators?.map((mark) => mark.value)).toEqual(['strong', 'em'])
-    expect(block?.marks?.annotations?.map((mark) => mark.name)).toContain('link')
+    const marks = block?.marks as
+      | {decorators?: Array<{value: string}>; annotations?: Array<{name: string}>}
+      | undefined
+    expect(marks?.decorators?.map((mark) => mark.value)).toEqual(['strong', 'em'])
+    expect(marks?.annotations?.map((mark) => mark.name)).toContain('link')
   })
 })

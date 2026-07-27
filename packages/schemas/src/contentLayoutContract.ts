@@ -22,7 +22,7 @@ const WIDTH_VALUES: Record<string, number> = {
   full: 1,
 }
 
-export const validateTwoBlockRowWidths = (blocks: unknown): string | boolean => {
+export const validateTwoBlockRowWidths = (blocks: unknown): true | string => {
   if (!Array.isArray(blocks) || blocks.length !== 2) return true
 
   const [first, second] = blocks as ContentLayoutBlock[]
@@ -37,7 +37,7 @@ export const isFullBleedEligible = (row: ContentLayoutRow): boolean =>
   row.blocks[0]?._type === 'contentLayoutMedia' &&
   row.blocks[0]?.width === 'full'
 
-export const validateContentLayoutRow = (value: unknown): string | boolean => {
+export const validateContentLayoutRow = (value: unknown): true | string => {
   if (!value || typeof value !== 'object') return true
 
   const row = value as ContentLayoutRow

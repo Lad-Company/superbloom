@@ -7,7 +7,7 @@ import type {ValidationContext} from 'sanity'
 
 export const validateCardSettingsInfoPosition = (
   context: {parent?: {infoPosition?: string; cardWidth?: string}},
-): string | boolean => validateInfoPositionWithWidth(context)
+): true | string => validateInfoPositionWithWidth(context)
 
 /**
  * Validate that featured card entries fully configure all three card settings.
@@ -15,7 +15,7 @@ export const validateCardSettingsInfoPosition = (
  */
 export const validateFeaturedCardFullyConfigured = (
   card: unknown,
-): string | boolean => {
+): true | string => {
   if (!card || typeof card !== 'object') return true
 
   const c = card as Record<string, unknown>
@@ -41,7 +41,7 @@ export const validateFeaturedCardFullyConfigured = (
  */
 export const validateContentDefaultsCompleteness = (
   defaults: unknown,
-): string | boolean => {
+): true | string => {
   if (!defaults) return true
 
   if (typeof defaults !== 'object') return 'Card defaults must be an object'
@@ -74,7 +74,7 @@ export const validateResolvedCardSettings = (
   list?: CardSettings,
   content?: CardSettings,
   global?: CardSettings,
-): string | boolean => {
+): true | string => {
   const levels = [item, list, content, global]
   const cardWidth = levels.find((level) => level?.cardWidth)?.cardWidth
   const infoPosition = levels.find((level) => level?.infoPosition)?.infoPosition
@@ -86,7 +86,7 @@ export const validateResolvedCardSettings = (
 export const validateResolvedCardOverride = async (
   override: unknown,
   context: ValidationContext,
-): Promise<string | boolean> => {
+): Promise<true | string> => {
   if (!override || typeof override !== 'object') return true
   const item = override as CardSettings & {
     article?: {_ref?: string}

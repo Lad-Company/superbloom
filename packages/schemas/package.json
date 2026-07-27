@@ -6,7 +6,8 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "sanity": "*"
@@ -15,6 +16,12 @@
     "@sanity/orderable-document-list": "^1.5.1"
   },
   "devDependencies": {
+    "@sanity/color-input": "^5.0.4",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^6.0.3",
     "vitest": "^1.6.0"
   }
 }

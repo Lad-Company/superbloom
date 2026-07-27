@@ -16,7 +16,7 @@ function referenceIds(items: unknown): string[] {
 /**
  * Featured section must have 0-4 cards.
  */
-export function validateIndexPageFeaturedCount(featured: unknown): string | boolean {
+export function validateIndexPageFeaturedCount(featured: unknown): true | string {
   if (!Array.isArray(featured)) return true
   if (featured.length > 4) return 'Featured section can contain at most 4 cards'
   return true
@@ -25,7 +25,7 @@ export function validateIndexPageFeaturedCount(featured: unknown): string | bool
 /**
  * Featured cards must be unique (no duplicate article references).
  */
-export function validateIndexPageFeaturedCardsUnique(featured: unknown): string | boolean {
+export function validateIndexPageFeaturedCardsUnique(featured: unknown): true | string {
   if (!Array.isArray(featured)) return true
 
   const ids = referenceIds(featured)
@@ -38,7 +38,7 @@ export function validateIndexPageFeaturedCardsUnique(featured: unknown): string 
 /**
  * Featured cards must fully configure all three card settings.
  */
-export function validateIndexPageFeaturedCardsFullyConfigured(cards: unknown[]): string | boolean {
+export function validateIndexPageFeaturedCardsFullyConfigured(cards: unknown): true | string {
   if (!Array.isArray(cards)) return true
 
   for (const card of cards) {
@@ -52,11 +52,11 @@ export function validateIndexPageFeaturedCardsFullyConfigured(cards: unknown[]):
 /**
  * All section list defaults must be complete if present.
  */
-export function validateIndexPageAllListDefaults(defaults: unknown): string | boolean {
+export function validateIndexPageAllListDefaults(defaults: unknown): true | string {
   return validateContentDefaultsCompleteness(defaults)
 }
 
-export function validateIndexPageItemOverridesUnique(overrides: unknown): string | boolean {
+export function validateIndexPageItemOverridesUnique(overrides: unknown): true | string {
   const ids = referenceIds(overrides)
   return new Set(ids).size === ids.length || 'Each Article can have only one item override'
 }

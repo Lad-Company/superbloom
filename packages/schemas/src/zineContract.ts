@@ -13,10 +13,10 @@ const hasPortableTextContent = (value: unknown) =>
     block.children?.some((child) => Boolean(child.text?.trim())),
   )
 
-export const validatePortableTextNonEmpty = (value: unknown) =>
+export const validatePortableTextNonEmpty = (value: unknown): true | string =>
   hasPortableTextContent(value) || 'This field is required.'
 
-export const validateRelatedItems = (items: unknown, context?: ValidationContext) => {
+export const validateRelatedItems = (items: unknown, context?: ValidationContext): true | string => {
   if (!Array.isArray(items) || items.length === 0) return true
   if (items.length !== 3) return 'Related items must be empty or contain exactly three items.'
 
@@ -31,13 +31,13 @@ export const validateRelatedItems = (items: unknown, context?: ValidationContext
   return true
 }
 
-export const validateReferencesUnique = (items: unknown) => {
+export const validateReferencesUnique = (items: unknown): true | string => {
   if (!Array.isArray(items)) return true
   const references = items.map((item: Reference) => item._ref).filter(Boolean)
   return new Set(references).size === references.length || 'References must be unique.'
 }
 
-export const validateArticlesMinOneAndUnique = (articles: unknown) => {
+export const validateArticlesMinOneAndUnique = (articles: unknown): true | string => {
   if (!Array.isArray(articles)) return 'Articles must be an array.'
   if (articles.length < 1) return 'Issue must include at least one article.'
 
@@ -48,19 +48,19 @@ export const validateArticlesMinOneAndUnique = (articles: unknown) => {
 export const validateArticlesNotInAnotherIssue = async (
   articles: unknown,
   context: ValidationContext,
-) => {
+): Promise<true | string> => {
   if (!Array.isArray(articles) || !context.document?._id || !context.getClient) return true
 
   const articleIds = articles.map((article: Reference) => article._ref).filter(Boolean)
   if (articleIds.length === 0) return true
 
   const documentId = context.document._id.replace(/^drafts\./, '')
-  const existingIssueCount = await context
+  const existingIssueCount = (await context
     .getClient({apiVersion: '2026-06-01'})
     .fetch(
       'count(*[_type == "zineIssue" && !(_id in [$documentId, $draftId]) && references($articleIds)])',
       {articleIds, documentId, draftId: `drafts.${documentId}`},
-    ) as number
+    )) as number
 
   return existingIssueCount === 0 || 'One or more selected articles already belong to another Issue.'
 }
@@ -68,7 +68,7 @@ export const validateArticlesNotInAnotherIssue = async (
 export const validateZineArticleIssueMembership = async (
   document: unknown,
   context: ValidationContext,
-) => {
+): Promise<true | string> => {
   const article = document as {_id?: string; articleType?: string} | undefined
   if (article?.articleType !== 'zine' || !article._id || !context.getClient) return true
 
@@ -93,7 +93,7 @@ export const validateZineArticleIssueMembership = async (
   return `Zine Articles must belong to exactly one Issue.${guidance}`
 }
 
-export const validateIssuuUrl = (value: unknown) => {
+export const validateIssuuUrl = (value: unknown): true | string => {
   if (typeof value !== 'string' || !value) return 'ISSUU URL is required.'
 
   try {
@@ -108,7 +108,7 @@ export const validateIssuuUrl = (value: unknown) => {
 
 export const validateIssuuOrPdfRequired = (
   document?: {issuuUrl?: string; pdfAsset?: unknown},
-) => {
+): true | string => {
   if (!document) return true
   const hasIssuu = !!document.issuuUrl
   const hasPdf = !!document.pdfAsset

@@ -117,7 +117,9 @@ export default defineConfig({
   form: {
     components: {
       input: (props) =>
-        props.schemaType.name === 'color' ? legacyColorInput(props) : props.renderDefault(props),
+        props.schemaType.name === 'color'
+          ? legacyColorInput(props as Parameters<typeof legacyColorInput>[0])
+          : props.renderDefault(props),
     },
   },
 })
