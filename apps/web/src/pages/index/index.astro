@@ -150,9 +150,7 @@ const queryFor = (nextPage: number, nextSort = sort) => {
     margin-bottom: var(--space-xl);
   }
 
-  .view-all :global(.load-more) {
-    display: inline-block;
-    text-underline-offset: 0.15em;
+  .view-all :global(progressive-load-more) {
     margin: var(--space-xl) 0 0 var(--page-inset);
   }
 
@@ -174,7 +172,7 @@ const queryFor = (nextPage: number, nextSort = sort) => {
       margin-bottom: var(--space-xs);
     }
 
-    .view-all :global(.load-more) {
+    .view-all :global(progressive-load-more) {
       margin-left: 0;
     }
   }
