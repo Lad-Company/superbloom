@@ -1,7 +1,18 @@
-import { defineConfig, presetWind3 } from 'unocss';
+import {defineConfig, presetWind3} from 'unocss'
 
 export default defineConfig({
   presets: [presetWind3()],
+  rules: [
+    [
+      /^line-clamp-(\d+)$/,
+      ([, d]) => ({
+        overflow: 'hidden',
+        display: '-webkit-box',
+        '-webkit-box-orient': 'vertical',
+        '-webkit-line-clamp': Number(d),
+      }),
+    ],
+  ],
   theme: {
     colors: {
       bg: 'var(--bg)',
@@ -19,26 +30,19 @@ export default defineConfig({
   },
   shortcuts: {
     // Type styles transcribed from Figma R3 variables
-    'type-h1':
-      'font-display-tight font-[750] text-[200px] leading-[0.78] tracking-[0] uppercase',
-    'type-h2':
-      'font-display-tight font-[750] text-[140px] leading-[0.88] tracking-[0] uppercase',
-    'type-h3':
-      'font-display-tight font-[750] text-[120px] leading-[0.88] tracking-[0] uppercase',
-    'type-h4':
-      'font-display-tight font-[750] text-[80px] leading-[0.88] tracking-[0] uppercase',
-    'type-h5':
-      'font-display-tight font-[750] text-[56px] leading-[0.88] tracking-[0] uppercase',
+    'type-h1': 'font-display-tight font-[750] text-[200px] leading-[0.78] tracking-[0] uppercase',
+    'type-h2': 'font-display-tight font-[750] text-[140px] leading-[0.88] tracking-[0] uppercase',
+    'type-h3': 'font-display-tight font-[750] text-[120px] leading-[0.88] tracking-[0] uppercase',
+    'type-h4': 'font-display-tight font-[750] text-[80px] leading-[0.88] tracking-[0] uppercase',
+    'type-h5': 'font-display-tight font-[750] text-[56px] leading-[0.88] tracking-[0] uppercase',
     'type-h6': 'font-body font-medium text-[24px] leading-[1.2] tracking-[-0.48px]',
-    'type-h7':
-      'font-display-tight font-[750] text-[32px] leading-[0.88] tracking-[0] uppercase',
+    'type-h7': 'font-display-tight font-[750] text-[32px] leading-[0.88] tracking-[0] uppercase',
     'type-eyebrow':
       'font-interface font-[750] text-[17px] leading-none tracking-[0.02em] uppercase',
     'type-section-heading':
       'font-display-tight font-[750] text-[56px] leading-[0.88] tracking-[0] uppercase',
     'type-body': 'font-body font-medium text-[19px] leading-[1.3] tracking-[-0.38px]',
     'type-caption': 'font-body font-medium text-[14px] leading-[1.3] tracking-[-0.28px]',
-    'type-label':
-      'font-interface font-[750] text-[17px] leading-none tracking-[0.02em] uppercase',
+    'type-label': 'font-interface font-[750] text-[17px] leading-none tracking-[0.02em] uppercase',
   },
-});
+})

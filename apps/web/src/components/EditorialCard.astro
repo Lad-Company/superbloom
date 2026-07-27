@@ -1,27 +1,24 @@
 ---
-import MediaFrame, { type Media, type MediaRatio } from './MediaFrame.astro';
-import {
-  resolveContentCardSettings,
-  type PartialContentCardSettings,
-} from '../lib/contentCard';
-import { formatPublicationDate } from '../lib/publicationDate';
+import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro'
+import {resolveContentCardSettings, type PartialContentCardSettings} from '../lib/contentCard'
+import {formatPublicationDate} from '../lib/publicationDate'
 
 interface Props {
-  href: string;
-  title: string | null;
-  media: Media | null;
-  summary?: string | null;
-  publicationDate?: string | null;
-  class?: string;
-  target?: string;
-  rel?: string;
-  externalLabel?: string;
-  ctaLabel?: string | null;
-  cardId?: string | null;
-  contentSettings?: PartialContentCardSettings;
-  settings?: PartialContentCardSettings;
-  listSettings?: PartialContentCardSettings;
-  globalSettings?: PartialContentCardSettings;
+  href: string
+  title: string | null
+  media: Media | null
+  summary?: string | null
+  publicationDate?: string | null
+  class?: string
+  target?: string
+  rel?: string
+  externalLabel?: string
+  ctaLabel?: string | null
+  cardId?: string | null
+  contentSettings?: PartialContentCardSettings
+  settings?: PartialContentCardSettings
+  listSettings?: PartialContentCardSettings
+  globalSettings?: PartialContentCardSettings
 }
 
 const {
@@ -40,14 +37,14 @@ const {
   settings,
   listSettings,
   globalSettings,
-} = Astro.props;
+} = Astro.props
 const resolved = resolveContentCardSettings({
   global: globalSettings,
   content: contentSettings,
   list: listSettings,
   item: settings,
-});
-const formattedDate = publicationDate ? formatPublicationDate(publicationDate) : null;
+})
+const formattedDate = publicationDate ? formatPublicationDate(publicationDate) : null
 ---
 
 <a
@@ -63,18 +60,22 @@ const formattedDate = publicationDate ? formatPublicationDate(publicationDate) :
     <slot name="overlay" />
   </MediaFrame>
   <div class="content">
-    {title && <p class="headline type-h6">{title}</p>}
-    {summary && <p class="summary type-caption">{summary}</p>}
-    {formattedDate && (
-      <time class="publication-date type-caption" datetime={formattedDate.dateTime}>
-        {formattedDate.label}
-      </time>
-    )}
-    {externalLabel && (
-      <p class="external-label type-caption">
-        {externalLabel} <span aria-hidden="true">↗</span>
-      </p>
-    )}
+    {title && <p class="headline type-h6 line-clamp-2">{title}</p>}
+    {summary && <p class="summary type-caption line-clamp-2">{summary}</p>}
+    {
+      formattedDate && (
+        <time class="publication-date type-caption" datetime={formattedDate.dateTime}>
+          {formattedDate.label}
+        </time>
+      )
+    }
+    {
+      externalLabel && (
+        <p class="external-label type-caption">
+          {externalLabel} <span aria-hidden="true">↗</span>
+        </p>
+      )
+    }
     {ctaLabel && <span class="cta type-caption">{ctaLabel}</span>}
   </div>
 </a>
