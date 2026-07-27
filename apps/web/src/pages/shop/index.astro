@@ -1,17 +1,17 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Navigation from '../../components/Navigation.astro';
-import Footer from '../../components/Footer.astro';
-import ProductGrid from '../../components/shop/ProductGrid.astro';
-import { listProducts } from '../../lib/shopify';
+import Layout from '../../layouts/Layout.astro'
+import Navigation from '../../components/Navigation.astro'
+import Footer from '../../components/Footer.astro'
+import ProductGrid from '../../components/shop/ProductGrid.astro'
+import {listProducts} from '../../lib/shopify'
 
-const cursor = Astro.url.searchParams.get('after');
-let result: Awaited<ReturnType<typeof listProducts>> | null = null;
-let error = false;
+const cursor = Astro.url.searchParams.get('after')
+let result: Awaited<ReturnType<typeof listProducts>> | null = null
+let error = false
 try {
-  result = await listProducts(cursor);
+  result = await listProducts(cursor)
 } catch {
-  error = true;
+  error = true
 }
 ---
 
@@ -21,7 +21,19 @@ try {
     <header class="shop-header">
       <h1 class="type-h7">Shop</h1>
     </header>
-    {error ? <p class="message">Unable to load products. Please try again.</p> : result && <ProductGrid products={result.products} nextCursor={result.pageInfo.endCursor} hasNextPage={result.pageInfo.hasNextPage} />}
+    {
+      error ? (
+        <p class="message">Unable to load products. Please try again.</p>
+      ) : (
+        result && (
+          <ProductGrid
+            products={result.products}
+            nextCursor={result.pageInfo.endCursor}
+            hasNextPage={result.pageInfo.hasNextPage}
+          />
+        )
+      )
+    }
   </main>
   <Footer />
 </Layout>
@@ -35,7 +47,13 @@ try {
     background: #000000;
     color: #ffffff;
   }
-  .shop-header { padding: 120px var(--page-inset) var(--space-s); }
-  .shop-header h1 { margin: 0; }
-  .message { padding: var(--space-xl) var(--page-inset); }
+  .shop-header {
+    padding: var(--space-2xl) var(--page-inset) var(--space-s);
+  }
+  .shop-header h1 {
+    margin: 0;
+  }
+  .message {
+    padding: var(--space-xl) var(--page-inset);
+  }
 </style>

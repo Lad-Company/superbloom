@@ -21,7 +21,8 @@
   --space-3xl: 160px;
   --space-4xl: 200px;
   --page-gutter: 24px;
-  --page-inset: var(--space-xs);
+  --page-margin-2: 32px;
+  --page-inset: var(--page-margin-2);
 
   /* Radius */
   --radius-control: 6px;

@@ -1,73 +1,73 @@
 ---
-import MediaFrame, {type Media} from '../MediaFrame.astro';
-import PortableText from '../PortableText.astro';
-import ArticleBodyRenderer from './ArticleBodyRenderer.astro';
-import MixedArticleCard from '../MixedArticleCard.astro';
-import CardCarousel from '../CardCarousel.astro';
-import TagList from '../TagList.astro';
-import type {ContentLayoutRowValue} from '../ContentLayoutRow.astro';
-import type {TypedObject} from 'astro-portabletext/types';
+import MediaFrame, {type Media} from '../MediaFrame.astro'
+import PortableText from '../PortableText.astro'
+import ArticleBodyRenderer from './ArticleBodyRenderer.astro'
+import MixedArticleCard from '../MixedArticleCard.astro'
+import CardCarousel from '../CardCarousel.astro'
+import TagList from '../TagList.astro'
+import type {ContentLayoutRowValue} from '../ContentLayoutRow.astro'
+import type {TypedObject} from 'astro-portabletext/types'
 import type {
   CardWidth,
   InfoPosition,
   MediaAspectRatio,
   PartialContentCardSettings,
-} from '../../lib/contentCard';
-import {formatPublicationDate} from '../../lib/publicationDate';
+} from '../../lib/contentCard'
+import {formatPublicationDate} from '../../lib/publicationDate'
 
-type Tag = {title?: string | null; color?: string | null};
-type Coverage = {outlet?: string | null; url?: string | null; isPrimary?: boolean | null};
-type PortableBlock = TypedObject & {children?: Array<{text?: string | null}>};
+type Tag = {title?: string | null; color?: string | null}
+type Coverage = {outlet?: string | null; url?: string | null; isPrimary?: boolean | null}
+type PortableBlock = TypedObject & {children?: Array<{text?: string | null}>}
 type RelatedItem = {
-  _type: 'article';
-  articleType?: 'news' | 'editorial' | 'zine' | null;
-  title: string | null;
-  slug: string | null;
-  issueSlug?: string | null;
-  overview?: PortableBlock[] | null;
-  publicationDate?: string | null;
-  cardDestination?: 'internal' | 'external' | null;
-  externalCoverage?: Coverage[] | null;
-  cardWidth?: CardWidth | null;
-  mediaAspectRatio?: MediaAspectRatio | null;
-  infoPosition?: InfoPosition | null;
-  cardMedia: Media | null;
-  tags: Tag[] | null;
-};
-type BodyBlock = ContentLayoutRowValue;
+  _type: 'article'
+  articleType?: 'news' | 'editorial' | 'zine' | null
+  title: string | null
+  slug: string | null
+  issueSlug?: string | null
+  overview?: PortableBlock[] | null
+  publicationDate?: string | null
+  cardDestination?: 'internal' | 'external' | null
+  externalCoverage?: Coverage[] | null
+  cardWidth?: CardWidth | null
+  mediaAspectRatio?: MediaAspectRatio | null
+  infoPosition?: InfoPosition | null
+  cardMedia: Media | null
+  tags: Tag[] | null
+}
+type BodyBlock = ContentLayoutRowValue
 
 interface Props {
   article: {
-    _type: 'article';
-    articleType?: 'news' | 'editorial' | 'zine' | null;
-    title?: string | null;
-    publicationDate?: string | null;
-    overview?: PortableBlock[] | null;
-    leadMedia?: Media | null;
-    body?: BodyBlock[] | null;
-    tags?: Tag[] | null;
-    externalCoverage?: Coverage[] | null;
-    relatedItems?: RelatedItem[] | null;
-    globalCardDefaults?: PartialContentCardSettings;
-  };
+    _type: 'article'
+    articleType?: 'news' | 'editorial' | 'zine' | null
+    title?: string | null
+    publicationDate?: string | null
+    overview?: PortableBlock[] | null
+    leadMedia?: Media | null
+    body?: BodyBlock[] | null
+    tags?: Tag[] | null
+    externalCoverage?: Coverage[] | null
+    relatedItems?: RelatedItem[] | null
+    globalCardDefaults?: PartialContentCardSettings
+  }
 }
 
-const {article} = Astro.props;
-const body = article.body ?? [];
-const coverage = article.articleType === 'news' ? article.externalCoverage ?? [] : [];
-const relatedItems = article.relatedItems ?? [];
+const {article} = Astro.props
+const body = article.body ?? []
+const coverage = article.articleType === 'news' ? (article.externalCoverage ?? []) : []
+const relatedItems = article.relatedItems ?? []
 
 const typeLabels: Record<'news' | 'editorial' | 'zine', string> = {
   news: 'News',
   editorial: 'Editorial',
   zine: 'Zine',
-};
+}
 
-const typeLabel = article.articleType ? typeLabels[article.articleType] : null;
+const typeLabel = article.articleType ? typeLabels[article.articleType] : null
 
 const publicationDate = article.publicationDate
   ? formatPublicationDate(article.publicationDate)
-  : null;
+  : null
 ---
 
 <article class="article-detail">
@@ -76,59 +76,73 @@ const publicationDate = article.publicationDate
     <h1 class="type-h3">{article.title}</h1>
     <div class="article-meta type-caption">
       {typeLabel && <span class="article-type">{typeLabel}</span>}
-      {publicationDate && (
-        <time class="publication-date" datetime={publicationDate.dateTime}>
-          {publicationDate.label}
-        </time>
-      )}
+      {
+        publicationDate && (
+          <time class="publication-date" datetime={publicationDate.dateTime}>
+            {publicationDate.label}
+          </time>
+        )
+      }
     </div>
   </header>
 
-  {article.leadMedia && <MediaFrame media={article.leadMedia} ratio="16:9" title={article.title} priority />}
+  {
+    article.leadMedia && (
+      <MediaFrame media={article.leadMedia} ratio="16:9" title={article.title} priority />
+    )
+  }
 
-  {article.overview && (
-    <section class="overview">
-      <PortableText value={article.overview} class="type-h5" />
-    </section>
-  )}
+  {
+    article.overview && (
+      <section class="overview">
+        <PortableText value={article.overview} class="type-h5" />
+      </section>
+    )
+  }
 
   {body.map((block) => <ArticleBodyRenderer block={block} />)}
 
-  {coverage.length > 0 && (
-    <section class="external-coverage" aria-labelledby="external-coverage-heading">
-      <h2 id="external-coverage-heading" class="type-eyebrow">Read elsewhere</h2>
-      <ul>
-        {coverage.map((link) => (
-          <li>
-            {link.url ? (
-              <a href={link.url} target="_blank" rel="noopener noreferrer">
-                {link.outlet ?? link.url} <span aria-hidden="true">↗</span>
-                <span class="sr-only">(opens in a new tab)</span>
-              </a>
-            ) : (
-              <span>{link.outlet}</span>
-            )}
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
+  {
+    coverage.length > 0 && (
+      <section class="external-coverage" aria-labelledby="external-coverage-heading">
+        <h2 id="external-coverage-heading" class="type-eyebrow">
+          Read elsewhere
+        </h2>
+        <ul>
+          {coverage.map((link) => (
+            <li>
+              {link.url ? (
+                <a href={link.url} target="_blank" rel="noopener noreferrer">
+                  {link.outlet ?? link.url} <span aria-hidden="true">↗</span>
+                  <span class="sr-only">(opens in a new tab)</span>
+                </a>
+              ) : (
+                <span>{link.outlet}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
 
-  {relatedItems.length === 3 && (
-    <nav class="related-items" aria-label="More stories">
-      <CardCarousel label="More stories" heading="More stories">
-        {relatedItems.map((item) => (
-          <MixedArticleCard item={item} globalSettings={article.globalCardDefaults} showCopy />
-        ))}
-      </CardCarousel>
-    </nav>
-  )}
+  {
+    relatedItems.length === 3 && (
+      <nav class="related-items" aria-label="More stories">
+        <CardCarousel label="More stories" heading="More stories">
+          {relatedItems.map((item) => (
+            <MixedArticleCard item={item} globalSettings={article.globalCardDefaults} showCopy />
+          ))}
+        </CardCarousel>
+      </nav>
+    )
+  }
 </article>
 
 <style>
   .hero {
     position: relative;
-    padding: 140px var(--page-inset) var(--space-xs);
+    padding: var(--space-3xl) var(--page-inset) var(--space-xs);
   }
 
   h1,
@@ -188,10 +202,9 @@ const publicationDate = article.publicationDate
     white-space: nowrap;
   }
 
-
   @media (max-width: 768px) {
     .hero {
-      padding-top: 100px;
+      padding-top: var(--space-xl);
     }
   }
 </style>

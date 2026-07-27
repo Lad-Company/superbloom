@@ -1,11 +1,11 @@
 ---
-import Navigation from '../Navigation.astro';
+import Navigation from '../Navigation.astro'
 
 interface Props {
-  heading: string;
+  heading: string
 }
 
-const { heading } = Astro.props;
+const {heading} = Astro.props
 ---
 
 <section class="who-we-are-hero">
@@ -32,7 +32,7 @@ const { heading } = Astro.props;
 
   @media (max-width: 768px) {
     .content {
-      padding: 120px var(--space-3xs) var(--space-xl);
+      padding: var(--space-2xl) var(--space-3xs) var(--space-xl);
     }
   }
 </style>

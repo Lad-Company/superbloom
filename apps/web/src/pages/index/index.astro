@@ -1,33 +1,33 @@
 ---
-import ContactBand from '../../components/ContactBand.astro';
-import Footer from '../../components/Footer.astro';
-import Layout from '../../layouts/Layout.astro';
-import Navigation from '../../components/Navigation.astro';
-import ContentCardList from '../../components/ContentCardList.astro';
-import MixedArticleCard from '../../components/MixedArticleCard.astro';
-import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro';
-import SurfaceSection from '../../components/SurfaceSection.astro';
-import { indexPageQuery, indexViewAllNewestQuery, indexViewAllOldestQuery } from '../../lib/queries';
-import { sanityClient } from '../../lib/sanity';
+import ContactBand from '../../components/ContactBand.astro'
+import Footer from '../../components/Footer.astro'
+import Layout from '../../layouts/Layout.astro'
+import Navigation from '../../components/Navigation.astro'
+import ContentCardList from '../../components/ContentCardList.astro'
+import MixedArticleCard from '../../components/MixedArticleCard.astro'
+import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro'
+import SurfaceSection from '../../components/SurfaceSection.astro'
+import {indexPageQuery, indexViewAllNewestQuery, indexViewAllOldestQuery} from '../../lib/queries'
+import {sanityClient} from '../../lib/sanity'
 import type {
   IndexPageQueryResult,
   IndexViewAllNewestQueryResult,
   IndexViewAllOldestQueryResult,
-} from '../../sanity.types';
-import type { PartialContentCardSettings } from '../../lib/contentCard';
+} from '../../sanity.types'
+import type {PartialContentCardSettings} from '../../lib/contentCard'
 
-const BATCH_SIZE = 12;
-const sort = Astro.url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest';
-const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
-const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-const recordLimit = page * BATCH_SIZE;
+const BATCH_SIZE = 12
+const sort = Astro.url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest'
+const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10)
+const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
+const recordLimit = page * BATCH_SIZE
 
-const indexPage = await sanityClient.fetch<IndexPageQueryResult>(indexPageQuery);
-const featured = indexPage?.featured?.filter((entry) => entry?.item) ?? [];
-const featuredIds = featured.map((entry) => entry.item?._id).filter(
-  (id): id is string => Boolean(id),
-);
-const viewAllQuery = sort === 'oldest' ? indexViewAllOldestQuery : indexViewAllNewestQuery;
+const indexPage = await sanityClient.fetch<IndexPageQueryResult>(indexPageQuery)
+const featured = indexPage?.featured?.filter((entry) => entry?.item) ?? []
+const featuredIds = featured
+  .map((entry) => entry.item?._id)
+  .filter((id): id is string => Boolean(id))
+const viewAllQuery = sort === 'oldest' ? indexViewAllOldestQuery : indexViewAllNewestQuery
 const fetchedItems = await sanityClient.fetch<
   IndexViewAllNewestQueryResult | IndexViewAllOldestQueryResult
 >(viewAllQuery, {
@@ -35,21 +35,23 @@ const fetchedItems = await sanityClient.fetch<
   tagId: indexPage?.allSection?.tagId ?? null,
   offset: 0,
   end: recordLimit + 1,
-});
-const items = fetchedItems.slice(0, recordLimit);
-const hasMore = fetchedItems.length > recordLimit;
-const listSettings = indexPage?.allSection?.listDefaults as PartialContentCardSettings;
-const globalSettings = indexPage?.globalCardDefaults as PartialContentCardSettings;
+})
+const items = fetchedItems.slice(0, recordLimit)
+const hasMore = fetchedItems.length > recordLimit
+const listSettings = indexPage?.allSection?.listDefaults as PartialContentCardSettings
+const globalSettings = indexPage?.globalCardDefaults as PartialContentCardSettings
 const overrideFor = (id: string) =>
-  indexPage?.allSection?.itemOverrides?.find((override) => override?.itemId === id) as PartialContentCardSettings;
+  indexPage?.allSection?.itemOverrides?.find(
+    (override) => override?.itemId === id,
+  ) as PartialContentCardSettings
 
 const queryFor = (nextPage: number, nextSort = sort) => {
-  const params = new URLSearchParams();
-  if (nextSort === 'oldest') params.set('sort', nextSort);
-  if (nextPage > 1) params.set('page', String(nextPage));
-  const query = params.toString();
-  return query ? `/index?${query}` : '/index';
-};
+  const params = new URLSearchParams()
+  if (nextSort === 'oldest') params.set('sort', nextSort)
+  if (nextPage > 1) params.set('page', String(nextPage))
+  const query = params.toString()
+  return query ? `/index?${query}` : '/index'
+}
 ---
 
 <Layout
@@ -60,36 +62,63 @@ const queryFor = (nextPage: number, nextSort = sort) => {
   <SurfaceSection role="light">
     <Navigation role="surface" />
     <main>
-      {featured.length > 0 && (
-        <section class="featured" aria-labelledby="featured-heading">
-          <h1 id="featured-heading" class="type-h1">Index</h1>
-          <ContentCardList featured>
-            {featured.map((entry) => {
-              const item = entry.item!;
-              const settings = entry as PartialContentCardSettings;
-              return <MixedArticleCard item={item} settings={settings} globalSettings={globalSettings} showCopy />;
-            })}
-          </ContentCardList>
-        </section>
-      )}
+      {
+        featured.length > 0 && (
+          <section class="featured" aria-labelledby="featured-heading">
+            <h1 id="featured-heading" class="type-h1">
+              Index
+            </h1>
+            <ContentCardList featured>
+              {featured.map((entry) => {
+                const item = entry.item!
+                const settings = entry as PartialContentCardSettings
+                return (
+                  <MixedArticleCard
+                    item={item}
+                    settings={settings}
+                    globalSettings={globalSettings}
+                    showCopy
+                  />
+                )
+              })}
+            </ContentCardList>
+          </section>
+        )
+      }
 
       <section class="view-all" aria-labelledby="view-all-heading">
         <div class="view-all-header">
           <h2 id="view-all-heading" class="type-h3">View all</h2>
           <nav class="sort" aria-label="Sort articles">
-            <a class="type-label" href={queryFor(1, 'newest')} aria-current={sort === 'newest' ? 'page' : undefined}>Newest</a>
-            <a class="type-label" href={queryFor(1, 'oldest')} aria-current={sort === 'oldest' ? 'page' : undefined}>Oldest</a>
+            <a
+              class="type-label"
+              href={queryFor(1, 'newest')}
+              aria-current={sort === 'newest' ? 'page' : undefined}>Newest</a
+            >
+            <a
+              class="type-label"
+              href={queryFor(1, 'oldest')}
+              aria-current={sort === 'oldest' ? 'page' : undefined}>Oldest</a
+            >
           </nav>
         </div>
         <ContentCardList class="all-card-list">
-          {items.map((item) => {
-            const settings = overrideFor(item._id);
-            return <MixedArticleCard item={item} settings={settings} listSettings={listSettings} globalSettings={globalSettings} showCopy />;
-          })}
+          {
+            items.map((item) => {
+              const settings = overrideFor(item._id)
+              return (
+                <MixedArticleCard
+                  item={item}
+                  settings={settings}
+                  listSettings={listSettings}
+                  globalSettings={globalSettings}
+                  showCopy
+                />
+              )
+            })
+          }
         </ContentCardList>
-        {hasMore && (
-          <ProgressiveLoadMore href={queryFor(page + 1)} />
-        )}
+        {hasMore && <ProgressiveLoadMore href={queryFor(page + 1)} />}
       </section>
     </main>
   </SurfaceSection>
@@ -154,7 +183,7 @@ const queryFor = (nextPage: number, nextSort = sort) => {
     }
 
     .featured {
-      padding-top: 120px;
+      padding-top: var(--space-2xl);
     }
 
     .featured :global(.content-card-list) {
