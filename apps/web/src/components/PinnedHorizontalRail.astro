@@ -37,7 +37,11 @@ const { label, class: className, showControls = false } = Astro.props;
     const horizontalRail = initHorizontalRail(section, rail, track);
     const scrollCards = (direction: -1 | 1) => {
       if (section.classList.contains('is-scroll-jacked')) {
-        direction === -1 ? horizontalRail.previous() : horizontalRail.next();
+        if (direction === -1) {
+          horizontalRail.previous();
+        } else {
+          horizontalRail.next();
+        }
         return;
       }
       const amount = (track.firstElementChild as HTMLElement | null)?.offsetWidth ?? 0;

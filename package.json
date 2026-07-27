@@ -4,7 +4,23 @@
   "scripts": {
     "web": "pnpm --filter web dev",
     "studio": "pnpm --filter studio dev",
-    "typegen": "pnpm --filter studio typegen"
+    "typegen": "pnpm --filter studio typegen",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "test": "pnpm -r --if-present run test",
+    "build": "pnpm -r --if-present run build"
   },
-  "packageManager": "pnpm@10.15.1"
+  "packageManager": "pnpm@10.15.1",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.0",
+    "eslint-plugin-astro": "^3.0.1",
+    "globals": "^17.8.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript-eslint": "^8.65.0"
+  }
 }

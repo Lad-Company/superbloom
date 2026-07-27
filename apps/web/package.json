@@ -9,7 +9,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "typecheck": "astro check",
+    "test": "vitest run"
   },
   "dependencies": {
     "@astrojs/vercel": "^10.0.8",

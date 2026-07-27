@@ -41,7 +41,6 @@ interface Props {
 
 const {
   item,
-  showCopy = false,
   class: className,
   settings,
   listSettings,
@@ -52,10 +51,6 @@ const internalHref = item.slug ? `/news/${item.slug}` : '#';
 const primaryCoverage = item.externalCoverage?.find((coverage) => coverage.isPrimary && coverage.url);
 const opensInNewTab = item.cardDestination === 'external' && Boolean(primaryCoverage?.url);
 const href = opensInNewTab ? primaryCoverage!.url! : internalHref;
-const summary = item.overview
-  ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
-  .join(' ')
-  .trim();
 ---
 
 <EditorialCard

@@ -72,7 +72,9 @@ const links = [
       if (!response.ok) return;
       const cart = await response.json();
       updateCartLinks(cart.itemCount);
-    } catch {}
+    } catch {
+      /* ignore cart fetch errors */
+    }
   };
   refreshCartCount();
   document.addEventListener('shop:cart-updated', refreshCartCount);

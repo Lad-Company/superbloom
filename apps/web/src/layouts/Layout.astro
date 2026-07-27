@@ -32,13 +32,15 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script is:inline>
       (function () {
-        var root = document.documentElement;
+        const root = document.documentElement;
         root.classList.add('js');
         try {
           if (sessionStorage.getItem('sbh:route-transition') === '1') {
             root.classList.add('route-entering');
           }
-        } catch (e) {}
+        } catch {
+          /* sessionStorage unavailable */
+        }
       })();
     </script>
   </head>

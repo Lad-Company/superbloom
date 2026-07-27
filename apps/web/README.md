@@ -1,43 +1,36 @@
-# Astro Starter Kit: Minimal
+# web
+
+The public Superbloom House website. Built with [Astro](https://astro.build) in SSR mode
+(`output: 'server'`) using the Vercel adapter, [UnoCSS](https://unocss.dev) for styling, and
+GSAP/Lenis for motion. Content is sourced from the Sanity Studio in `apps/studio` via
+`@sanity/client` and shared schemas from `@superbloom/schemas`.
+
+## Development
+
+Run from the repo root (preferred, so workspace deps resolve):
 
 ```sh
-pnpm create astro@latest -- --template minimal
+pnpm web        # dev server at http://localhost:4321
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Or from this directory:
 
-## 🚀 Project Structure
+| Command           | Action                                          |
+| ----------------- | ----------------------------------------------- |
+| `pnpm dev`        | Start the local dev server                      |
+| `pnpm build`      | Build the production (server) output            |
+| `pnpm preview`    | Preview the production build locally            |
+| `pnpm typecheck`  | Type-check with `astro check`                   |
+| `pnpm test`       | Run the Vitest suite                            |
 
-Inside of your Astro project, you'll see the following folders and files:
+## Structure
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```
+src/
+  pages/        route files (.astro)
+  components/   UI components, grouped by area
+  layouts/      shared page layouts
+  lib/          data-shaping helpers (with unit tests)
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Environment variables are read from the repo root (`envDir: '../..'`).

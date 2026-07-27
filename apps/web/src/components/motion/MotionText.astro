@@ -1,8 +1,8 @@
 ---
-type Tag = 'span' | 'div' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+type TagName = 'span' | 'div' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 interface Props {
-  as?: Tag;
+  as?: TagName;
   unit?: 'lines' | 'words' | 'chars';
   /** Reveal on scroll into view. Set false to reveal immediately (e.g. heroes). */
   scroll?: boolean;

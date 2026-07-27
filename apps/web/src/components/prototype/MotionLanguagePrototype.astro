@@ -263,14 +263,14 @@ const current = styles[style];
     if (!preview || !control || control.dataset.loading) return;
     control.dataset.loading = 'true';
     const value = control.querySelector('i');
-    status && (status.textContent = 'Buffering film');
-    title && (title.textContent = 'Finding the next story');
+    if (status) status.textContent = 'Buffering film';
+    if (title) title.textContent = 'Finding the next story';
     gsap.timeline({
       onComplete: () => {
         delete control.dataset.loading;
         if (value) value.textContent = 'Loaded';
-        status && (status.textContent = 'Ready to play');
-        title && (title.textContent = 'Next: The world is waiting');
+        if (status) status.textContent = 'Ready to play';
+        if (title) title.textContent = 'Next: The world is waiting';
       },
     })
       .set(preview, { className: '+=is-loading' })

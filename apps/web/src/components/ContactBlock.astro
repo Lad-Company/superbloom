@@ -78,7 +78,7 @@
       } else {
         throw new Error(data.error ?? 'Unknown error');
       }
-    } catch (err) {
+    } catch {
       if (status) {
         status.textContent = 'Something went wrong. Please try again.';
         status.classList.add('status--error');
