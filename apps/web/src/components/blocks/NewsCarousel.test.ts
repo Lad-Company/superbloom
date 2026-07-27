@@ -9,7 +9,12 @@ describe('News Carousel', () => {
     expect(source).toContain('padding-inline: 12px')
   })
 
-  it('hides the next button from the card carousel controls', () => {
-    expect(source).toContain('showNextButton={false}')
+  it('uses CardCarousel for horizontal scrolling', () => {
+    expect(source).toContain('CardCarousel')
+  })
+
+  it('hides the header and controls by default', () => {
+    expect(source).toContain('showHeadline = false')
+    expect(source).toContain('showControls = false')
   })
 })

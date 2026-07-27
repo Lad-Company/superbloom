@@ -1,12 +1,11 @@
 ---
-import MediaFrame, { type Media, type MediaRatio } from '../MediaFrame.astro';
+import MediaFrame, { type Media } from '../MediaFrame.astro';
 
 interface AdvantageBlock {
   _key?: string;
   heading: string | null;
   body?: string | null;
   media?: Media | null;
-  aspectRatio?: MediaRatio | null;
 }
 
 interface Props {
@@ -32,7 +31,7 @@ const { headline, blocks } = Astro.props;
           <div class="item-media" data-depth="0.2">
             <MediaFrame
               media={block.media ?? null}
-              ratio={block.aspectRatio ?? '1:1'}
+              ratio="3:2"
               title={block.heading ?? undefined}
             />
           </div>
@@ -125,8 +124,12 @@ const { headline, blocks } = Astro.props;
     });
   });
 
+  const cleanupAll = () => cleanups.splice(0).forEach((cleanup) => cleanup());
+
   initAdvantages();
-  window.addEventListener('pagehide', () => cleanups.splice(0).forEach((cleanup) => cleanup()));
+  document.addEventListener('astro:page-load', initAdvantages);
+  document.addEventListener('astro:before-swap', cleanupAll);
+  window.addEventListener('pagehide', cleanupAll);
   window.addEventListener('pageshow', (event) => {
     if (event.persisted) initAdvantages();
   });
@@ -194,20 +197,11 @@ const { headline, blocks } = Astro.props;
     border-radius: var(--radius-media);
   }
 
-  /* Jacked layout: items fill the slides container; media clips to available height. */
+  /* Jacked layout: items fill the slides container. */
   .advantages-section.is-jacked [data-advantage-item] {
     height: 100%;
     align-items: stretch;
     overflow: hidden;
-  }
-
-  .advantages-section.is-jacked .item-media {
-    height: 100%;
-    overflow: hidden;
-  }
-
-  .advantages-section.is-jacked .item-media :global(.media-frame) {
-    height: 100%;
   }
 
   @media (max-width: 768px) {

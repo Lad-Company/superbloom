@@ -31,7 +31,7 @@ const { heading, subheading, heroMedia } = Astro.props;
   .hero :global(media-frame) {
     position: absolute;
     inset: 0;
-    border-radius: 0;
+    border-radius: var(--radius-media);
   }
 
   .scrim {

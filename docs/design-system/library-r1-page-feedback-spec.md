@@ -59,13 +59,18 @@ Groups are ordered so shared foundations (A–B) precede the page work that depe
 
 ### A. Shared standards (foundational — most page items depend on these)
 
-**A1. Standardize the Contained Control hover treatment and make it color-aware**
-- Rationale: multiple inconsistent buttons cited. "Explore the Creative Collective" is the correct reference (Surface Wipe). "View All News and Press" is missing its white inset border on hover. The zine-section button sits on green and must not draw the inset border. The news-carousel "Next" button is a bad control to be removed.
+**A1. Standardize the Contained Control on two theme-aware black/white types**
+- Rationale: multiple inconsistent buttons cited. There are exactly two control appearances, selected automatically by the darkness of the surface the control sits on. "View All News and Press" (dark surface) is the correct reference for the dark-surface type. Several controls never adopted the primitive (contact submit, zine hero, shop/cart) and the zine-section button rendered green-on-green with no inset border. The news-carousel "Next" button is a bad control to be removed.
 - Acceptance criteria:
-  - One Contained Control hover style is applied sitewide, matching the "Explore the Creative Collective" reference.
-  - Hover treatment is color-aware: on light/neutral surfaces it draws the white inset border; on the green (and other colored) surfaces it does not draw the inset border.
+  - One Contained Control (Surface Wipe) style is applied sitewide, resolving to pure black/white regardless of the surface hue.
+  - There are exactly two types, chosen by surface darkness (not by surface hue):
+    - Dark surfaces: white button with black text -> wipes up to black background, white text, with a **white** inset border on hover.
+    - Light surfaces: black button with white text -> wipes up to white background, black text, with a **black** inset border on hover.
+  - The inset border is always drawn on hover on every surface (including green and other colored surfaces); its color matches the post-wipe text color so it stays visible.
+  - Colored surfaces resolve to whichever of the two types their darkness dictates (e.g. the green zine surface is light, so its control is a black button that wipes to white with a black inset border). Controls are not tinted with the surface hue.
   - "View All News and Press" shows the white inset border on hover.
   - The news-carousel "Next" button is removed.
+- Implementation: driven by pure black/white control tokens (`--control-bg`, `--control-fg`, `--surface-wipe-outline`) set per `Surface Role`; `Button.astro` and the shared `.surface-wipe` read those tokens. Non-`SurfaceSection` dark contexts (e.g. the zine hero) set the dark-surface tokens locally.
 - Dependencies: `Contained Control` / `Surface Wipe` (CONTEXT.md), `Surface Role` color resolution (ADR 0014), `design-language.md`.
 
 **A2. Standardize border radius: tags and buttons only**

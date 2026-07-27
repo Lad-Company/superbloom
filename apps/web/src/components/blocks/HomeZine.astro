@@ -24,12 +24,14 @@ const href = issue?.slug
   : '/zine'
 ---
 
-<SurfaceSection role="brand-tertiary" class="home-zine" aria-labelledby="home-zine-heading">
-  <MediaFrame media={promoMedia} ratio="4:5" title={promoHeadline} />
-  <div class="content">
-    <h2 id="home-zine-heading" class="type-h3">{promoHeadline}</h2>
-    {promoIntro && <PortableText value={promoIntro} class="type-caption" />}
-    <Button href={href} label={ctaLabel ?? 'Explore the Zine'} />
+<SurfaceSection role="brand-tertiary" aria-labelledby="home-zine-heading">
+  <div class="home-zine">
+    <MediaFrame media={promoMedia} ratio="4:5" title={promoHeadline} class="media" />
+    <div class="content">
+      <h2 id="home-zine-heading" class="type-h3">{promoHeadline}</h2>
+      {promoIntro && <PortableText value={promoIntro} class="type-caption" />}
+      <Button href={href} label={ctaLabel ?? 'Explore the Zine'} />
+    </div>
   </div>
 </SurfaceSection>
 
@@ -38,7 +40,8 @@ const href = issue?.slug
     display: grid;
     grid-template-columns: minmax(0, 540px) minmax(0, 1fr);
     gap: var(--page-gutter);
-    padding: var(--space-4xl) var(--page-inset);
+    align-items: start;
+    padding: var(--space-3xl) var(--page-inset);
   }
 
   .content {
@@ -46,6 +49,7 @@ const href = issue?.slug
     flex-direction: column;
     align-items: start;
     gap: var(--space-xs);
+    padding-inline: var(--space-xs);
   }
 
   h2 {
@@ -55,7 +59,11 @@ const href = issue?.slug
   @media (max-width: 1023px) {
     .home-zine {
       grid-template-columns: 1fr;
-      padding-inline: var(--space-3xs);
+      padding: var(--space-2xl) var(--page-inset);
+    }
+
+    .content {
+      padding-inline: 0;
     }
 
     h2 {

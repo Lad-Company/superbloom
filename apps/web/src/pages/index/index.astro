@@ -66,7 +66,7 @@ const queryFor = (nextPage: number, nextSort = sort) => {
             <h1 id="featured-heading" class="type-h1 featured-header">
               {pageHeader}
             </h1>
-            <ContentCardList featured>
+            <ContentCardList columnPack restCount={Math.max(featured.length - 1, 1)}>
               {featured.map((entry) => {
                 const item = entry.item!
                 const settings = entry as PartialContentCardSettings
@@ -76,7 +76,6 @@ const queryFor = (nextPage: number, nextSort = sort) => {
                     settings={settings}
                     globalSettings={globalSettings}
                     minimal
-                    dateFormat="index"
                   />
                 )
               })}
@@ -101,7 +100,6 @@ const queryFor = (nextPage: number, nextSort = sort) => {
                   listSettings={listSettings}
                   globalSettings={globalSettings}
                   minimal
-                  dateFormat="index"
                 />
               )
             })

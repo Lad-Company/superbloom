@@ -8,6 +8,13 @@
   --fg-12: rgba(0, 0, 0, 0.12);
   --fg-60: rgba(0, 0, 0, 0.6);
 
+  /* Contained Control (button) tokens — resolve to pure black/white by surface
+     darkness so a control reads as one of two theme-aware types regardless of
+     the surface hue it sits on. Defaults target a light page (black button). */
+  --control-bg: #000000;
+  --control-fg: #ffffff;
+  --surface-wipe-outline: #000000;
+
   /* Spacing (px) */
   --space-xs-4: 8px;
   --space-3xs: 12px;

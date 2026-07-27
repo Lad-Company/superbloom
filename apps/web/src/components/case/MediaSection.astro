@@ -55,7 +55,7 @@ const items = media ?? []
 
 <style>
   .full-bleed :global(.media-frame) {
-    border-radius: 0;
+    border-radius: var(--radius-media);
   }
 
   .paired {
@@ -65,7 +65,7 @@ const items = media ?? []
     padding: 0 var(--space-xs);
   }
   .pair-item :global(.media-frame) {
-    border-radius: 0;
+    border-radius: var(--radius-media);
   }
 
   .text-and-media {

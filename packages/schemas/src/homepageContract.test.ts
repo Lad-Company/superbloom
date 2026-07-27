@@ -31,13 +31,17 @@ describe('Homepage CMS contract', () => {
     expect(homepageCompositionSource).not.toContain('fallbackWork')
   })
 
-  it('configures each Our Work Case Study with card layout settings', () => {
+  it('exposes only media aspect ratio per Our Work Case Study, letting the preset own placement', () => {
     expect(homeWorkSchemaSource).toContain("name: 'caseStudy'")
-    expect(homeWorkSchemaSource).toContain('cardWidthField({required: true})')
     expect(homeWorkSchemaSource).toContain('mediaAspectRatioField({required: true})')
-    expect(homeWorkSchemaSource).toContain('infoPositionField({required: true})')
-    expect(homeWorkComponentSource).toContain('<ContentCardList')
-    expect(homeWorkComponentSource).toContain('settings={entry}')
+    expect(homeWorkSchemaSource).not.toContain('cardWidthField')
+    expect(homeWorkSchemaSource).not.toContain('infoPositionField')
+  })
+
+  it('renders Our Work as a fixed interlocking mosaic grid', () => {
+    expect(homeWorkComponentSource).toContain('class="mosaic"')
+    expect(homeWorkComponentSource).toContain('grid-auto-rows: 1cqw')
+    expect(homeWorkComponentSource).not.toContain('<ContentCardList')
   })
 
   it('renders the Zine promo at a compact US Letter-like ratio', () => {

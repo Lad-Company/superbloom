@@ -20,12 +20,6 @@ export const workIndex = defineType({
       type: 'string',
       validation: (rule) => rule.required(),
     }),
-    defineField({
-      name: 'allWorkHeading',
-      title: 'All Work Heading',
-      type: 'string',
-      initialValue: 'All work',
-    }),
 
     // Featured section: 0-4 manually ordered Case Studies with full card settings
     defineField({
@@ -57,6 +51,13 @@ export const workIndex = defineType({
         rule.custom(validateWorkIndexFeaturedCardsUnique),
         rule.custom(validateWorkIndexFeaturedCardsFullyConfigured),
       ],
+    }),
+
+    defineField({
+      name: 'allWorkHeading',
+      title: 'All Work Heading',
+      type: 'string',
+      initialValue: 'All work',
     }),
 
     // All section configuration

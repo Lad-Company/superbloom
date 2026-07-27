@@ -2,9 +2,9 @@
 import '../styles/fonts.css';
 import '../styles/tokens.css';
 import '../styles/motion.css';
+import { ClientRouter } from 'astro:transitions';
 import SEOHead from '../components/SEOHead.astro';
 import CartDrawer from '../components/cart/CartDrawer.astro';
-import RouteTransition from '../components/motion/RouteTransition.astro';
 
 interface Props {
   title?: string;
@@ -30,32 +30,72 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <SEOHead title={title} description={description} canonicalUrl={canonical} image={image} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <ClientRouter />
     <script is:inline>
-      (function () {
-        const root = document.documentElement;
-        root.classList.add('js');
-        try {
-          if (sessionStorage.getItem('sbh:route-transition') === '1') {
-            root.classList.add('route-entering');
-          }
-        } catch {
-          /* sessionStorage unavailable */
-        }
-      })();
+      document.documentElement.classList.add('js');
     </script>
+    <style is:global>
+      /* Route Transition — native View Transition swipe: the outgoing page lifts
+         and fades, the incoming page rises from below into place. The page's own
+         Type Reveal plays only on genuine loads; navigation entrances are carried
+         by this transition. */
+      @keyframes sbh-route-out {
+        to {
+          opacity: 0;
+          transform: translateY(-1.5rem);
+        }
+      }
+      @keyframes sbh-route-in {
+        from {
+          opacity: 0;
+          transform: translateY(1.5rem);
+        }
+      }
+      ::view-transition-old(root) {
+        animation: 280ms cubic-bezier(0.65, 0, 0.35, 1) both sbh-route-out;
+      }
+      ::view-transition-new(root) {
+        animation: 460ms cubic-bezier(0.215, 0.61, 0.355, 1) both sbh-route-in;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
     <slot />
-    <RouteTransition />
     <CartDrawer />
     <script>
       import { initMotion, initSmoothScroll } from '../lib/motion';
-      let destroySmoothScroll = initSmoothScroll();
-      initMotion();
-      window.addEventListener('pagehide', () => destroySmoothScroll());
-      window.addEventListener('pageshow', (event) => {
-        if (event.persisted) destroySmoothScroll = initSmoothScroll();
-      });
+      import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+      let destroyMotion = () => {};
+      let destroySmoothScroll = () => {};
+      let isInitialLoad = true;
+
+      const setup = () => {
+        destroySmoothScroll = initSmoothScroll();
+        // On the genuine first load, play the full page-entry Type Reveal. On
+        // View Transition navigations, the native swipe carries the entrance, so
+        // only scroll-triggered reveals are wired (hero/text stay visible).
+        destroyMotion = initMotion(isInitialLoad);
+        isInitialLoad = false;
+        requestAnimationFrame(() => ScrollTrigger.refresh());
+      };
+
+      const teardown = () => {
+        destroyMotion();
+        destroySmoothScroll();
+        destroyMotion = () => {};
+        destroySmoothScroll = () => {};
+      };
+
+      // Runs on the initial load and after every View Transition navigation.
+      document.addEventListener('astro:page-load', setup);
+      document.addEventListener('astro:before-swap', teardown);
     </script>
     <style is:global>
       *,

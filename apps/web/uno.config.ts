@@ -59,7 +59,7 @@ export default defineConfig({
     'type-section-heading':
       'font-display-tight font-[750] text-[56px] leading-[0.88] tracking-[0] uppercase line-clamp-4',
     'type-body': 'font-body font-medium text-[19px] leading-[1.3] tracking-[-0.38px]',
-    'type-caption': 'font-body font-medium text-[14px] leading-[1.3] tracking-[-0.28px]',
+    'type-caption': 'font-body font-medium text-[17px] leading-[1.3] tracking-[-0.02em]',
     'type-label': 'font-interface font-[750] text-[17px] leading-none tracking-[0.02em] uppercase',
   },
 })

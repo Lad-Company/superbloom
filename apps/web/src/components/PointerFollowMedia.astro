@@ -1,0 +1,210 @@
+---
+import MediaFrame, { type Media } from './MediaFrame.astro';
+
+interface Props {
+  media: (Media | null)[];
+  title?: string;
+  class?: string;
+}
+
+const { media, title = '', class: className } = Astro.props;
+const items = media.filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 4);
+---
+
+{items.length > 0 && (
+  <div class:list={['pointer-follow', className]} data-pointer-follow>
+    {items.map((entry) => (
+      <div class="follow-item" data-follow-item>
+        <MediaFrame media={entry} ratio="fill" title={title} />
+      </div>
+    ))}
+  </div>
+)}
+
+<script>
+  import { POINTER_FOLLOW, REDUCED_MOTION_QUERY } from '../lib/motion';
+
+  const GOLDEN_ANGLE = 2.399963229728653;
+  const mm = window.matchMedia(REDUCED_MOTION_QUERY);
+
+  interface Layer {
+    el: HTMLElement;
+    offsetX: number;
+    offsetY: number;
+    tau: number;
+    curX: number;
+    curY: number;
+  }
+
+  interface Group {
+    scope: HTMLElement;
+    layers: Layer[];
+  }
+
+  const groups: Group[] = [];
+  let pointerX = Number.NaN;
+  let pointerY = Number.NaN;
+  let rafId: number | null = null;
+  let lastT = 0;
+
+  const restingAnchor = (bounds: DOMRect) => ({
+    x: bounds.width * (0.5 + POINTER_FOLLOW.restingSpread),
+    y: bounds.height * 0.5,
+  });
+
+  const applyTransform = (layer: Layer) => {
+    layer.el.style.transform = `translate3d(${layer.curX}px, ${layer.curY}px, 0) translate(-50%, -50%)`;
+  };
+
+  const buildLayers = (items: HTMLElement[]): Layer[] =>
+    items.map((el, index) => {
+      const radius = index === 0 ? 0 : POINTER_FOLLOW.fanRadius + (index - 1) * POINTER_FOLLOW.fanRadiusStep;
+      const angle = index * GOLDEN_ANGLE;
+      return {
+        el,
+        offsetX: Math.cos(angle) * radius,
+        offsetY: Math.sin(angle) * radius,
+        tau: POINTER_FOLLOW.baseLag + index * POINTER_FOLLOW.lagStep,
+        curX: 0,
+        curY: 0,
+      };
+    });
+
+  const tick = (now: number) => {
+    const dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 0.016;
+    lastT = now;
+    const hasPointer = !Number.isNaN(pointerX);
+
+    for (const group of groups) {
+      const bounds = group.scope.getBoundingClientRect();
+      if (bounds.bottom < 0 || bounds.top > window.innerHeight) continue;
+
+      const inside =
+        hasPointer &&
+        pointerX >= bounds.left &&
+        pointerX <= bounds.right &&
+        pointerY >= bounds.top &&
+        pointerY <= bounds.bottom;
+      const rest = restingAnchor(bounds);
+      const anchorX = inside ? pointerX - bounds.left : rest.x;
+      const anchorY = inside ? pointerY - bounds.top : rest.y;
+
+      for (const layer of group.layers) {
+        const targetX = anchorX + layer.offsetX;
+        const targetY = anchorY + layer.offsetY;
+        const alpha = 1 - Math.exp(-dt / layer.tau);
+        layer.curX += (targetX - layer.curX) * alpha;
+        layer.curY += (targetY - layer.curY) * alpha;
+        applyTransform(layer);
+      }
+    }
+
+    rafId = requestAnimationFrame(tick);
+  };
+
+  const startLoop = () => {
+    if (rafId !== null || mm.matches || !groups.length) return;
+    lastT = 0;
+    rafId = requestAnimationFrame(tick);
+  };
+
+  const stopLoop = () => {
+    if (rafId !== null) cancelAnimationFrame(rafId);
+    rafId = null;
+  };
+
+  const onPointerMove = (event: PointerEvent) => {
+    pointerX = event.clientX;
+    pointerY = event.clientY;
+  };
+
+  const clearPointer = () => {
+    pointerX = Number.NaN;
+    pointerY = Number.NaN;
+  };
+
+  const initPointerFollow = () => document.querySelectorAll<HTMLElement>('[data-pointer-follow]').forEach((group) => {
+    if (group.dataset.pointerFollowInitialized) return;
+    const items = Array.from(group.querySelectorAll<HTMLElement>('[data-follow-item]'));
+    if (!items.length) return;
+    group.dataset.pointerFollowInitialized = 'true';
+
+    const scope = group.closest<HTMLElement>('[data-pointer-scope]') ?? group;
+    const layers = buildLayers(items);
+    const rest = restingAnchor(scope.getBoundingClientRect());
+    layers.forEach((layer) => {
+      layer.curX = rest.x + layer.offsetX;
+      layer.curY = rest.y + layer.offsetY;
+      applyTransform(layer);
+    });
+
+    if (mm.matches) return;
+    groups.push({ scope, layers });
+  });
+
+  const teardown = () => {
+    stopLoop();
+    groups.splice(0);
+    document.querySelectorAll<HTMLElement>('[data-pointer-follow]').forEach((group) => {
+      delete group.dataset.pointerFollowInitialized;
+    });
+  };
+
+  const boot = () => {
+    initPointerFollow();
+    startLoop();
+  };
+
+  window.addEventListener('pointermove', onPointerMove, { passive: true });
+  window.addEventListener('blur', clearPointer);
+  document.addEventListener('pointerleave', clearPointer);
+  mm.addEventListener('change', () => (mm.matches ? stopLoop() : startLoop()));
+
+  document.addEventListener('astro:page-load', boot);
+  document.addEventListener('astro:before-swap', teardown);
+</script>
+
+<style>
+  .pointer-follow {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .follow-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: clamp(180px, 22vw, 320px);
+    aspect-ratio: 4 / 5;
+    will-change: transform;
+  }
+
+  .follow-item:nth-child(2) {
+    width: min(29vw, 420px);
+    aspect-ratio: 1.1;
+  }
+
+  .follow-item:nth-child(3) {
+    width: min(20vw, 290px);
+    aspect-ratio: 0.85;
+  }
+
+  .follow-item:nth-child(4) {
+    width: min(17vw, 250px);
+    aspect-ratio: 0.75;
+  }
+
+  .follow-item :global(.media-frame) {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-media);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .follow-item {
+      will-change: auto;
+    }
+  }
+</style>

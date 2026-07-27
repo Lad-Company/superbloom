@@ -1,25 +1,19 @@
 import {initPressFeedback} from './hover'
-import {
-  revealText,
-  type RevealHandle,
-  markPageEntryRevealed,
-  shouldPlayPageEntryReveal,
-} from './reveal'
-import {ROUTE_REVEALED_EVENT} from './routeTransition'
+import {revealText, type RevealHandle} from './reveal'
 
 /**
- * Single per-page motion bootstrap. Wires Contained Control press feedback and
- * Type Reveal for every element that opts in via data attributes.
+ * Per-page motion bootstrap. Wires Contained Control press feedback and the
+ * Type Reveal entry animation for every element that opts in via data
+ * attributes, then returns a cleanup for the caller to run on `astro:before-swap`.
  *
- * The full page-entry fade-up plays once per genuine page load. Route
- * navigations (signalled by the `route-entering` class in Layout.astro) skip
- * the initial page-entry reveal and rely on the Route Transition; only the
- * destination hero (immediate) elements are revealed after the transition panel
- * lifts. Scroll-triggered reveals are always wired so they remain active.
+ * Runs on every `astro:page-load`. On the genuine initial load it plays the
+ * full page-entry Type Reveal (hero/immediate + scroll). On View Transition
+ * navigations the native swipe carries the entrance, so only scroll-triggered
+ * reveals are wired and the immediate hero/text elements are left visible (the
+ * `html.js` hide rule no longer applies once Astro resets the root on swap).
  */
-export function initMotion(): void {
-  initPressFeedback()
-
+export function initMotion(isInitialLoad = true): () => void {
+  const cleanups: Array<() => void> = [initPressFeedback()]
   const handles: RevealHandle[] = []
 
   const reveal = (el: HTMLElement) => {
@@ -33,33 +27,13 @@ export function initMotion(): void {
     }).then((handle) => handles.push(handle))
   }
 
-  const revealAllScroll = () => {
-    document
-      .querySelectorAll<HTMLElement>('[data-motion-text]:not([data-scroll="false"])')
-      .forEach(reveal)
-  }
+  const selector = isInitialLoad
+    ? '[data-motion-text]'
+    : '[data-motion-text]:not([data-scroll="false"])'
+  document.querySelectorAll<HTMLElement>(selector).forEach(reveal)
 
-  const revealAllImmediate = () => {
-    document
-      .querySelectorAll<HTMLElement>('[data-motion-text][data-scroll="false"]')
-      .forEach(reveal)
-  }
-
-  // Always wire scroll-triggered reveals so they remain active during route transitions.
-  revealAllScroll()
-
-  // Play the full page-entry reveal only on genuine loads; route navigations use
-  // the Route Transition instead. Under reduced motion, content is made visible
-  // immediately, so the reveal path still runs to set final opacity.
-  if (shouldPlayPageEntryReveal()) {
-    revealAllImmediate()
-    markPageEntryRevealed()
-  }
-
-  // After a Route Transition panel lifts, reveal the destination hero elements.
-  document.addEventListener(ROUTE_REVEALED_EVENT, revealAllImmediate)
-
-  window.addEventListener('pagehide', () => {
+  return () => {
     handles.forEach((handle) => handle.destroy())
-  })
+    cleanups.forEach((cleanup) => cleanup())
+  }
 }

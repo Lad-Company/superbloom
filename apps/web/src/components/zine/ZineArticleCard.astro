@@ -33,7 +33,6 @@ interface Props {
   globalSettings?: PartialContentCardSettings
   mixedList?: boolean
   minimal?: boolean
-  dateFormat?: 'default' | 'index'
 }
 
 const {
@@ -44,7 +43,6 @@ const {
   globalSettings,
   mixedList = false,
   minimal = false,
-  dateFormat,
 } = Astro.props
 const summary = article.overview
   ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
@@ -63,7 +61,6 @@ const summary = article.overview
   summary={minimal ? undefined : summary}
   ctaLabel={minimal ? null : (article.cardCtaLabel ?? 'Read more')}
   publicationDate={article.publicationDate}
-  dateFormat={dateFormat}
   cardId={article._id}
 >
   <TagList

@@ -1,6 +1,5 @@
 import {defineField, defineType} from 'sanity'
-import {cardWidthField, infoPositionField, mediaAspectRatioField} from './cardSettings'
-import {validateFeaturedCardFullyConfigured} from './cardSettingsContract'
+import {mediaAspectRatioField} from './cardSettings'
 import {
   validateWorkIndexFeaturedCardsUnique,
   validateWorkIndexFeaturedCount,
@@ -25,6 +24,8 @@ export const homeWorkBlock = defineType({
     defineField({
       name: 'items',
       title: 'Case Studies',
+      description:
+        'Up to 4 case studies form a fixed interlocking mosaic. Recommended orientation by position: 1st landscape, 2nd portrait, 3rd square, 4th landscape.',
       type: 'array',
       of: [
         {
@@ -37,11 +38,8 @@ export const homeWorkBlock = defineType({
               to: [{type: 'caseStudy'}],
               validation: (rule) => rule.required(),
             }),
-            cardWidthField({required: true}),
             mediaAspectRatioField({required: true}),
-            infoPositionField({required: true}),
           ],
-          validation: (rule) => rule.custom(validateFeaturedCardFullyConfigured),
           preview: {
             select: {title: 'caseStudy.title'},
           },

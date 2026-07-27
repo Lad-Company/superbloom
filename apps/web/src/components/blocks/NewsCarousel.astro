@@ -14,6 +14,8 @@ interface Props {
   listDefaults?: PartialContentCardSettings
   itemOverrides?: Array<{articleId?: string | null} & ContentCardSettingsInput> | null
   globalSettings?: PartialContentCardSettings
+  showHeadline?: boolean
+  showControls?: boolean
 }
 
 const {
@@ -23,6 +25,8 @@ const {
   listDefaults: listSettings,
   itemOverrides,
   globalSettings,
+  showHeadline = false,
+  showControls = false,
 } = Astro.props
 const items = itemsInput ?? []
 const overrides = new Map(itemOverrides?.map((override) => [override.articleId, override]))
@@ -35,8 +39,8 @@ const overrides = new Map(itemOverrides?.map((override) => [override.articleId, 
         <CardCarousel
           class="news-carousel"
           label={headline ?? 'News'}
-          heading={headline ?? 'News'}
-          showNextButton={false}
+          heading={showHeadline ? (headline ?? 'News') : null}
+          showControls={showControls}
         >
           {items.map((item) => (
             <NewsCard

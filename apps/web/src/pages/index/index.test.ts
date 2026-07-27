@@ -17,7 +17,6 @@ describe('Index page', () => {
 
   it('renders Index items in minimal title-and-date form', () => {
     expect(source).toContain('minimal')
-    expect(source).toContain('dateFormat="index"')
   })
 
   it('does not pass a Read More CTA to Index items', () => {

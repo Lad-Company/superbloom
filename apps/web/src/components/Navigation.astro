@@ -31,7 +31,8 @@ const links = [
     <a
       href="#contact"
       class:list={['btn', 'btn-secondary', 'surface-wipe', 'type-label']}
-      data-motion-control><span class="nav__label">Let's Chat</span></a
+      data-motion-control
+      data-lets-chat><span class="nav__label">Let's Chat</span></a
     >
     <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control
       ><span class="nav__label">Shop</span></a
@@ -61,7 +62,8 @@ const links = [
       <a
         href="#contact"
         class:list={['btn', 'btn-secondary', 'surface-wipe', 'type-label']}
-        data-motion-control><span class="nav__label">Let's Chat</span></a
+        data-motion-control
+        data-lets-chat><span class="nav__label">Let's Chat</span></a
       >
       <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control
         ><span class="nav__label">Shop</span></a
@@ -104,6 +106,23 @@ const links = [
   }
   refreshCartCount()
   document.addEventListener('shop:cart-updated', refreshCartCount)
+
+  document.querySelectorAll<HTMLAnchorElement>('[data-lets-chat]').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault()
+      const target = document.getElementById('contact')
+      if (target) {
+        target.scrollIntoView({behavior: 'smooth'})
+        return
+      }
+      const form = document.querySelector('form')
+      if (form) {
+        form.scrollIntoView({behavior: 'smooth'})
+        return
+      }
+      window.location.href = '/'
+    })
+  })
 </script>
 
 <style>
@@ -164,12 +183,14 @@ const links = [
     color: var(--bg);
     --wipe-surface: var(--bg);
     --wipe-ink: var(--fg);
+    --surface-wipe-outline: var(--fg);
   }
   .btn-tertiary {
     background: var(--fg-12);
     color: var(--fg);
     --wipe-surface: var(--fg);
     --wipe-ink: var(--bg);
+    --surface-wipe-outline: var(--bg);
   }
   .cart-link {
     text-decoration: none;
@@ -213,7 +234,7 @@ const links = [
       padding: var(--space-2xs);
       background: var(--bg);
       color: var(--fg);
-      border-radius: 0;
+      border-radius: var(--radius-control);
     }
     .compact-panel ul {
       display: flex;

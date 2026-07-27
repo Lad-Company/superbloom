@@ -36,7 +36,6 @@ interface Props {
   globalSettings?: PartialContentCardSettings
   mixedList?: boolean
   minimal?: boolean
-  dateFormat?: 'default' | 'index'
 }
 
 const {
@@ -48,7 +47,6 @@ const {
   globalSettings,
   mixedList = false,
   minimal = false,
-  dateFormat,
 } = Astro.props
 const href = item.slug ? `/articles/${item.slug}` : '#'
 const summary = item.overview
@@ -67,7 +65,6 @@ const summary = item.overview
   globalSettings={globalSettings}
   summary={showCopy && !minimal ? summary : undefined}
   publicationDate={item.publicationDate}
-  dateFormat={dateFormat}
   class={className}
   cardId={item._id}
 >

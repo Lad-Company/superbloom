@@ -91,7 +91,10 @@ export function initHorizontalRail(section: HTMLElement, rail: HTMLElement, trac
   };
 
   mm.add('(prefers-reduced-motion: no-preference)', () => {
-    section.classList.add('is-scroll-jacked');
+    const canScroll = track.scrollWidth > rail.clientWidth + 1;
+    if (canScroll) {
+      section.classList.add('is-scroll-jacked');
+    }
 
     return () => {
       section.classList.remove('is-scroll-jacked');

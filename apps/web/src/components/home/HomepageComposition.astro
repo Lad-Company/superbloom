@@ -2,6 +2,7 @@
 import Hero from '../blocks/Hero.astro';
 import Capes from '../blocks/Capes.astro';
 import NewsCarousel from '../blocks/NewsCarousel.astro';
+import HomeParallax from '../blocks/HomeParallax.astro';
 import HomeWork from '../blocks/HomeWork.astro';
 import HomeWhy from '../blocks/HomeWhy.astro';
 import HomeZine from '../blocks/HomeZine.astro';
@@ -44,6 +45,13 @@ const moduleSurfaceRoles = {
     itemOverrides={homepage.news.itemOverrides}
     globalSettings={homepage.globalCardDefaults}
     role={moduleSurfaceRoles.newsBlock}
+  />
+)}
+
+{homepage.parallax && (homepage.parallax.headline || (homepage.parallax.images?.length ?? 0) > 0) && (
+  <HomeParallax
+    headline={homepage.parallax.headline}
+    images={homepage.parallax.images}
   />
 )}
 

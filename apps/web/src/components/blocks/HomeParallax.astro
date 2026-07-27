@@ -1,0 +1,68 @@
+---
+import {type Media} from '../MediaFrame.astro'
+import PointerFollowMedia from '../PointerFollowMedia.astro'
+import SurfaceSection from '../SurfaceSection.astro'
+
+interface Props {
+  headline?: string | null
+  images?: (Media | null)[] | null
+}
+
+const {headline, images} = Astro.props
+const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 4)
+---
+
+<SurfaceSection role="light" class="home-parallax" data-pointer-scope>
+  <PointerFollowMedia media={layers} />
+  {headline && (
+    <div class="content">
+      <h2>{headline}</h2>
+    </div>
+  )}
+</SurfaceSection>
+
+<style>
+  .home-parallax {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: clamp(460px, 56vw, 760px);
+    padding: clamp(var(--space-3xl), 12vw, var(--space-4xl)) var(--page-inset);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    pointer-events: none;
+  }
+
+  h2 {
+    margin: 0;
+    max-width: 14ch;
+    font-family: var(--font-display-tight);
+    font-size: clamp(44px, 7vw, 104px);
+    font-weight: 750;
+    line-height: 0.9;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 767px) {
+    .home-parallax {
+      min-height: 420px;
+      padding: var(--space-2xl) var(--space-3xs);
+    }
+
+    .home-parallax :global(.pointer-follow) {
+      display: none;
+    }
+
+    h2 {
+      max-width: none;
+      font-size: clamp(40px, 12vw, 72px);
+    }
+  }
+</style>

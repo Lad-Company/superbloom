@@ -11,4 +11,13 @@ describe('Editorial Card', () => {
     expect(source).toContain('line-height: 1.2')
     expect(source).toContain('letter-spacing: -0.02em')
   })
+
+  it('clamps summary to a single line', () => {
+    expect(source).toContain('summary type-caption line-clamp-1')
+  })
+
+  it('uses index date format by default without dateFormat prop', () => {
+    expect(source).toContain('formatPublicationDateIndex')
+    expect(source).not.toContain('dateFormat')
+  })
 })

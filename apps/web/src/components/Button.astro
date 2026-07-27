@@ -5,9 +5,23 @@ interface Props {
   class?: string
   target?: string
   rel?: string
+  as?: 'button'
+  type?: 'button' | 'submit' | 'reset'
+  disabled?: boolean
+  [key: `data-${string}`]: string | boolean | number | undefined
 }
 
-const {href, label, class: className, target, rel} = Astro.props
+const {
+  href,
+  label,
+  class: className,
+  target,
+  rel,
+  as,
+  type = 'button',
+  disabled,
+  ...rest
+} = Astro.props
 ---
 
 {
@@ -18,36 +32,23 @@ const {href, label, class: className, target, rel} = Astro.props
       target={target}
       rel={rel}
       data-motion-control
+      {...rest}
     >
       <span class="btn__label">{label}</span>
     </a>
+  ) : as === 'button' ? (
+    <button
+      class:list={['btn', 'surface-wipe', className]}
+      type={type}
+      disabled={disabled}
+      data-motion-control
+      {...rest}
+    >
+      <span class="btn__label">{label}</span>
+    </button>
   ) : (
-    <span class:list={['btn', 'surface-wipe', className]} data-motion-control>
+    <span class:list={['btn', 'surface-wipe', className]} data-motion-control {...rest}>
       <span class="btn__label">{label}</span>
     </span>
   )
 }
-
-<style>
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-3xs) 16px;
-    border-radius: var(--radius-control);
-    background: var(--fg);
-    color: var(--bg);
-    text-decoration: none;
-    backdrop-filter: blur(35px);
-    -webkit-backdrop-filter: blur(35px);
-    font-family: var(--font-interface);
-    font-weight: 750;
-    font-size: 17px;
-    line-height: 1;
-    letter-spacing: 0.34px;
-    text-transform: uppercase;
-    white-space: nowrap;
-    --wipe-surface: var(--bg);
-    --wipe-ink: var(--fg);
-  }
-</style>

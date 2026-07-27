@@ -20,7 +20,7 @@
 | 8 | Disciplines list | `DisciplineList.astro` | `disciplines[]{title,description}` | dark |
 | 9 | 2-up CTAs | `TwoUp.astro` | `ctas[]{heading,label,href,media}` (max 2) | dark |
 | 10 | FAQ | `Faq.astro` | `faqs[]{question,answer}` (max 6) | dark |
-| 11 | Contact | `ContactBlock.astro` | — (existing block) | blue |
+| 11 | Contact | `ContactBand.astro` | — (existing block) | blue |
 | 12 | Footer | `Footer.astro` | — | dark |
 
 ## Domain language

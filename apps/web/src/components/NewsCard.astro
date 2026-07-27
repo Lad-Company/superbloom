@@ -37,7 +37,6 @@ interface Props {
   listSettings?: PartialContentCardSettings
   globalSettings?: PartialContentCardSettings
   mixedList?: boolean
-  dateFormat?: 'default' | 'index'
 }
 
 const {
@@ -47,7 +46,6 @@ const {
   listSettings,
   globalSettings,
   mixedList = false,
-  dateFormat,
 } = Astro.props
 const internalHref = item.slug ? `/news/${item.slug}` : '#'
 const primaryCoverage = item.externalCoverage?.find(
@@ -69,8 +67,7 @@ const href = opensInNewTab ? primaryCoverage!.url! : internalHref
   target={opensInNewTab ? '_blank' : undefined}
   rel={opensInNewTab ? 'noopener noreferrer' : undefined}
   cardId={item._id}
-  publicationDate={dateFormat ? item.publicationDate : undefined}
-  dateFormat={dateFormat}
+  publicationDate={item.publicationDate}
 >
   <TagList
     slot="overlay"

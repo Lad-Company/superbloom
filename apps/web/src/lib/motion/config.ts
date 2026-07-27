@@ -7,6 +7,7 @@ export const MOTION = {
 } as const;
 
 export const EASE = {
+  in: 'power3.in',
   out: 'power3.out',
   inOut: 'power3.inOut',
 } as const;
@@ -26,6 +27,14 @@ export const POINTER = {
   depthFalloff: 0.6,
   lagFront: 0.35,
   lagDeep: 0.9,
+} as const;
+
+export const POINTER_FOLLOW = {
+  baseLag: 0.18,
+  lagStep: 0.14,
+  fanRadius: 90,
+  fanRadiusStep: 70,
+  restingSpread: 0.18,
 } as const;
 
 export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';

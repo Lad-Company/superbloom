@@ -35,7 +35,6 @@ interface Props {
   globalSettings?: PartialContentCardSettings
   showCopy?: boolean
   minimal?: boolean
-  dateFormat?: 'default' | 'index'
 }
 
 const {
@@ -45,7 +44,6 @@ const {
   globalSettings,
   showCopy = false,
   minimal = false,
-  dateFormat,
 } = Astro.props
 ---
 
@@ -58,7 +56,6 @@ const {
       globalSettings={globalSettings}
       mixedList
       showCopy={showCopy}
-      dateFormat={dateFormat}
     />
   ) : item.articleType === 'zine' ? (
     item.issueSlug && (
@@ -70,7 +67,6 @@ const {
         globalSettings={globalSettings}
         mixedList
         minimal={minimal}
-        dateFormat={dateFormat}
       />
     )
   ) : item.articleType === 'editorial' ? (
@@ -82,7 +78,6 @@ const {
       mixedList
       showCopy={showCopy}
       minimal={minimal}
-      dateFormat={dateFormat}
     />
   ) : null
 }

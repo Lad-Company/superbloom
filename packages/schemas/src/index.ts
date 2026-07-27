@@ -18,6 +18,7 @@ import {zineLanding} from './zineLanding'
 import {homeZine} from './homeZine'
 import {homeWorkBlock} from './homeWorkBlock'
 import {homeWhyBlock} from './homeWhyBlock'
+import {homeParallaxBlock} from './homeParallaxBlock'
 import {homeTestimonialsBlock} from './homeTestimonialsBlock'
 import {indexPage} from './indexPage'
 import {siteSettings} from './siteSettings'
@@ -57,6 +58,7 @@ export const schemaTypes = [
   homeZine,
   homeWorkBlock,
   homeWhyBlock,
+  homeParallaxBlock,
   homeTestimonialsBlock,
   indexPage,
   siteSettings,

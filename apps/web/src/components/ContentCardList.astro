@@ -2,12 +2,20 @@
 interface Props {
   class?: string;
   featured?: boolean;
+  columnPack?: boolean;
+  restCount?: number;
 }
 
-const {class: className, featured = false} = Astro.props;
+const {class: className, featured = false, columnPack = false, restCount} = Astro.props;
+const packRest = columnPack ? Math.max(restCount ?? 1, 1) : undefined;
 ---
 
-<content-card-list class:list={['content-card-list', className]} data-featured={featured ? true : undefined}>
+<content-card-list
+  class:list={['content-card-list', className]}
+  data-featured={featured ? true : undefined}
+  data-column-pack={columnPack ? true : undefined}
+  style={packRest !== undefined ? `--pack-rest:${packRest}` : undefined}
+>
   <slot />
 </content-card-list>
 
@@ -62,6 +70,23 @@ const {class: className, featured = false} = Astro.props;
     row-gap: 0;
   }
 
+  .content-card-list[data-column-pack] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: row;
+    align-items: start;
+    gap: var(--space-2xl) var(--page-gutter);
+    row-gap: var(--space-2xl);
+  }
+
+  .content-card-list[data-column-pack] > :global(.content-card:first-child) {
+    grid-column: 1;
+    grid-row: 1 / span var(--pack-rest, 1);
+  }
+
+  .content-card-list[data-column-pack] > :global(.content-card:not(:first-child)) {
+    grid-column: 2;
+  }
+
   .content-card-list > :global(.content-card[data-card-width='1/4']) {
     grid-column: span 3;
   }
@@ -99,6 +124,18 @@ const {class: className, featured = false} = Astro.props;
 
     .content-card-list > :global(.content-card[data-card-width]) {
       grid-column: 1 / -1;
+      width: 100%;
+    }
+
+    .content-card-list[data-column-pack] {
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+    }
+
+    .content-card-list[data-column-pack] > :global(.content-card:first-child),
+    .content-card-list[data-column-pack] > :global(.content-card:not(:first-child)) {
+      grid-column: 1;
+      grid-row: auto;
       width: 100%;
     }
   }

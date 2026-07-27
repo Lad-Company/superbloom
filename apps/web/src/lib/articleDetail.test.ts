@@ -55,7 +55,7 @@ describe('Article Detail contract', () => {
   it('renders homepage News with the shared card carousel', () => {
     expect(homepageNewsSource).toContain("import CardCarousel from '../CardCarousel.astro'")
     expect(homepageNewsSource).toContain('<CardCarousel')
-    expect(homepageNewsSource).toContain('heading={headline ?? \'News\'}')
+    expect(homepageNewsSource).toContain('heading={showHeadline ? (headline ?? \'News\') : null}')
   })
 
   it('uses the homepage authored News list instead of implicit latest items', () => {

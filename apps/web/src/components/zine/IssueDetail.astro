@@ -1,7 +1,9 @@
 ---
 import MediaFrame, {type Media} from '../MediaFrame.astro'
 import Button from '../Button.astro'
-import PinnedHorizontalRail from '../PinnedHorizontalRail.astro'
+import SurfaceSection from '../SurfaceSection.astro'
+import {vars} from '../../lib/surfaceRole'
+import CardCarousel from '../CardCarousel.astro'
 import PortableText from '../PortableText.astro'
 import TagList from '../TagList.astro'
 import ZineLandingIntro from './ZineLandingIntro.astro'
@@ -74,7 +76,7 @@ const overrideFor = (id?: string | null) =>
 ---
 
 <article class="issue-detail">
-  <header class="hero">
+  <header class="hero" style={vars.dark}>
     <div class="hero-media">
       <MediaFrame media={issue.heroMedia} ratio="16:9" title={issue.title} priority />
     </div>
@@ -82,9 +84,12 @@ const overrideFor = (id?: string | null) =>
       <h1 class="type-h1">{issue.title}</h1>
       {
         readZineHref && (
-          <a class="explore" href={readZineHref} target="_blank" rel="noopener noreferrer">
-            Explore the Issue
-          </a>
+          <Button
+            href={readZineHref}
+            label="Explore the Issue"
+            target="_blank"
+            rel="noopener noreferrer"
+          />
         )
       }
     </div>
@@ -124,11 +129,10 @@ const overrideFor = (id?: string | null) =>
     )
   }
 
-  <section class="stories" aria-labelledby="stories-heading">
-    <h2 id="stories-heading" class="type-h3">More stories</h2>
+  <SurfaceSection role="dark" class="stories" aria-labelledby="stories-heading">
     {
       issue.slug && (
-        <PinnedHorizontalRail class="article-rail" label="More stories" showControls>
+        <CardCarousel class="article-rail" label="More stories" heading="More stories">
           {articles.map((article) => (
             <ZineArticleCard
               article={article}
@@ -138,10 +142,10 @@ const overrideFor = (id?: string | null) =>
               globalSettings={issue.globalCardDefaults}
             />
           ))}
-        </PinnedHorizontalRail>
+        </CardCarousel>
       )
     }
-  </section>
+  </SurfaceSection>
 
   <PastIssues issues={pastIssues} />
 </article>
@@ -149,13 +153,13 @@ const overrideFor = (id?: string | null) =>
 <style>
   .hero {
     position: relative;
-    color: #fff;
-    background: #000;
+    color: var(--fg);
+    background: var(--bg);
   }
 
   .hero-media :global(.media-frame) {
     max-height: 90svh;
-    border-radius: 0;
+    border-radius: var(--radius-media);
   }
 
   .hero-copy {
@@ -166,17 +170,8 @@ const overrideFor = (id?: string | null) =>
     max-width: 900px;
   }
 
-  .explore {
-    display: inline-flex;
+  .hero-copy :global(.btn) {
     margin-top: var(--space-xs);
-    padding: var(--space-3xs) 16px;
-    border-radius: var(--radius-control);
-    background: #fff;
-    color: #000;
-    font-family: var(--font-interface);
-    font-weight: 750;
-    text-decoration: none;
-    text-transform: uppercase;
   }
 
   h1,
@@ -218,11 +213,6 @@ const overrideFor = (id?: string | null) =>
 
   .stories {
     padding: var(--space-4xl) var(--page-inset);
-    --bg: #000;
-    --fg: #fff;
-    --fg-60: rgba(255, 255, 255, 0.6);
-    color: var(--fg);
-    background: var(--bg);
   }
 
   :global(.article-rail) {

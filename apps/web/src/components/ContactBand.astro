@@ -1,6 +1,7 @@
 ---
 import SurfaceSection from './SurfaceSection.astro'
 import PageGrid from './PageGrid.astro'
+import Button from './Button.astro'
 
 type ContactSurfaceRole = 'brand-accent' | 'brand-deep' | 'brand-muted' | 'brand-tertiary'
 
@@ -90,7 +91,7 @@ const {role} = Astro.props
             <input type="hidden" name="startedAt" />
           </div>
           <div class="contact-actions">
-            <button class="btn-submit type-label" type="submit">Submit</button>
+            <Button as="button" type="submit" label="Submit" class="btn-submit" />
             <p class="status" id="contact-status" aria-live="polite" role="status"></p>
           </div>
         </form>
@@ -174,7 +175,7 @@ const {role} = Astro.props
     appearance: none;
     background: transparent;
     border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
-    border-radius: 0;
+    border-radius: var(--radius-control);
     color: var(--fg);
     font-family: var(--font-body);
     font-size: 19px;
@@ -227,24 +228,6 @@ const {role} = Astro.props
     display: flex;
     align-items: center;
     gap: var(--space-2xs);
-  }
-  .btn-submit {
-    padding: var(--space-3xs) 16px;
-    border: none;
-    border-radius: var(--radius-control);
-    background: var(--fg);
-    color: var(--bg);
-    cursor: pointer;
-    font-family: var(--font-interface);
-    font-size: 17px;
-    font-weight: 750;
-    line-height: 1;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-  }
-  .btn-submit:disabled {
-    cursor: default;
-    opacity: 0.5;
   }
   .status {
     margin: 0;

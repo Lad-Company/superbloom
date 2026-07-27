@@ -15,6 +15,17 @@ describe('Card Carousel', () => {
     expect(source).toContain('card-carousel:not([data-enhanced]) .controls')
   })
 
+  it('supports scroll jacking and reduced motion fallback', () => {
+    expect(source).toContain('initHorizontalRail')
+    expect(source).toContain("this.classList.contains('is-scroll-jacked')")
+  })
+
+  it('accepts optional button props', () => {
+    expect(source).toContain('buttonProps')
+    expect(source).toContain('previousButtonProps')
+    expect(source).toContain('nextButtonProps')
+  })
+
   it('sizes cards through the shared Content Card contract', () => {
     expect(source).toContain("data-card-width='1/3'")
     expect(source).not.toContain('.featured')

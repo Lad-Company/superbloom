@@ -22,7 +22,7 @@ const {media, ratio = '16:9', title, controls = true} = Astro.props
   }
 
   .featured-media :global(.media-frame) {
-    border-radius: 0;
+    border-radius: var(--radius-media);
   }
 
   @media (max-width: 768px) {

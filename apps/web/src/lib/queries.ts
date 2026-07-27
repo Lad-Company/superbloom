@@ -81,21 +81,20 @@ export const homepageQuery = defineQuery(`
         ${editorialCardProjection}
       }
     },
+    parallax{
+      headline,
+      "images": images[]${mediaProjection}
+    },
     work{
       headline,
       ctaLabel,
       "items": items[0...4]{
-        cardWidth,
         mediaAspectRatio,
-        infoPosition,
         "item": caseStudy->{
           _id,
           title,
           "slug": slug.current,
           summary,
-          cardWidth,
-          mediaAspectRatio,
-          infoPosition,
           tags[]->{ title, color },
           "media": cardMedia${mediaProjection}
         }
@@ -131,6 +130,7 @@ export const whoWeAreQuery = defineQuery(`
     },
     marquee{ text },
     introStatement,
+    "introMedia": introMedia[]${mediaProjection},
     statCards[]{
       _key,
       label,

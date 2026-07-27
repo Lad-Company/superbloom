@@ -77,30 +77,48 @@
   transform: scale(0.98);
 }
 
-/* Type Reveal gating: only hide when JavaScript is available so no-JS and
-   reduced-motion visitors always get the final, readable content. */
-html.js [data-motion-text] {
-  opacity: 0;
+/* Contained Control base — shared button box so any element (Button.astro,
+   form submits, card CTAs, checkout) opts in with `class="btn surface-wipe"`
+   plus a `.btn__label`. Colors come from the surface-role control tokens. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xs) 16px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--control-bg);
+  color: var(--control-fg);
+  text-decoration: none;
+  cursor: pointer;
+  backdrop-filter: blur(35px);
+  -webkit-backdrop-filter: blur(35px);
+  font-family: var(--font-interface);
+  font-weight: 750;
+  font-size: 17px;
+  line-height: 1;
+  letter-spacing: 0.34px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  --wipe-surface: var(--control-fg);
+  --wipe-ink: var(--control-bg);
+}
+.btn:disabled,
+.btn[disabled] {
+  cursor: default;
+  opacity: 0.5;
 }
 
-/* Route Transition overlay (navbar routes only) */
-.route-transition {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: var(--route-transition-surface, #000);
-  transform: translateY(100%);
-  pointer-events: none;
-}
-html.route-entering .route-transition {
-  transform: translateY(0);
+/* Type Reveal gating: only hide when JavaScript is available so no-JS and
+   reduced-motion visitors always get the final, readable content. Astro resets
+   the <html> element on View Transition swaps, dropping this class, so only the
+   genuine initial load hides content for the page-entry reveal. */
+html.js [data-motion-text] {
+  opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .surface-wipe.is-pressed {
     transform: none;
-  }
-  .route-transition {
-    display: none;
   }
 }

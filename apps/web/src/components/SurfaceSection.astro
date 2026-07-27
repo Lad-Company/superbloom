@@ -7,6 +7,7 @@ interface Props {
   class?: string
   tabindex?: number
   'aria-labelledby'?: string
+  [key: `data-${string}`]: string | boolean | number | undefined
 }
 
 const {
@@ -15,6 +16,7 @@ const {
   class: className,
   tabindex,
   'aria-labelledby': ariaLabelledBy,
+  ...rest
 } = Astro.props
 ---
 
@@ -25,6 +27,7 @@ const {
   data-surface-role={role}
   style={vars[role]}
   class:list={['surface-section', className]}
+  {...rest}
 >
   <slot />
 </section>

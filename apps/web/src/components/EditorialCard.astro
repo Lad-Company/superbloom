@@ -1,7 +1,7 @@
 ---
 import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro'
 import {resolveContentCardSettings, type PartialContentCardSettings} from '../lib/contentCard'
-import {formatPublicationDate, formatPublicationDateIndex} from '../lib/publicationDate'
+import {formatPublicationDateIndex} from '../lib/publicationDate'
 
 interface Props {
   href: string
@@ -19,7 +19,6 @@ interface Props {
   settings?: PartialContentCardSettings
   listSettings?: PartialContentCardSettings
   globalSettings?: PartialContentCardSettings
-  dateFormat?: 'default' | 'index'
 }
 
 const {
@@ -38,7 +37,6 @@ const {
   settings,
   listSettings,
   globalSettings,
-  dateFormat = 'default',
 } = Astro.props
 const resolved = resolveContentCardSettings({
   global: globalSettings,
@@ -46,8 +44,7 @@ const resolved = resolveContentCardSettings({
   list: listSettings,
   item: settings,
 })
-const formatDate = dateFormat === 'index' ? formatPublicationDateIndex : formatPublicationDate
-const formattedDate = publicationDate ? formatDate(publicationDate) : null
+const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDate) : null
 ---
 
 <a
@@ -64,7 +61,7 @@ const formattedDate = publicationDate ? formatDate(publicationDate) : null
   </MediaFrame>
   <div class="content">
     {title && <p class="headline type-h6 line-clamp-2">{title}</p>}
-    {summary && <p class="summary type-caption line-clamp-2">{summary}</p>}
+    {summary && <p class="summary type-caption line-clamp-1">{summary}</p>}
     {
       formattedDate && (
         <time class="publication-date type-caption" datetime={formattedDate.dateTime}>
@@ -81,7 +78,7 @@ const formattedDate = publicationDate ? formatDate(publicationDate) : null
     }
     {
       ctaLabel && (
-        <span class="cta surface-wipe">
+        <span class="btn cta surface-wipe">
           <span class="btn__label">{ctaLabel}</span>
         </span>
       )
@@ -146,22 +143,6 @@ const formattedDate = publicationDate ? formatDate(publicationDate) : null
   .cta {
     align-self: start;
     margin-top: var(--space-xs-4);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-3xs) 16px;
-    border-radius: var(--radius-control);
-    background: var(--fg);
-    color: var(--bg);
-    font-family: var(--font-interface);
-    font-size: 17px;
-    font-weight: 750;
-    line-height: 1;
-    letter-spacing: 0.34px;
-    text-transform: uppercase;
-    white-space: nowrap;
-    --wipe-surface: var(--bg);
-    --wipe-ink: var(--fg);
   }
 
   /* Reveal the shared Surface Wipe from card hover/focus, since the whole

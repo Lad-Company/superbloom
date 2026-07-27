@@ -1203,6 +1203,51 @@
     }
   },
   {
+    "name": "homeParallaxBlock",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "homeParallaxBlock"
+          }
+        },
+        "headline": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "images": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "array",
+            "of": {
+              "type": "object",
+              "attributes": {
+                "_key": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              },
+              "rest": {
+                "type": "inline",
+                "name": "mediaBox"
+              }
+            }
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
     "name": "homeWhyBlock",
     "type": "type",
     "value": {
@@ -1318,39 +1363,6 @@
                   },
                   "optional": true
                 },
-                "cardWidth": {
-                  "type": "objectAttribute",
-                  "value": {
-                    "type": "union",
-                    "of": [
-                      {
-                        "type": "string",
-                        "value": "1/4"
-                      },
-                      {
-                        "type": "string",
-                        "value": "1/3"
-                      },
-                      {
-                        "type": "string",
-                        "value": "1/2"
-                      },
-                      {
-                        "type": "string",
-                        "value": "2/3"
-                      },
-                      {
-                        "type": "string",
-                        "value": "3/4"
-                      },
-                      {
-                        "type": "string",
-                        "value": "full"
-                      }
-                    ]
-                  },
-                  "optional": true
-                },
                 "mediaAspectRatio": {
                   "type": "objectAttribute",
                   "value": {
@@ -1383,27 +1395,6 @@
                       {
                         "type": "string",
                         "value": "2:1"
-                      }
-                    ]
-                  },
-                  "optional": true
-                },
-                "infoPosition": {
-                  "type": "objectAttribute",
-                  "value": {
-                    "type": "union",
-                    "of": [
-                      {
-                        "type": "string",
-                        "value": "below"
-                      },
-                      {
-                        "type": "string",
-                        "value": "left"
-                      },
-                      {
-                        "type": "string",
-                        "value": "right"
                       }
                     ]
                   },
@@ -3125,6 +3116,28 @@
         },
         "optional": true
       },
+      "introMedia": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "array",
+          "of": {
+            "type": "object",
+            "attributes": {
+              "_key": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "string"
+                }
+              }
+            },
+            "rest": {
+              "type": "inline",
+              "name": "mediaBox"
+            }
+          }
+        },
+        "optional": true
+      },
       "statCards": {
         "type": "objectAttribute",
         "value": {
@@ -3461,13 +3474,6 @@
         },
         "optional": true
       },
-      "allWorkHeading": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "string"
-        },
-        "optional": true
-      },
       "featured": {
         "type": "objectAttribute",
         "value": {
@@ -3616,6 +3622,13 @@
               }
             }
           }
+        },
+        "optional": true
+      },
+      "allWorkHeading": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
         },
         "optional": true
       },
@@ -3917,19 +3930,27 @@
         },
         "optional": true
       },
-      "capabilities": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "inline",
-          "name": "capesBlock"
-        },
-        "optional": true
-      },
       "news": {
         "type": "objectAttribute",
         "value": {
           "type": "inline",
           "name": "newsBlock"
+        },
+        "optional": true
+      },
+      "parallax": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "homeParallaxBlock"
+        },
+        "optional": true
+      },
+      "capabilities": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "capesBlock"
         },
         "optional": true
       },
@@ -3964,6 +3985,73 @@
           "name": "contactBlock"
         },
         "optional": true
+      }
+    }
+  },
+  {
+    "name": "capesBlock",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "capesBlock"
+          }
+        },
+        "headline": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "capabilities": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "array",
+            "of": {
+              "type": "object",
+              "attributes": {
+                "_ref": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "_type": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string",
+                    "value": "reference"
+                  }
+                },
+                "_weak": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "boolean"
+                  },
+                  "optional": true
+                }
+              },
+              "dereferencesTo": "capability",
+              "rest": {
+                "type": "object",
+                "attributes": {
+                  "_key": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "optional": true
+        }
       }
     }
   },
@@ -4260,73 +4348,6 @@
                   "optional": true
                 }
               },
-              "rest": {
-                "type": "object",
-                "attributes": {
-                  "_key": {
-                    "type": "objectAttribute",
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "optional": true
-        }
-      }
-    }
-  },
-  {
-    "name": "capesBlock",
-    "type": "type",
-    "value": {
-      "type": "object",
-      "attributes": {
-        "_type": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "string",
-            "value": "capesBlock"
-          }
-        },
-        "headline": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "string"
-          },
-          "optional": true
-        },
-        "capabilities": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "array",
-            "of": {
-              "type": "object",
-              "attributes": {
-                "_ref": {
-                  "type": "objectAttribute",
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "_type": {
-                  "type": "objectAttribute",
-                  "value": {
-                    "type": "string",
-                    "value": "reference"
-                  }
-                },
-                "_weak": {
-                  "type": "objectAttribute",
-                  "value": {
-                    "type": "boolean"
-                  },
-                  "optional": true
-                }
-              },
-              "dereferencesTo": "capability",
               "rest": {
                 "type": "object",
                 "attributes": {

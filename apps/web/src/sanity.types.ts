@@ -143,6 +143,16 @@ export type HomeTestimonialsBlock = {
   ctaHref?: string
 }
 
+export type HomeParallaxBlock = {
+  _type: 'homeParallaxBlock'
+  headline?: string
+  images?: Array<
+    {
+      _key: string
+    } & MediaBox
+  >
+}
+
 export type HomeWhyBlock = {
   _type: 'homeWhyBlock'
   headline?: string
@@ -163,9 +173,7 @@ export type HomeWorkBlock = {
       _weak?: boolean
       [internalGroqTypeReferenceTo]?: 'caseStudy'
     }
-    cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
     mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
-    infoPosition?: 'below' | 'left' | 'right'
     _type: 'homeCaseStudy'
     _key: string
   }>
@@ -404,6 +412,11 @@ export type WhoWeAre = {
     text?: string
   }
   introStatement?: string
+  introMedia?: Array<
+    {
+      _key: string
+    } & MediaBox
+  >
   statCards?: Array<{
     label?: string
     value?: string
@@ -450,7 +463,6 @@ export type WorkIndex = {
   _updatedAt: string
   _rev: string
   heroHeading?: string
-  allWorkHeading?: string
   featured?: Array<{
     caseStudy?: {
       _ref: string
@@ -464,6 +476,7 @@ export type WorkIndex = {
     _type: 'featuredCaseStudy'
     _key: string
   }>
+  allWorkHeading?: string
   allSection?: {
     listDefaults?: {
       cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
@@ -492,12 +505,25 @@ export type Homepage = {
   _updatedAt: string
   _rev: string
   hero?: HeroBlock
-  capabilities?: CapesBlock
   news?: NewsBlock
+  parallax?: HomeParallaxBlock
+  capabilities?: CapesBlock
   work?: HomeWorkBlock
   why?: HomeWhyBlock
   zine?: HomeZine
   contact?: ContactBlock
+}
+
+export type CapesBlock = {
+  _type: 'capesBlock'
+  headline?: string
+  capabilities?: Array<{
+    _ref: string
+    _type: 'reference'
+    _weak?: boolean
+    _key: string
+    [internalGroqTypeReferenceTo]?: 'capability'
+  }>
 }
 
 export type NewsBlock = {
@@ -526,18 +552,6 @@ export type NewsBlock = {
     mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
     infoPosition?: 'below' | 'left' | 'right'
     _key: string
-  }>
-}
-
-export type CapesBlock = {
-  _type: 'capesBlock'
-  headline?: string
-  capabilities?: Array<{
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    _key: string
-    [internalGroqTypeReferenceTo]?: 'capability'
   }>
 }
 
@@ -956,6 +970,7 @@ export type AllSanitySchemaTypes =
   | SiteSettings
   | IndexPage
   | HomeTestimonialsBlock
+  | HomeParallaxBlock
   | HomeWhyBlock
   | HomeWorkBlock
   | HomeZine
@@ -970,8 +985,8 @@ export type AllSanitySchemaTypes =
   | WhoWeAre
   | WorkIndex
   | Homepage
-  | NewsBlock
   | CapesBlock
+  | NewsBlock
   | HeroBlock
   | Article
   | Tag
@@ -1003,7 +1018,7 @@ export type AllSanitySchemaTypes =
 export declare const internalGroqTypeReferenceTo: unique symbol
 // Source: ../web/src/lib/queries.ts
 // Variable: homepageQuery
-// Query: *[_type == "homepage"][0]{    hero{      heading,      subheading,      "heroMedia": heroMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    capabilities{      headline,      capabilities[]->{        title,        "contextualCopy": coalesce(contextualCopy, subtitle),        "slug": slug.current,        "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    news{      headline,      listDefaults,      itemOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },      "items": items[]->{          _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  cardCtaLabel,  publicationDate,  cardDestination,  externalCoverage[]{ outlet, url, isPrimary },  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    work{      headline,      ctaLabel,      "items": items[0...4]{        cardWidth,        mediaAspectRatio,        infoPosition,        "item": caseStudy->{          _id,          title,          "slug": slug.current,          summary,          cardWidth,          mediaAspectRatio,          infoPosition,          tags[]->{ title, color },          "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}        }      }    },    why{      headline,      body,      ctaLabel,      ctaHref,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    "fallbackCreativeMedia": *[_type == "whoWeAre"][0].featuredMedia.media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},    zine{      "issue": issue->{ "slug": slug.current },      "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,      promoHeadline,      promoIntro,      "promoMedia": promoMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      ctaLabel    },    contact{ _type },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
+// Query: *[_type == "homepage"][0]{    hero{      heading,      subheading,      "heroMedia": heroMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    capabilities{      headline,      capabilities[]->{        title,        "contextualCopy": coalesce(contextualCopy, subtitle),        "slug": slug.current,        "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    news{      headline,      listDefaults,      itemOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },      "items": items[]->{          _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  cardCtaLabel,  publicationDate,  cardDestination,  externalCoverage[]{ outlet, url, isPrimary },  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    parallax{      headline,      "images": images[]{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    work{      headline,      ctaLabel,      "items": items[0...4]{        mediaAspectRatio,        "item": caseStudy->{          _id,          title,          "slug": slug.current,          summary,          tags[]->{ title, color },          "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}        }      }    },    why{      headline,      body,      ctaLabel,      ctaHref,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    "fallbackCreativeMedia": *[_type == "whoWeAre"][0].featuredMedia.media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},    zine{      "issue": issue->{ "slug": slug.current },      "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,      promoHeadline,      promoIntro,      "promoMedia": promoMedia{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      ctaLabel    },    contact{ _type },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
 export type HomepageQueryResult = {
   hero: {
     heading: string | null
@@ -1126,21 +1141,37 @@ export type HomepageQueryResult = {
       } | null
     }> | null
   } | null
+  parallax: {
+    headline: string | null
+    images: Array<{
+      asset:
+        | {
+            _type: 'image'
+            url: string | null
+            width: number | null
+            height: number | null
+            altText: string | null
+          }
+        | {
+            _type: 'mux.video'
+            playbackId: string | null
+            aspectRatio: string | null
+          }
+        | null
+      altText: string | null
+      decorative: boolean | null
+    }> | null
+  } | null
   work: {
     headline: string | null
     ctaLabel: string | null
     items: Array<{
-      cardWidth: '1/2' | '1/3' | '1/4' | '2/3' | '3/4' | 'full' | null
       mediaAspectRatio: '1:1' | '16:9' | '2:1' | '3:2' | '4:5' | '9:16' | 'intrinsic' | null
-      infoPosition: 'below' | 'left' | 'right' | null
       item: {
         _id: string
         title: string | null
         slug: string | null
         summary: string | null
-        cardWidth: '1/2' | '1/3' | '1/4' | '2/3' | '3/4' | 'full' | null
-        mediaAspectRatio: '1:1' | '16:9' | '2:1' | '3:2' | '4:5' | '9:16' | 'intrinsic' | null
-        infoPosition: 'below' | 'left' | 'right' | null
         tags: Array<{
           title: string | null
           color: string | null
@@ -1262,7 +1293,7 @@ export type HomepageQueryResult = {
   } | null
 } | null
 // Variable: whoWeAreQuery
-// Query: *[_type == "whoWeAre"][0]{    heroHeading,    featuredMedia{      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    marquee{ text },    introStatement,    statCards[]{      _key,      label,      value,      description,      items    },    advantageHeadline,    advantageBlocks[]{      _key,      heading,      body,      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    disciplines[]{      _key,      title,      description    },    ctas[]{      _key,      heading,      label,      href,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    faqs[]{      _key,      question,      answer    }  }
+// Query: *[_type == "whoWeAre"][0]{    heroHeading,    featuredMedia{      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    marquee{ text },    introStatement,    "introMedia": introMedia[]{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},    statCards[]{      _key,      label,      value,      description,      items    },    advantageHeadline,    advantageBlocks[]{      _key,      heading,      body,      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    disciplines[]{      _key,      title,      description    },    ctas[]{      _key,      heading,      label,      href,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      "url": asset->url,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "altText": asset->altText    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    faqs[]{      _key,      question,      answer    }  }
 export type WhoWeAreQueryResult = {
   heroHeading: string | null
   featuredMedia: {
@@ -1290,6 +1321,24 @@ export type WhoWeAreQueryResult = {
     text: string | null
   } | null
   introStatement: string | null
+  introMedia: Array<{
+    asset:
+      | {
+          _type: 'image'
+          url: string | null
+          width: number | null
+          height: number | null
+          altText: string | null
+        }
+      | {
+          _type: 'mux.video'
+          playbackId: string | null
+          aspectRatio: string | null
+        }
+      | null
+    altText: string | null
+    decorative: boolean | null
+  }> | null
   statCards: Array<{
     _key: string
     label: string | null
@@ -3218,8 +3267,8 @@ export type SitemapQueryResult = {
 import '@sanity/client'
 declare module '@sanity/client' {
   interface SanityQueries {
-    '\n  *[_type == "homepage"][0]{\n    hero{\n      heading,\n      subheading,\n      "heroMedia": heroMedia{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    capabilities{\n      headline,\n      capabilities[]->{\n        title,\n        "contextualCopy": coalesce(contextualCopy, subtitle),\n        "slug": slug.current,\n        "media": media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n      }\n    },\n    news{\n      headline,\n      listDefaults,\n      itemOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },\n      "items": items[]->{\n        \n  _id,\n  _type,\n  articleType,\n  title,\n  "slug": slug.current,\n  overview,\n  cardCtaLabel,\n  publicationDate,\n  cardDestination,\n  externalCoverage[]{ outlet, url, isPrimary },\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  "cardMedia": cardMedia{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n\n      }\n    },\n    work{\n      headline,\n      ctaLabel,\n      "items": items[0...4]{\n        cardWidth,\n        mediaAspectRatio,\n        infoPosition,\n        "item": caseStudy->{\n          _id,\n          title,\n          "slug": slug.current,\n          summary,\n          cardWidth,\n          mediaAspectRatio,\n          infoPosition,\n          tags[]->{ title, color },\n          "media": cardMedia{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n        }\n      }\n    },\n    why{\n      headline,\n      body,\n      ctaLabel,\n      ctaHref,\n      "media": media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    "fallbackCreativeMedia": *[_type == "whoWeAre"][0].featuredMedia.media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n    zine{\n      "issue": issue->{ "slug": slug.current },\n      "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,\n      promoHeadline,\n      promoIntro,\n      "promoMedia": promoMedia{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n      ctaLabel\n    },\n    contact{ _type },\n    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults\n  }\n': HomepageQueryResult
-    '\n  *[_type == "whoWeAre"][0]{\n    heroHeading,\n    featuredMedia{\n      aspectRatio,\n      "media": media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    marquee{ text },\n    introStatement,\n    statCards[]{\n      _key,\n      label,\n      value,\n      description,\n      items\n    },\n    advantageHeadline,\n    advantageBlocks[]{\n      _key,\n      heading,\n      body,\n      aspectRatio,\n      "media": media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    disciplines[]{\n      _key,\n      title,\n      description\n    },\n    ctas[]{\n      _key,\n      heading,\n      label,\n      href,\n      "media": media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    faqs[]{\n      _key,\n      question,\n      answer\n    }\n  }\n': WhoWeAreQueryResult
+    '\n  *[_type == "homepage"][0]{\n    hero{\n      heading,\n      subheading,\n      "heroMedia": heroMedia{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    capabilities{\n      headline,\n      capabilities[]->{\n        title,\n        "contextualCopy": coalesce(contextualCopy, subtitle),\n        "slug": slug.current,\n        "media": media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n      }\n    },\n    news{\n      headline,\n      listDefaults,\n      itemOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },\n      "items": items[]->{\n        \n  _id,\n  _type,\n  articleType,\n  title,\n  "slug": slug.current,\n  overview,\n  cardCtaLabel,\n  publicationDate,\n  cardDestination,\n  externalCoverage[]{ outlet, url, isPrimary },\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  "cardMedia": cardMedia{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n\n      }\n    },\n    parallax{\n      headline,\n      "images": images[]{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    work{\n      headline,\n      ctaLabel,\n      "items": items[0...4]{\n        mediaAspectRatio,\n        "item": caseStudy->{\n          _id,\n          title,\n          "slug": slug.current,\n          summary,\n          tags[]->{ title, color },\n          "media": cardMedia{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n        }\n      }\n    },\n    why{\n      headline,\n      body,\n      ctaLabel,\n      ctaHref,\n      "media": media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    "fallbackCreativeMedia": *[_type == "whoWeAre"][0].featuredMedia.media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n    zine{\n      "issue": issue->{ "slug": slug.current },\n      "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,\n      promoHeadline,\n      promoIntro,\n      "promoMedia": promoMedia{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n      ctaLabel\n    },\n    contact{ _type },\n    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults\n  }\n': HomepageQueryResult
+    '\n  *[_type == "whoWeAre"][0]{\n    heroHeading,\n    featuredMedia{\n      aspectRatio,\n      "media": media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    marquee{ text },\n    introStatement,\n    "introMedia": introMedia[]{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n},\n    statCards[]{\n      _key,\n      label,\n      value,\n      description,\n      items\n    },\n    advantageHeadline,\n    advantageBlocks[]{\n      _key,\n      heading,\n      body,\n      aspectRatio,\n      "media": media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    disciplines[]{\n      _key,\n      title,\n      description\n    },\n    ctas[]{\n      _key,\n      heading,\n      label,\n      href,\n      "media": media{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n    },\n    faqs[]{\n      _key,\n      question,\n      answer\n    }\n  }\n': WhoWeAreQueryResult
     '\n  *[_type == "workIndex"][0]{\n    heroHeading,\n    allWorkHeading,\n    featured[]{\n      _key,\n      cardWidth,\n      mediaAspectRatio,\n      infoPosition,\n      "item": caseStudy->{\n        _id,\n        title,\n        "slug": slug.current,\n        summary,\n        publicationDate,\n        cardWidth,\n        mediaAspectRatio,\n        infoPosition,\n        tags[]->{ title, color },\n        "media": cardMedia{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n      }\n    },\n    allSection{\n      listDefaults,\n      itemOverrides[]{ "itemId": caseStudy._ref, cardWidth, mediaAspectRatio, infoPosition }\n    },\n    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults\n  }\n': WorkIndexQueryResult
     '\n  *[_type == "caseStudy" && !(_id in $featuredIds)]\n    | order(publicationDate desc)[$offset...$end] {\n    _id,\n    title,\n    "slug": slug.current,\n    summary,\n    publicationDate,\n    cardWidth,\n    mediaAspectRatio,\n    infoPosition,\n    tags[]->{ title, color },\n    "media": cardMedia{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n  }\n': CaseStudiesNewestQueryResult
     '\n  *[_type == "caseStudy" && !(_id in $featuredIds)]\n    | order(publicationDate asc)[$offset...$end] {\n    _id,\n    title,\n    "slug": slug.current,\n    summary,\n    publicationDate,\n    cardWidth,\n    mediaAspectRatio,\n    infoPosition,\n    tags[]->{ title, color },\n    "media": cardMedia{\n  "asset": asset[0]{\n    _type,\n    _type == "image" => {\n      "url": asset->url,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "altText": asset->altText\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  altText,\n  decorative\n}\n  }\n': CaseStudiesOldestQueryResult

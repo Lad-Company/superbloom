@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro'
 import Navigation from '../../components/Navigation.astro'
 import Footer from '../../components/Footer.astro'
+import Button from '../../components/Button.astro'
 import {getCart} from '../../lib/shopify'
 import {readCartId} from '../../lib/shopify-cart'
 
@@ -79,9 +80,7 @@ const error = Astro.url.searchParams.get('error')
                   money(cart.subtotalAmount.amount, cart.subtotalAmount.currencyCode)}
               </strong>
             </p>
-            <a class="checkout" href="/api/shop/cart/checkout">
-              Checkout
-            </a>
+            <Button href="/api/shop/cart/checkout" label="Checkout" class="checkout" />
           </div>
         </>
       )
@@ -125,18 +124,16 @@ const error = Astro.url.searchParams.get('error')
           update('/api/shop/cart/update.json', {lineId: id, quantity: Number(quantity?.value) + 1}),
         ),
       )
-    line
-      .querySelector('[data-decrement]')
-      ?.addEventListener('click', () =>
-        Number(quantity?.value) > 1
-          ? safely(() =>
-              update('/api/shop/cart/update.json', {
-                lineId: id,
-                quantity: Number(quantity?.value) - 1,
-              }),
-            )
-          : undefined,
-      )
+    line.querySelector('[data-decrement]')?.addEventListener('click', () =>
+      Number(quantity?.value) > 1
+        ? safely(() =>
+            update('/api/shop/cart/update.json', {
+              lineId: id,
+              quantity: Number(quantity?.value) - 1,
+            }),
+          )
+        : undefined,
+    )
     quantity?.addEventListener('change', () =>
       safely(() =>
         update('/api/shop/cart/update.json', {lineId: id, quantity: Number(quantity.value)}),
@@ -180,13 +177,12 @@ const error = Astro.url.searchParams.get('error')
     align-items: center;
     gap: var(--space-3xs);
   }
-  .quantity button,
-  .checkout {
+  .quantity button {
     padding: 8px 12px;
     border: 0;
-    background: var(--fg);
-    color: var(--bg);
-    text-decoration: none;
+    border-radius: var(--radius-control);
+    background: var(--control-bg);
+    color: var(--control-fg);
     cursor: pointer;
   }
   .summary {

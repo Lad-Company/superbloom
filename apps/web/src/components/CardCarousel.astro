@@ -1,51 +1,120 @@
 ---
+import type {HTMLAttributes} from 'astro/types'
+
+type ButtonProps = HTMLAttributes<'button'> & Record<string, unknown>
+
 interface Props {
   label: string
   heading?: string | null
   class?: string
   showNextButton?: boolean
+  showControls?: boolean
+  buttonProps?: ButtonProps
+  previousButtonProps?: ButtonProps
+  nextButtonProps?: ButtonProps
 }
 
-const {label, heading, class: className, showNextButton = true} = Astro.props
+const {
+  label,
+  heading,
+  class: className,
+  showNextButton = true,
+  showControls = true,
+  buttonProps = {},
+  previousButtonProps = {},
+  nextButtonProps = {},
+} = Astro.props
+
+const mergedPreviousProps = {
+  type: 'button' as const,
+  'aria-label': `Previous ${heading ?? label}`,
+  ...buttonProps,
+  ...previousButtonProps,
+  class: ['control', 'previous', buttonProps.class, previousButtonProps.class]
+    .filter(Boolean)
+    .join(' '),
+}
+
+const mergedNextProps = {
+  type: 'button' as const,
+  'aria-label': `Next ${heading ?? label}`,
+  ...buttonProps,
+  ...nextButtonProps,
+  class: ['control', 'next', buttonProps.class, nextButtonProps.class]
+    .filter(Boolean)
+    .join(' '),
+}
 ---
 
 <card-carousel class:list={['card-carousel', className]} aria-label={label}>
   {
-    heading && (
+    (heading || showControls) && (
       <div class="header">
-        <h2 class="heading type-h5">{heading}</h2>
-        <div class="controls" aria-label={`${heading} controls`}>
-          <button class="control previous" type="button" aria-label={`Previous ${heading}`}>
-            ←
-          </button>
-          {showNextButton && (
-            <button class="control next" type="button" aria-label={`Next ${heading}`}>
-              →
+        {heading && <h2 class="heading type-h3">{heading}</h2>}
+        {showControls && (
+          <div class="controls" aria-label={`${heading ?? label} controls`}>
+            <button {...mergedPreviousProps}>
+              ←
             </button>
-          )}
-        </div>
+            {showNextButton && (
+              <button {...mergedNextProps}>
+                →
+              </button>
+            )}
+          </div>
+        )}
       </div>
     )
   }
-  <div class="track" role="region" tabindex="0" aria-label={label}>
-    <slot />
+  <div class="rail">
+    <div class="track" role="region" tabindex="0" aria-label={label}>
+      <slot />
+    </div>
   </div>
 </card-carousel>
 
 <script>
+  import { initHorizontalRail, type HorizontalRailHandle } from '../lib/motion'
+
   class CardCarouselElement extends HTMLElement {
+    private railHandle?: HorizontalRailHandle
     private track?: HTMLElement
 
     connectedCallback() {
-      this.track = this.querySelector('.track') ?? undefined
+      this.track = (this.querySelector('.track') as HTMLElement | null) ?? undefined
       this.dataset.enhanced = 'true'
-      this.querySelector('.previous')?.addEventListener('click', () => this.scrollCards(-1))
-      this.querySelector('.next')?.addEventListener('click', () => this.scrollCards(1))
+
+      const railContainer = (this.querySelector('.rail') as HTMLElement | null) ?? this
+      if (this.track) {
+        this.railHandle = initHorizontalRail(this, railContainer, this.track)
+      }
+
+      this.querySelector('.previous')?.addEventListener('click', (e) => {
+        e.preventDefault()
+        this.scrollCards(-1)
+      })
+      this.querySelector('.next')?.addEventListener('click', (e) => {
+        e.preventDefault()
+        this.scrollCards(1)
+      })
+    }
+
+    disconnectedCallback() {
+      this.railHandle?.destroy()
     }
 
     private scrollCards(direction: 1 | -1) {
+      if (this.classList.contains('is-scroll-jacked') && this.railHandle) {
+        if (direction === -1) {
+          this.railHandle.previous()
+        } else {
+          this.railHandle.next()
+        }
+        return
+      }
+
       const amount = (this.track?.firstElementChild as HTMLElement | null)?.offsetWidth ?? 0
-      this.track?.scrollBy({left: direction * amount, behavior: 'smooth'})
+      this.track?.scrollBy({ left: direction * amount, behavior: 'smooth' })
     }
   }
 
@@ -57,6 +126,11 @@ const {label, heading, class: className, showNextButton = true} = Astro.props
 <style>
   .card-carousel {
     display: block;
+  }
+
+  .rail {
+    position: relative;
+    overflow: hidden;
   }
 
   .header {
@@ -106,6 +180,11 @@ const {label, heading, class: className, showNextButton = true} = Astro.props
 
   .track::-webkit-scrollbar {
     display: none;
+  }
+
+  .is-scroll-jacked .track {
+    overflow: visible;
+    scroll-snap-type: none;
   }
 
   .track > :global(.content-card) {

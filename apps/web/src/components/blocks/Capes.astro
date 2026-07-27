@@ -13,7 +13,7 @@ interface Props {
   capabilities: Capability[];
 }
 
-const { headline, capabilities } = Astro.props;
+const { capabilities } = Astro.props;
 const displayedCapabilities = capabilities.slice(0, 8);
 ---
 
@@ -32,7 +32,6 @@ const displayedCapabilities = capabilities.slice(0, 8);
     </div>
     <div class="overlay">
       <div class="context">
-        {headline && <p class="headline type-h6">{headline}</p>}
         <div class="contextual-copy type-h6" aria-live="polite">
           {displayedCapabilities.map((cap, index) => (
             <p class:list={['copy', { 'is-active': index === 0 }]} data-context-copy data-index={index}>
@@ -78,7 +77,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
     position: absolute;
     inset: 0;
     opacity: 0;
-    transition: opacity var(--motion-standard) var(--motion-ease-out);
+    transition: opacity var(--motion-deliberate) var(--motion-ease-out);
   }
 
   .frame.is-active {
@@ -156,11 +155,17 @@ const displayedCapabilities = capabilities.slice(0, 8);
 
   .list li {
     color: var(--bg-60);
-    transition: color 0.4s ease;
+    transition:
+      color var(--motion-standard) var(--motion-ease-out),
+      opacity var(--motion-standard) var(--motion-ease-out);
   }
 
   .list li.is-active {
     color: var(--bg);
+  }
+
+  .list li.is-past {
+    opacity: 0;
   }
 
   @media (max-width: 767px) {
@@ -188,31 +193,33 @@ const displayedCapabilities = capabilities.slice(0, 8);
     const listItems = section.querySelectorAll<HTMLElement>('[data-cap]');
     const contextualCopy = section.querySelectorAll<HTMLElement>('[data-context-copy]');
     const list = section.querySelector<HTMLElement>('[data-capes-list]');
-    const listClip = list?.parentElement;
     const pin = section.querySelector<HTMLElement>('[data-pin]');
     const count = frames.length;
     if (!count || !pin) return;
     section.dataset.capesInitialized = 'true';
 
-    const scrollListY = list ? gsap.quickTo(list, 'y', { duration: 0.55, ease: 'power2.out' }) : null;
+    const scrollListY = list ? gsap.quickTo(list, 'y', { duration: 0.6, ease: 'power3.out' }) : null;
 
+    let previous = 0;
     const setActive = (i: number) => {
       frames.forEach((frame, idx) => {
         const isActive = idx === i;
-        frame.classList.toggle('is-active', isActive);
+        frame.classList.toggle('is-active', isActive || idx === previous);
+        frame.style.zIndex = isActive ? '2' : idx === previous ? '1' : '0';
         frame.querySelector('media-frame')?.toggleAttribute('active', isActive);
       });
-      listItems.forEach((item, idx) => item.classList.toggle('is-active', idx === i));
+      previous = i;
+      listItems.forEach((item, idx) => {
+        item.classList.toggle('is-active', idx === i);
+        item.classList.toggle('is-past', idx < i);
+      });
       contextualCopy.forEach((copy, idx) => copy.classList.toggle('is-active', idx === i));
 
-      if (scrollListY && list && listClip) {
+      if (scrollListY && list) {
         const activeItem = listItems[i] as HTMLElement | undefined;
-        if (activeItem) {
-          const clipHeight = listClip.clientHeight;
-          const itemOffset = activeItem.offsetTop;
-          const itemHeight = activeItem.offsetHeight;
-          const target = Math.max(0, itemOffset - (clipHeight / 2 - itemHeight / 2));
-          scrollListY(-target);
+        const firstItem = listItems[0] as HTMLElement | undefined;
+        if (activeItem && firstItem) {
+          scrollListY(-(activeItem.offsetTop - firstItem.offsetTop));
         }
       }
     };
@@ -222,7 +229,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
       pin,
       chapters: count,
       onChapter: setActive,
-      chapterScroll: 40,
+      chapterScroll: 25,
     });
     const destroyDepthLayer = initDepthLayer(section);
     cleanups.push(() => {
@@ -232,9 +239,8 @@ const displayedCapabilities = capabilities.slice(0, 8);
     });
   });
 
-  initCapes();
-  window.addEventListener('pagehide', () => cleanups.splice(0).forEach((cleanup) => cleanup()));
-  window.addEventListener('pageshow', (event) => {
-    if (event.persisted) initCapes();
-  });
+  const cleanupAll = () => cleanups.splice(0).forEach((cleanup) => cleanup());
+
+  document.addEventListener('astro:page-load', initCapes);
+  document.addEventListener('astro:before-swap', cleanupAll);
 </script>

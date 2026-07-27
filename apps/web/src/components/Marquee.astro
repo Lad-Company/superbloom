@@ -7,48 +7,26 @@ const { text } = Astro.props;
 ---
 
 <div class="marquee-track" aria-hidden="true" data-marquee>
-  <p class="marquee-text" data-marquee-text>{text}&nbsp;&nbsp;{text}&nbsp;&nbsp;{text}</p>
+  <div class="marquee-content">
+    <p class="marquee-text">{text}</p>
+    <p class="marquee-text">{text}</p>
+  </div>
 </div>
-
-<script>
-  import { initScrollDrivenTrack } from '../lib/motion';
-
-  const cleanups: Array<() => void> = [];
-
-  const initMarquees = () => document.querySelectorAll<HTMLElement>('[data-marquee]').forEach((track) => {
-    if (track.dataset.marqueeInitialized) return;
-    const text = track.querySelector<HTMLElement>('[data-marquee-text]');
-    if (!text) return;
-    track.dataset.marqueeInitialized = 'true';
-
-    const scrollDrivenTrack = initScrollDrivenTrack({
-      trigger: track,
-      viewport: track,
-      track: text,
-      getX: () => -text.scrollWidth / 3,
-      end: '+=100%',
-    });
-
-    cleanups.push(() => {
-      scrollDrivenTrack.destroy();
-      delete track.dataset.marqueeInitialized;
-    });
-  });
-
-  initMarquees();
-  window.addEventListener('pagehide', () => cleanups.splice(0).forEach((cleanup) => cleanup()));
-  window.addEventListener('pageshow', (event) => {
-    if (event.persisted) initMarquees();
-  });
-</script>
 
 <style>
   .marquee-track {
     overflow: hidden;
     padding: var(--space-2xl) 0;
   }
+  .marquee-content {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 48s linear infinite;
+    will-change: transform;
+  }
   .marquee-text {
     margin: 0;
+    padding-right: 0.2em;
     font-family: var(--font-marquee);
     font-weight: 750;
     font-size: clamp(80px, 13vw, 200px);
@@ -56,6 +34,15 @@ const { text } = Astro.props;
     text-transform: uppercase;
     color: var(--fg);
     white-space: nowrap;
-    will-change: transform;
+  }
+  @keyframes marquee-scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-content {
+      animation-play-state: paused;
+    }
   }
 </style>

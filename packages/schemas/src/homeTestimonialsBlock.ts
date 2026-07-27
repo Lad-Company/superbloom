@@ -8,7 +8,7 @@ export const homeTestimonialsBlock = defineType({
     defineField({
       name: 'headline',
       type: 'string',
-      initialValue: "What They're Saying",
+      initialValue: "What They've Been Saying",
     }),
     defineField({
       name: 'items',
