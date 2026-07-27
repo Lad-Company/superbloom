@@ -5,6 +5,7 @@ import {
   validateIndexPageAllListDefaults,
   validateIndexPageItemOverridesUnique,
 } from './indexPageContract'
+import {indexPage} from './indexPage'
 
 describe('Index Page contract validators', () => {
   describe('validateIndexPageFeaturedCount', () => {
@@ -38,19 +39,13 @@ describe('Index Page contract validators', () => {
     it('allows empty or unique featured cards', () => {
       expect(validateIndexPageFeaturedCardsUnique([])).toBe(true)
       expect(
-        validateIndexPageFeaturedCardsUnique([
-          {article: {_ref: 'a'}},
-          {article: {_ref: 'b'}},
-        ]),
+        validateIndexPageFeaturedCardsUnique([{article: {_ref: 'a'}}, {article: {_ref: 'b'}}]),
       ).toBe(true)
     })
 
     it('rejects duplicate article references', () => {
       expect(
-        validateIndexPageFeaturedCardsUnique([
-          {article: {_ref: 'a'}},
-          {article: {_ref: 'a'}},
-        ]),
+        validateIndexPageFeaturedCardsUnique([{article: {_ref: 'a'}}, {article: {_ref: 'a'}}]),
       ).toContain('unique')
     })
   })
@@ -84,5 +79,13 @@ describe('Index Page contract validators', () => {
         {article: {_ref: 'article-1'}},
       ]),
     ).toContain('only one item override')
+  })
+
+  it('has a required header field', () => {
+    const fieldNames = indexPage.fields.map((field) => field.name)
+    expect(fieldNames).toContain('header')
+    const headerField = indexPage.fields.find((field) => field.name === 'header')
+    expect(headerField?.type).toBe('string')
+    expect(headerField?.validation).toBeDefined()
   })
 })

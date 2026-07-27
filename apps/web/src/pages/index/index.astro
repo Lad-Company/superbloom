@@ -23,6 +23,7 @@ const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requeste
 const recordLimit = page * BATCH_SIZE
 
 const indexPage = await sanityClient.fetch<IndexPageQueryResult>(indexPageQuery)
+const pageHeader = indexPage?.header ?? 'Index'
 const featured = indexPage?.featured?.filter((entry) => entry?.item) ?? []
 const featuredIds = featured
   .map((entry) => entry.item?._id)
@@ -54,19 +55,15 @@ const queryFor = (nextPage: number, nextSort = sort) => {
 }
 ---
 
-<Layout
-  title="Index"
-  description="News, perspectives, and work from Superbloom House."
-  canonicalUrl="/index"
->
+<Layout title="Index" description={pageHeader} canonicalUrl="/index">
   <SurfaceSection role="light">
     <Navigation role="light" />
     <main>
       {
         featured.length > 0 && (
           <section class="featured" aria-labelledby="featured-heading">
-            <h1 id="featured-heading" class="type-h1">
-              Index
+            <h1 id="featured-heading" class="type-h1 featured-header">
+              {pageHeader}
             </h1>
             <ContentCardList featured>
               {featured.map((entry) => {
@@ -139,6 +136,10 @@ const queryFor = (nextPage: number, nextSort = sort) => {
   .featured h1,
   .view-all h2 {
     margin: 0;
+  }
+
+  .featured-header {
+    max-width: 21ch;
   }
 
   .featured :global(.content-card-list) {

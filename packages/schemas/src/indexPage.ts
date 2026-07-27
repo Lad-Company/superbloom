@@ -14,6 +14,13 @@ export const indexPage = defineType({
   title: 'Index Page',
   type: 'document',
   fields: [
+    defineField({
+      name: 'header',
+      title: 'Header',
+      type: 'string',
+      validation: (rule) => rule.required(),
+    }),
+
     // Featured section: 0-4 manually ordered cards with full card settings
     defineField({
       name: 'featured',

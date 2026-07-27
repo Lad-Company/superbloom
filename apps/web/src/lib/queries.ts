@@ -1,4 +1,4 @@
-import { defineQuery } from 'groq';
+import {defineQuery} from 'groq'
 
 const mediaProjection = `{
   "asset": asset[0]{
@@ -16,7 +16,7 @@ const mediaProjection = `{
   },
   altText,
   decorative
-}`;
+}`
 
 export const contentLayoutRowsProjection = `
   _type,
@@ -36,7 +36,7 @@ export const contentLayoutRowsProjection = `
       text
     }
   }
-`;
+`
 
 const editorialCardProjection = `
   _id,
@@ -55,7 +55,7 @@ const editorialCardProjection = `
   "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,
   tags[]->{ title, color },
   "cardMedia": cardMedia${mediaProjection}
-`;
+`
 
 export const homepageQuery = defineQuery(`
   *[_type == "homepage"][0]{
@@ -120,7 +120,7 @@ export const homepageQuery = defineQuery(`
     contact{ _type },
     "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
   }
-`);
+`)
 
 export const whoWeAreQuery = defineQuery(`
   *[_type == "whoWeAre"][0]{
@@ -164,7 +164,7 @@ export const whoWeAreQuery = defineQuery(`
       answer
     }
   }
-`);
+`)
 
 export const workIndexQuery = defineQuery(`
   *[_type == "workIndex"][0]{
@@ -194,7 +194,7 @@ export const workIndexQuery = defineQuery(`
     },
     "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
   }
-`);
+`)
 
 export const caseStudiesNewestQuery = defineQuery(`
   *[_type == "caseStudy" && !(_id in $featuredIds)]
@@ -210,7 +210,7 @@ export const caseStudiesNewestQuery = defineQuery(`
     tags[]->{ title, color },
     "media": cardMedia${mediaProjection}
   }
-`);
+`)
 
 export const caseStudiesOldestQuery = defineQuery(`
   *[_type == "caseStudy" && !(_id in $featuredIds)]
@@ -226,13 +226,13 @@ export const caseStudiesOldestQuery = defineQuery(`
     tags[]->{ title, color },
     "media": cardMedia${mediaProjection}
   }
-`);
+`)
 
 const caseStudyMediaLayoutsProjection = `
   mediaLayouts[]{
     ${contentLayoutRowsProjection}
   }
-`;
+`
 
 export const caseStudyBySlugQuery = defineQuery(`
   *[_type == "caseStudy" && slug.current == $slug][0] {
@@ -294,7 +294,7 @@ export const caseStudyBySlugQuery = defineQuery(`
     },
     "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
   }
-`);
+`)
 
 const articleBodyProjection = `
   body[]{
@@ -342,13 +342,13 @@ export const newsArticleBySlugQuery = defineQuery(`
   *[_type == "article" && articleType == "news" && slug.current == $slug][0] {
     ${articleProjection}
   }
-`);
+`)
 
 export const editorialArticleBySlugQuery = defineQuery(`
   *[_type == "article" && articleType == "editorial" && slug.current == $slug][0] {
     ${articleProjection}
   }
-`);
+`)
 
 const zineArticleCardProjection = `
   _id,
@@ -403,13 +403,13 @@ export const zineLandingQuery = defineQuery(`
       ctaLabel
     }
   }
-`);
+`)
 
 export const issueBySlugQuery = defineQuery(`
   *[_type == "zineIssue" && slug.current == $slug][0]{
     ${zineIssueProjection}
   }
-`);
+`)
 
 export const issueArchiveQuery = defineQuery(`
   *[_type == "zineIssue" && slug.current != $slug] | order(orderRank) {
@@ -417,7 +417,7 @@ export const issueArchiveQuery = defineQuery(`
     "slug": slug.current,
     "cardMedia": cardMedia${mediaProjection}
   }
-`);
+`)
 
 export const zineArticleBySlugQuery = defineQuery(`
   *[_type == "zineIssue" && slug.current == $issueSlug][0]{
@@ -432,10 +432,11 @@ export const zineArticleBySlugQuery = defineQuery(`
       ${articleProjection}
     }
   }
-`);
+`)
 
 export const indexPageQuery = defineQuery(`
   *[_id == "indexPage"][0]{
+    header,
     featured[]{
       _key,
       cardWidth,
@@ -452,7 +453,7 @@ export const indexPageQuery = defineQuery(`
     },
     "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
   }
-`);
+`)
 
 export const indexViewAllNewestQuery = defineQuery(`
   *[
@@ -463,7 +464,7 @@ export const indexViewAllNewestQuery = defineQuery(`
   ] | order(publicationDate desc)[$offset...$end]{
     ${editorialCardProjection}
   }
-`);
+`)
 
 export const indexViewAllOldestQuery = defineQuery(`
   *[
@@ -474,7 +475,7 @@ export const indexViewAllOldestQuery = defineQuery(`
   ] | order(publicationDate asc)[$offset...$end]{
     ${editorialCardProjection}
   }
-`);
+`)
 
 export const siteSettingsQuery = defineQuery(`
   *[_type == "siteSettings"][0]{
@@ -484,7 +485,7 @@ export const siteSettingsQuery = defineQuery(`
     youTubeUrl,
     cardDefaults
   }
-`);
+`)
 
 export const sitemapQuery = defineQuery(`
   {
@@ -514,4 +515,4 @@ export const sitemapQuery = defineQuery(`
       "articles": articles[]->{ "slug": slug.current, "updatedAt": _updatedAt }
     }
   }
-`);
+`)

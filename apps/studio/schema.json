@@ -678,6 +678,13 @@
           "type": "string"
         }
       },
+      "header": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
       "featured": {
         "type": "objectAttribute",
         "value": {

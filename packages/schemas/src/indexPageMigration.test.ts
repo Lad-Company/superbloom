@@ -63,9 +63,10 @@ describe('Index Page migration', () => {
       },
     }
 
-    const result = migrateLegacyIndexPage({featured, allSection})
+    const result = migrateLegacyIndexPage({featured, allSection, header: 'CMS header'})
     expect(result.featured).toEqual(featured)
     expect(result.allSection).toEqual(allSection)
+    expect(result.header).toBe('CMS header')
   })
 
   it('removes duplicate legacy references before applying the four-card limit', () => {
@@ -74,9 +75,6 @@ describe('Index Page migration', () => {
         lead: {_ref: 'article-1'},
         secondary: [{_ref: 'article-1'}, {_ref: 'article-2'}],
       }).featured,
-    ).toMatchObject([
-      {article: {_ref: 'article-1'}},
-      {article: {_ref: 'article-2'}},
-    ])
+    ).toMatchObject([{article: {_ref: 'article-1'}}, {article: {_ref: 'article-2'}}])
   })
 })

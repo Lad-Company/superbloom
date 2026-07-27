@@ -13,6 +13,7 @@ export type LegacyIndexPage = {
   secondary?: Reference[]
   featured?: unknown[]
   allSection?: AllSection
+  header?: string
 }
 
 function referenceFor(article: Reference): Reference {
@@ -24,7 +25,9 @@ function referenceFor(article: Reference): Reference {
 }
 
 function isReference(value: unknown): value is Reference {
-  return Boolean(value && typeof value === 'object' && typeof (value as Reference)._ref === 'string')
+  return Boolean(
+    value && typeof value === 'object' && typeof (value as Reference)._ref === 'string',
+  )
 }
 
 function legacyFeaturedArticles(page: LegacyIndexPage): Reference[] {
@@ -40,6 +43,7 @@ function legacyFeaturedArticles(page: LegacyIndexPage): Reference[] {
 export function migrateLegacyIndexPage(page: LegacyIndexPage): {
   featured: unknown[]
   allSection: AllSection
+  header?: string
 } {
   const legacyItems = legacyFeaturedArticles(page)
   const allSection = page.allSection ?? {}
@@ -58,5 +62,6 @@ export function migrateLegacyIndexPage(page: LegacyIndexPage): {
       ...allSection,
       listDefaults: {...DEFAULTS, ...allSection.listDefaults} as CardSettings,
     },
+    ...(page.header ? {header: page.header} : {}),
   }
 }
