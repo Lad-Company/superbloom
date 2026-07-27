@@ -45,7 +45,7 @@
   transform-origin: bottom center;
   transition: transform var(--motion-quick) var(--motion-ease-out);
 }
-.surface-wipe.wipe-outline::after {
+.surface-wipe::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -69,9 +69,9 @@
 .surface-wipe:focus-visible::before {
   transform: scaleY(1);
 }
-.surface-wipe.wipe-outline:hover::after,
-.surface-wipe.wipe-outline:focus-visible::after {
-  border-color: var(--wipe-outline, var(--wipe-ink, currentColor));
+.surface-wipe:hover::after,
+.surface-wipe:focus-visible::after {
+  border-color: var(--surface-wipe-outline, var(--wipe-outline, transparent));
 }
 .surface-wipe.is-pressed {
   transform: scale(0.98);

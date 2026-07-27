@@ -8,4 +8,8 @@ describe('News Carousel', () => {
     expect(source).toContain('padding: var(--space-2xl) var(--page-inset)')
     expect(source).toContain('padding-inline: 12px')
   })
+
+  it('hides the next button from the card carousel controls', () => {
+    expect(source).toContain('showNextButton={false}')
+  })
 })

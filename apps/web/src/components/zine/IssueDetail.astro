@@ -1,122 +1,128 @@
 ---
-import MediaFrame, {type Media} from '../MediaFrame.astro';
-import Button from '../Button.astro';
-import PinnedHorizontalRail from '../PinnedHorizontalRail.astro';
-import PortableText from '../PortableText.astro';
-import TagList from '../TagList.astro';
-import ZineLandingIntro from './ZineLandingIntro.astro';
-import ZineArticleCard from './ZineArticleCard.astro';
-import PastIssues from './PastIssues.astro';
-import type {TypedObject} from 'astro-portabletext/types';
+import MediaFrame, {type Media} from '../MediaFrame.astro'
+import Button from '../Button.astro'
+import PinnedHorizontalRail from '../PinnedHorizontalRail.astro'
+import PortableText from '../PortableText.astro'
+import TagList from '../TagList.astro'
+import ZineLandingIntro from './ZineLandingIntro.astro'
+import ZineArticleCard from './ZineArticleCard.astro'
+import PastIssues from './PastIssues.astro'
+import type {TypedObject} from 'astro-portabletext/types'
 import type {
   CardWidth,
   ContentCardSettingsInput,
   InfoPosition,
   MediaAspectRatio,
   PartialContentCardSettings,
-} from '../../lib/contentCard';
+} from '../../lib/contentCard'
 
-type TextBlock = TypedObject & {children?: Array<{text?: string | null}>};
-type Tag = {title?: string | null; color?: string | null};
+type TextBlock = TypedObject & {children?: Array<{text?: string | null}>}
+type Tag = {title?: string | null; color?: string | null}
 type Article = {
-  title?: string | null;
-  slug?: string | null;
-  overview?: TextBlock[] | null;
-  publicationDate?: string | null;
-  cardWidth?: CardWidth | null;
-  mediaAspectRatio?: MediaAspectRatio | null;
-  infoPosition?: InfoPosition | null;
-  cardMedia?: Media | null;
-  tags?: Tag[] | null;
-};
+  title?: string | null
+  slug?: string | null
+  overview?: TextBlock[] | null
+  publicationDate?: string | null
+  cardWidth?: CardWidth | null
+  mediaAspectRatio?: MediaAspectRatio | null
+  infoPosition?: InfoPosition | null
+  cardMedia?: Media | null
+  tags?: Tag[] | null
+}
 type PastIssue = {
-  title?: string | null;
-  slug?: string | null;
-  cardMedia?: Media | null;
-};
+  title?: string | null
+  slug?: string | null
+  cardMedia?: Media | null
+}
 
 interface Props {
   issue: {
-    title?: string | null;
-    slug?: string | null;
-    cardMedia?: Media | null;
-    heroMedia?: Media | null;
+    title?: string | null
+    slug?: string | null
+    cardMedia?: Media | null
+    heroMedia?: Media | null
     editorLetter?: {
-      labels?: string[] | null;
-      heading?: string | null;
-      body?: TextBlock[] | null;
-      media?: Media | null;
-      ctaLabel?: string | null;
-    } | null;
-    articles?: Article[] | null;
-    listDefaults?: PartialContentCardSettings;
-    articleOverrides?: Array<{articleId?: string | null} & ContentCardSettingsInput> | null;
-    issuuUrl?: string | null;
-    pdfUrl?: string | null;
-    globalCardDefaults?: PartialContentCardSettings;
-  };
-  pastIssues?: PastIssue[];
+      labels?: string[] | null
+      heading?: string | null
+      body?: TextBlock[] | null
+      media?: Media | null
+      ctaLabel?: string | null
+    } | null
+    articles?: Article[] | null
+    listDefaults?: PartialContentCardSettings
+    articleOverrides?: Array<{articleId?: string | null} & ContentCardSettingsInput> | null
+    issuuUrl?: string | null
+    pdfUrl?: string | null
+    globalCardDefaults?: PartialContentCardSettings
+  }
+  pastIssues?: PastIssue[]
   landingIntro?: {
-    heading?: string | null;
-    imageLayers?: Media[] | null;
-    fallbackMedia?: Media[];
-    ctaLabel?: string | null;
-    ctaHref: string;
-  };
+    heading?: string | null
+    imageLayers?: Media[] | null
+    fallbackMedia?: Media[]
+    ctaLabel?: string | null
+    ctaHref: string
+  }
 }
 
-const {issue, pastIssues = [], landingIntro} = Astro.props;
-const articles = issue.articles ?? [];
-const editorLetterLabels = issue.editorLetter?.labels?.map((title) => ({title}));
-const readZineHref = issue.pdfUrl ?? issue.issuuUrl ?? null;
+const {issue, pastIssues = [], landingIntro} = Astro.props
+const articles = issue.articles ?? []
+const editorLetterLabels = issue.editorLetter?.labels?.map((title) => ({title}))
+const readZineHref = issue.pdfUrl ?? issue.issuuUrl ?? null
 const overrideFor = (id?: string | null) =>
-  issue.articleOverrides?.find((override) => override.articleId === id);
+  issue.articleOverrides?.find((override) => override.articleId === id)
 ---
 
 <article class="issue-detail">
   <header class="hero">
     <div class="hero-media">
-      <MediaFrame
-        media={issue.heroMedia}
-        ratio="16:9"
-        title={issue.title}
-        priority
-      />
+      <MediaFrame media={issue.heroMedia} ratio="16:9" title={issue.title} priority />
     </div>
     <div class="hero-copy">
       <h1 class="type-h1">{issue.title}</h1>
-      {readZineHref && <a class="explore" href={readZineHref} target="_blank" rel="noopener noreferrer">Explore the Issue</a>}
+      {
+        readZineHref && (
+          <a class="explore" href={readZineHref} target="_blank" rel="noopener noreferrer">
+            Explore the Issue
+          </a>
+        )
+      }
     </div>
   </header>
 
   {landingIntro && <ZineLandingIntro {...landingIntro} />}
 
-  {issue.editorLetter && (
-    <section class="editor-letter" aria-labelledby="editor-letter-heading">
-      <div class="editor-letter-media">
-        <MediaFrame
-          media={issue.editorLetter.media ?? issue.heroMedia}
-          ratio="1:1"
-          title={issue.editorLetter.heading}
-        >
-          <TagList slot="overlay" tags={editorLetterLabels} />
-        </MediaFrame>
-      </div>
-      <div class="editor-letter-copy">
-        <h2 id="editor-letter-heading" class="type-h3">{issue.editorLetter.heading}</h2>
-        {issue.editorLetter.body && <PortableText value={issue.editorLetter.body} class="type-body" />}
-        {issue.editorLetter.ctaLabel && readZineHref && (
-          <Button
-            href={readZineHref}
-            label={issue.editorLetter.ctaLabel}
-            outlineOnWipe
-            target="_blank"
-            rel="noopener noreferrer"
-          />
-        )}
-      </div>
-    </section>
-  )}
+  {
+    issue.editorLetter && (
+      <section class="editor-letter" aria-labelledby="editor-letter-heading">
+        <div class="editor-letter-media">
+          <MediaFrame
+            media={issue.editorLetter.media ?? issue.heroMedia}
+            ratio="1:1"
+            title={issue.editorLetter.heading}
+          >
+            <TagList slot="overlay" tags={editorLetterLabels} />
+          </MediaFrame>
+        </div>
+        <div class="editor-letter-copy">
+          <h2 id="editor-letter-heading" class="type-h3">
+            {issue.editorLetter.heading}
+          </h2>
+          {issue.editorLetter.body && (
+            <PortableText value={issue.editorLetter.body} class="type-body" />
+          )}
+          {issue.editorLetter.ctaLabel && readZineHref && (
+            <Button
+              href={readZineHref}
+              label={issue.editorLetter.ctaLabel}
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          )}
+        </div>
+      </section>
+    )
+  }
 
   <section class="stories" aria-labelledby="stories-heading">
     <h2 id="stories-heading" class="type-h3">More stories</h2>
@@ -138,7 +144,6 @@ const overrideFor = (id?: string | null) =>
   </section>
 
   <PastIssues issues={pastIssues} />
-
 </article>
 
 <style>
@@ -258,6 +263,4 @@ const overrideFor = (id?: string | null) =>
       margin-top: var(--space-xs);
     }
   }
-
 </style>
-

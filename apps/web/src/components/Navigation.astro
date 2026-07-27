@@ -1,19 +1,18 @@
 ---
 interface Props {
-  role?: 'light' | 'dark' | 'surface';
-  logoVariant?: 'light' | 'dark';
+  role?: 'light' | 'dark' | 'surface'
+  logoVariant?: 'light' | 'dark'
 }
 
-const { role = 'light', logoVariant = role === 'light' ? 'light' : 'dark' } = Astro.props;
-const logoSrc = logoVariant === 'light'
-  ? '/superbloom-house-logo.svg'
-  : '/superbloom-house-logo-black.svg';
+const {role = 'light', logoVariant = role === 'light' ? 'light' : 'dark'} = Astro.props
+const logoSrc =
+  logoVariant === 'light' ? '/superbloom-house-logo.svg' : '/superbloom-house-logo-black.svg'
 const links = [
-  { label: 'Our Work', href: '/work' },
-  { label: 'Who We Are', href: '/who-we-are' },
-  { label: 'News & Press', href: '/index' },
-  { label: 'Zine', href: '/zine' },
-];
+  {label: 'Our Work', href: '/work'},
+  {label: 'Who We Are', href: '/who-we-are'},
+  {label: 'News & Press', href: '/index'},
+  {label: 'Zine', href: '/zine'},
+]
 ---
 
 <nav class:list={['navigation', role]} aria-label="Primary navigation">
@@ -24,15 +23,29 @@ const links = [
     {
       links.map((link) => (
         <li>
-          <a href={link.href} class="type-eyebrow underline-draw" data-route-link>{link.label}</a>
+          <a href={link.href} class="type-eyebrow underline-draw" data-route-link>
+            {link.label}
+          </a>
         </li>
       ))
     }
   </ul>
   <div class="desktop-actions">
-    <a href="#contact" class:list={['btn', 'btn-secondary', 'surface-wipe', 'type-label', {'wipe-outline': role === 'surface'}]} data-motion-control><span class="nav__label">Let's Chat</span></a>
-    <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control><span class="nav__label">Shop</span></a>
-    <a href="/cart" class="cart-link underline-draw type-label" data-cart-link hidden aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a>
+    <a
+      href="#contact"
+      class:list={['btn', 'btn-secondary', 'surface-wipe', 'type-label']}
+      data-motion-control><span class="nav__label">Let's Chat</span></a
+    >
+    <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control
+      ><span class="nav__label">Shop</span></a
+    >
+    <a
+      href="/cart"
+      class="cart-link underline-draw type-label"
+      data-cart-link
+      hidden
+      aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a
+    >
   </div>
   <details class="compact-menu">
     <summary class="type-label">Menu</summary>
@@ -41,43 +54,59 @@ const links = [
         {
           links.map((link) => (
             <li>
-              <a href={link.href} class="type-label underline-draw" data-route-link>{link.label}</a>
+              <a href={link.href} class="type-label underline-draw" data-route-link>
+                {link.label}
+              </a>
             </li>
           ))
         }
       </ul>
-      <a href="#contact" class:list={['btn', 'btn-secondary', 'surface-wipe', 'type-label', {'wipe-outline': role === 'surface'}]} data-motion-control><span class="nav__label">Let's Chat</span></a>
-      <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control><span class="nav__label">Shop</span></a>
-      <a href="/cart" class="type-label underline-draw" data-cart-link hidden aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a>
+      <a
+        href="#contact"
+        class:list={['btn', 'btn-secondary', 'surface-wipe', 'type-label']}
+        data-motion-control><span class="nav__label">Let's Chat</span></a
+      >
+      <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control
+        ><span class="nav__label">Shop</span></a
+      >
+      <a
+        href="/cart"
+        class="type-label underline-draw"
+        data-cart-link
+        hidden
+        aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a
+      >
     </div>
   </details>
 </nav>
 
 <script>
-  const counts = document.querySelectorAll<HTMLElement>('[data-cart-count]');
-  const cartLinks = document.querySelectorAll<HTMLAnchorElement>('[data-cart-link]');
+  const counts = document.querySelectorAll<HTMLElement>('[data-cart-count]')
+  const cartLinks = document.querySelectorAll<HTMLAnchorElement>('[data-cart-link]')
 
   const updateCartLinks = (itemCount: number) => {
-    const isActive = itemCount > 0;
-    counts.forEach((count) => { count.textContent = String(itemCount); });
+    const isActive = itemCount > 0
+    counts.forEach((count) => {
+      count.textContent = String(itemCount)
+    })
     cartLinks.forEach((link) => {
-      link.hidden = !isActive;
-      link.setAttribute('aria-label', `Cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`);
-    });
-  };
+      link.hidden = !isActive
+      link.setAttribute('aria-label', `Cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`)
+    })
+  }
 
   const refreshCartCount = async () => {
     try {
-      const response = await fetch('/api/shop/cart/get.json');
-      if (!response.ok) return;
-      const cart = await response.json();
-      updateCartLinks(cart.itemCount);
+      const response = await fetch('/api/shop/cart/get.json')
+      if (!response.ok) return
+      const cart = await response.json()
+      updateCartLinks(cart.itemCount)
     } catch {
       /* ignore cart fetch errors */
     }
-  };
-  refreshCartCount();
-  document.addEventListener('shop:cart-updated', refreshCartCount);
+  }
+  refreshCartCount()
+  document.addEventListener('shop:cart-updated', refreshCartCount)
 </script>
 
 <style>
@@ -90,12 +119,24 @@ const links = [
     align-items: center;
     padding: 19px var(--page-gutter);
     width: 100%;
+    --surface-wipe-outline: #ffffff;
   }
-  .light { color: #ffffff; }
-  .dark { color: #000000; }
-  .surface { color: var(--fg); }
+  .navigation.surface {
+    --surface-wipe-outline: transparent;
+  }
+  .light {
+    color: #ffffff;
+  }
+  .dark {
+    color: #000000;
+  }
+  .surface {
+    color: var(--fg);
+  }
   .logo,
-  a { text-decoration: none; }
+  a {
+    text-decoration: none;
+  }
   .logo {
     flex-shrink: 0;
     width: 248px;
@@ -125,7 +166,9 @@ const links = [
     backdrop-filter: blur(var(--frosted-layer-blur));
     -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
   }
-  .cart-link { text-decoration: none; }
+  .cart-link {
+    text-decoration: none;
+  }
   .light .btn-secondary {
     background: #ffffff;
     color: #000000;
@@ -162,7 +205,9 @@ const links = [
     --wipe-surface: var(--fg);
     --wipe-ink: var(--bg);
   }
-  .compact-menu { display: none; }
+  .compact-menu {
+    display: none;
+  }
 
   @media (max-width: 1023px) {
     .navigation {
@@ -171,7 +216,9 @@ const links = [
       padding: var(--space-2xs);
     }
     .desktop-links,
-    .desktop-actions { display: none; }
+    .desktop-actions {
+      display: none;
+    }
     .compact-menu {
       display: block;
       position: relative;
@@ -183,7 +230,9 @@ const links = [
       border: 1px solid currentColor;
       border-radius: var(--radius-control);
     }
-    .compact-menu summary::-webkit-details-marker { display: none; }
+    .compact-menu summary::-webkit-details-marker {
+      display: none;
+    }
     .compact-panel {
       position: absolute;
       top: calc(100% + var(--space-3xs));
@@ -202,7 +251,9 @@ const links = [
       flex-direction: column;
       gap: var(--space-2xs);
     }
-    .compact-panel .btn { text-align: center; }
+    .compact-panel .btn {
+      text-align: center;
+    }
     .compact-panel .btn-secondary {
       background: var(--fg);
       color: var(--bg);
@@ -218,7 +269,11 @@ const links = [
   }
 
   @media (max-width: 767px) {
-    .navigation { padding: var(--space-3xs); }
-    .logo { max-width: 13ch; }
+    .navigation {
+      padding: var(--space-3xs);
+    }
+    .logo {
+      max-width: 13ch;
+    }
   }
 </style>

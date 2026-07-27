@@ -1,36 +1,36 @@
 ---
-import SurfaceSection from '../SurfaceSection.astro';
-import WorkCard from '../WorkCard.astro';
-import ContentCardList from '../ContentCardList.astro';
-import Button from '../Button.astro';
-import type { Media } from '../MediaFrame.astro';
-import type { CardWidth, InfoPosition, MediaAspectRatio } from '../../lib/contentCard';
+import SurfaceSection from '../SurfaceSection.astro'
+import WorkCard from '../WorkCard.astro'
+import ContentCardList from '../ContentCardList.astro'
+import Button from '../Button.astro'
+import type {Media} from '../MediaFrame.astro'
+import type {CardWidth, InfoPosition, MediaAspectRatio} from '../../lib/contentCard'
 
 interface WorkItem {
-  _id: string | null;
-  title: string | null;
-  slug: string | null;
-  summary: string | null;
-  cardWidth?: CardWidth | null;
-  mediaAspectRatio?: MediaAspectRatio | null;
-  infoPosition?: InfoPosition | null;
-  tags: Array<{ title: string | null; color: string | null }> | null;
-  media: Media | null;
+  _id: string | null
+  title: string | null
+  slug: string | null
+  summary: string | null
+  cardWidth?: CardWidth | null
+  mediaAspectRatio?: MediaAspectRatio | null
+  infoPosition?: InfoPosition | null
+  tags: Array<{title: string | null; color: string | null}> | null
+  media: Media | null
 }
 
 interface Props {
-  headline?: string | null;
-  ctaLabel?: string | null;
+  headline?: string | null
+  ctaLabel?: string | null
   items: Array<{
-    item: WorkItem;
-    cardWidth?: CardWidth | null;
-    mediaAspectRatio?: MediaAspectRatio | null;
-    infoPosition?: InfoPosition | null;
-  }>;
+    item: WorkItem
+    cardWidth?: CardWidth | null
+    mediaAspectRatio?: MediaAspectRatio | null
+    infoPosition?: InfoPosition | null
+  }>
 }
 
-const { headline = 'Our Work', ctaLabel = 'View all', items } = Astro.props;
-const displayedItems = items.slice(0, 4);
+const {headline = 'Our Work', ctaLabel = 'View all', items} = Astro.props
+const displayedItems = items.slice(0, 4)
 ---
 
 <SurfaceSection role="light">
@@ -39,15 +39,17 @@ const displayedItems = items.slice(0, 4);
       <h2 class="type-h2" data-motion-text data-unit="words" data-scroll="true">
         {headline}
       </h2>
-      <Button href="/work" label={ctaLabel ?? 'View all'} outlineOnWipe />
+      <Button href="/work" label={ctaLabel ?? 'View all'} />
     </div>
-    {displayedItems.length > 0 && (
-      <ContentCardList class="grid">
-        {displayedItems.map((entry) => (
-          <WorkCard item={entry.item} settings={entry} />
-        ))}
-      </ContentCardList>
-    )}
+    {
+      displayedItems.length > 0 && (
+        <ContentCardList class="grid">
+          {displayedItems.map((entry) => (
+            <WorkCard item={entry.item} settings={entry} />
+          ))}
+        </ContentCardList>
+      )
+    }
   </div>
 </SurfaceSection>
 

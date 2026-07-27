@@ -1,23 +1,32 @@
 ---
 interface Props {
-  label: string;
-  heading?: string | null;
-  class?: string;
+  label: string
+  heading?: string | null
+  class?: string
+  showNextButton?: boolean
 }
 
-const { label, heading, class: className } = Astro.props;
+const {label, heading, class: className, showNextButton = true} = Astro.props
 ---
 
 <card-carousel class:list={['card-carousel', className]} aria-label={label}>
-  {heading && (
-    <div class="header">
-      <h2 class="heading type-h5">{heading}</h2>
-      <div class="controls" aria-label={`${heading} controls`}>
-        <button class="control previous" type="button" aria-label={`Previous ${heading}`}>←</button>
-        <button class="control next" type="button" aria-label={`Next ${heading}`}>→</button>
+  {
+    heading && (
+      <div class="header">
+        <h2 class="heading type-h5">{heading}</h2>
+        <div class="controls" aria-label={`${heading} controls`}>
+          <button class="control previous" type="button" aria-label={`Previous ${heading}`}>
+            ←
+          </button>
+          {showNextButton && (
+            <button class="control next" type="button" aria-label={`Next ${heading}`}>
+              →
+            </button>
+          )}
+        </div>
       </div>
-    </div>
-  )}
+    )
+  }
   <div class="track" role="region" tabindex="0" aria-label={label}>
     <slot />
   </div>
@@ -25,23 +34,23 @@ const { label, heading, class: className } = Astro.props;
 
 <script>
   class CardCarouselElement extends HTMLElement {
-    private track?: HTMLElement;
+    private track?: HTMLElement
 
     connectedCallback() {
-      this.track = this.querySelector('.track') ?? undefined;
-      this.dataset.enhanced = 'true';
-      this.querySelector('.previous')?.addEventListener('click', () => this.scrollCards(-1));
-      this.querySelector('.next')?.addEventListener('click', () => this.scrollCards(1));
+      this.track = this.querySelector('.track') ?? undefined
+      this.dataset.enhanced = 'true'
+      this.querySelector('.previous')?.addEventListener('click', () => this.scrollCards(-1))
+      this.querySelector('.next')?.addEventListener('click', () => this.scrollCards(1))
     }
 
     private scrollCards(direction: 1 | -1) {
-      const amount = (this.track?.firstElementChild as HTMLElement | null)?.offsetWidth ?? 0;
-      this.track?.scrollBy({left: direction * amount, behavior: 'smooth'});
+      const amount = (this.track?.firstElementChild as HTMLElement | null)?.offsetWidth ?? 0
+      this.track?.scrollBy({left: direction * amount, behavior: 'smooth'})
     }
   }
 
   if (!customElements.get('card-carousel')) {
-    customElements.define('card-carousel', CardCarouselElement);
+    customElements.define('card-carousel', CardCarouselElement)
   }
 </script>
 

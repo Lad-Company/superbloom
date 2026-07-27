@@ -1,33 +1,50 @@
 ---
-import CardCarousel from '../CardCarousel.astro';
-import NewsCard from '../NewsCard.astro';
-import SurfaceSection from '../SurfaceSection.astro';
-import type { HomepageQueryResult } from '../../sanity.types';
-import type {ContentCardSettingsInput, PartialContentCardSettings} from '../../lib/contentCard';
+import CardCarousel from '../CardCarousel.astro'
+import NewsCard from '../NewsCard.astro'
+import SurfaceSection from '../SurfaceSection.astro'
+import type {HomepageQueryResult} from '../../sanity.types'
+import type {ContentCardSettingsInput, PartialContentCardSettings} from '../../lib/contentCard'
 
-type NewsBlock = NonNullable<NonNullable<HomepageQueryResult>['news']>;
+type NewsBlock = NonNullable<NonNullable<HomepageQueryResult>['news']>
 
 interface Props {
-  headline?: string | null;
-  items: NewsBlock['items'];
-  role: 'light';
-  listDefaults?: PartialContentCardSettings;
-  itemOverrides?: Array<{articleId?: string | null} & ContentCardSettingsInput> | null;
-  globalSettings?: PartialContentCardSettings;
+  headline?: string | null
+  items: NewsBlock['items']
+  role: 'light'
+  listDefaults?: PartialContentCardSettings
+  itemOverrides?: Array<{articleId?: string | null} & ContentCardSettingsInput> | null
+  globalSettings?: PartialContentCardSettings
 }
 
-const { headline, items: itemsInput, role, listDefaults: listSettings, itemOverrides, globalSettings } = Astro.props;
-const items = itemsInput ?? [];
-const overrides = new Map(itemOverrides?.map((override) => [override.articleId, override]));
+const {
+  headline,
+  items: itemsInput,
+  role,
+  listDefaults: listSettings,
+  itemOverrides,
+  globalSettings,
+} = Astro.props
+const items = itemsInput ?? []
+const overrides = new Map(itemOverrides?.map((override) => [override.articleId, override]))
 ---
 
 {
   items.length > 0 && (
     <SurfaceSection role={role} class="news">
       <div class="inner">
-        <CardCarousel class="news-carousel" label={headline ?? 'News'} heading={headline ?? 'News'}>
+        <CardCarousel
+          class="news-carousel"
+          label={headline ?? 'News'}
+          heading={headline ?? 'News'}
+          showNextButton={false}
+        >
           {items.map((item) => (
-            <NewsCard item={item} settings={overrides.get(item._id)} listSettings={listSettings} globalSettings={globalSettings} />
+            <NewsCard
+              item={item}
+              settings={overrides.get(item._id)}
+              listSettings={listSettings}
+              globalSettings={globalSettings}
+            />
           ))}
         </CardCarousel>
       </div>
