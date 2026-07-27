@@ -6,6 +6,7 @@ import Navigation from '../../components/Navigation.astro'
 import ContentCardList from '../../components/ContentCardList.astro'
 import MixedArticleCard from '../../components/MixedArticleCard.astro'
 import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro'
+import SortControl from '../../components/SortControl.astro'
 import SurfaceSection from '../../components/SurfaceSection.astro'
 import {indexPageQuery, indexViewAllNewestQuery, indexViewAllOldestQuery} from '../../lib/queries'
 import {sanityClient} from '../../lib/sanity'
@@ -85,19 +86,8 @@ const queryFor = (nextPage: number, nextSort = sort) => {
 
       <section class="view-all" aria-labelledby="view-all-heading">
         <div class="view-all-header">
-          <h2 id="view-all-heading" class="type-h3">View all</h2>
-          <nav class="sort" aria-label="Sort articles">
-            <a
-              class="type-label"
-              href={queryFor(1, 'newest')}
-              aria-current={sort === 'newest' ? 'page' : undefined}>Newest</a
-            >
-            <a
-              class="type-label"
-              href={queryFor(1, 'oldest')}
-              aria-current={sort === 'oldest' ? 'page' : undefined}>Oldest</a
-            >
-          </nav>
+          <h2 id="view-all-heading" class="type-h3">View All</h2>
+          <SortControl value={sort} />
         </div>
         <ContentCardList class="all-card-list">
           {
@@ -152,28 +142,15 @@ const queryFor = (nextPage: number, nextSort = sort) => {
 
   .view-all-header {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-xs);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-m);
     margin-bottom: var(--space-xl);
-  }
-
-  .sort {
-    display: flex;
-    gap: var(--space-3xs);
-  }
-
-  .sort a,
-  .view-all :global(.load-more) {
-    text-underline-offset: 0.15em;
-  }
-
-  .sort a[aria-current='page'] {
-    text-decoration-thickness: 2px;
   }
 
   .view-all :global(.load-more) {
     display: inline-block;
+    text-underline-offset: 0.15em;
     margin: var(--space-xl) 0 0 var(--page-inset);
   }
 
