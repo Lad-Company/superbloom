@@ -1,25 +1,26 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Navigation from '../../components/Navigation.astro';
-import Footer from '../../components/Footer.astro';
-import ContactBand from '../../components/ContactBand.astro';
-import IssueDetail from '../../components/zine/IssueDetail.astro';
-import {sanityClient} from '../../lib/sanity';
-import {zineLandingQuery} from '../../lib/queries';
-import {seoDescription, seoImage} from '../../lib/seo';
+import Layout from '../../layouts/Layout.astro'
+import Navigation from '../../components/Navigation.astro'
+import Footer from '../../components/Footer.astro'
+import ContactBand from '../../components/ContactBand.astro'
+import IssueDetail from '../../components/zine/IssueDetail.astro'
+import {sanityClient} from '../../lib/sanity'
+import {zineLandingQuery} from '../../lib/queries'
+import {seoDescription, seoImage} from '../../lib/seo'
 
-const zineLanding = await sanityClient.fetch(zineLandingQuery);
+const zineLanding = await sanityClient.fetch(zineLandingQuery)
 
 if (!zineLanding?.currentIssue) {
-  Astro.response.status = 404;
-  return Astro.rewrite('/404');
+  Astro.response.status = 404
+  return Astro.rewrite('/404')
 }
 
-const introFallbackMedia = [zineLanding.currentIssue.heroMedia, zineLanding.currentIssue.cardMedia].filter(
-  (media): media is NonNullable<typeof media> => media !== null,
-);
+const introFallbackMedia = [
+  zineLanding.currentIssue.heroMedia,
+  zineLanding.currentIssue.cardMedia,
+].filter((media): media is NonNullable<typeof media> => media !== null)
 const currentIssueHref =
-  zineLanding.currentIssue.pdfUrl ?? zineLanding.currentIssue.issuuUrl ?? '/zine';
+  zineLanding.currentIssue.pdfUrl ?? zineLanding.currentIssue.issuuUrl ?? '/zine'
 ---
 
 <Layout
@@ -28,7 +29,7 @@ const currentIssueHref =
   image={seoImage(zineLanding.currentIssue.heroMedia)}
   canonicalUrl="/zine"
 >
-  <Navigation role="light" />
+  <Navigation role="dark" />
   <IssueDetail
     issue={zineLanding.currentIssue}
     pastIssues={zineLanding.pastIssues ?? []}

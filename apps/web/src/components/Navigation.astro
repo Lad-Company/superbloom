@@ -1,12 +1,11 @@
 ---
+import {type SurfaceRole, vars} from '../lib/surfaceRole'
+
 interface Props {
-  role?: 'light' | 'dark' | 'surface'
-  logoVariant?: 'light' | 'dark'
+  role?: SurfaceRole
 }
 
-const {role = 'light', logoVariant = role === 'light' ? 'light' : 'dark'} = Astro.props
-const logoSrc =
-  logoVariant === 'light' ? '/superbloom-house-logo.svg' : '/superbloom-house-logo-black.svg'
+const {role = 'light'} = Astro.props
 const links = [
   {label: 'Our Work', href: '/work'},
   {label: 'Who We Are', href: '/who-we-are'},
@@ -15,10 +14,8 @@ const links = [
 ]
 ---
 
-<nav class:list={['navigation', role]} aria-label="Primary navigation">
-  <a href="/" class="logo" data-route-link aria-label="Superbloom House">
-    <img src={logoSrc} alt="" width="697" height="41" />
-  </a>
+<nav class="navigation" aria-label="Primary navigation" style={vars[role]}>
+  <a href="/" class="logo" data-route-link aria-label="Superbloom House"></a>
   <ul class="desktop-links">
     {
       links.map((link) => (
@@ -119,32 +116,28 @@ const links = [
     align-items: center;
     padding: 19px var(--page-gutter);
     width: 100%;
-    --surface-wipe-outline: #ffffff;
-  }
-  .navigation.surface {
-    --surface-wipe-outline: transparent;
-  }
-  .light {
-    color: #ffffff;
-  }
-  .dark {
-    color: #000000;
-  }
-  .surface {
     color: var(--fg);
+    --fg-12: color-mix(in srgb, var(--fg) 12%, transparent);
+    --fg-60: color-mix(in srgb, var(--fg) 60%, transparent);
   }
   .logo,
   a {
     text-decoration: none;
   }
   .logo {
+    display: inline-block;
     flex-shrink: 0;
     width: 248px;
-  }
-  .logo img {
-    display: block;
-    width: 100%;
-    height: auto;
+    aspect-ratio: 697 / 41;
+    background-color: currentColor;
+    mask-image: url('/superbloom-house-logo.svg');
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: left center;
+    -webkit-mask-image: url('/superbloom-house-logo.svg');
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: left center;
   }
   .desktop-links,
   .desktop-actions {
@@ -166,44 +159,20 @@ const links = [
     backdrop-filter: blur(var(--frosted-layer-blur));
     -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
   }
-  .cart-link {
-    text-decoration: none;
-  }
-  .light .btn-secondary {
-    background: #ffffff;
-    color: #000000;
-    --wipe-surface: #000000;
-    --wipe-ink: #ffffff;
-  }
-  .light .btn-tertiary {
-    background: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    --wipe-surface: #ffffff;
-    --wipe-ink: #000000;
-  }
-  .dark .btn-secondary {
-    background: #000000;
-    color: #ffffff;
-    --wipe-surface: #ffffff;
-    --wipe-ink: #000000;
-  }
-  .dark .btn-tertiary {
-    background: rgba(0, 0, 0, 0.2);
-    color: #000000;
-    --wipe-surface: #000000;
-    --wipe-ink: #ffffff;
-  }
-  .surface .btn-secondary {
+  .btn-secondary {
     background: var(--fg);
     color: var(--bg);
     --wipe-surface: var(--bg);
     --wipe-ink: var(--fg);
   }
-  .surface .btn-tertiary {
+  .btn-tertiary {
     background: var(--fg-12);
     color: var(--fg);
     --wipe-surface: var(--fg);
     --wipe-ink: var(--bg);
+  }
+  .cart-link {
+    text-decoration: none;
   }
   .compact-menu {
     display: none;
@@ -253,18 +222,6 @@ const links = [
     }
     .compact-panel .btn {
       text-align: center;
-    }
-    .compact-panel .btn-secondary {
-      background: var(--fg);
-      color: var(--bg);
-      --wipe-surface: var(--bg);
-      --wipe-ink: var(--fg);
-    }
-    .compact-panel .btn-tertiary {
-      background: var(--fg-12);
-      color: var(--fg);
-      --wipe-surface: var(--fg);
-      --wipe-ink: var(--bg);
     }
   }
 

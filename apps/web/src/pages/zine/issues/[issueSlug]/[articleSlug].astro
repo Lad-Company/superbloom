@@ -1,23 +1,23 @@
 ---
-import Layout from '../../../../layouts/Layout.astro';
-import Navigation from '../../../../components/Navigation.astro';
-import Footer from '../../../../components/Footer.astro';
-import ContactBand from '../../../../components/ContactBand.astro';
-import ArticleDetail from '../../../../components/editorial/ArticleDetail.astro';
-import {sanityClient} from '../../../../lib/sanity';
-import {zineArticleBySlugQuery} from '../../../../lib/queries';
-import {seoDescription, seoImage} from '../../../../lib/seo';
+import Layout from '../../../../layouts/Layout.astro'
+import Navigation from '../../../../components/Navigation.astro'
+import Footer from '../../../../components/Footer.astro'
+import ContactBand from '../../../../components/ContactBand.astro'
+import ArticleDetail from '../../../../components/editorial/ArticleDetail.astro'
+import {sanityClient} from '../../../../lib/sanity'
+import {zineArticleBySlugQuery} from '../../../../lib/queries'
+import {seoDescription, seoImage} from '../../../../lib/seo'
 
-const issueSlug = Astro.params.issueSlug;
-const articleSlug = Astro.params.articleSlug;
-const result = await sanityClient.fetch(zineArticleBySlugQuery, {issueSlug, articleSlug});
+const issueSlug = Astro.params.issueSlug
+const articleSlug = Astro.params.articleSlug
+const result = await sanityClient.fetch(zineArticleBySlugQuery, {issueSlug, articleSlug})
 
 if (!result?.article || !result.issueSlug) {
-  Astro.response.status = 404;
-  return Astro.rewrite('/404');
+  Astro.response.status = 404
+  return Astro.rewrite('/404')
 }
 
-const article = result.article;
+const article = result.article
 ---
 
 <Layout
@@ -26,7 +26,7 @@ const article = result.article;
   image={seoImage(article.leadMedia)}
   canonicalUrl={`/zine/issues/${result.issueSlug}/${article.slug}`}
 >
-  <Navigation role="dark" />
+  <Navigation role="light" />
   <ArticleDetail article={article} />
   <ContactBand role="brand-deep" />
   <Footer />

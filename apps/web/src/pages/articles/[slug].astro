@@ -1,19 +1,19 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Navigation from '../../components/Navigation.astro';
-import Footer from '../../components/Footer.astro';
-import ContactBand from '../../components/ContactBand.astro';
-import ArticleDetail from '../../components/editorial/ArticleDetail.astro';
-import {sanityClient} from '../../lib/sanity';
-import {editorialArticleBySlugQuery} from '../../lib/queries';
-import {seoDescription, seoImage} from '../../lib/seo';
+import Layout from '../../layouts/Layout.astro'
+import Navigation from '../../components/Navigation.astro'
+import Footer from '../../components/Footer.astro'
+import ContactBand from '../../components/ContactBand.astro'
+import ArticleDetail from '../../components/editorial/ArticleDetail.astro'
+import {sanityClient} from '../../lib/sanity'
+import {editorialArticleBySlugQuery} from '../../lib/queries'
+import {seoDescription, seoImage} from '../../lib/seo'
 
-const {slug} = Astro.params;
-const article = await sanityClient.fetch(editorialArticleBySlugQuery, {slug});
+const {slug} = Astro.params
+const article = await sanityClient.fetch(editorialArticleBySlugQuery, {slug})
 
 if (!article) {
-  Astro.response.status = 404;
-  return Astro.rewrite('/404');
+  Astro.response.status = 404
+  return Astro.rewrite('/404')
 }
 ---
 
@@ -22,7 +22,7 @@ if (!article) {
   description={seoDescription(article.overview)}
   image={seoImage(article.leadMedia)}
 >
-  <Navigation role="surface" />
+  <Navigation role="light" />
   <ArticleDetail article={article} />
   <ContactBand role="brand-deep" />
   <Footer />
