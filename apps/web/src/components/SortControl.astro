@@ -29,6 +29,45 @@ const actionLabel =
   </a>
 </div>
 
+<script>
+  // Progressive enhancement: swap only the sort section in place so changing
+  // sort order does not trigger a full page reload or jump the visitor to the top.
+  const regionOf = (node: Element | null | undefined) =>
+    node?.closest<HTMLElement>('section') ?? null
+
+  const swapRegion = async (url: string, region: HTMLElement) => {
+    const response = await fetch(url)
+    if (!response.ok) throw new Error('Sort request failed')
+    const doc = new DOMParser().parseFromString(await response.text(), 'text/html')
+    const nextRegion = regionOf(doc.querySelector('[data-sort-toggle]'))
+    if (!nextRegion) throw new Error('Sorted section missing from response')
+    region.innerHTML = nextRegion.innerHTML
+    return response.url
+  }
+
+  document.addEventListener('click', (event) => {
+    if (event.defaultPrevented || event.button !== 0) return
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    const toggle = (event.target as Element | null)?.closest<HTMLAnchorElement>('[data-sort-toggle]')
+    if (!toggle) return
+    const region = regionOf(toggle)
+    if (!region || !toggle.href) return
+
+    event.preventDefault()
+    swapRegion(toggle.href, region)
+      .then((finalUrl) => history.pushState(null, '', finalUrl))
+      .catch(() => {
+        window.location.href = toggle.href
+      })
+  })
+
+  window.addEventListener('popstate', () => {
+    const region = regionOf(document.querySelector('[data-sort-toggle]'))
+    if (!region) return
+    swapRegion(window.location.href, region).catch(() => window.location.reload())
+  })
+</script>
+
 <style>
   .sort-control {
     display: flex;

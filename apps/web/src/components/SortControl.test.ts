@@ -30,4 +30,11 @@ describe('SortControl', () => {
   it('exposes an accessible label describing the toggle action', () => {
     expect(source).toContain('aria-label')
   })
+
+  it('swaps the sort section in place instead of reloading the full page', () => {
+    expect(source).toContain('event.preventDefault()')
+    expect(source).toContain('fetch(url)')
+    expect(source).toContain('history.pushState')
+    expect(source).toContain("addEventListener('popstate'")
+  })
 })
