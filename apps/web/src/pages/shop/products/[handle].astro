@@ -83,59 +83,65 @@ const formatMoney = (amount: string, currency: string) =>
 </Layout>
 
 <script>
-  const root = document.querySelector<HTMLElement>('[data-product-detail]')
-  const variants = JSON.parse(root?.dataset.variants ?? '[]')
-  const form = root?.querySelector<HTMLFormElement>('[data-add-form]')
-  const price = root?.querySelector<HTMLElement>('[data-price]')
-  const availability = root?.querySelector<HTMLElement>('[data-availability]')
-  const button = root?.querySelector<HTMLButtonElement>('[data-add]')
-  const feedback = root?.querySelector<HTMLElement>('[data-feedback]')
-  const money = (value: {amount: string; currencyCode: string}) =>
-    new Intl.NumberFormat('en-US', {style: 'currency', currency: value.currencyCode}).format(
-      Number(value.amount),
-    )
-  let selected = variants.find((variant: any) => variant.availableForSale) ?? variants[0]
+  function initProductDetail() {
+    const root = document.querySelector<HTMLElement>('[data-product-detail]')
+    if (!root) return
+    const variants = JSON.parse(root.dataset.variants ?? '[]')
+    const form = root.querySelector<HTMLFormElement>('[data-add-form]')
+    const price = root.querySelector<HTMLElement>('[data-price]')
+    const availability = root.querySelector<HTMLElement>('[data-availability]')
+    const button = root.querySelector<HTMLButtonElement>('[data-add]')
+    const feedback = root.querySelector<HTMLElement>('[data-feedback]')
+    const money = (value: {amount: string; currencyCode: string}) =>
+      new Intl.NumberFormat('en-US', {style: 'currency', currency: value.currencyCode}).format(
+        Number(value.amount),
+      )
+    let selected = variants.find((variant: any) => variant.availableForSale) ?? variants[0]
 
-  function selectVariant() {
-    const values = [
-      ...(root?.querySelectorAll<HTMLSelectElement>('select[data-option]') ?? []),
-    ].map((select) => ({name: select.dataset.option, value: select.value}))
-    selected = variants.find((variant: any) =>
-      values.every((value) =>
-        variant.selectedOptions.some(
-          (option: any) => option.name === value.name && option.value === value.value,
+    function selectVariant() {
+      const values = [
+        ...(root?.querySelectorAll<HTMLSelectElement>('select[data-option]') ?? []),
+      ].map((select) => ({name: select.dataset.option, value: select.value}))
+      selected = variants.find((variant: any) =>
+        values.every((value) =>
+          variant.selectedOptions.some(
+            (option: any) => option.name === value.name && option.value === value.value,
+          ),
         ),
-      ),
-    )
-    if (!selected) return
-    if (price) price.textContent = money(selected.price)
-    if (availability) availability.textContent = selected.availableForSale ? 'In stock' : 'Sold out'
-    if (button) button.disabled = !selected.availableForSale
+      )
+      if (!selected) return
+      if (price) price.textContent = money(selected.price)
+      if (availability)
+        availability.textContent = selected.availableForSale ? 'In stock' : 'Sold out'
+      if (button) button.disabled = !selected.availableForSale
+    }
+
+    root
+      .querySelectorAll('select[data-option]')
+      .forEach((select) => select.addEventListener('change', selectVariant))
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      if (!selected?.availableForSale) return
+      if (button) button.disabled = true
+      if (feedback) feedback.textContent = 'Adding to cart…'
+      try {
+        const response = await fetch('/api/shop/cart/add.json', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({variantId: selected.id, quantity: 1}),
+        })
+        if (!response.ok) throw new Error()
+        if (feedback) feedback.textContent = 'Added to cart.'
+        document.dispatchEvent(new CustomEvent('shop:cart-updated'))
+      } catch {
+        if (feedback) feedback.textContent = 'Could not add item. Please try again.'
+      } finally {
+        if (button) button.disabled = !selected?.availableForSale
+      }
+    })
   }
 
-  root
-    ?.querySelectorAll('select[data-option]')
-    .forEach((select) => select.addEventListener('change', selectVariant))
-  form?.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    if (!selected?.availableForSale) return
-    if (button) button.disabled = true
-    if (feedback) feedback.textContent = 'Adding to cart…'
-    try {
-      const response = await fetch('/api/shop/cart/add.json', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({variantId: selected.id, quantity: 1}),
-      })
-      if (!response.ok) throw new Error()
-      if (feedback) feedback.textContent = 'Added to cart.'
-      document.dispatchEvent(new CustomEvent('shop:cart-updated'))
-    } catch {
-      if (feedback) feedback.textContent = 'Could not add item. Please try again.'
-    } finally {
-      if (button) button.disabled = !selected?.availableForSale
-    }
-  })
+  document.addEventListener('astro:page-load', initProductDetail)
 </script>
 
 <style>

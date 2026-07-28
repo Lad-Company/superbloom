@@ -37,7 +37,7 @@ export function readCartId(cookies: AstroCookies) {
 export function writeCartId(cookies: AstroCookies, cartId: string) {
   cookies.set(COOKIE_NAME, seal(cartId), {
     httpOnly: true,
-    secure: true,
+    secure: import.meta.env.PROD,
     sameSite: 'lax',
     path: '/',
     maxAge: MAX_AGE,

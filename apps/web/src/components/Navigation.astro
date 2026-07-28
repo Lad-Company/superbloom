@@ -80,15 +80,12 @@ const links = [
 </nav>
 
 <script>
-  const counts = document.querySelectorAll<HTMLElement>('[data-cart-count]')
-  const cartLinks = document.querySelectorAll<HTMLAnchorElement>('[data-cart-link]')
-
   const updateCartLinks = (itemCount: number) => {
     const isActive = itemCount > 0
-    counts.forEach((count) => {
+    document.querySelectorAll<HTMLElement>('[data-cart-count]').forEach((count) => {
       count.textContent = String(itemCount)
     })
-    cartLinks.forEach((link) => {
+    document.querySelectorAll<HTMLAnchorElement>('[data-cart-link]').forEach((link) => {
       link.hidden = !isActive
       link.setAttribute('aria-label', `Cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`)
     })
@@ -104,24 +101,24 @@ const links = [
       /* ignore cart fetch errors */
     }
   }
-  refreshCartCount()
+  document.addEventListener('astro:page-load', refreshCartCount)
   document.addEventListener('shop:cart-updated', refreshCartCount)
 
-  document.querySelectorAll<HTMLAnchorElement>('[data-lets-chat]').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      event.preventDefault()
-      const target = document.getElementById('contact')
-      if (target) {
-        target.scrollIntoView({behavior: 'smooth'})
-        return
-      }
-      const form = document.querySelector('form')
-      if (form) {
-        form.scrollIntoView({behavior: 'smooth'})
-        return
-      }
-      window.location.href = '/'
-    })
+  document.addEventListener('click', (event) => {
+    const trigger = (event.target as Element).closest<HTMLAnchorElement>('[data-lets-chat]')
+    if (!trigger) return
+    event.preventDefault()
+    const target = document.getElementById('contact')
+    if (target) {
+      target.scrollIntoView({behavior: 'smooth'})
+      return
+    }
+    const form = document.querySelector('form')
+    if (form) {
+      form.scrollIntoView({behavior: 'smooth'})
+      return
+    }
+    window.location.href = '/'
   })
 </script>
 

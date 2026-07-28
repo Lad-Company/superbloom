@@ -1,74 +1,207 @@
+---
+import {vars} from '../../lib/surfaceRole'
+---
+
 <aside class="drawer" data-cart-drawer aria-hidden="true" aria-label="Shopping cart">
-  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="cart-drawer-title">
+  <div
+    class="panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="cart-drawer-title"
+    style={vars.dark}
+  >
     <div class="heading">
-      <h2 id="cart-drawer-title">Cart</h2>
-      <button type="button" data-close>Close</button>
+      <h2 id="cart-drawer-title" class="type-h7">Cart</h2>
+      <button type="button" class="close type-label" data-close>Close</button>
     </div>
-    <div data-content aria-live="polite">Loading cart…</div>
+    <div data-content aria-live="polite" class="type-body">Loading cart…</div>
   </div>
 </aside>
 
 <script>
-  const drawer = document.querySelector<HTMLElement>('[data-cart-drawer]');
-  const content = drawer?.querySelector<HTMLElement>('[data-content]');
-  const closeButton = drawer?.querySelector<HTMLButtonElement>('[data-close]');
-  let opener: HTMLElement | null = null;
+  const money = (value: {amount: string; currencyCode: string}) =>
+    new Intl.NumberFormat('en-US', {style: 'currency', currency: value.currencyCode}).format(
+      Number(value.amount),
+    )
+
+  const getDrawer = () => document.querySelector<HTMLElement>('[data-cart-drawer]')
+  let opener: HTMLElement | null = null
 
   const close = () => {
-    drawer?.setAttribute('aria-hidden', 'true');
-    opener?.focus();
-  };
-  const open = async (trigger?: HTMLElement | null) => {
-    opener = trigger ?? document.activeElement as HTMLElement;
-    drawer?.setAttribute('aria-hidden', 'false');
-    closeButton?.focus();
-    try {
-      const response = await fetch('/api/shop/cart/get.json');
-      if (!response.ok) throw new Error();
-      const cart = await response.json();
-      if (content) {
-        content.replaceChildren();
-        if (!cart.lines.length) content.textContent = 'Your cart is empty.';
-        else {
-          const list = document.createElement('ul');
-          cart.lines.forEach((line: any) => {
-            const item = document.createElement('li');
-            item.textContent = `${line.merchandise.product.title}, ${line.quantity}`;
-            list.append(item);
-          });
-          const link = document.createElement('a');
-          link.href = '/cart';
-          link.textContent = 'View cart';
-          content.append(list, link);
-        }
-      }
-    } catch {
-      if (content) content.textContent = 'Could not load your cart. Please try again.';
+    getDrawer()?.setAttribute('aria-hidden', 'true')
+    opener?.focus()
+  }
+
+  const render = (drawer: HTMLElement, cart: any) => {
+    const content = drawer.querySelector<HTMLElement>('[data-content]')
+    if (!content) return
+    content.replaceChildren()
+    if (!cart.lines.length) {
+      const empty = document.createElement('p')
+      empty.className = 'empty type-body'
+      empty.textContent = 'Your cart is empty.'
+      content.append(empty)
+      return
     }
-  };
+    const list = document.createElement('ul')
+    list.className = 'lines'
+    cart.lines.forEach((line: any) => {
+      const item = document.createElement('li')
+      const image = line.merchandise.image
+      if (image) {
+        const img = document.createElement('img')
+        img.src = image.url
+        img.alt = image.altText ?? line.merchandise.product.title
+        img.loading = 'lazy'
+        item.append(img)
+      } else {
+        const placeholder = document.createElement('div')
+        placeholder.className = 'thumb'
+        item.append(placeholder)
+      }
+      const info = document.createElement('div')
+      info.className = 'info'
+      const title = document.createElement('p')
+      title.className = 'title type-label'
+      title.textContent = line.merchandise.product.title
+      const meta = document.createElement('p')
+      meta.className = 'meta type-caption'
+      meta.textContent = `${line.merchandise.title} · Qty ${line.quantity}`
+      info.append(title, meta)
+      const price = document.createElement('p')
+      price.className = 'price type-label'
+      price.textContent = money(line.cost.totalAmount)
+      item.append(info, price)
+      list.append(item)
+    })
+    const view = document.createElement('a')
+    view.className = 'view-cart type-label'
+    view.href = '/cart'
+    view.textContent = 'View cart'
+    content.append(list, view)
+  }
+
+  const open = async (trigger?: HTMLElement | null) => {
+    const drawer = getDrawer()
+    if (!drawer) return
+    opener = trigger ?? (document.activeElement as HTMLElement)
+    drawer.setAttribute('aria-hidden', 'false')
+    drawer.querySelector<HTMLButtonElement>('[data-close]')?.focus()
+    const content = drawer.querySelector<HTMLElement>('[data-content]')
+    if (content) content.textContent = 'Loading cart…'
+    try {
+      const response = await fetch('/api/shop/cart/get.json')
+      if (!response.ok) throw new Error()
+      render(drawer, await response.json())
+    } catch {
+      if (content) content.textContent = 'Could not load your cart. Please try again.'
+    }
+  }
 
   document.addEventListener('click', (event) => {
-    const target = event.target as Element;
-    const cartLink = target.closest<HTMLAnchorElement>('a[href="/cart"]');
-    if (cartLink && !drawer?.contains(cartLink)) {
-      event.preventDefault();
-      open(cartLink);
+    const target = event.target as Element
+    const drawer = getDrawer()
+    if (target.closest('[data-close]')) {
+      close()
+      return
     }
-  });
-  document.addEventListener('shop:cart-updated', () => open());
+    if (drawer && target === drawer) close()
+  })
+
+  document.addEventListener('shop:cart-updated', () => open())
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && drawer?.getAttribute('aria-hidden') === 'false') close();
-  });
-  closeButton?.addEventListener('click', close);
-  drawer?.addEventListener('click', (event) => { if (event.target === drawer) close(); });
+    const drawer = getDrawer()
+    if (event.key === 'Escape' && drawer?.getAttribute('aria-hidden') === 'false') close()
+  })
 </script>
 
 <style>
-  .drawer { position: fixed; inset: 0; z-index: 20; display: grid; justify-items: end; background: rgb(0 0 0 / .35); }
-  .drawer[aria-hidden='true'] { display: none; }
-  .panel { width: min(100%, 28rem); height: 100%; padding: var(--space-2xs); background: var(--bg); color: var(--fg); }
-  .heading { display: flex; justify-content: space-between; align-items: center; }
-  h2 { margin: 0; }
-  button { padding: 8px 12px; border: 1px solid currentColor; background: transparent; }
-  ul { margin: var(--space-2xs) 0; display: grid; gap: var(--space-3xs); }
+  .drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    justify-items: end;
+    background: rgb(0 0 0 / 0.5);
+  }
+  .drawer[aria-hidden='true'] {
+    display: none;
+  }
+  .panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    width: min(100%, 30rem);
+    height: 100%;
+    padding: var(--space-2xs);
+    background: var(--bg);
+    color: var(--fg);
+    --fg-12: color-mix(in srgb, var(--fg) 12%, transparent);
+    --fg-60: color-mix(in srgb, var(--fg) 60%, transparent);
+    backdrop-filter: blur(var(--frosted-layer-blur));
+    -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
+  }
+  .heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .heading h2 {
+    margin: 0;
+  }
+  .close {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  [data-content] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    overflow-y: auto;
+  }
+  .empty {
+    margin: 0;
+  }
+  .lines {
+    display: grid;
+    gap: var(--space-2xs);
+  }
+  .lines li {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr) auto;
+    gap: var(--space-3xs);
+    align-items: center;
+  }
+  .lines img,
+  .lines .thumb {
+    width: 4rem;
+    aspect-ratio: 1;
+    object-fit: cover;
+    background: var(--fg-12);
+    border-radius: var(--radius-media);
+  }
+  .info {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+  }
+  .info .title,
+  .info .meta {
+    margin: 0;
+  }
+  .info .meta {
+    color: var(--fg-60);
+  }
+  .price {
+    margin: 0;
+    white-space: nowrap;
+  }
+  .view-cart {
+    width: fit-content;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
 </style>
