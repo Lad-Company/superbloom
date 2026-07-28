@@ -51,6 +51,8 @@ export default defineConfig({
       'font-display-tight font-[750] text-[120px] leading-[0.88] tracking-[0] uppercase line-clamp-4',
     'type-h4': 'font-display-tight font-[750] text-[80px] leading-[0.88] tracking-[0] uppercase',
     'type-h5': 'font-display-tight font-[750] text-[56px] leading-[0.88] tracking-[0] uppercase',
+    'editorial-title':
+      'font-body font-medium text-[24px] leading-[1.3] tracking-[-0.48px] lg:text-[38px] lg:leading-[1.28] lg:tracking-[-0.76px]',
     'type-h6': 'font-body font-medium text-[24px] leading-[1.2] tracking-[-0.48px]',
     'type-h7':
       'font-display-tight font-[750] text-[32px] leading-[0.88] tracking-[0] uppercase line-clamp-4',

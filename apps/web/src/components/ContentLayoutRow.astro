@@ -1,76 +1,89 @@
 ---
-import type {TypedObject} from 'astro-portabletext/types';
-import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro';
-import PortableText from './PortableText.astro';
+import type {TypedObject} from 'astro-portabletext/types'
+import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro'
+import PortableText from './PortableText.astro'
 import {
   getContentLayoutRowClassNames,
   isContentLayoutFullBleed,
   type ContentLayoutAlignment,
   type ContentLayoutWidth,
-} from '../lib/contentLayout';
+} from '../lib/contentLayout'
 
 type MediaBlock = {
-  _type: 'contentLayoutMedia';
-  _key?: string | null;
-  width?: ContentLayoutWidth | null;
-  aspectRatio?: MediaRatio | null;
-  media?: Media | null;
-};
+  _type: 'contentLayoutMedia'
+  _key?: string | null
+  width?: ContentLayoutWidth | null
+  aspectRatio?: MediaRatio | null
+  media?: Media | null
+}
 
 type TextBlock = {
-  _type: 'contentLayoutText';
-  _key?: string | null;
-  width?: ContentLayoutWidth | null;
-  heading?: string | null;
-  text?: TypedObject[] | null;
-};
+  _type: 'contentLayoutText'
+  _key?: string | null
+  width?: ContentLayoutWidth | null
+  heading?: string | null
+  text?: TypedObject[] | null
+}
 
 type SpacerBlock = {
-  _type: 'contentLayoutSpacer';
-  _key?: string | null;
-  width?: ContentLayoutWidth | null;
-};
+  _type: 'contentLayoutSpacer'
+  _key?: string | null
+  width?: ContentLayoutWidth | null
+}
 
 export interface ContentLayoutRowValue {
-  _type: 'contentLayoutRow';
-  _key?: string | null;
-  blocks?: Array<MediaBlock | TextBlock | SpacerBlock> | null;
-  alignment?: ContentLayoutAlignment | null;
-  fullBleed?: boolean | null;
+  _type: 'contentLayoutRow'
+  _key?: string | null
+  blocks?: Array<MediaBlock | TextBlock | SpacerBlock> | null
+  alignment?: ContentLayoutAlignment | null
+  fullBleed?: boolean | null
 }
 
 interface Props {
-  row: ContentLayoutRowValue;
-  mediaTitle?: string | null;
+  row: ContentLayoutRowValue
+  mediaTitle?: string | null
 }
 
-const {row, mediaTitle} = Astro.props;
-const blocks = row.blocks ?? [];
-const classes = getContentLayoutRowClassNames({blocks, alignment: row.alignment, fullBleed: row.fullBleed});
-const fullBleed = isContentLayoutFullBleed({blocks, alignment: row.alignment, fullBleed: row.fullBleed});
+const {row, mediaTitle} = Astro.props
+const blocks = row.blocks ?? []
+const classes = getContentLayoutRowClassNames({
+  blocks,
+  alignment: row.alignment,
+  fullBleed: row.fullBleed,
+})
+const fullBleed = isContentLayoutFullBleed({
+  blocks,
+  alignment: row.alignment,
+  fullBleed: row.fullBleed,
+})
 ---
 
-{blocks.length > 0 && (
-  <div class:list={[classes.row, {'full-bleed': fullBleed}]}>
-    {blocks.map((block, index) => (
-      <div class:list={classes.blocks[index]} aria-hidden={block._type === 'contentLayoutSpacer' || undefined}>
-        {block._type === 'contentLayoutMedia' && (
-          <MediaFrame
-            media={block.media}
-            ratio={block.aspectRatio ?? '16:9'}
-            title={mediaTitle}
-          />
-        )}
-        {block._type === 'contentLayoutText' && (
-          <div class="content-layout-text">
-            {block.heading && <h2>{block.heading}</h2>}
-            <PortableText value={block.text ?? []} />
-          </div>
-        )}
-      </div>
-    ))}
-  </div>
-)}
+{
+  blocks.length > 0 && (
+    <div class:list={[classes.row, {'full-bleed': fullBleed}]}>
+      {blocks.map((block, index) => (
+        <div
+          class:list={classes.blocks[index]}
+          aria-hidden={block._type === 'contentLayoutSpacer' || undefined}
+        >
+          {block._type === 'contentLayoutMedia' && (
+            <MediaFrame
+              media={block.media}
+              ratio={block.aspectRatio ?? '16:9'}
+              title={mediaTitle}
+            />
+          )}
+          {block._type === 'contentLayoutText' && (
+            <div class="content-layout-text">
+              {block.heading && <h2 class="type-h5">{block.heading}</h2>}
+              <PortableText value={block.text ?? []} />
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
 
 <style>
   .content-layout-row {

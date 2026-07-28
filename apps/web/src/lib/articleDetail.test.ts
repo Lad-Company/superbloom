@@ -17,12 +17,12 @@ const homepageNewsSource = readFileSync(
 const homepageQuerySource = readFileSync(new URL('./queries.ts', import.meta.url), 'utf8')
 
 describe('Article Detail contract', () => {
-  it('renders identity and Publication Date with semantic time markup', () => {
-    expect(source).toContain("news: 'News'")
-    expect(source).toContain("editorial: 'Editorial'")
-    expect(source).toContain("zine: 'Zine'")
-    expect(source).toContain('<time')
-    expect(source).toContain('datetime=')
+  it('renders lead media with page gutters and overview with eyebrow', () => {
+    expect(source).toContain('class="lead-media"')
+    expect(source).toContain('padding: 0 var(--page-inset)')
+    expect(source).toContain('Overview')
+    expect(source).toContain('class="type-eyebrow overview-eyebrow"')
+    expect(source).toContain('class="editorial-title"')
   })
 
   it('indicates that external coverage opens in a new tab', () => {
@@ -55,11 +55,13 @@ describe('Article Detail contract', () => {
   it('renders homepage News with the shared card carousel', () => {
     expect(homepageNewsSource).toContain("import CardCarousel from '../CardCarousel.astro'")
     expect(homepageNewsSource).toContain('<CardCarousel')
-    expect(homepageNewsSource).toContain('heading={showHeadline ? (headline ?? \'News\') : null}')
+    expect(homepageNewsSource).toContain("heading={showHeadline ? (headline ?? 'News') : null}")
   })
 
   it('uses the homepage authored News list instead of implicit latest items', () => {
     expect(homepageQuerySource).toContain('"items": items[]->{')
-    expect(homepageQuerySource).not.toContain('articleType == "news"] | order(publicationDate desc)[0...8]')
+    expect(homepageQuerySource).not.toContain(
+      'articleType == "news"] | order(publicationDate desc)[0...8]',
+    )
   })
 })

@@ -7,7 +7,12 @@ import {
   validateScopedSlugUniqueness,
 } from './articleContract'
 import {validateZineArticleIssueMembership} from './zineContract'
-import {cardWidthField, mediaAspectRatioField, infoPositionField, validateInfoPositionWithWidth} from './cardSettings'
+import {
+  cardWidthField,
+  mediaAspectRatioField,
+  infoPositionField,
+  validateInfoPositionWithWidth,
+} from './cardSettings'
 
 export const article = defineType({
   name: 'article',
@@ -32,7 +37,8 @@ export const article = defineType({
       type: 'string',
       options: {list: ['news', 'editorial', 'zine'], layout: 'radio'},
       validation: (rule) => rule.required(),
-      description: 'Determines routing and field visibility. news = /news/, editorial = /articles/, zine = /zine/issues/[issue]/[article]/',
+      description:
+        'Determines routing and field visibility. news = /news/, editorial = /articles/, zine = /zine/issues/[issue]/[article]/',
       hidden: true,
     }),
     defineField({
@@ -65,6 +71,11 @@ export const article = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'leadMedia',
+      type: 'mediaBox',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
       name: 'overview',
       type: 'array',
       of: [{type: 'block'}],
@@ -77,22 +88,16 @@ export const article = defineType({
     defineField({
       name: 'body',
       type: 'array',
-      of: [
-        {type: 'contentLayoutRow'},
-      ],
+      of: [{type: 'contentLayoutRow'}],
       validation: (rule) =>
         rule.custom((value, context) => {
           const articleType = (context.document as {articleType?: string})?.articleType
-          const externalCoverage = (context.document as {externalCoverage?: unknown[]})?.externalCoverage
+          const externalCoverage = (context.document as {externalCoverage?: unknown[]})
+            ?.externalCoverage
           return validateArticleBody(value, {
             document: {_type: articleType, externalCoverage},
           })
         }),
-    }),
-    defineField({
-      name: 'leadMedia',
-      type: 'mediaBox',
-      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'externalCoverage',

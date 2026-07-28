@@ -13,7 +13,6 @@ import type {
   MediaAspectRatio,
   PartialContentCardSettings,
 } from '../../lib/contentCard'
-import {formatPublicationDate} from '../../lib/publicationDate'
 
 type Tag = {title?: string | null; color?: string | null}
 type Coverage = {outlet?: string | null; url?: string | null; isPrimary?: boolean | null}
@@ -56,46 +55,30 @@ const {article} = Astro.props
 const body = article.body ?? []
 const coverage = article.articleType === 'news' ? (article.externalCoverage ?? []) : []
 const relatedItems = article.relatedItems ?? []
-
-const typeLabels: Record<'news' | 'editorial' | 'zine', string> = {
-  news: 'News',
-  editorial: 'Editorial',
-  zine: 'Zine',
-}
-
-const typeLabel = article.articleType ? typeLabels[article.articleType] : null
-
-const publicationDate = article.publicationDate
-  ? formatPublicationDate(article.publicationDate)
-  : null
 ---
 
 <article class="article-detail">
   <header class="hero">
     {article.tags && <TagList tags={article.tags} />}
     <h1 class="type-h3">{article.title}</h1>
-    <div class="article-meta type-caption">
-      {typeLabel && <span class="article-type">{typeLabel}</span>}
-      {
-        publicationDate && (
-          <time class="publication-date" datetime={publicationDate.dateTime}>
-            {publicationDate.label}
-          </time>
-        )
-      }
-    </div>
   </header>
 
   {
     article.leadMedia && (
-      <MediaFrame media={article.leadMedia} ratio="16:9" title={article.title} priority />
+      <div class="lead-media">
+        <MediaFrame media={article.leadMedia} ratio="16:9" title={article.title} priority />
+      </div>
     )
   }
 
   {
     article.overview && (
       <section class="overview">
-        <PortableText value={article.overview} class="type-h5" />
+        <div class="overview-spacer" />
+        <div class="overview-content">
+          <h2 class="type-eyebrow overview-eyebrow">Overview</h2>
+          <PortableText value={article.overview} class="editorial-title" />
+        </div>
       </section>
     )
   }
@@ -142,7 +125,7 @@ const publicationDate = article.publicationDate
 <style>
   .hero {
     position: relative;
-    padding: var(--space-3xl) var(--page-inset) var(--space-xs);
+    padding: var(--space-xl) var(--page-inset) var(--space-xs);
   }
 
   h1,
@@ -155,18 +138,28 @@ const publicationDate = article.publicationDate
     margin-bottom: var(--space-3xs);
   }
 
-  .article-meta {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    margin-top: var(--space-xs);
-    color: var(--text-secondary);
+  .lead-media {
+    margin-top: var(--space-xl);
+    padding: 0 var(--page-inset);
   }
 
-  .overview,
+  .overview {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: var(--page-gutter);
+    padding: var(--space-xl) var(--page-inset) 0;
+  }
+
+  .overview-content {
+    min-width: 0;
+  }
+
+  .overview-eyebrow {
+    margin: 0 0 var(--space-xs);
+  }
+
   .external-coverage {
-    width: min(100% - (2 * var(--page-inset)), 960px);
-    margin: var(--space-2xl) auto;
+    padding: var(--space-2xl) var(--page-inset) 0;
   }
 
   .related-items {
@@ -205,6 +198,18 @@ const publicationDate = article.publicationDate
   @media (max-width: 768px) {
     .hero {
       padding-top: var(--space-xl);
+    }
+
+    .overview {
+      grid-template-columns: 1fr;
+    }
+
+    .overview-spacer {
+      display: none;
+    }
+
+    .overview-eyebrow {
+      margin-bottom: var(--space-3xs);
     }
   }
 </style>
