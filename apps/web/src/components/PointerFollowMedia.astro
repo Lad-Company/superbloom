@@ -1,167 +1,246 @@
 ---
-import MediaFrame, { type Media } from './MediaFrame.astro';
+import MediaFrame, {type Media} from './MediaFrame.astro'
 
 interface Props {
-  media: (Media | null)[];
-  title?: string;
-  class?: string;
+  media: (Media | null)[]
+  title?: string
+  class?: string
 }
 
-const { media, title = '', class: className } = Astro.props;
-const items = media.filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 4);
+const {media, title = '', class: className} = Astro.props
+const items = media.filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 4)
 ---
 
-{items.length > 0 && (
-  <div class:list={['pointer-follow', className]} data-pointer-follow>
-    {items.map((entry) => (
-      <div class="follow-item" data-follow-item>
-        <MediaFrame media={entry} ratio="fill" title={title} />
-      </div>
-    ))}
-  </div>
-)}
+{
+  items.length > 0 && (
+    <div class:list={['pointer-follow', className]} data-pointer-follow>
+      {items.map((entry) => (
+        <div class="follow-item" data-follow-item>
+          <MediaFrame media={entry} ratio="fill" title={title} />
+        </div>
+      ))}
+    </div>
+  )
+}
 
 <script>
-  import { POINTER_FOLLOW, REDUCED_MOTION_QUERY } from '../lib/motion';
+  import {POINTER_FOLLOW, REDUCED_MOTION_QUERY} from '../lib/motion'
 
-  const GOLDEN_ANGLE = 2.399963229728653;
-  const mm = window.matchMedia(REDUCED_MOTION_QUERY);
+  // Resting offsets per layer index, in pixels relative to the section anchor.
+  // Item 0 sits at the anchor (upper-right), item 1 stacks diagonally below
+  // and to the left, and items 2 and 3 spread further into distinct corners
+  // so the cluster never visually overlaps given the CSS-defined image sizes.
+  const RESTING_OFFSETS: ReadonlyArray<readonly [number, number]> = [
+    [0, 0],
+    [-360, 400],
+    [190, -260],
+    [-540, 480],
+  ]
+
+  const mm = window.matchMedia(REDUCED_MOTION_QUERY)
 
   interface Layer {
-    el: HTMLElement;
-    offsetX: number;
-    offsetY: number;
-    tau: number;
-    curX: number;
-    curY: number;
+    el: HTMLElement
+    offsetX: number
+    offsetY: number
+    tau: number
+    curX: number
+    curY: number
+    velX: number
+    velY: number
   }
 
   interface Group {
-    scope: HTMLElement;
-    layers: Layer[];
+    scope: HTMLElement
+    root: HTMLElement
+    layers: Layer[]
   }
 
-  const groups: Group[] = [];
-  let pointerX = Number.NaN;
-  let pointerY = Number.NaN;
-  let rafId: number | null = null;
-  let lastT = 0;
+  const groups: Group[] = []
+  let pointerX = Number.NaN
+  let pointerY = Number.NaN
+  let rafId: number | null = null
+  let lastT = 0
+  let visibilityObserver: IntersectionObserver | null = null
+
+  // Each time the section enters the viewport, reset each layer to start a
+  // few pixels below its resting Y so the existing per-frame easing eases
+  // it back up into place rather than the cluster snapping in from outside.
+  const settleGroup = (group: Group) => {
+    const bounds = group.scope.getBoundingClientRect()
+    const rest = restingAnchor(bounds)
+    group.layers.forEach((layer, index) => {
+      layer.curX = rest.x + layer.offsetX
+      layer.curY = rest.y + layer.offsetY + 40 + index * 14
+      applyTransform(layer)
+    })
+  }
 
   const restingAnchor = (bounds: DOMRect) => ({
     x: bounds.width * (0.5 + POINTER_FOLLOW.restingSpread),
     y: bounds.height * 0.5,
-  });
+  })
 
   const applyTransform = (layer: Layer) => {
-    layer.el.style.transform = `translate3d(${layer.curX}px, ${layer.curY}px, 0) translate(-50%, -50%)`;
-  };
+    layer.el.style.transform = `translate3d(${layer.curX}px, ${layer.curY}px, 0) translate(-50%, -50%)`
+  }
 
   const buildLayers = (items: HTMLElement[]): Layer[] =>
     items.map((el, index) => {
-      const radius = index === 0 ? 0 : POINTER_FOLLOW.fanRadius + (index - 1) * POINTER_FOLLOW.fanRadiusStep;
-      const angle = index * GOLDEN_ANGLE;
+      const [offsetX, offsetY] = RESTING_OFFSETS[index] ?? RESTING_OFFSETS[0]
       return {
         el,
-        offsetX: Math.cos(angle) * radius,
-        offsetY: Math.sin(angle) * radius,
+        offsetX,
+        offsetY,
         tau: POINTER_FOLLOW.baseLag + index * POINTER_FOLLOW.lagStep,
         curX: 0,
         curY: 0,
-      };
-    });
+        velX: 0,
+        velY: 0,
+      }
+    })
 
   const tick = (now: number) => {
-    const dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 0.016;
-    lastT = now;
-    const hasPointer = !Number.isNaN(pointerX);
+    const dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 0.016
+    lastT = now
+    const hasPointer = !Number.isNaN(pointerX)
 
     for (const group of groups) {
-      const bounds = group.scope.getBoundingClientRect();
-      if (bounds.bottom < 0 || bounds.top > window.innerHeight) continue;
+      const bounds = group.scope.getBoundingClientRect()
+      const offscreen = bounds.bottom < 0 || bounds.top > window.innerHeight
+      const rest = restingAnchor(bounds)
 
-      const inside =
-        hasPointer &&
-        pointerX >= bounds.left &&
-        pointerX <= bounds.right &&
-        pointerY >= bounds.top &&
-        pointerY <= bounds.bottom;
-      const rest = restingAnchor(bounds);
-      const anchorX = inside ? pointerX - bounds.left : rest.x;
-      const anchorY = inside ? pointerY - bounds.top : rest.y;
+      // Interpolate the anchor from `rest` toward the cursor position based
+      // on the cursor's distance from the nearest section edge. This avoids
+      // a hard on/off flip when the pointer crosses the section boundary.
+      let anchorX = rest.x
+      let anchorY = rest.y
+      if (!offscreen && hasPointer) {
+        const minDist = Math.min(
+          pointerX - bounds.left,
+          bounds.right - pointerX,
+          pointerY - bounds.top,
+          bounds.bottom - pointerY,
+        )
+        const raw = Math.max(0, Math.min(1, minDist / POINTER_FOLLOW.edgeDampZone))
+        const damp = raw * raw * (3 - 2 * raw) // smoothstep
+        anchorX = rest.x + (pointerX - bounds.left - rest.x) * damp
+        anchorY = rest.y + (pointerY - bounds.top - rest.y) * damp
+      }
 
       for (const layer of group.layers) {
-        const targetX = anchorX + layer.offsetX;
-        const targetY = anchorY + layer.offsetY;
-        const alpha = 1 - Math.exp(-dt / layer.tau);
-        layer.curX += (targetX - layer.curX) * alpha;
-        layer.curY += (targetY - layer.curY) * alpha;
-        applyTransform(layer);
+        const targetX = anchorX + layer.offsetX
+        const targetY = anchorY + layer.offsetY
+
+        // Critically-tunable spring per layer. `tau` defines the natural
+        // frequency and POINTER_FOLLOW.springDampingRatio (zeta < 1) keeps
+        // a slight overshoot so the cluster feels springy rather than snappy
+        // when the cursor moves abruptly — particularly at the section edge.
+        const omega = 1 / layer.tau
+        const k = omega * omega
+        const c = 2 * POINTER_FOLLOW.springDampingRatio * omega
+
+        const accelX = k * (targetX - layer.curX) - c * layer.velX
+        const accelY = k * (targetY - layer.curY) - c * layer.velY
+        layer.velX += accelX * dt
+        layer.velY += accelY * dt
+        layer.curX += layer.velX * dt
+        layer.curY += layer.velY * dt
+        applyTransform(layer)
       }
     }
 
-    rafId = requestAnimationFrame(tick);
-  };
+    rafId = requestAnimationFrame(tick)
+  }
 
   const startLoop = () => {
-    if (rafId !== null || mm.matches || !groups.length) return;
-    lastT = 0;
-    rafId = requestAnimationFrame(tick);
-  };
+    if (rafId !== null || mm.matches || !groups.length) return
+    lastT = 0
+    rafId = requestAnimationFrame(tick)
+  }
 
   const stopLoop = () => {
-    if (rafId !== null) cancelAnimationFrame(rafId);
-    rafId = null;
-  };
+    if (rafId !== null) cancelAnimationFrame(rafId)
+    rafId = null
+  }
 
   const onPointerMove = (event: PointerEvent) => {
-    pointerX = event.clientX;
-    pointerY = event.clientY;
-  };
+    pointerX = event.clientX
+    pointerY = event.clientY
+  }
 
   const clearPointer = () => {
-    pointerX = Number.NaN;
-    pointerY = Number.NaN;
-  };
+    pointerX = Number.NaN
+    pointerY = Number.NaN
+  }
 
-  const initPointerFollow = () => document.querySelectorAll<HTMLElement>('[data-pointer-follow]').forEach((group) => {
-    if (group.dataset.pointerFollowInitialized) return;
-    const items = Array.from(group.querySelectorAll<HTMLElement>('[data-follow-item]'));
-    if (!items.length) return;
-    group.dataset.pointerFollowInitialized = 'true';
+  const initPointerFollow = () => {
+    document.querySelectorAll<HTMLElement>('[data-pointer-follow]').forEach((group) => {
+      if (group.dataset.pointerFollowInitialized) return
+      const items = Array.from(group.querySelectorAll<HTMLElement>('[data-follow-item]'))
+      if (!items.length) return
+      group.dataset.pointerFollowInitialized = 'true'
 
-    const scope = group.closest<HTMLElement>('[data-pointer-scope]') ?? group;
-    const layers = buildLayers(items);
-    const rest = restingAnchor(scope.getBoundingClientRect());
-    layers.forEach((layer) => {
-      layer.curX = rest.x + layer.offsetX;
-      layer.curY = rest.y + layer.offsetY;
-      applyTransform(layer);
-    });
+      const scope = group.closest<HTMLElement>('[data-pointer-scope]') ?? group
+      const layers = buildLayers(items)
+      const rest = restingAnchor(scope.getBoundingClientRect())
+      layers.forEach((layer) => {
+        layer.curX = rest.x + layer.offsetX
+        layer.curY = rest.y + layer.offsetY
+        applyTransform(layer)
+      })
 
-    if (mm.matches) return;
-    groups.push({ scope, layers });
-  });
+      if (mm.matches) {
+        group.dataset.followVisible = 'true'
+        return
+      }
+      groups.push({scope, root: group, layers})
+      settleGroup(groups[groups.length - 1])
+    })
+
+    visibilityObserver?.disconnect()
+    visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const root = entry.target as HTMLElement
+          const group = groups.find((g) => g.root === root)
+          if (!group) continue
+          if (entry.isIntersecting) {
+            root.dataset.followVisible = 'true'
+            settleGroup(group)
+          } else {
+            root.dataset.followVisible = 'false'
+          }
+        }
+      },
+      {threshold: 0, rootMargin: '0px 0px -8% 0px'},
+    )
+    for (const group of groups) visibilityObserver.observe(group.root)
+  }
 
   const teardown = () => {
-    stopLoop();
-    groups.splice(0);
+    stopLoop()
+    visibilityObserver?.disconnect()
+    visibilityObserver = null
+    groups.splice(0)
     document.querySelectorAll<HTMLElement>('[data-pointer-follow]').forEach((group) => {
-      delete group.dataset.pointerFollowInitialized;
-    });
-  };
+      delete group.dataset.pointerFollowInitialized
+      delete group.dataset.followVisible
+    })
+  }
 
   const boot = () => {
-    initPointerFollow();
-    startLoop();
-  };
+    initPointerFollow()
+    startLoop()
+  }
 
-  window.addEventListener('pointermove', onPointerMove, { passive: true });
-  window.addEventListener('blur', clearPointer);
-  document.addEventListener('pointerleave', clearPointer);
-  mm.addEventListener('change', () => (mm.matches ? stopLoop() : startLoop()));
+  window.addEventListener('pointermove', onPointerMove, {passive: true})
+  window.addEventListener('blur', clearPointer)
+  document.addEventListener('pointerleave', clearPointer)
+  mm.addEventListener('change', () => (mm.matches ? stopLoop() : startLoop()))
 
-  document.addEventListener('astro:page-load', boot);
-  document.addEventListener('astro:before-swap', teardown);
+  document.addEventListener('astro:page-load', boot)
+  document.addEventListener('astro:before-swap', teardown)
 </script>
 
 <style>
@@ -178,7 +257,8 @@ const items = media.filter((entry): entry is Media => Boolean(entry?.asset)).sli
     left: 0;
     width: clamp(180px, 22vw, 320px);
     aspect-ratio: 4 / 5;
-    will-change: transform;
+    will-change: transform, opacity;
+    opacity: 0;
   }
 
   .follow-item:nth-child(2) {
@@ -200,6 +280,16 @@ const items = media.filter((entry): entry is Media => Boolean(entry?.asset)).sli
     width: 100%;
     height: 100%;
     border-radius: var(--radius-media);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .follow-item {
+      transition: opacity var(--motion-standard) var(--motion-ease-out);
+    }
+  }
+
+  [data-pointer-follow][data-follow-visible='true'] .follow-item {
+    opacity: 1;
   }
 
   @media (prefers-reduced-motion: reduce) {

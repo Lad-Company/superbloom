@@ -4,30 +4,30 @@ export const MOTION = {
   standard: 0.48,
   deliberate: 0.8,
   chapter: 1.2,
-} as const;
+} as const
 
 export const EASE = {
   in: 'power3.in',
   out: 'power3.out',
   inOut: 'power3.inOut',
-} as const;
+} as const
 
 export const STAGGER = {
   tight: 0.024,
   standard: 0.048,
-} as const;
+} as const
 
 export const SCROLL = {
   lerp: 0.1,
   scrubLag: 0.6,
-} as const;
+} as const
 
 export const POINTER = {
   frontTravel: 0.55,
   depthFalloff: 0.6,
   lagFront: 0.35,
   lagDeep: 0.9,
-} as const;
+} as const
 
 export const POINTER_FOLLOW = {
   baseLag: 0.18,
@@ -35,14 +35,16 @@ export const POINTER_FOLLOW = {
   fanRadius: 90,
   fanRadiusStep: 70,
   restingSpread: 0.18,
-} as const;
+  edgeDampZone: 32,
+  springDampingRatio: 0.82,
+} as const
 
-export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 
 export function reducedMotionQuery(): MediaQueryList {
-  return window.matchMedia(REDUCED_MOTION_QUERY);
+  return window.matchMedia(REDUCED_MOTION_QUERY)
 }
 
 export function prefersReducedMotion(): boolean {
-  return reducedMotionQuery().matches;
+  return reducedMotionQuery().matches
 }
