@@ -106,14 +106,30 @@ export async function revealText(
 
   let tween: gsap.core.Tween | null = null
   let trigger: ScrollTrigger | null = null
+  // Once the entrance has been started (immediate or scroll-triggered),
+  // resize must never replay it. From that point, `build` only re-lays the
+  // new split units in the visible end-state instead of rebuilding a paused
+  // fromTo that would immediately re-hide them.
+  let hasStarted = false
 
   const build = () => {
     tween?.kill()
     const targets = split.targets(unit)
     for (const target of targets) {
       target.style.display = 'inline-block'
-      target.style.willChange = 'transform, opacity'
     }
+    if (hasStarted) {
+      // Commit the end-state directly so the entrance never replays.
+      gsap.set(targets, {
+        yPercent: 0,
+        y: 0,
+        autoAlpha: 1,
+        filter: 'none',
+      })
+      tween = null
+      return
+    }
+    for (const target of targets) target.style.willChange = 'transform, opacity'
     const fromVars: gsap.TweenVars = {
       yPercent: unit === 'lines' ? 110 : 100,
       autoAlpha: 0,
@@ -139,7 +155,12 @@ export async function revealText(
   build()
   el.style.opacity = '1'
 
-  const play = () => tween?.restart(true)
+  const play = () => {
+    hasStarted = true
+    // If a resize already short-circuited the tween (hasStarted was true
+    // before play), there is nothing to replay.
+    tween?.restart(true)
+  }
 
   if (scroll) {
     trigger = ScrollTrigger.create({
