@@ -14,6 +14,7 @@ import WhoWeAreIntro from '../components/who-we-are/WhoWeAreIntro.astro';
 import WhoWeAreAdvantages from '../components/who-we-are/WhoWeAreAdvantages.astro';
 import { sanityClient } from '../lib/sanity';
 import { whoWeAreQuery } from '../lib/queries';
+import { seoImage } from '../lib/seo';
 import type { WhoWeAreQueryResult } from '../sanity.types';
 
 const page = await sanityClient.fetch<WhoWeAreQueryResult>(whoWeAreQuery);
@@ -37,7 +38,7 @@ const faqs = page?.faqs ?? [];
 
 ---
 
-<Layout title="Who We Are" description={introStatement} image={featuredMedia?.asset?._type === 'image' ? featuredMedia.asset.url ?? undefined : undefined}>
+<Layout title="Who We Are" description={introStatement} image={seoImage(featuredMedia)}>
   <SurfaceSection role="dark">
     <WhoWeAreHero heading={heroHeading} />
   </SurfaceSection>

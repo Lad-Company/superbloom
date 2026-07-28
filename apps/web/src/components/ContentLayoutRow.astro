@@ -3,6 +3,7 @@ import type {TypedObject} from 'astro-portabletext/types'
 import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro'
 import PortableText from './PortableText.astro'
 import {
+  contentLayoutSizes,
   getContentLayoutRowClassNames,
   isContentLayoutFullBleed,
   type ContentLayoutAlignment,
@@ -56,6 +57,10 @@ const fullBleed = isContentLayoutFullBleed({
   alignment: row.alignment,
   fullBleed: row.fullBleed,
 })
+// Full-bleed rows escape the content gutter and span the full viewport, so hint
+// the browser at 100vw there for accurate srcset selection.
+const sizesFor = (width?: ContentLayoutWidth | null) =>
+  fullBleed ? '100vw' : contentLayoutSizes(width)
 ---
 
 {
@@ -70,6 +75,7 @@ const fullBleed = isContentLayoutFullBleed({
             <MediaFrame
               media={block.media}
               ratio={block.aspectRatio ?? '16:9'}
+              sizes={sizesFor(block.width ?? undefined)}
               title={mediaTitle}
             />
           )}

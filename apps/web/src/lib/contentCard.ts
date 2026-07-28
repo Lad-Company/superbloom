@@ -54,3 +54,27 @@ export const resolveContentCardSettings = ({
 
   return resolved;
 };
+
+const CARD_WIDTH_FRACTIONS: Record<CardWidth, number> = {
+  '1/4': 1 / 4,
+  '1/3': 1 / 3,
+  '1/2': 1 / 2,
+  '2/3': 2 / 3,
+  '3/4': 3 / 4,
+  full: 1,
+};
+
+/**
+ * Builds the `sizes` attribute for a card's MediaFrame. Below the 1024px
+ * breakpoint every card collapses to a single column, so the picture always
+ * renders full width there. On wider viewports the picture shares the card
+ * with the info block when info is positioned left/right, halving the picture
+ * width relative to the card.
+ */
+export const cardImageSizes = (settings: ContentCardSettings): string => {
+  const cardFraction = CARD_WIDTH_FRACTIONS[settings.cardWidth];
+  const infoSharesRow = settings.infoPosition === 'left' || settings.infoPosition === 'right';
+  const pictureFraction = infoSharesRow ? cardFraction / 2 : cardFraction;
+  const viewportPercentage = Math.max(1, Math.round(pictureFraction * 100));
+  return `(max-width: 1023px) 100vw, ${viewportPercentage}vw`;
+};

@@ -4632,6 +4632,14 @@
         },
         "optional": true
       },
+      "leadMedia": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "inline",
+          "name": "mediaBox"
+        },
+        "optional": true
+      },
       "overview": {
         "type": "objectAttribute",
         "value": {
@@ -4830,14 +4838,6 @@
               "name": "contentLayoutRow"
             }
           }
-        },
-        "optional": true
-      },
-      "leadMedia": {
-        "type": "objectAttribute",
-        "value": {
-          "type": "inline",
-          "name": "mediaBox"
         },
         "optional": true
       },

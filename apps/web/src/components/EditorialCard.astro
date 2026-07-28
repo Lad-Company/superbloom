@@ -1,6 +1,10 @@
 ---
 import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro'
-import {resolveContentCardSettings, type PartialContentCardSettings} from '../lib/contentCard'
+import {
+  cardImageSizes,
+  resolveContentCardSettings,
+  type PartialContentCardSettings,
+} from '../lib/contentCard'
 import {formatPublicationDateIndex} from '../lib/publicationDate'
 
 interface Props {
@@ -44,6 +48,7 @@ const resolved = resolveContentCardSettings({
   list: listSettings,
   item: settings,
 })
+const sizes = cardImageSizes(resolved)
 const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDate) : null
 ---
 
@@ -56,7 +61,12 @@ const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDa
   data-info-position={resolved.infoPosition}
   data-content-card-id={cardId}
 >
-  <MediaFrame media={media} ratio={resolved.mediaAspectRatio as MediaRatio} title={title}>
+  <MediaFrame
+    media={media}
+    ratio={resolved.mediaAspectRatio as MediaRatio}
+    sizes={sizes}
+    title={title}
+  >
     <slot name="overlay" />
   </MediaFrame>
   <div class="content">

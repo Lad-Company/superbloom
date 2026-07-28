@@ -21,7 +21,12 @@ const {items} = Astro.props
   {
     items.map((item) => (
       <div class="col">
-        <MediaFrame media={item.media} ratio="1:1" title={item.heading ?? undefined} />
+        <MediaFrame
+          media={item.media}
+          ratio="1:1"
+          sizes="(max-width: 768px) 100vw, 50vw"
+          title={item.heading ?? undefined}
+        />
         {item.heading && <p class="heading type-h5">{item.heading}</p>}
         {item.label && <Button href={item.href ?? '#'} label={item.label} />}
       </div>

@@ -78,7 +78,13 @@ const overrideFor = (id?: string | null) =>
 <article class="issue-detail">
   <header class="hero" style={vars.dark}>
     <div class="hero-media">
-      <MediaFrame media={issue.heroMedia} ratio="16:9" title={issue.title} priority />
+      <MediaFrame
+        media={issue.heroMedia}
+        ratio="16:9"
+        sizes="(max-width: 1439px) 100vw, 1440px"
+        title={issue.title}
+        priority
+      />
     </div>
     <div class="hero-copy">
       <h1 class="type-h1">{issue.title}</h1>
@@ -104,6 +110,7 @@ const overrideFor = (id?: string | null) =>
           <MediaFrame
             media={issue.editorLetter.media ?? issue.heroMedia}
             ratio="1:1"
+            sizes="(max-width: 767px) 100vw, 58vw"
             title={issue.editorLetter.heading}
           >
             <TagList slot="overlay" tags={editorLetterLabels} />

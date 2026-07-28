@@ -1,14 +1,30 @@
 ---
-export type MediaRatio = 'intrinsic' | '1:1' | '16:9' | '4:5' | '9:16' | '3:2' | '2:1' | 'fill'
+import {buildImageRendering, type CropRatio} from '../lib/imageCropping'
 
-export interface ProjectedAsset {
-  _type: 'image' | 'mux.video'
-  url?: string | null
+export type MediaRatio = CropRatio
+
+export interface ImageProjection {
+  _type: 'image'
+  asset?: {_ref?: string | null; _type?: string | null} | null
+  crop?: {
+    top?: number | null
+    bottom?: number | null
+    left?: number | null
+    right?: number | null
+  } | null
+  hotspot?: {x?: number | null; y?: number | null; width?: number | null; height?: number | null} | null
   width?: number | null
   height?: number | null
+  mimeType?: string | null
+}
+
+export interface VideoProjection {
+  _type: 'mux.video'
   playbackId?: string | null
   aspectRatio?: string | null
 }
+
+export type ProjectedAsset = ImageProjection | VideoProjection
 
 export interface Media {
   asset?: ProjectedAsset | null
@@ -19,6 +35,7 @@ export interface Media {
 interface Props {
   media?: Media | null
   ratio?: MediaRatio | null
+  sizes?: string | null
   title?: string | null
   priority?: boolean
   active?: boolean
@@ -29,6 +46,7 @@ interface Props {
 const {
   media,
   ratio = '16:9',
+  sizes = '100vw',
   title,
   priority = false,
   active = true,
@@ -50,7 +68,7 @@ const ratioMap: Record<MediaRatio, string> = {
 const asset = media?.asset
 const altText = media?.altText
 const isDecorative = media?.decorative ?? false
-const mediaRatio = ratio ?? '16:9'
+const mediaRatio: MediaRatio = ratio ?? '16:9'
 const ratioValue = ratioMap[mediaRatio]
 const intrinsicVideoRatio =
   asset?._type === 'mux.video' && asset.aspectRatio?.match(/^\d+:\d+$/)
@@ -61,12 +79,26 @@ const styleAttr =
     ? ''
     : `aspect-ratio: ${mediaRatio === 'intrinsic' ? intrinsicVideoRatio : ratioValue};`
 const hasAsset =
-  (asset?._type === 'image' && Boolean(asset.url)) ||
+  (asset?._type === 'image' && Boolean(asset.asset?._ref)) ||
   (asset?._type === 'mux.video' && Boolean(asset.playbackId))
 const videoPoster =
   asset?._type === 'mux.video' && asset.playbackId
     ? `https://image.mux.com/${asset.playbackId}/thumbnail.jpg?time=0`
     : undefined
+const imageRendering =
+  asset?._type === 'image' && asset.asset?._ref
+    ? buildImageRendering({
+        source: {
+          asset: asset.asset,
+          crop: asset.crop ?? undefined,
+          hotspot: asset.hotspot ?? undefined,
+        },
+        mimeType: asset.mimeType,
+        nativeWidth: asset.width,
+        nativeHeight: asset.height,
+        ratio: mediaRatio,
+      })
+    : null
 ---
 
 <media-frame
@@ -93,12 +125,14 @@ const videoPoster =
     )
   }
   {
-    asset?._type === 'image' && asset.url && (
+    imageRendering && imageRendering.src && (
       <img
-        src={asset.url}
+        src={imageRendering.src}
+        srcset={imageRendering.srcset}
+        sizes={sizes ?? undefined}
         alt={isDecorative ? '' : (altText ?? '')}
-        width={asset.width ?? undefined}
-        height={asset.height ?? undefined}
+        width={imageRendering.width || undefined}
+        height={imageRendering.height || undefined}
         loading={priority ? 'eager' : 'lazy'}
         fetchpriority={priority ? 'high' : 'auto'}
       />

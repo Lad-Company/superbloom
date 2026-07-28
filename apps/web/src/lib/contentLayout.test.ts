@@ -1,6 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {describe, expect, it} from 'vitest';
 import {
+  contentLayoutSizes,
   getContentLayoutRowClassNames,
   isContentLayoutFullBleed,
 } from './contentLayout';
@@ -26,6 +27,21 @@ const resultsRendererSource = readFileSync(
   new URL('../components/case/Results.astro', import.meta.url),
   'utf8',
 );
+
+describe('contentLayoutSizes', () => {
+  it('uses 100vw on mobile and full widths correctly', () => {
+    expect(contentLayoutSizes()).toBe('(max-width: 1023px) 100vw, 100vw')
+    expect(contentLayoutSizes('full')).toBe('(max-width: 1023px) 100vw, 100vw')
+  });
+
+  it('translates col-spans into matching viewport percentages', () => {
+    expect(contentLayoutSizes('1/4')).toBe('(max-width: 1023px) 100vw, 25vw')
+    expect(contentLayoutSizes('1/3')).toBe('(max-width: 1023px) 100vw, 33vw')
+    expect(contentLayoutSizes('1/2')).toBe('(max-width: 1023px) 100vw, 50vw')
+    expect(contentLayoutSizes('2/3')).toBe('(max-width: 1023px) 100vw, 67vw')
+    expect(contentLayoutSizes('3/4')).toBe('(max-width: 1023px) 100vw, 75vw')
+  });
+});
 
 describe('Content Layout Row rendering contract', () => {
   it('maps every approved width and single-block alignment to independent layout classes', () => {
@@ -101,5 +117,10 @@ describe('Content Layout Row rendering contract', () => {
     expect(resultsRendererSource).toContain('<ContentLayoutRow');
     expect(articleRendererSource).not.toContain('articleTextSection');
     expect(caseStudyRendererSource).not.toContain('caseStudyTextMedia');
+  });
+
+  it('threads srcset / sizes attributes through media blocks', () => {
+    expect(componentSource).toContain('sizes={sizesFor(block.width ?? undefined)}')
+    expect(componentSource).toContain("'100vw'")
   });
 });

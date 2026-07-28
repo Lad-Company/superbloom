@@ -88,7 +88,12 @@ const rowStartFor = (index: number): number => {
                 href={href}
                 style={`--gc: ${slot.column}; --cap-max: ${slot.captionMax}; grid-row: ${rowStartFor(index)} / span ${rowSpan};`}
               >
-                <MediaFrame media={item.media} ratio={ratio as MediaRatio} title={item.title}>
+                <MediaFrame
+                  media={item.media}
+                  ratio={ratio as MediaRatio}
+                  sizes="(max-width: 1023px) 100vw, 67vw"
+                  title={item.title}
+                >
                   <TagList slot="overlay" tags={item.tags} />
                 </MediaFrame>
                 <div class="caption">

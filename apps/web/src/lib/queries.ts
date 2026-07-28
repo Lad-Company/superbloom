@@ -4,10 +4,12 @@ const mediaProjection = `{
   "asset": asset[0]{
     _type,
     _type == "image" => {
-      "url": asset->url,
+      asset,
+      crop,
+      hotspot,
       "width": asset->metadata.dimensions.width,
       "height": asset->metadata.dimensions.height,
-      "altText": asset->altText
+      "mimeType": asset->mimeType
     },
     _type == "mux.video" => {
       "playbackId": asset->playbackId,

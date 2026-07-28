@@ -22,7 +22,12 @@ const {issues} = Astro.props;
         {issues.map((issue, index) => (
           <li class:list={{featured: index === 0}}>
             <a href={`/zine/issues/${issue.slug}`}>
-              <MediaFrame media={issue.cardMedia} ratio="4:5" title={issue.title} />
+              <MediaFrame
+                media={issue.cardMedia}
+                ratio="4:5"
+                sizes="(max-width: 767px) 96px, 210px"
+                title={issue.title}
+              />
               <span class="copy">
                 <span class="type-h5">{issue.title}</span>
               </span>

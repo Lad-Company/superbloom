@@ -66,7 +66,13 @@ const relatedItems = article.relatedItems ?? []
   {
     article.leadMedia && (
       <div class="lead-media">
-        <MediaFrame media={article.leadMedia} ratio="16:9" title={article.title} priority />
+        <MediaFrame
+          media={article.leadMedia}
+          ratio="16:9"
+          sizes="(max-width: 1599px) 90vw, 1440px"
+          title={article.title}
+          priority
+        />
       </div>
     )
   }

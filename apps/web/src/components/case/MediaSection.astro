@@ -14,12 +14,14 @@ interface Props {
 const {layout = 'fullBleed16x9', media, text} = Astro.props
 
 const items = media ?? []
+const sizesFor = (name: Layout) =>
+  name === 'fullBleed16x9' ? '100vw' : '(max-width: 1023px) 100vw, 50vw'
 ---
 
 {
   layout === 'fullBleed16x9' && (
     <div class="full-bleed">
-      <MediaFrame media={items[0]} ratio="16:9" />
+      <MediaFrame media={items[0]} ratio="16:9" sizes={sizesFor(layout)} />
     </div>
   )
 }
@@ -29,7 +31,7 @@ const items = media ?? []
     <div class="paired">
       {items.map((item) => (
         <div class="pair-item">
-          <MediaFrame media={item} ratio="1:1" />
+          <MediaFrame media={item} ratio="1:1" sizes={sizesFor(layout)} />
         </div>
       ))}
     </div>
@@ -45,7 +47,7 @@ const items = media ?? []
       <div class="tam-media">
         {items.map((item) => (
           <div class="tam-item">
-            <MediaFrame media={item} />
+            <MediaFrame media={item} sizes={sizesFor(layout)} />
           </div>
         ))}
       </div>

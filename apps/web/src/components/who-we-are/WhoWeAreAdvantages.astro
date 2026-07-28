@@ -32,6 +32,7 @@ const { headline, blocks } = Astro.props;
             <MediaFrame
               media={block.media ?? null}
               ratio="3:2"
+              sizes="(max-width: 768px) 100vw, 50vw"
               title={block.heading ?? undefined}
             />
           </div>

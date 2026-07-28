@@ -81,6 +81,9 @@ importers:
       '@sanity/client':
         specifier: ^7.22.1
         version: 7.25.0
+      '@sanity/image-url':
+        specifier: ^2.1.1
+        version: 2.1.1
       '@unocss/astro':
         specifier: ^66.7.2
         version: 66.7.5(vite@7.3.6(@types/node@25.9.5)(jiti@2.7.0)(yaml@2.9.0))

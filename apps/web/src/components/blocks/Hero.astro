@@ -11,7 +11,7 @@ const { heading, subheading, heroMedia } = Astro.props;
 ---
 
 <section class="hero">
-  <MediaFrame media={heroMedia} ratio="fill" title={heading} priority>
+  <MediaFrame media={heroMedia} ratio="fill" sizes="100vw" title={heading} priority>
     <div class="scrim"></div>
     <div class="overlay">
       <h1 class="type-h1" data-motion-text data-unit="chars" data-blur data-scroll="false">{heading}</h1>

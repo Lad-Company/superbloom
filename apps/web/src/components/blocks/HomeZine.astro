@@ -26,7 +26,13 @@ const href = issue?.slug
 
 <SurfaceSection role="brand-tertiary" aria-labelledby="home-zine-heading">
   <div class="home-zine">
-    <MediaFrame media={promoMedia} ratio="4:5" title={promoHeadline} class="media" />
+    <MediaFrame
+      media={promoMedia}
+      ratio="4:5"
+      sizes="(max-width: 1023px) 100vw, 540px"
+      title={promoHeadline}
+      class="media"
+    />
     <div class="content">
       <h2 id="home-zine-heading" class="type-h3">{promoHeadline}</h2>
       {promoIntro && <PortableText value={promoIntro} class="type-caption" />}

@@ -45,7 +45,13 @@ const brandVars = [
   {caseStudy.leadMedia && (
     <SurfaceSection role="case-primary">
       <div class="lead-media">
-        <MediaFrame media={caseStudy.leadMedia} ratio="16:9" title={caseStudy.title} priority />
+        <MediaFrame
+          media={caseStudy.leadMedia}
+          ratio="16:9"
+          sizes="(max-width: 1439px) 100vw, 1440px"
+          title={caseStudy.title}
+          priority
+        />
       </div>
     </SurfaceSection>
   )}
