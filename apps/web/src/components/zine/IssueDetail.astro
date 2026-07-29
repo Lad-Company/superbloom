@@ -243,6 +243,13 @@ const overrideFor = (id?: string | null) =>
     white-space: nowrap;
   }
 
+  @media (max-width: 1023px) {
+    /* Shared PageHero H1 scale */
+    .hero-copy h1 {
+      font-size: clamp(64px, 18vw, 160px);
+    }
+  }
+
   @media (max-width: 767px) {
     .editor-letter {
       grid-template-columns: 1fr;
