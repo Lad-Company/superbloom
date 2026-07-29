@@ -2,12 +2,15 @@ import {readFileSync} from 'node:fs'
 import {describe, expect, it} from 'vitest'
 import {
   editorialArticleBySlugQuery,
-  newsArticleBySlugQuery,
   zineArticleBySlugQuery,
 } from './queries'
 
 const source = readFileSync(
   new URL('../components/editorial/ArticleDetail.astro', import.meta.url),
+  'utf8',
+)
+const newsCardSource = readFileSync(
+  new URL('../components/NewsCard.astro', import.meta.url),
   'utf8',
 )
 const homepageNewsSource = readFileSync(
@@ -25,19 +28,15 @@ describe('Article Detail contract', () => {
     expect(source).toContain('class="editorial-title"')
   })
 
-  it('indicates that external coverage opens in a new tab', () => {
-    expect(source).toContain('target="_blank"')
-    expect(source).toContain('noopener noreferrer')
-    expect(source).toContain('<span aria-hidden="true">↗</span>')
-    expect(source).toContain('opens in a new tab')
+  it('links News cards out to their destination in a new tab', () => {
+    expect(newsCardSource).toContain('item.destination')
+    expect(newsCardSource).toContain('target="_blank"')
+    expect(newsCardSource).toContain('noopener noreferrer')
+    expect(newsCardSource).not.toContain('/news/')
   })
 
   it('projects the shared detail fields from every identity route', () => {
-    for (const query of [
-      newsArticleBySlugQuery,
-      editorialArticleBySlugQuery,
-      zineArticleBySlugQuery,
-    ]) {
+    for (const query of [editorialArticleBySlugQuery, zineArticleBySlugQuery]) {
       expect(query).toContain('publicationDate')
       expect(query).toContain('leadMedia')
       expect(query).toContain('contentLayoutRow')

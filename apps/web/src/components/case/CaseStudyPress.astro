@@ -13,7 +13,7 @@ interface Props {
 }
 
 const { items, globalSettings } = Astro.props;
-const visibleItems = items.filter((item) => item?.slug).slice(0, 3);
+const visibleItems = items.filter((item) => item?.destination).slice(0, 3);
 ---
 
 {visibleItems.length > 0 && (

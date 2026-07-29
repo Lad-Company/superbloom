@@ -1,9 +1,7 @@
 import {describe, expect, it, vi} from 'vitest'
 import {
   validateArticleBody,
-  validateNewsContent,
   validateRelatedItems,
-  validateExternalCoverage,
   validateScopedSlugUniqueness,
 } from './articleContract'
 
@@ -18,11 +16,8 @@ describe('Article contract validators', () => {
     ).toBe(true)
   })
 
-  it('allows News without a body only when it has coverage', () => {
-    expect(
-      validateArticleBody([], {document: {articleType: 'news', externalCoverage: [{outlet: 'Press'}]}}),
-    ).toBe(true)
-    expect(validateArticleBody([], {document: {articleType: 'news'}})).toContain('body or external coverage')
+  it('does not require News articles to have a body', () => {
+    expect(validateArticleBody([], {document: {articleType: 'news'}})).toBe(true)
   })
 
   it('allows Zine bodies to be required', () => {
@@ -33,11 +28,6 @@ describe('Article contract validators', () => {
         {document: {articleType: 'zine'}},
       ),
     ).toBe(true)
-  })
-
-  it('rejects News documents with neither body nor coverage', () => {
-    expect(validateNewsContent({})).toContain('body or external coverage')
-    expect(validateNewsContent({externalCoverage: [{outlet: 'Press'}]})).toBe(true)
   })
 
   it('requires related items to be empty or exactly three unique items', () => {
@@ -59,44 +49,6 @@ describe('Article contract validators', () => {
         document: {_id: 'drafts.article-1'},
       }),
     ).toContain('cannot be related to itself')
-  })
-
-  it('enforces exactly one primary external coverage for external card destination', () => {
-    expect(validateExternalCoverage([], {parent: {cardDestination: 'external'}})).toContain(
-      'exactly one primary',
-    )
-    expect(
-      validateExternalCoverage([{outlet: 'Press', isPrimary: true}], {parent: {cardDestination: 'external'}}),
-    ).toBe(true)
-    expect(
-      validateExternalCoverage(
-        [{outlet: 'Press1', isPrimary: true}, {outlet: 'Press2', isPrimary: false}],
-        {parent: {cardDestination: 'external'}},
-      ),
-    ).toBe(true)
-    expect(
-      validateExternalCoverage(
-        [{outlet: 'Press1', isPrimary: true}, {outlet: 'Press2', isPrimary: true}],
-        {parent: {cardDestination: 'external'}},
-      ),
-    ).toContain('exactly one primary')
-  })
-
-  it('allows multiple non-primary external coverage for internal card destination', () => {
-    expect(
-      validateExternalCoverage(
-        [{outlet: 'Press1', isPrimary: false}, {outlet: 'Press2', isPrimary: false}],
-        {parent: {cardDestination: 'internal'}},
-      ),
-    ).toBe(true)
-  })
-
-  it('rejects external coverage on non-News articles', () => {
-    expect(
-      validateExternalCoverage([{outlet: 'Press'}], {
-        parent: {articleType: 'editorial'},
-      }),
-    ).toContain('only available for News')
   })
 
   it('checks slug uniqueness within the current Article identity', async () => {

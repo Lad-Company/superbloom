@@ -54,21 +54,26 @@ content, and experiential campaigns for brand clients.
   _Avoid_: volume, edition.
 - **Zine Article** — a long-form story belonging to exactly one Zine Issue.
   _Avoid_: Editorial Article, News.
-- **News** — press, announcements, and coverage of Superbloom; may combine an
-  own writeup with external coverage links. _Avoid_: blog, posts.
+- **News** — press, announcements, and coverage of Superbloom; a lightweight
+  outbound-link card with a required Destination and optional Source, no detail
+  page or body. _Avoid_: blog, posts.
+- **Destination** — the required outbound URL a News card links to.
+- **Source** — the optional outlet label shown on a News card (e.g. "Vogue").
 - **Editorial Article** — a standalone long-form, non-Zine editorial identity.
   _Avoid_: Zine Article, News.
 - **Article** — the shared CMS document storing News, Editorial Articles, and Zine
-  Articles, discriminated by a required hidden `articleType`. _Avoid_: a fourth
-  visitor-facing type, universal content model.
-- **Article Detail** — the reusable long-form presentation shared by the three
-  editorial identities (distinct routes and adapters). _Avoid_: universal adapter.
+  Articles, discriminated by a required, editor-visible `articleType` select.
+  _Avoid_: a fourth visitor-facing type, universal content model.
+- **Article Detail** — the reusable long-form presentation shared by Editorial
+  Articles and Zine Articles (News has no detail page). _Avoid_: universal adapter.
 - **Index Page** — the mixed Article browse at `/index` (News + Editorial + Zine;
   excludes Case Studies). _Avoid_: All Work, Blog.
-- **Publication Date** — the required date used to sort Articles and Case Studies.
-  Article cards display it; Case Study cards do not. _Avoid_: manual rank.
+- **Publication Date** — the date used to sort Articles and Case Studies.
+  Auto-stamped at an Article's first publish, then frozen; Article cards display
+  it, Case Study cards do not. _Avoid_: manual rank.
 - **Tag** — a reusable optional editorial label on Articles and Case Studies; at
-  most two. Distinct from Capability and Deliverables. _Avoid_: category, keyword.
+  most one on Articles (the Article Type chip is automatic), two on Case Studies.
+  Distinct from Capability and Deliverables. _Avoid_: category, keyword.
 - **Brand Colors (Primary / Secondary)** — a client brand's two accent colors,
   chosen per Case Study, stored as hex; used to theme that Case Study's colored
   sections. Not a fixed Superbloom palette. _Avoid_: theme color, swatch.

@@ -84,8 +84,9 @@ Authoritative shape lives in `packages/schemas/src`; the intent is in
 
 - **Singletons:** `homepage`, `whoWeAre`, `siteSettings`, `workIndex`, `indexPage`,
   `zineLanding`.
-- **Documents:** `caseStudy`, `article` (unified News/Editorial/Zine via hidden
-  `articleType`), `zineIssue`, `capability`, `tag`, `formSubmission`.
+- **Documents:** `caseStudy`, `article` (unified News/Editorial/Zine via a
+  visible, required `articleType` select), `zineIssue`, `capability`, `tag`,
+  `formSubmission`.
 - **Shared objects:** card settings (`cardSettings`), content composition
   (`contentLayoutRow` + `contentLayoutMedia`/`contentLayoutText`/
   `contentLayoutSpacer`), `mediaBox`, homepage blocks.
@@ -128,10 +129,19 @@ another doc, that doc is authoritative.
   *(`docs/design-system.md` §4.)*
 - **0020 — Unified CMS content composition.** Two shared compositions — Content
   Card (listings) and Content Layout Row (detail bodies + all 5 Spine sections);
-  unified `article` doc with hidden `articleType`; Index (all article types) and
+  unified `article` doc; Index (all article types) and
   Our Work (Case Studies) both Featured + date-sorted All. Authoritative content
   model; fully supersedes 0018, partially supersedes 0011/0012/0016/0017, amends
-  0015. *(`docs/design-system.md` §3.)*
+  0015; its hidden-`articleType` clause is amended by 0022.
+  *(`docs/design-system.md` §3.)*
+- **0022 — Standardized Article model.** One Studio Articles list with a visible,
+  required `articleType` select at the top of the form; News is pared to an
+  outbound-link card (required `destination` URL + optional `source` outlet label;
+  no body, leadMedia, or relatedItems, replacing `externalCoverage` +
+  `cardDestination`); slug and publicationDate are hidden, auto-generated/stamped
+  at first publish and frozen thereafter; the `/news/[slug]` detail route is
+  removed. Amends 0020's hidden-`articleType` clause and 0011's composite-News
+  clause.
 - **0021 — Adopt Lenis smooth scroll.** Lenis global, synced to `gsap.ticker` +
   `ScrollTrigger.update`, `lerp 0.1`, disabled for reduced-motion / no-JS.
   Supersedes the no-Lenis clause of 0007. *(`docs/design-system.md` §5.)*
@@ -162,5 +172,6 @@ another doc, that doc is authoritative.
   and Results stats stand; section-local media layouts are now the shared Content
   Layout Row (0020).
 - **0018 — Editorial Article as a separate type.** **Fully superseded by 0020** —
-  News/Editorial/Zine share one `article` doc with a hidden `articleType`
-  discriminator (the very thing 0018 rejected).
+  News/Editorial/Zine share one `article` doc with an `articleType`
+  discriminator (the very thing 0018 rejected); the discriminator became visible
+  and editor-facing under 0022.

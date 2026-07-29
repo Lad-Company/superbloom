@@ -15,7 +15,6 @@ import type {
 } from '../../lib/contentCard'
 
 type Tag = {title?: string | null; color?: string | null}
-type Coverage = {outlet?: string | null; url?: string | null; isPrimary?: boolean | null}
 type PortableBlock = TypedObject & {children?: Array<{text?: string | null}>}
 type RelatedItem = {
   _type: 'article'
@@ -25,8 +24,8 @@ type RelatedItem = {
   issueSlug?: string | null
   overview?: PortableBlock[] | null
   publicationDate?: string | null
-  cardDestination?: 'internal' | 'external' | null
-  externalCoverage?: Coverage[] | null
+  destination?: string | null
+  source?: string | null
   cardWidth?: CardWidth | null
   mediaAspectRatio?: MediaAspectRatio | null
   infoPosition?: InfoPosition | null
@@ -45,7 +44,6 @@ interface Props {
     leadMedia?: Media | null
     body?: BodyBlock[] | null
     tags?: Tag[] | null
-    externalCoverage?: Coverage[] | null
     relatedItems?: RelatedItem[] | null
     globalCardDefaults?: PartialContentCardSettings
   }
@@ -53,7 +51,6 @@ interface Props {
 
 const {article} = Astro.props
 const body = article.body ?? []
-const coverage = article.articleType === 'news' ? (article.externalCoverage ?? []) : []
 const relatedItems = article.relatedItems ?? []
 ---
 
@@ -90,30 +87,6 @@ const relatedItems = article.relatedItems ?? []
   }
 
   {body.map((block) => <ArticleBodyRenderer block={block} />)}
-
-  {
-    coverage.length > 0 && (
-      <section class="external-coverage" aria-labelledby="external-coverage-heading">
-        <h2 id="external-coverage-heading" class="type-eyebrow">
-          Read elsewhere
-        </h2>
-        <ul>
-          {coverage.map((link) => (
-            <li>
-              {link.url ? (
-                <a href={link.url} target="_blank" rel="noopener noreferrer">
-                  {link.outlet ?? link.url} <span aria-hidden="true">↗</span>
-                  <span class="sr-only">(opens in a new tab)</span>
-                </a>
-              ) : (
-                <span>{link.outlet}</span>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
-    )
-  }
 
   {
     relatedItems.length === 3 && (
@@ -164,10 +137,6 @@ const relatedItems = article.relatedItems ?? []
     margin: 0 0 var(--space-xs);
   }
 
-  .external-coverage {
-    padding: var(--space-2xl) var(--page-inset) 0;
-  }
-
   .related-items {
     margin-top: var(--space-2xl);
     padding: var(--space-2xl) var(--page-inset);
@@ -175,30 +144,6 @@ const relatedItems = article.relatedItems ?? []
     color: #fff;
     --bg: #000;
     --fg: #fff;
-  }
-
-  .external-coverage ul {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3xs);
-    margin: var(--space-xs) 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .external-coverage a {
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 0.15em;
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
   }
 
   @media (max-width: 768px) {

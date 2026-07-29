@@ -17,11 +17,11 @@ interface Tag {
 interface NewsItem {
   _id?: string | null
   title: string | null
-  slug: string | null
+  slug?: string | null
   overview?: Array<{children?: Array<{text?: string | null}>}> | null
   publicationDate?: string | null
-  cardDestination?: 'internal' | 'external' | null
-  externalCoverage?: Array<{url?: string | null; isPrimary?: boolean | null}> | null
+  destination?: string | null
+  source?: string | null
   cardWidth?: CardWidth | null
   mediaAspectRatio?: MediaAspectRatio | null
   infoPosition?: InfoPosition | null
@@ -36,7 +36,6 @@ interface Props {
   settings?: PartialContentCardSettings
   listSettings?: PartialContentCardSettings
   globalSettings?: PartialContentCardSettings
-  mixedList?: boolean
 }
 
 const {
@@ -45,14 +44,8 @@ const {
   settings,
   listSettings,
   globalSettings,
-  mixedList = false,
 } = Astro.props
-const internalHref = item.slug ? `/news/${item.slug}` : '#'
-const primaryCoverage = item.externalCoverage?.find(
-  (coverage) => coverage.isPrimary && coverage.url,
-)
-const opensInNewTab = item.cardDestination === 'external' && Boolean(primaryCoverage?.url)
-const href = opensInNewTab ? primaryCoverage!.url! : internalHref
+const href = item.destination ?? '#'
 ---
 
 <EditorialCard
@@ -64,15 +57,11 @@ const href = opensInNewTab ? primaryCoverage!.url! : internalHref
   listSettings={listSettings}
   globalSettings={globalSettings}
   class={className}
-  target={opensInNewTab ? '_blank' : undefined}
-  rel={opensInNewTab ? 'noopener noreferrer' : undefined}
+  target="_blank"
+  rel="noopener noreferrer"
+  externalLabel={item.source ?? undefined}
   cardId={item._id}
   publicationDate={item.publicationDate}
 >
-  <TagList
-    slot="overlay"
-    tags={item.tags}
-    typeLabel={mixedList ? 'News' : undefined}
-    maxTags={mixedList ? 1 : 2}
-  />
+  <TagList slot="overlay" tags={item.tags} typeLabel="News" maxTags={1} />
 </EditorialCard>

@@ -49,8 +49,8 @@ const editorialCardProjection = `
   overview,
   cardCtaLabel,
   publicationDate,
-  cardDestination,
-  externalCoverage[]{ outlet, url, isPrimary },
+  destination,
+  source,
   cardWidth,
   mediaAspectRatio,
   infoPosition,
@@ -274,9 +274,9 @@ export const caseStudyBySlugQuery = defineQuery(`
       "slug": slug.current,
       overview,
       publicationDate,
-      cardDestination,
       articleType,
-      externalCoverage[]{ outlet, url, isPrimary },
+      destination,
+      source,
       cardWidth,
       mediaAspectRatio,
       infoPosition,
@@ -315,9 +315,9 @@ const articleProjection = `
     "slug": slug.current,
     publicationDate,
     overview,
-    cardDestination,
+    destination,
+    source,
     tags[]->{ title, color },
-    externalCoverage[]{ _key, outlet, url, isPrimary },
     "leadMedia": leadMedia${mediaProjection},
     ${articleBodyProjection},
     relatedItems[]->{
@@ -329,8 +329,8 @@ const articleProjection = `
       publicationDate,
       "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,
       overview,
-      cardDestination,
-      externalCoverage[]{ outlet, url, isPrimary },
+      destination,
+      source,
       cardWidth,
       mediaAspectRatio,
       infoPosition,
@@ -339,12 +339,6 @@ const articleProjection = `
     },
     "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
 `
-
-export const newsArticleBySlugQuery = defineQuery(`
-  *[_type == "article" && articleType == "news" && slug.current == $slug][0] {
-    ${articleProjection}
-  }
-`)
 
 export const editorialArticleBySlugQuery = defineQuery(`
   *[_type == "article" && articleType == "editorial" && slug.current == $slug][0] {
@@ -493,10 +487,6 @@ export const sitemapQuery = defineQuery(`
   {
     "caseStudies": *[_type == "caseStudy" && defined(slug.current)]{
       "path": "/work/" + slug.current,
-      "updatedAt": _updatedAt
-    },
-    "news": *[_type == "article" && articleType == "news" && defined(slug.current)]{
-      "path": "/news/" + slug.current,
       "updatedAt": _updatedAt
     },
     "articles": *[_type == "article" && articleType == "editorial" && defined(slug.current)]{

@@ -5,7 +5,7 @@ import {orderableDocumentListDeskItem} from '@sanity/orderable-document-list'
 import {colorInput} from '@sanity/color-input'
 import {schemaTypes} from '@superbloom/schemas'
 import {muxSchemaCompatibility} from './muxSchemaCompatibility'
-import {newsArticleView, editorialArticleView, zineArticleView} from './articleViews'
+import {articlePublishAction} from './articlePublishAction'
 import {legacyColorInput} from './legacyColorInput'
 
 export default defineConfig({
@@ -53,9 +53,16 @@ export default defineConfig({
                 S.list()
                   .title('Content')
                   .items([
-                    newsArticleView(S),
-                    editorialArticleView(S),
-                    zineArticleView(S),
+                    S.listItem()
+                      .title('Articles')
+                      .id('articles')
+                      .child(
+                        S.documentList()
+                          .title('Articles')
+                          .schemaType('article')
+                          .filter('_type == "article"')
+                          .defaultOrdering([{field: 'publicationDate', direction: 'desc'}]),
+                      ),
                     S.divider(),
                     S.documentTypeListItem('caseStudy').title('Case Studies'),
                     orderableDocumentListDeskItem({
@@ -92,27 +99,17 @@ export default defineConfig({
   ],
   schema: {
     types: schemaTypes,
-    templates: (templates) => [
-      ...templates.filter((template) => template.schemaType !== 'article'),
-      {
-        id: 'news-article',
-        title: 'News',
-        schemaType: 'article',
-        value: {articleType: 'news'},
-      },
-      {
-        id: 'editorial-article',
-        title: 'Editorial Article',
-        schemaType: 'article',
-        value: {articleType: 'editorial'},
-      },
-      {
-        id: 'zine-article',
-        title: 'Zine Article',
-        schemaType: 'article',
-        value: {articleType: 'zine'},
-      },
-    ],
+    templates: (templates) =>
+      templates.filter(
+        (template) =>
+          !['news-article', 'editorial-article', 'zine-article'].includes(template.id),
+      ),
+  },
+  document: {
+    actions: (actions, context) =>
+      context.schemaType === 'article'
+        ? actions.map((action) => (action.action === 'publish' ? articlePublishAction : action))
+        : actions,
   },
   form: {
     components: {

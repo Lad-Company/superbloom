@@ -3,7 +3,6 @@ import {
   validateArticleBody,
   validatePortableTextNonEmpty,
   validateRelatedItems,
-  validateExternalCoverage,
   validateScopedSlugUniqueness,
 } from './articleContract'
 import {validateZineArticleIssueMembership} from './zineContract'
@@ -13,6 +12,9 @@ import {
   infoPositionField,
   validateInfoPositionWithWidth,
 } from './cardSettings'
+
+const articleTypeOf = (context: {document?: unknown}) =>
+  (context.document as {articleType?: string} | undefined)?.articleType
 
 export const article = defineType({
   name: 'article',
@@ -29,6 +31,9 @@ export const article = defineType({
       name: 'slug',
       type: 'slug',
       options: {source: 'title'},
+      hidden: true,
+      description:
+        'Auto-generated from the title at first publish (unique per article type) and frozen from then on.',
       validation: (rule) => rule.required().custom(validateScopedSlugUniqueness),
     }),
     defineField({
@@ -38,15 +43,14 @@ export const article = defineType({
       options: {list: ['news', 'editorial', 'zine'], layout: 'radio'},
       validation: (rule) => rule.required(),
       description:
-        'Determines routing and field visibility. news = /news/, editorial = /articles/, zine = /zine/issues/[issue]/[article]/',
-      hidden: true,
+        'Determines the field set and where the article appears. news = outbound link card, editorial = /articles/ page, zine = article within an issue.',
     }),
     defineField({
       name: 'tags',
       type: 'array',
       of: [{type: 'reference', to: [{type: 'tag'}]}],
-      validation: (rule) => rule.max(2),
-      description: 'Tags. Max 2 allowed.',
+      validation: (rule) => rule.max(1),
+      description: 'Max 1 tag; the article type chip is added automatically.',
     }),
 
     defineField({
@@ -68,12 +72,19 @@ export const article = defineType({
     defineField({
       name: 'publicationDate',
       type: 'datetime',
-      validation: (rule) => rule.required(),
+      hidden: true,
+      readOnly: true,
+      description: 'Stamped automatically at first publish and frozen from then on.',
     }),
     defineField({
       name: 'leadMedia',
       type: 'mediaBox',
-      validation: (rule) => rule.required(),
+      hidden: ({document}) => document?.articleType === 'news',
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          if (articleTypeOf(context) === 'news') return true
+          return value ? true : 'Lead media is required.'
+        }),
     }),
     defineField({
       name: 'overview',
@@ -89,48 +100,40 @@ export const article = defineType({
       name: 'body',
       type: 'array',
       of: [{type: 'contentLayoutRow'}],
+      hidden: ({document}) => document?.articleType === 'news',
+      validation: (rule) =>
+        rule.custom((value, context) =>
+          validateArticleBody(value, {
+            document: {articleType: articleTypeOf(context)},
+          }),
+        ),
+    }),
+    defineField({
+      name: 'destination',
+      title: 'Destination',
+      type: 'url',
+      description: 'News only. The URL this story links out to.',
+      hidden: ({document}) => document?.articleType !== 'news',
       validation: (rule) =>
         rule.custom((value, context) => {
-          const articleType = (context.document as {articleType?: string})?.articleType
-          const externalCoverage = (context.document as {externalCoverage?: unknown[]})
-            ?.externalCoverage
-          return validateArticleBody(value, {
-            document: {_type: articleType, externalCoverage},
-          })
+          if (articleTypeOf(context) === 'news' && !value) {
+            return 'News articles require a destination URL.'
+          }
+          return true
         }),
     }),
     defineField({
-      name: 'externalCoverage',
-      title: 'External Coverage',
-      type: 'array',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            defineField({name: 'outlet', type: 'string', validation: (rule) => rule.required()}),
-            defineField({name: 'url', type: 'url', validation: (rule) => rule.required()}),
-            defineField({name: 'isPrimary', type: 'boolean', initialValue: false}),
-          ],
-          preview: {select: {title: 'outlet', subtitle: 'url'}},
-        },
-      ],
-      description: 'Optional for News articles. Links to external coverage of this story.',
-      hidden: ({document}) => document?.articleType !== 'news',
-    }),
-    defineField({
-      name: 'cardDestination',
-      title: 'Card Destination',
+      name: 'source',
+      title: 'Source',
       type: 'string',
-      options: {list: ['internal', 'external'], layout: 'radio'},
-      initialValue: 'internal',
-      description:
-        'News only. When "external", card links to the primary external coverage link instead of article detail.',
+      description: 'News only. Optional outlet label shown on the card (e.g. "Vogue").',
       hidden: ({document}) => document?.articleType !== 'news',
     }),
     defineField({
       name: 'relatedItems',
       type: 'array',
       of: [{type: 'reference', to: [{type: 'article'}]}],
+      hidden: ({document}) => document?.articleType === 'news',
       validation: (rule) => rule.custom(validateRelatedItems),
       description: 'Related articles. Must be empty or contain exactly three unique items.',
     }),
@@ -142,13 +145,9 @@ export const article = defineType({
         articleType?: string
         cardWidth?: string
         infoPosition?: string
-        cardDestination?: string
-        externalCoverage?: unknown[]
       }
       const settingsResult = validateInfoPositionWithWidth({parent: doc})
       if (settingsResult !== true) return settingsResult
-      const coverageResult = validateExternalCoverage(doc.externalCoverage, {parent: doc})
-      if (coverageResult !== true) return coverageResult
       return validateZineArticleIssueMembership(doc, {
         document: doc,
         getClient: (options) => context.getClient(options),

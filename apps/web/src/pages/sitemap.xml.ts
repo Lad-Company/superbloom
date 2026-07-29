@@ -19,7 +19,6 @@ interface SitemapEntry {
 export const GET: APIRoute = async ({ site }) => {
   const content = await sanityClient.fetch<{
     caseStudies: SitemapEntry[];
-    news: SitemapEntry[];
     articles: SitemapEntry[];
     pastIssues: SitemapEntry[];
     zineArticles: Array<{
@@ -36,7 +35,6 @@ export const GET: APIRoute = async ({ site }) => {
     { path: '/index' },
     { path: '/zine' },
     ...(content.caseStudies ?? []),
-    ...(content.news ?? []),
     ...(content.articles ?? []),
     ...(content.pastIssues ?? []),
     ...(content.zineArticles ?? []).flatMap((issue) =>

@@ -1,7 +1,7 @@
 type Reference = {_ref?: string}
 type PortableTextBlock = {children?: Array<{text?: string}>}
 type ValidationContext = {
-  document?: {_id?: string; _type?: string; articleType?: string; externalCoverage?: unknown[]}
+  document?: {_id?: string; _type?: string; articleType?: string}
   parent?: unknown
 }
 
@@ -15,21 +15,9 @@ export const validateArticleBody = (body: unknown, context: ValidationContext): 
   if (Array.isArray(body) && body.length > 0) return true
 
   const type = context.document?.articleType ?? context.document?._type
-  if (type === 'news' && (context.document?.externalCoverage?.length ?? 0) > 0) {
-    return true
-  }
+  if (type === 'news') return true
 
-  return type === 'news'
-    ? 'Provide an article body or external coverage.'
-    : 'An article body is required.'
-}
-
-export const validateNewsContent = (
-  document: {body?: unknown; externalCoverage?: unknown[]} | undefined,
-): true | string => {
-  if (Array.isArray(document?.body) && document.body.length > 0) return true
-  if ((document?.externalCoverage?.length ?? 0) > 0) return true
-  return 'Provide an article body or external coverage.'
+  return 'An article body is required.'
 }
 
 export const validatePortableTextNonEmpty = (value: unknown): true | string =>
@@ -52,29 +40,6 @@ export const validateRelatedItems = (
   }
 
   return true
-}
-
-export const validateExternalCoverage = (coverage: unknown, context: ValidationContext): true | string => {
-  const parent = context.parent as {articleType?: string; cardDestination?: string} | undefined
-  if (
-    parent?.articleType &&
-    parent.articleType !== 'news' &&
-    Array.isArray(coverage) &&
-    coverage.length > 0
-  ) {
-    return 'External coverage is only available for News.'
-  }
-
-  if (!Array.isArray(coverage)) return parent?.cardDestination === 'external'
-    ? 'External cards require exactly one primary coverage link.'
-    : true
-
-  const primaryCount = coverage.filter((link: {isPrimary?: boolean}) => link.isPrimary).length
-  if (parent?.cardDestination === 'external' && primaryCount !== 1) {
-    return 'External cards require exactly one primary coverage link.'
-  }
-
-  return primaryCount <= 1 || 'Only one coverage link can be primary.'
 }
 
 export const validateReferencesUnique = (items: unknown): true | string => {

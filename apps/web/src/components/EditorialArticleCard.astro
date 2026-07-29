@@ -34,7 +34,6 @@ interface Props {
   settings?: PartialContentCardSettings
   listSettings?: PartialContentCardSettings
   globalSettings?: PartialContentCardSettings
-  mixedList?: boolean
   minimal?: boolean
 }
 
@@ -45,7 +44,6 @@ const {
   settings,
   listSettings,
   globalSettings,
-  mixedList = false,
   minimal = false,
 } = Astro.props
 const href = item.slug ? `/articles/${item.slug}` : '#'
@@ -68,10 +66,5 @@ const summary = item.overview
   class={className}
   cardId={item._id}
 >
-  <TagList
-    slot="overlay"
-    tags={item.tags}
-    typeLabel={mixedList ? 'Editorial' : undefined}
-    maxTags={mixedList ? 1 : 2}
-  />
+  <TagList slot="overlay" tags={item.tags} typeLabel="Editorial" maxTags={1} />
 </EditorialCard>

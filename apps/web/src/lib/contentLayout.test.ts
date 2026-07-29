@@ -8,7 +8,7 @@ import {
 import {
   caseStudyBySlugQuery,
   contentLayoutRowsProjection,
-  newsArticleBySlugQuery,
+  editorialArticleBySlugQuery,
 } from './queries';
 
 const componentSource = readFileSync(
@@ -94,7 +94,7 @@ describe('Content Layout Row rendering contract', () => {
     ]) {
       expect(contentLayoutRowsProjection).toContain(field);
     }
-    expect(newsArticleBySlugQuery).toContain('contentLayoutRow');
+    expect(editorialArticleBySlugQuery).toContain('contentLayoutRow');
     expect(caseStudyBySlugQuery).toContain('mediaLayouts');
     expect(caseStudyBySlugQuery).toContain('blocks[]');
     expect(caseStudyBySlugQuery).toContain('supportingRows');
