@@ -1,8 +1,8 @@
 ---
 import MediaFrame, {type Media} from '../MediaFrame.astro'
 import Button from '../Button.astro'
+import PageHero from '../PageHero.astro'
 import SurfaceSection from '../SurfaceSection.astro'
-import {vars} from '../../lib/surfaceRole'
 import CardCarousel from '../CardCarousel.astro'
 import PortableText from '../PortableText.astro'
 import TagList from '../TagList.astro'
@@ -76,30 +76,13 @@ const overrideFor = (id?: string | null) =>
 ---
 
 <article class="issue-detail">
-  <header class="hero" style={vars.dark}>
-    <div class="hero-media">
-      <MediaFrame
-        media={issue.heroMedia}
-        ratio="16:9"
-        sizes="(max-width: 1439px) 100vw, 1440px"
-        title={issue.title}
-        priority
-      />
-    </div>
-    <div class="hero-copy">
-      <h1 class="type-h1">{issue.title}</h1>
-      {
-        readZineHref && (
-          <Button
-            href={readZineHref}
-            label="Explore the Issue"
-            target="_blank"
-            rel="noopener noreferrer"
-          />
-        )
-      }
-    </div>
-  </header>
+  <PageHero
+    heading={issue.title ?? ''}
+    media={issue.heroMedia}
+    mediaRatio="16:9"
+    ctaLabel={readZineHref ? 'Explore the Issue' : null}
+    ctaHref={readZineHref}
+  />
 
   {landingIntro && <ZineLandingIntro {...landingIntro} />}
 
@@ -158,30 +141,6 @@ const overrideFor = (id?: string | null) =>
 </article>
 
 <style>
-  .hero {
-    position: relative;
-    color: var(--fg);
-    background: var(--bg);
-  }
-
-  .hero-media :global(.media-frame) {
-    max-height: 90svh;
-    border-radius: var(--radius-media);
-  }
-
-  .hero-copy {
-    position: absolute;
-    right: var(--page-inset);
-    bottom: var(--space-xl);
-    left: var(--page-inset);
-    max-width: 900px;
-  }
-
-  .hero-copy :global(.btn) {
-    margin-top: var(--space-xs);
-  }
-
-  h1,
   h2 {
     margin: 0;
   }
@@ -241,39 +200,6 @@ const overrideFor = (id?: string | null) =>
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
-  }
-
-  @media (max-width: 1023px) {
-    /* Same mobile pattern as the PageHero media hero: media fills the
-       viewport, copy bottom-anchors (the 16:9 box is too short to contain
-       the copy, and it overflowed into the nav). */
-    .hero {
-      min-height: 100svh;
-    }
-
-    .hero-media {
-      position: absolute;
-      inset: 0;
-    }
-
-    .hero-media :global(.media-frame) {
-      /* MediaFrame sets aspect-ratio inline; override to fill the hero. */
-      aspect-ratio: auto !important;
-      height: 100%;
-      max-height: none;
-    }
-
-    .hero-copy {
-      right: var(--space-3xs);
-      bottom: var(--space-3xs);
-      left: var(--space-3xs);
-      max-width: none;
-    }
-
-    /* Shared PageHero H1 scale */
-    .hero-copy h1 {
-      font-size: clamp(64px, 18vw, 160px);
-    }
   }
 
   @media (max-width: 767px) {
