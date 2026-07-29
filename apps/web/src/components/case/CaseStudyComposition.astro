@@ -1,14 +1,13 @@
 ---
 import MediaFrame from '../MediaFrame.astro';
+import PageHero from '../PageHero.astro';
 import SurfaceSection from '../SurfaceSection.astro';
-import CaseStudyHero from './CaseStudyHero.astro';
 import CaseStudyNarrativeSection from './CaseStudyNarrativeSection.astro';
 import CaseStudyPress from './CaseStudyPress.astro';
 import CaseStudySpineNav from './CaseStudySpineNav.astro';
 import NextProject from './NextProject.astro';
 import Results from './Results.astro';
 import { caseStudySections } from '../../lib/caseStudySections';
-import { fgForHex } from '../../lib/luminance';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
 
 type CaseStudy = NonNullable<CaseStudyBySlugQueryResult>;
@@ -17,27 +16,21 @@ interface Props {
   caseStudy: CaseStudy;
 }
 
+// Brand color vars are set on <body> by pages/work/[slug].astro (see
+// caseBrandVars) so the Layout-rendered Navigation resolves case tokens too.
 const { caseStudy } = Astro.props;
-const primaryColor = caseStudy.primaryColor ?? '#ffffff';
-const secondaryColor = caseStudy.secondaryColor ?? primaryColor;
-const primaryForeground = fgForHex(primaryColor);
-const secondaryForeground = fgForHex(secondaryColor);
-const brandVars = [
-  `--case-primary-bg: ${primaryColor}`,
-  `--case-primary-fg: ${primaryForeground}`,
-  `--case-secondary-bg: ${secondaryColor}`,
-  `--case-secondary-fg: ${secondaryForeground}`,
-].join('; ');
+const capabilityTitles = (caseStudy.capabilities ?? [])
+  .map((capability) => capability?.title)
+  .filter((title): title is string => Boolean(title));
 ---
 
-<div class="case-study" style={brandVars}>
+<div class="case-study">
   <SurfaceSection role="case-primary">
     <div class="hero-shell">
-      <slot name="navigation" />
-      <CaseStudyHero
-        client={caseStudy.client}
-        title={caseStudy.title}
-        capabilities={caseStudy.capabilities}
+      <PageHero
+        heading={caseStudy.title ?? ''}
+        eyebrow={caseStudy.client}
+        tags={capabilityTitles}
       />
     </div>
   </SurfaceSection>
