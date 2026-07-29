@@ -43,8 +43,9 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
     <style is:global>
       /* Route Transition — native View Transition swipe: the outgoing page lifts
          and fades, the incoming page rises from below into place. The page's own
-         Type Reveal plays only on genuine loads; navigation entrances are carried
-         by this transition. */
+         Type Reveal plays on top of the swipe (see the astro:before-swap handler
+         below, which stamps the incoming document so reveal targets start
+         hidden). */
       @keyframes sbh-route-out {
         to {
           opacity: 0;
@@ -81,15 +82,12 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
 
       let destroyMotion = () => {};
       let destroySmoothScroll = () => {};
-      let isInitialLoad = true;
 
       const setup = () => {
         destroySmoothScroll = initSmoothScroll();
-        // On the genuine first load, play the full page-entry Type Reveal. On
-        // View Transition navigations, the native swipe carries the entrance, so
-        // only scroll-triggered reveals are wired (hero/text stay visible).
-        destroyMotion = initMotion(isInitialLoad);
-        isInitialLoad = false;
+        // The full page-entry Type Reveal plays on the genuine first load and
+        // on every View Transition navigation.
+        destroyMotion = initMotion();
         requestAnimationFrame(() => ScrollTrigger.refresh());
       };
 
@@ -102,7 +100,15 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
 
       // Runs on the initial load and after every View Transition navigation.
       document.addEventListener('astro:page-load', setup);
-      document.addEventListener('astro:before-swap', teardown);
+      document.addEventListener('astro:before-swap', (event) => {
+        teardown();
+        // Astro resets <html> on swap, dropping the `js` class that hides
+        // Type Reveal targets. Stamp the incoming document so hero text starts
+        // hidden and the reveal animates on navigations instead of flashing
+        // visible-then-hidden.
+        const newDocument = (event as unknown as { newDocument?: Document }).newDocument;
+        newDocument?.documentElement.classList.add('js');
+      });
     </script>
     <style is:global>
       *,

@@ -6,13 +6,13 @@ import {revealText, type RevealHandle} from './reveal'
  * Type Reveal entry animation for every element that opts in via data
  * attributes, then returns a cleanup for the caller to run on `astro:before-swap`.
  *
- * Runs on every `astro:page-load`. On the genuine initial load it plays the
- * full page-entry Type Reveal (hero/immediate + scroll). On View Transition
- * navigations the native swipe carries the entrance, so only scroll-triggered
- * reveals are wired and the immediate hero/text elements are left visible (the
- * `html.js` hide rule no longer applies once Astro resets the root on swap).
+ * Runs on every `astro:page-load`. The full Type Reveal (immediate hero +
+ * scroll-triggered) plays on the genuine initial load and on every View
+ * Transition navigation — Layout stamps the incoming document with the `js`
+ * class on `astro:before-swap`, so reveal targets start hidden and animate in
+ * alongside the route swipe.
  */
-export function initMotion(isInitialLoad = true): () => void {
+export function initMotion(): () => void {
   const cleanups: Array<() => void> = [initPressFeedback()]
   const handles: RevealHandle[] = []
 
@@ -27,10 +27,7 @@ export function initMotion(isInitialLoad = true): () => void {
     }).then((handle) => handles.push(handle))
   }
 
-  const selector = isInitialLoad
-    ? '[data-motion-text]'
-    : '[data-motion-text]:not([data-scroll="false"])'
-  document.querySelectorAll<HTMLElement>(selector).forEach(reveal)
+  document.querySelectorAll<HTMLElement>('[data-motion-text]').forEach(reveal)
 
   return () => {
     handles.forEach((handle) => handle.destroy())
