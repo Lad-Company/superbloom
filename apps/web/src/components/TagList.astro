@@ -49,9 +49,9 @@ const tagList = (tags ?? []).slice(0, maxTags)
     color: var(--bg);
     backdrop-filter: blur(var(--frosted-layer-blur));
     -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
-    /* Surface Wipe fill: keeps the frosted look, a bit darker, with lighter ink */
-    --wipe-surface: rgba(0, 0, 0, 0.45);
-    --wipe-ink: #fff;
+    /* Surface Wipe fill: keeps the frosted look, brighter fill with darker ink */
+    --wipe-surface: rgba(255, 255, 255, 0.45);
+    --wipe-ink: rgba(0, 0, 0, 0.85);
   }
 
   .tag::before {
