@@ -46,4 +46,6 @@ Run from the repo root:
 
 - `AGENTS.md` - agent instructions, stakeholders, and workflow conventions
 - `CONTEXT.md` - domain model and ubiquitous language
-- `docs/` - ADRs, agent docs, and design-system notes
+- `ARCHITECTURE.md` - architecture-of-record and the collapsed decision log
+- `docs/design-system.md` - design, UI, theming, and motion intent
+- `docs/agents/` - agent workflow docs (issue tracker, triage labels, domain)

@@ -32,4 +32,6 @@ Five canonical states: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-f
 
 ### Domain docs
 
-Single-context layout: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+Single-context layout at the repo root: `CONTEXT.md` (domain glossary),
+`ARCHITECTURE.md` (architecture + collapsed decision log), and `docs/design-system.md`
+(design/UI/motion intent). See `docs/agents/domain.md`.

@@ -5,7 +5,9 @@ How engineering skills should consume this repo's domain documentation when expl
 ## Before exploring, read these
 
 - **`CONTEXT.md`** at the repo root — domain glossary and canonical terminology.
-- **`docs/adr/`** — read ADRs that touch the area you're about to work in.
+- **`ARCHITECTURE.md`** at the repo root — architecture-of-record and the collapsed
+  decision log (formerly `docs/adr/`); read the decisions touching your area.
+- **`docs/design-system.md`** — design, UI, theming, and motion intent.
 
 If any of these files don't exist, proceed silently.
 
@@ -13,26 +15,23 @@ If any of these files don't exist, proceed silently.
 
 ```
 /
-├── CONTEXT.md
+├── CONTEXT.md          — domain glossary
+├── ARCHITECTURE.md     — architecture + decision log
 ├── docs/
-│   └── adr/
-│       ├── 0001-astro-over-nextjs.md
-│       ├── 0002-sanity-cms.md
-│       ├── 0003-no-database.md
-│       ├── 0004-mux-for-video.md
-│       ├── 0005-monorepo-web-studio-schemas.md
-│       └── 0006-mailchimp-only-no-resend.md
+│   ├── design-system.md
+│   └── agents/
 └── apps/
-    ├── web/        — Astro app
-    └── studio/     — Sanity Studio
+    ├── web/            — Astro app
+    └── studio/         — Sanity Studio
 ```
 
 ## Use the glossary's vocabulary
 
 When naming domain concepts (in issue titles, refactor proposals, test names), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids — e.g., say "Creator" not "freelancer", "Case Study" not "project", "Team Member" not "employee".
 
-## Flag ADR conflicts
+## Flag decision conflicts
 
-If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
+If your output contradicts a decision in `ARCHITECTURE.md` (the collapsed ADR log),
+surface it explicitly rather than silently overriding:
 
 > _Contradicts ADR-0003 (no database) — but worth reopening because…_
