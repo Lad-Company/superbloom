@@ -1,5 +1,6 @@
 import {readFileSync} from 'node:fs'
 import {describe, expect, it} from 'vitest'
+import {indexViewAllNewestQuery, indexViewAllOldestQuery} from '../../lib/queries'
 
 const source = readFileSync(new URL('./index.astro', import.meta.url), 'utf8')
 
@@ -8,6 +9,29 @@ describe('Index page', () => {
     expect(source).toContain('<SortControl')
     expect(source).toContain('View All')
     expect(source).toContain('type-h3')
+  })
+
+  it('renders the type filter and scopes the list query to the selected type', () => {
+    expect(source).toContain('<TypeFilter')
+    expect(source).toContain('parseArticleTypeFilter')
+    expect(source).toContain('typeFilter: type')
+  })
+
+  it('filters both view-all queries by the optional type param', () => {
+    for (const query of [indexViewAllNewestQuery, indexViewAllOldestQuery]) {
+      expect(query).toContain('(!defined($typeFilter) || articleType == $typeFilter)')
+    }
+  })
+
+  it('defaults to the sort control and shows one browse control at a time with JS', () => {
+    expect(source).toContain('data-active-control="sort"')
+    expect(source).toContain('html.js')
+    expect(source).toContain("data-active-control='sort']")
+    expect(source).toContain("data-active-control='filter']")
+  })
+
+  it('wraps the card list and load-more in a swappable results region', () => {
+    expect(source).toContain('data-browse-results')
   })
 
   it('does not keep the small inline sort links', () => {

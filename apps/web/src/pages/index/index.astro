@@ -7,7 +7,9 @@ import ContentCardList from '../../components/ContentCardList.astro'
 import MixedArticleCard from '../../components/MixedArticleCard.astro'
 import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro'
 import SortControl from '../../components/SortControl.astro'
+import TypeFilter from '../../components/TypeFilter.astro'
 import SurfaceSection from '../../components/SurfaceSection.astro'
+import {parseArticleTypeFilter} from '../../lib/articleTypes'
 import {indexPageQuery, indexViewAllNewestQuery, indexViewAllOldestQuery} from '../../lib/queries'
 import {sanityClient} from '../../lib/sanity'
 import type {
@@ -19,6 +21,7 @@ import type {PartialContentCardSettings} from '../../lib/contentCard'
 
 const BATCH_SIZE = 12
 const sort = Astro.url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest'
+const type = parseArticleTypeFilter(Astro.url.searchParams.get('type'))
 const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10)
 const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
 const recordLimit = page * BATCH_SIZE
@@ -35,6 +38,7 @@ const fetchedItems = await sanityClient.fetch<
 >(viewAllQuery, {
   featuredIds,
   tagId: indexPage?.allSection?.tagId ?? null,
+  typeFilter: type,
   offset: 0,
   end: recordLimit + 1,
 })
@@ -50,6 +54,7 @@ const overrideFor = (id: string) =>
 const queryFor = (nextPage: number, nextSort = sort) => {
   const params = new URLSearchParams()
   if (nextSort === 'oldest') params.set('sort', nextSort)
+  if (type) params.set('type', type)
   if (nextPage > 1) params.set('page', String(nextPage))
   const query = params.toString()
   return query ? `/index?${query}` : '/index'
@@ -87,25 +92,30 @@ const queryFor = (nextPage: number, nextSort = sort) => {
       <section class="view-all" aria-labelledby="view-all-heading">
         <div class="view-all-header">
           <h2 id="view-all-heading" class="type-h3">View All</h2>
-          <SortControl value={sort} />
+          <div class="view-all-controls" data-active-control="sort">
+            <SortControl value={sort} type={type} />
+            <TypeFilter value={type} sort={sort} />
+          </div>
         </div>
-        <ContentCardList class="all-card-list">
-          {
-            items.map((item) => {
-              const settings = overrideFor(item._id)
-              return (
-                <MixedArticleCard
-                  item={item}
-                  settings={settings}
-                  listSettings={listSettings}
-                  globalSettings={globalSettings}
-                  minimal
-                />
-              )
-            })
-          }
-        </ContentCardList>
-        {hasMore && <ProgressiveLoadMore href={queryFor(page + 1)} />}
+        <div data-browse-results>
+          <ContentCardList class="all-card-list">
+            {
+              items.map((item) => {
+                const settings = overrideFor(item._id)
+                return (
+                  <MixedArticleCard
+                    item={item}
+                    settings={settings}
+                    listSettings={listSettings}
+                    globalSettings={globalSettings}
+                    minimal
+                  />
+                )
+              })
+            }
+          </ContentCardList>
+          {hasMore && <ProgressiveLoadMore href={queryFor(page + 1)} />}
+        </div>
       </section>
     </main>
   </SurfaceSection>
@@ -146,6 +156,20 @@ const queryFor = (nextPage: number, nextSort = sort) => {
     align-items: flex-start;
     gap: var(--space-m);
     margin-bottom: var(--space-xl);
+  }
+
+  .view-all-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-s);
+  }
+
+  /* With JS, only one browse control is displayed at a time; clicking its
+     label swaps to the other. Without JS both stay visible and functional. */
+  :global(html.js) .view-all-controls[data-active-control='sort'] :global(.type-filter),
+  :global(html.js) .view-all-controls[data-active-control='filter'] :global(.sort-control) {
+    display: none;
   }
 
   .view-all :global(progressive-load-more) {

@@ -1,11 +1,18 @@
 ---
+import type {ArticleTypeFilter} from '../lib/articleTypes'
+
 export interface Props {
   value: 'newest' | 'oldest'
+  type?: ArticleTypeFilter | null
 }
 
-const {value = 'newest'} = Astro.props
+const {value = 'newest', type = null} = Astro.props
 const nextSort = value === 'newest' ? 'oldest' : 'newest'
-const href = nextSort === 'oldest' ? '/index?sort=oldest' : '/index'
+const params = new URLSearchParams()
+if (nextSort === 'oldest') params.set('sort', 'oldest')
+if (type) params.set('type', type)
+const query = params.toString()
+const href = query ? `/index?${query}` : '/index'
 const actionLabel =
   value === 'newest'
     ? 'Sorted by date, newest first. Activate to sort oldest first.'
@@ -13,7 +20,7 @@ const actionLabel =
 ---
 
 <div class="sort-control">
-  <span class="sort-label type-h5">Sort by</span>
+  <button type="button" class="sort-label type-h5 underline-draw" data-mode-swap>Sort by</button>
   <a class="sort-toggle type-h5" href={href} data-sort-toggle aria-label={actionLabel}>
     <span class="sort-toggle-text underline-draw">Date</span>
     <span class="sort-arrow" data-direction={value} aria-hidden="true">
@@ -30,42 +37,12 @@ const actionLabel =
 </div>
 
 <script>
-  // Progressive enhancement: swap only the sort section in place so changing
-  // sort order does not trigger a full page reload or jump the visitor to the top.
-  const regionOf = (node: Element | null | undefined) =>
-    node?.closest<HTMLElement>('section') ?? null
+  import {initBrowseSwap} from '../lib/browseSwap'
 
-  const swapRegion = async (url: string, region: HTMLElement) => {
-    const response = await fetch(url)
-    if (!response.ok) throw new Error('Sort request failed')
-    const doc = new DOMParser().parseFromString(await response.text(), 'text/html')
-    const nextRegion = regionOf(doc.querySelector('[data-sort-toggle]'))
-    if (!nextRegion) throw new Error('Sorted section missing from response')
-    region.innerHTML = nextRegion.innerHTML
-    return response.url
-  }
-
-  document.addEventListener('click', (event) => {
-    if (event.defaultPrevented || event.button !== 0) return
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-    const toggle = (event.target as Element | null)?.closest<HTMLAnchorElement>('[data-sort-toggle]')
-    if (!toggle) return
-    const region = regionOf(toggle)
-    if (!region || !toggle.href) return
-
-    event.preventDefault()
-    swapRegion(toggle.href, region)
-      .then((finalUrl) => history.pushState(null, '', finalUrl))
-      .catch(() => {
-        window.location.href = toggle.href
-      })
-  })
-
-  window.addEventListener('popstate', () => {
-    const region = regionOf(document.querySelector('[data-sort-toggle]'))
-    if (!region) return
-    swapRegion(window.location.href, region).catch(() => window.location.reload())
-  })
+  // Progressive enhancement shared with the type filter: swap only the browse
+  // section in place so changing sort order does not trigger a full page
+  // reload or jump the visitor to the top.
+  initBrowseSwap()
 </script>
 
 <style>
@@ -75,8 +52,18 @@ const actionLabel =
     gap: var(--space-s);
   }
 
+  /* Button reset only; font tokens come from the type-h5 class. */
   .sort-label {
+    padding: 0;
+    background: none;
+    border: 0;
     color: var(--fg-30);
+    cursor: pointer;
+  }
+
+  .sort-label:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 4px;
   }
 
   .sort-toggle {

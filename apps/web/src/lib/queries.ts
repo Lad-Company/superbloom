@@ -455,6 +455,7 @@ export const indexViewAllNewestQuery = defineQuery(`
   *[
     _type == "article" &&
     articleType in ["news", "editorial", "zine"] &&
+    (!defined($typeFilter) || articleType == $typeFilter) &&
     !(_id in $featuredIds) &&
     (!defined($tagId) || $tagId in tags[]._ref)
   ] | order(publicationDate desc)[$offset...$end]{
@@ -466,6 +467,7 @@ export const indexViewAllOldestQuery = defineQuery(`
   *[
     _type == "article" &&
     articleType in ["news", "editorial", "zine"] &&
+    (!defined($typeFilter) || articleType == $typeFilter) &&
     !(_id in $featuredIds) &&
     (!defined($tagId) || $tagId in tags[]._ref)
   ] | order(publicationDate asc)[$offset...$end]{

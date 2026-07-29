@@ -18,8 +18,13 @@ describe('SortControl', () => {
 
   it('toggles between the two publication-date directions via a link to the opposite sort', () => {
     expect(source).toContain("value === 'newest' ? 'oldest' : 'newest'")
-    expect(source).toContain('/index?sort=oldest')
+    expect(source).toContain("params.set('sort', 'oldest')")
     expect(source).toContain('data-sort-toggle')
+  })
+
+  it('preserves the active type filter in the toggle href', () => {
+    expect(source).toContain('ArticleTypeFilter')
+    expect(source).toContain("params.set('type', type)")
   })
 
   it('flips the sort arrow to reflect the current direction', () => {
@@ -32,9 +37,12 @@ describe('SortControl', () => {
   })
 
   it('swaps the sort section in place instead of reloading the full page', () => {
-    expect(source).toContain('event.preventDefault()')
-    expect(source).toContain('fetch(url)')
-    expect(source).toContain('history.pushState')
-    expect(source).toContain("addEventListener('popstate'")
+    // The swap mechanism lives in src/lib/browseSwap.ts (see browseSwap.test.ts).
+    expect(source).toContain('initBrowseSwap')
+  })
+
+  it('renders the "Sort by" label as a button that swaps to the filter control', () => {
+    expect(source).toContain('<button type="button"')
+    expect(source).toContain('data-mode-swap')
   })
 })
