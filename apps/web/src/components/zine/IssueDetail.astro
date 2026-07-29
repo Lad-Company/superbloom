@@ -139,7 +139,7 @@ const overrideFor = (id?: string | null) =>
   <SurfaceSection role="dark" class="stories" aria-labelledby="stories-heading">
     {
       issue.slug && (
-        <CardCarousel class="article-rail" label="More stories" heading="More stories">
+        <CardCarousel class="article-rail" label="More stories" heading="More stories" scrollJack={false}>
           {articles.map((article) => (
             <ZineArticleCard
               article={article}
@@ -226,12 +226,8 @@ const overrideFor = (id?: string | null) =>
     margin-top: var(--space-xl);
   }
 
-  :global(.article-rail .controls) {
-    position: absolute;
-    top: calc(-1 * (var(--space-xl) + var(--space-xs-4)));
-    right: 0;
-    margin: 0;
-    padding: 0;
+  :global(.article-rail .rail) {
+    margin-right: calc(-1 * var(--page-inset));
   }
 
   .sr-only {
@@ -252,12 +248,6 @@ const overrideFor = (id?: string | null) =>
 
     .editor-letter-copy {
       max-width: none;
-    }
-
-    :global(.article-rail .controls) {
-      position: static;
-      justify-content: flex-start;
-      margin-top: var(--space-xs);
     }
   }
 </style>

@@ -20,6 +20,12 @@ describe('Card Carousel', () => {
     expect(source).toContain("this.classList.contains('is-scroll-jacked')")
   })
 
+  it('allows opting out of scroll jacking via the scrollJack prop', () => {
+    expect(source).toContain('scrollJack?: boolean')
+    expect(source).toContain("data-scroll-jack={scrollJack ? 'true' : 'false'}")
+    expect(source).toContain("this.dataset.scrollJack !== 'false'")
+  })
+
   it('accepts optional button props', () => {
     expect(source).toContain('buttonProps')
     expect(source).toContain('previousButtonProps')
