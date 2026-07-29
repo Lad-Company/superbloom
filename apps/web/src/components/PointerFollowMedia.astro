@@ -9,9 +9,9 @@ interface Props {
 
 const {media, title = '', class: className} = Astro.props
 const items = media.filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 4)
-// Each layered image is up to ~30vw wide; on mobile the cluster is hidden and
-// the parent section paints full-bleed, so hint 100vw below the lg breakpoint.
-const sizes = '(max-width: 767px) 100vw, 50vw'
+// Each layered image is up to ~30vw wide on desktop; on mobile the cluster
+// stays visible as a blurred parallax backdrop at up to ~55vw per layer.
+const sizes = '(max-width: 767px) 60vw, 50vw'
 ---
 
 {
@@ -27,7 +27,11 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
 }
 
 <script>
+  import gsap from 'gsap'
+  import {ScrollTrigger} from 'gsap/ScrollTrigger'
   import {POINTER_FOLLOW, REDUCED_MOTION_QUERY} from '../lib/motion'
+
+  gsap.registerPlugin(ScrollTrigger)
 
   // Resting offsets per layer index, in pixels relative to the section anchor.
   // Item 0 sits at the anchor (upper-right), item 1 stacks diagonally below
@@ -40,7 +44,15 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
     [-540, 480],
   ]
 
+  // Below the desktop breakpoint there is no cursor to chase: CSS owns each
+  // layer's placement and scroll-driven parallax supplies the drift, so the
+  // cluster floats behind the section text. Depths mirror the data-depth
+  // ranges used by initDepthLayer elsewhere on the site.
+  const MOBILE_QUERY = '(max-width: 767px)'
+  const MOBILE_DEPTHS: ReadonlyArray<number> = [0.5, 0.85, 0.35, 0.65]
+
   const mm = window.matchMedia(REDUCED_MOTION_QUERY)
+  const mobileMq = window.matchMedia(MOBILE_QUERY)
 
   interface Layer {
     el: HTMLElement
@@ -60,6 +72,7 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
   }
 
   const groups: Group[] = []
+  const parallaxTweens: gsap.core.Tween[] = []
   let pointerX = Number.NaN
   let pointerY = Number.NaN
   let rafId: number | null = null
@@ -185,6 +198,36 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
       group.dataset.pointerFollowInitialized = 'true'
 
       const scope = group.closest<HTMLElement>('[data-pointer-scope]') ?? group
+
+      if (mobileMq.matches) {
+        // Static, blurred backdrop: clear any stale desktop transform so the
+        // CSS anchors hold, then drift each layer on scroll at its own depth.
+        group.dataset.followVisible = 'true'
+        items.forEach((el, index) => {
+          el.style.transform = ''
+          if (mm.matches) return
+          const depth = MOBILE_DEPTHS[index] ?? MOBILE_DEPTHS[0]
+          parallaxTweens.push(
+            gsap.fromTo(
+              el,
+              {yPercent: depth * 24},
+              {
+                yPercent: -depth * 48,
+                ease: 'none',
+                scrollTrigger: {
+                  trigger: scope,
+                  start: 'top bottom',
+                  end: 'bottom top',
+                  scrub: true,
+                  invalidateOnRefresh: true,
+                },
+              },
+            ),
+          )
+        })
+        return
+      }
+
       const layers = buildLayers(items)
       const rest = restingAnchor(scope.getBoundingClientRect())
       layers.forEach((layer) => {
@@ -226,6 +269,10 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
     visibilityObserver?.disconnect()
     visibilityObserver = null
     groups.splice(0)
+    parallaxTweens.splice(0).forEach((tween) => {
+      tween.scrollTrigger?.kill()
+      tween.kill()
+    })
     document.querySelectorAll<HTMLElement>('[data-pointer-follow]').forEach((group) => {
       delete group.dataset.pointerFollowInitialized
       delete group.dataset.followVisible
@@ -241,6 +288,12 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
   window.addEventListener('blur', clearPointer)
   document.addEventListener('pointerleave', clearPointer)
   mm.addEventListener('change', () => (mm.matches ? stopLoop() : startLoop()))
+  // Crossing the breakpoint swaps behaviors (spring cluster <-> parallax
+  // backdrop), which requires a full re-init against the new layout mode.
+  mobileMq.addEventListener('change', () => {
+    teardown()
+    boot()
+  })
 
   document.addEventListener('astro:page-load', boot)
   document.addEventListener('astro:before-swap', teardown)
@@ -298,6 +351,47 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
   @media (prefers-reduced-motion: reduce) {
     .follow-item {
       will-change: auto;
+    }
+  }
+
+  /* Mobile: the cluster becomes a static, blurred backdrop behind the section
+     text. CSS anchors each layer (the JS spring loop is desktop-only) and the
+     blur keeps long headlines legible over the imagery. */
+  @media (max-width: 767px) {
+    .pointer-follow {
+      z-index: 0;
+    }
+
+    .follow-item {
+      filter: blur(14px);
+    }
+
+    .follow-item:nth-child(1) {
+      top: 6%;
+      left: auto;
+      right: 4%;
+      width: 46vw;
+    }
+
+    .follow-item:nth-child(2) {
+      top: auto;
+      bottom: 8%;
+      left: 2%;
+      width: 54vw;
+    }
+
+    .follow-item:nth-child(3) {
+      top: 32%;
+      left: 34%;
+      width: 36vw;
+    }
+
+    .follow-item:nth-child(4) {
+      top: auto;
+      bottom: 26%;
+      left: auto;
+      right: 8%;
+      width: 30vw;
     }
   }
 </style>

@@ -178,6 +178,12 @@ const displayedCapabilities = capabilities.slice(0, 8);
     .list {
       gap: var(--space-3xs);
     }
+
+    /* type-h3's fixed 120px overflows the mobile viewport; cap it at the
+       48px used for h3 headlines elsewhere on mobile. */
+    .list li {
+      font-size: clamp(36px, 11vw, 48px);
+    }
   }
 </style>
 
