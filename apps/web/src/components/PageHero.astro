@@ -100,9 +100,14 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     color: var(--bg);
   }
 
-  .hero-media.ratio-16-9 {
-    aspect-ratio: 16 / 9;
-    max-height: 90svh;
+  /* Ratio variants apply on desktop only: scoped to min-width so this 0,2,0
+     rule can't outspecificity the single-class mobile reset below (which sets
+     aspect-ratio: auto and lets min-height: 100svh drive the section). */
+  @media (min-width: 1024px) {
+    .hero-media.ratio-16-9 {
+      aspect-ratio: 16 / 9;
+      max-height: 90svh;
+    }
   }
 
   .hero-media :global(media-frame) {
