@@ -1,6 +1,7 @@
 ---
 import MediaFrame, { type Media } from './MediaFrame.astro';
 import Button from './Button.astro';
+import { control } from '../lib/surfaceRole';
 
 interface Props {
   heading: string;
@@ -28,7 +29,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
 
 {
   isMedia ? (
-    <section class:list={['hero-media', `ratio-${mediaRatio.replace(':', '-')}`]}>
+    <section class:list={['hero-media', `ratio-${mediaRatio.replace(':', '-')}`]} style={control.onDark}>
       <MediaFrame media={media} ratio="fill" sizes="100vw" title={heading} priority>
         <div class="scrim"></div>
         <div class="overlay">
