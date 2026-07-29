@@ -244,6 +244,32 @@ const overrideFor = (id?: string | null) =>
   }
 
   @media (max-width: 1023px) {
+    /* Same mobile pattern as the PageHero media hero: media fills the
+       viewport, copy bottom-anchors (the 16:9 box is too short to contain
+       the copy, and it overflowed into the nav). */
+    .hero {
+      min-height: 100svh;
+    }
+
+    .hero-media {
+      position: absolute;
+      inset: 0;
+    }
+
+    .hero-media :global(.media-frame) {
+      /* MediaFrame sets aspect-ratio inline; override to fill the hero. */
+      aspect-ratio: auto !important;
+      height: 100%;
+      max-height: none;
+    }
+
+    .hero-copy {
+      right: var(--space-3xs);
+      bottom: var(--space-3xs);
+      left: var(--space-3xs);
+      max-width: none;
+    }
+
     /* Shared PageHero H1 scale */
     .hero-copy h1 {
       font-size: clamp(64px, 18vw, 160px);
