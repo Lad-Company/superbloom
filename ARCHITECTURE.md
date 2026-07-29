@@ -145,6 +145,18 @@ another doc, that doc is authoritative.
 - **0021 — Adopt Lenis smooth scroll.** Lenis global, synced to `gsap.ticker` +
   `ScrollTrigger.update`, `lerp 0.1`, disabled for reduced-motion / no-JS.
   Supersedes the no-Lenis clause of 0007. *(`docs/design-system.md` §5.)*
+- **0023 — Allow the `null` CORS origin for the dashboard-hosted Studio.** The Studio
+  is served through the Sanity dashboard (`www.sanity.io/@.../studio/...`; the
+  `superbloom-cms.sanity.studio` host redirects into it), which runs the editor in a
+  sandboxed context. Its crop/hotspot canvas reads assets via a `crossorigin` fetch
+  carrying `Origin: null`; the image CDN 403s any present, non-allowlisted origin,
+  blanking every cropped image (Firefox surfaces it as `NS_BINDING_ABORTED`;
+  `localhost` was already allowlisted, so local dev was unaffected). Fix: allowlist
+  `null` **without credentials** (anonymous read only) plus `https://www.sanity.io`
+  **with credentials** for the dashboard shell. Acceptable because the `production`
+  dataset holds no sensitive data and assets are already publicly fetchable; revoke
+  with `sanity cors delete null` if that changes. Not a code bug — `MediaFrame`, the
+  generated URLs, and the `srcset` comma theory were all ruled out.
 
 **Superseded or amended (kept as guardrails):**
 
