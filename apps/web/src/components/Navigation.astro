@@ -45,7 +45,7 @@ const links = [
       aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a
     >
   </div>
-  <details class="compact-menu">
+  <details class="compact-menu" data-dropdown>
     <summary class="type-label">Menu</summary>
     <div class="compact-panel">
       <ul>
@@ -80,6 +80,12 @@ const links = [
 </nav>
 
 <script>
+  import {initDropdownDismiss} from '../lib/dropdownDismiss'
+
+  // Compact menu shares the site-wide dropdown dismissal (outside pointer,
+  // Escape).
+  initDropdownDismiss()
+
   const updateCartLinks = (itemCount: number) => {
     const isActive = itemCount > 0
     document.querySelectorAll<HTMLElement>('[data-cart-count]').forEach((count) => {
