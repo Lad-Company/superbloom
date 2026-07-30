@@ -69,21 +69,50 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
     <slot />
     <CartDrawer />
     <script>
-      import { initMotion, initSmoothScroll } from '../lib/motion';
+      import { getLenis, initMotion, initSmoothScroll } from '../lib/motion';
       import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
       let destroyMotion = () => {};
       let destroySmoothScroll = () => {};
       let isInitialLoad = true;
+      // Recorded on astro:before-preparation so page-load can tell fresh
+      // navigations (land at the top) from history traversal (browser restores
+      // the saved scroll position).
+      let navigationType: 'push' | 'replace' | 'traverse' = 'push';
+
+      // Fresh route navigations land at the top of the new page; a URL hash
+      // lands on its section. Scrolling goes through Lenis (when active) so its
+      // internal scroll state resets too — otherwise Lenis re-applies the
+      // previous page's offset on the next frame and the new page appears to
+      // load scrolled down (e.g. at the footer).
+      const settleScrollPosition = () => {
+        if (navigationType === 'traverse') return;
+        const hash = window.location.hash;
+        const target = hash ? document.getElementById(hash.slice(1)) : null;
+        const lenis = getLenis();
+        if (lenis) {
+          lenis.scrollTo(target ?? 0, { immediate: true, force: true });
+        } else if (target) {
+          target.scrollIntoView();
+        } else {
+          window.scrollTo(0, 0);
+        }
+      };
 
       const setup = () => {
         destroySmoothScroll = initSmoothScroll();
+        settleScrollPosition();
         // On the genuine first load, play the full page-entry Type Reveal. On
         // View Transition navigations, the native swipe carries the entrance, so
         // only scroll-triggered reveals are wired (hero/text stay visible).
         destroyMotion = initMotion(isInitialLoad);
         isInitialLoad = false;
-        requestAnimationFrame(() => ScrollTrigger.refresh());
+        // Re-assert after ScrollTrigger measures: pin spacers and splits shift
+        // layout, and Lenis must not drift back to a stale offset.
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+          settleScrollPosition();
+        });
       };
 
       const teardown = () => {
@@ -96,6 +125,10 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
       // Runs on the initial load and after every View Transition navigation.
       document.addEventListener('astro:page-load', setup);
       document.addEventListener('astro:before-swap', teardown);
+      document.addEventListener('astro:before-preparation', (event) => {
+        const type = (event as Event & { navigationType?: typeof navigationType }).navigationType;
+        if (type) navigationType = type;
+      });
     </script>
     <style is:global>
       *,

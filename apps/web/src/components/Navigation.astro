@@ -80,6 +80,8 @@ const links = [
 </nav>
 
 <script>
+  import { navigate } from 'astro:transitions/client'
+
   const updateCartLinks = (itemCount: number) => {
     const isActive = itemCount > 0
     document.querySelectorAll<HTMLElement>('[data-cart-count]').forEach((count) => {
@@ -104,21 +106,16 @@ const links = [
   document.addEventListener('astro:page-load', refreshCartCount)
   document.addEventListener('shop:cart-updated', refreshCartCount)
 
+  // Let's Chat scrolls to the contact band. When the band is on the current
+  // page the click falls through to the global smooth-scroll anchor handler
+  // (native anchor jump under reduced motion). Pages without a contact band
+  // (shop, cart) route to Who We Are, which always renders one.
   document.addEventListener('click', (event) => {
     const trigger = (event.target as Element).closest<HTMLAnchorElement>('[data-lets-chat]')
     if (!trigger) return
+    if (document.getElementById('contact')) return
     event.preventDefault()
-    const target = document.getElementById('contact')
-    if (target) {
-      target.scrollIntoView({behavior: 'smooth'})
-      return
-    }
-    const form = document.querySelector('form')
-    if (form) {
-      form.scrollIntoView({behavior: 'smooth'})
-      return
-    }
-    window.location.href = '/'
+    navigate('/who-we-are#contact')
   })
 </script>
 
