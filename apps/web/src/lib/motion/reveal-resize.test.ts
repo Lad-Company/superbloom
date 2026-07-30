@@ -45,7 +45,7 @@ describe('revealText on window resize', () => {
     document.body.appendChild(h1)
 
     // Reveal plays immediately (data-scroll="false" behavior). Use chars unit
-    // because the Hero.astro h1 uses data-unit="chars".
+    // because the PageHero.astro h1 uses data-unit="chars".
     await revealText(h1, {unit: 'chars', blur: true, scroll: false})
 
     // Force the GSAP timeline to its end frame so the reveal is "complete"

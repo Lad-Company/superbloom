@@ -16,7 +16,7 @@ export type SurfaceRole = (typeof surfaceRoles)[number]
 // white button that wipes to black; light surfaces get a black button that wipes
 // to white. --surface-wipe-outline matches the post-wipe ink so the inset border
 // is always visible. Case surfaces derive from their CMS fg/bg pair.
-const control = {
+export const control = {
   onDark: '--control-bg: #ffffff; --control-fg: #000000; --surface-wipe-outline: #ffffff;',
   onLight: '--control-bg: #000000; --control-fg: #ffffff; --surface-wipe-outline: #000000;',
 }

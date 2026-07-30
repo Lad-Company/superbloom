@@ -1,6 +1,5 @@
 ---
 import Layout from '../../../layouts/Layout.astro'
-import Navigation from '../../../components/Navigation.astro'
 import Footer from '../../../components/Footer.astro'
 import TagList from '../../../components/TagList.astro'
 import Button from '../../../components/Button.astro'
@@ -16,8 +15,7 @@ const formatMoney = (amount: string, currency: string) =>
   new Intl.NumberFormat('en-US', {style: 'currency', currency}).format(Number(amount))
 ---
 
-<Layout title={`${product.title} | Shop | Superbloom House`}>
-  <Navigation role="light" />
+<Layout title={`${product.title} | Shop | Superbloom House`} navRole="light">
   <main class="detail" data-product-detail data-variants={JSON.stringify(product.variants)}>
     <div class="image">
       {

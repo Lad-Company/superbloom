@@ -1,6 +1,5 @@
 ---
 import Layout from '../../layouts/Layout.astro'
-import Navigation from '../../components/Navigation.astro'
 import Footer from '../../components/Footer.astro'
 import ContactBand from '../../components/ContactBand.astro'
 import ArticleDetail from '../../components/editorial/ArticleDetail.astro'
@@ -21,8 +20,8 @@ if (!article) {
   title={article.title ?? 'Article'}
   description={seoDescription(article.overview)}
   image={seoImage(article.leadMedia)}
+  navRole="light"
 >
-  <Navigation role="light" />
   <ArticleDetail article={article} />
   <ContactBand role="brand-deep" />
   <Footer />

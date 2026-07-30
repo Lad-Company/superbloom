@@ -5,13 +5,17 @@ import '../styles/motion.css';
 import '../styles/forms.css';
 import { ClientRouter } from 'astro:transitions';
 import SEOHead from '../components/SEOHead.astro';
+import Navigation from '../components/Navigation.astro';
 import CartDrawer from '../components/cart/CartDrawer.astro';
+import { type SurfaceRole } from '../lib/surfaceRole';
 
 interface Props {
   title?: string;
   description?: string;
   canonicalUrl?: string;
   image?: string;
+  navRole?: SurfaceRole;
+  bodyStyle?: string;
 }
 
 const {
@@ -19,9 +23,19 @@ const {
   description = 'Superbloom House helps brands make work people actually want to watch, share, and talk about.',
   canonicalUrl = Astro.url.pathname,
   image,
+  navRole,
+  bodyStyle,
 } = Astro.props;
 
 const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
+
+const host = Astro.url.hostname;
+const gaMode =
+  host === 'superbloomhouse.com'
+    ? 'prod'
+    : host === 'superbloom-theta.vercel.app'
+      ? 'staging'
+      : 'off';
 ---
 
 <!doctype html>
@@ -31,6 +45,22 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <SEOHead title={title} description={description} canonicalUrl={canonical} image={image} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {gaMode !== 'off' && (
+      <>
+        <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-M4H5NZVDCB"></script>
+        <script is:inline set:html={`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', 'G-M4H5NZVDCB', {
+            send_page_view: false${gaMode === 'staging' ? `,
+            debug_mode: true,
+            traffic_type: 'internal'` : ''}
+          });
+        `}></script>
+      </>
+    )}
     <ClientRouter />
     <script is:inline>
       document.documentElement.classList.add('js');
@@ -38,8 +68,9 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
     <style is:global>
       /* Route Transition — native View Transition swipe: the outgoing page lifts
          and fades, the incoming page rises from below into place. The page's own
-         Type Reveal plays only on genuine loads; navigation entrances are carried
-         by this transition. */
+         Type Reveal plays on top of the swipe (see the astro:before-swap handler
+         below, which stamps the incoming document so reveal targets start
+         hidden). */
       @keyframes sbh-route-out {
         to {
           opacity: 0;
@@ -66,24 +97,25 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
       }
     </style>
   </head>
-  <body>
+  <body style={bodyStyle}>
+    {navRole && <Navigation role={navRole} />}
     <slot />
     <CartDrawer />
     <script>
       import { initMotion, initSmoothScroll } from '../lib/motion';
+      import { initAnalytics } from '../lib/analytics';
       import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+      initAnalytics();
 
       let destroyMotion = () => {};
       let destroySmoothScroll = () => {};
-      let isInitialLoad = true;
 
       const setup = () => {
         destroySmoothScroll = initSmoothScroll();
-        // On the genuine first load, play the full page-entry Type Reveal. On
-        // View Transition navigations, the native swipe carries the entrance, so
-        // only scroll-triggered reveals are wired (hero/text stay visible).
-        destroyMotion = initMotion(isInitialLoad);
-        isInitialLoad = false;
+        // The full page-entry Type Reveal plays on the genuine first load and
+        // on every View Transition navigation.
+        destroyMotion = initMotion();
         requestAnimationFrame(() => ScrollTrigger.refresh());
       };
 
@@ -96,7 +128,15 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
 
       // Runs on the initial load and after every View Transition navigation.
       document.addEventListener('astro:page-load', setup);
-      document.addEventListener('astro:before-swap', teardown);
+      document.addEventListener('astro:before-swap', (event) => {
+        teardown();
+        // Astro resets <html> on swap, dropping the `js` class that hides
+        // Type Reveal targets. Stamp the incoming document so hero text starts
+        // hidden and the reveal animates on navigations instead of flashing
+        // visible-then-hidden.
+        const newDocument = (event as unknown as { newDocument?: Document }).newDocument;
+        newDocument?.documentElement.classList.add('js');
+      });
     </script>
     <style is:global>
       *,

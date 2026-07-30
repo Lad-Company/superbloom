@@ -2,7 +2,7 @@
 import ContactBand from '../../components/ContactBand.astro'
 import Footer from '../../components/Footer.astro'
 import Layout from '../../layouts/Layout.astro'
-import Navigation from '../../components/Navigation.astro'
+import PageHero from '../../components/PageHero.astro'
 import ContentCardList from '../../components/ContentCardList.astro'
 import MixedArticleCard from '../../components/MixedArticleCard.astro'
 import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro'
@@ -61,16 +61,13 @@ const queryFor = (nextPage: number, nextSort = sort) => {
 }
 ---
 
-<Layout title="Index" description={pageHeader} canonicalUrl="/index">
+<Layout title="Index" description={pageHeader} canonicalUrl="/index" navRole="light">
   <SurfaceSection role="light">
-    <Navigation role="light" />
     <main>
+      <PageHero heading={pageHeader} id="featured-heading" />
       {
         featured.length > 0 && (
           <section class="featured" aria-labelledby="featured-heading">
-            <h1 id="featured-heading" class="type-h1 featured-header">
-              {pageHeader}
-            </h1>
             <ContentCardList columnPack>
               {featured.map((entry) => {
                 const item = entry.item!
@@ -124,30 +121,17 @@ const queryFor = (nextPage: number, nextSort = sort) => {
 </Layout>
 
 <style>
-  .featured,
+  .featured {
+    padding: 0 var(--page-inset) var(--space-3xl);
+  }
+
   .view-all {
     padding: var(--space-3xl) var(--page-inset);
+    padding-top: var(--space-xl);
   }
 
-  .featured {
-    padding-top: var(--space-4xl);
-  }
-
-  .featured h1,
   .view-all h2 {
     margin: 0;
-  }
-
-  .featured-header {
-    max-width: 21ch;
-  }
-
-  .featured :global(.content-card-list) {
-    margin-top: var(--space-xl);
-  }
-
-  .view-all {
-    padding-top: var(--space-xl);
   }
 
   .view-all-header {
@@ -177,17 +161,12 @@ const queryFor = (nextPage: number, nextSort = sort) => {
   }
 
   @media (max-width: 1023px) {
-    .featured,
+    .featured {
+      padding: 0 var(--space-3xs) var(--space-2xl);
+    }
+
     .view-all {
       padding: var(--space-2xl) var(--space-3xs);
-    }
-
-    .featured {
-      padding-top: var(--space-2xl);
-    }
-
-    .featured :global(.content-card-list) {
-      margin-top: var(--space-xs);
     }
 
     .view-all-header {
