@@ -35,3 +35,9 @@ Five canonical states: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-f
 Single-context layout at the repo root: `CONTEXT.md` (domain glossary),
 `ARCHITECTURE.md` (architecture + collapsed decision log), and `docs/design-system.md`
 (design/UI/motion intent). See `docs/agents/domain.md`.
+
+### Worktrees
+
+Parallel agents work in separate git worktrees, each needing its own `pnpm install`
+and `.env.local`. Killed dev servers can poison the Vite dep cache, silently breaking
+video and motion. See `docs/agents/worktrees.md`.

@@ -71,6 +71,10 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
   loading priority, visibility-aware playback (hidden/offscreen/background-tab
   video is always paused). Does not know its parent's content type or destination,
   and does not construct routes.
+- **`PageHero`** — the single page-header block. One shared H1 (200px/78%
+  desktop, `clamp(64px, 18vw, 160px)` below 1024, ≤4 lines) with three modes
+  derived from props: text (default), media (home 3/2, zine 16:9 + CTA), case
+  (eyebrow + tags).
 - **`Button`** — variants solid / translucent / outline / icon. The canonical
   contained-control affordance.
 - **`Icon`**, form controls, **`TagList`** (overlay + inline), **`Metric`**.
@@ -210,8 +214,9 @@ Info always below.
 Hero → News → Parallax → Capabilities (Capes) → Our Work → Creative Collective
 (Why) → Zine → Contact.
 
-- **Hero** (`Hero.astro`) — full-bleed hero: background media with an overlaid
-  headline (`display-1`) and intro, headline left ~2/3, intro bottom-right.
+- **Hero** (`PageHero.astro`, media mode) — full-bleed hero: background media
+  with an overlaid headline (`display-1`) and intro, headline left ~2/3, intro
+  bottom-right.
 - **Capes** (`Capes.astro`) — capability grid (headline + short description),
   3-col desktop / 2-col mobile, up to 6 capabilities; inherits page color mode.
   Reference recipe for Pinned Storytelling + Depth Layer motion.
@@ -222,7 +227,7 @@ Hero → News → Parallax → Capabilities (Capes) → Our Work → Creative Co
 
 ### Who We Are (Fixed, art-directed — singleton `whoWeAre`)
 
-Fixed section order: Nav → Hero → Featured media → Marquee → Intro statement →
+Fixed section order: Hero (`PageHero`) → Featured media → Marquee → Intro statement →
 Fact cards (`FactCardGrid`) → Advantage headline + blocks (`TextMedia`) →
 Disciplines (`DisciplineList`) → 2-up CTAs (`TwoUp`, max 2) → FAQ (`Faq`, max 6) →
 Contact (blue) → Footer. **Disciplines** (the breadth list) are distinct from the
@@ -232,9 +237,10 @@ PP Neue Corp display faces appear.
 ### Shared Site Shell
 
 Persistent structure composed around each page's unique content: `Navigation`,
-`ContactBand`, `Footer`. `siteSettings` supplies the four social links
-(Instagram, LinkedIn, Vimeo, YouTube). Shop is a first-class `/shop` route, not a
-settings link.
+`ContactBand`, `Footer`. `Navigation` is rendered once by `Layout` via the
+page's `navRole` prop; pages no longer hand-render it. `siteSettings` supplies
+the four social links (Instagram, LinkedIn, Vimeo, YouTube). Shop is a
+first-class `/shop` route, not a settings link.
 
 ### Shop (functional; no approved visual design yet)
 
