@@ -4,6 +4,7 @@ import Footer from '../../components/Footer.astro'
 import ContactBand from '../../components/ContactBand.astro'
 import ArticleDetail from '../../components/editorial/ArticleDetail.astro'
 import {sanityClient} from '../../lib/sanity'
+import {setPublicCache} from '../../lib/cacheHeaders'
 import {editorialArticleBySlugQuery} from '../../lib/queries'
 import {seoDescription, seoImage} from '../../lib/seo'
 
@@ -14,6 +15,8 @@ if (!article) {
   Astro.response.status = 404
   return Astro.rewrite('/404')
 }
+
+setPublicCache(Astro.response)
 ---
 
 <Layout

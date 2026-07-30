@@ -3,8 +3,11 @@ import Layout from '../layouts/Layout.astro'
 import Footer from '../components/Footer.astro'
 import HomepageComposition from '../components/home/HomepageComposition.astro'
 import {sanityClient} from '../lib/sanity'
+import {setPublicCache} from '../lib/cacheHeaders'
 import {homepageQuery} from '../lib/queries'
 import type {HomepageQueryResult} from '../sanity.types'
+
+setPublicCache(Astro.response)
 
 const homepage: HomepageQueryResult = await sanityClient.fetch(homepageQuery)
 ---

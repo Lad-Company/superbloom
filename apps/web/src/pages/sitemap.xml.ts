@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { sitemapQuery } from '../lib/queries';
 import { sanityClient } from '../lib/sanity';
+import { setPublicCache } from '../lib/cacheHeaders';
 
 const escapeXml = (value: string) =>
   value.replace(/[<>&'"]/g, (character) => ({
@@ -54,7 +55,9 @@ export const GET: APIRoute = async ({ site }) => {
     })
     .join('');
 
-  return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}</urlset>`, {
+  const response = new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}</urlset>`, {
     headers: { 'Content-Type': 'application/xml; charset=utf-8' },
   });
+  setPublicCache(response, 3600);
+  return response;
 };

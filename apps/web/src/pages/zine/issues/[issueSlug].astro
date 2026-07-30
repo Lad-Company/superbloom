@@ -4,6 +4,7 @@ import Footer from '../../../components/Footer.astro'
 import ContactBand from '../../../components/ContactBand.astro'
 import IssueDetail from '../../../components/zine/IssueDetail.astro'
 import {sanityClient} from '../../../lib/sanity'
+import {setPublicCache} from '../../../lib/cacheHeaders'
 import {issueArchiveQuery, issueBySlugQuery, zineLandingQuery} from '../../../lib/queries'
 import {seoDescription, seoImage} from '../../../lib/seo'
 
@@ -20,6 +21,8 @@ const zineLanding = await sanityClient.fetch(zineLandingQuery)
 if (issue && zineLanding?.currentIssue?.slug === issue.slug) {
   return Astro.redirect('/zine', 302)
 }
+
+setPublicCache(Astro.response)
 
 const pastIssues = await sanityClient.fetch(issueArchiveQuery, {slug: issue.slug})
 ---
