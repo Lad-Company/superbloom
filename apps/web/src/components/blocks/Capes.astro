@@ -30,6 +30,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
         ))
       }
     </div>
+    <div class="blur-veil" aria-hidden="true"></div>
     <div class="overlay">
       <div class="context">
         <div class="contextual-copy type-h6" aria-live="polite">
@@ -70,7 +71,29 @@ const displayedCapabilities = capabilities.slice(0, 8);
   .media-stack {
     position: absolute;
     inset: 0;
+    /* Stacking context so the JS-set frame z-indexes stay below the veil. */
+    z-index: 0;
     overflow: clip;
+  }
+
+  /* Frosted veil over the whole section media so the headers stay legible.
+     Intersecting fade masks on both axes dissolve the blur before any edge
+     is visible. */
+  .blur-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    -webkit-mask-image:
+      linear-gradient(to right, transparent, black 8%, black 92%, transparent),
+      linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(to right, transparent, black 8%, black 92%, transparent),
+      linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+    mask-composite: intersect;
   }
 
   .frame {
@@ -99,6 +122,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
   .overlay {
     position: absolute;
     inset: 0;
+    z-index: 2;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--page-gutter);
@@ -154,35 +178,10 @@ const displayedCapabilities = capabilities.slice(0, 8);
   }
 
   .list li {
-    position: relative;
-    /* Keeps the ::before blur layer composited above the media stack while
-       painting behind the header text itself. */
-    isolation: isolate;
     color: var(--bg-60);
     transition:
       color var(--motion-standard) var(--motion-ease-out),
       opacity var(--motion-standard) var(--motion-ease-out);
-  }
-
-  /* Frosted backdrop behind each header: blurs the media beneath, with
-     intersecting fade masks on both axes so the blur dissolves before any
-     edge is visible. Fades out with the item via the is-past opacity. */
-  .list li::before {
-    content: '';
-    position: absolute;
-    inset: -0.4em -0.9em;
-    z-index: -1;
-    pointer-events: none;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    -webkit-mask-image:
-      linear-gradient(to right, transparent, black 18%, black 82%, transparent),
-      linear-gradient(to bottom, transparent, black 25%, black 75%, transparent);
-    -webkit-mask-composite: source-in;
-    mask-image:
-      linear-gradient(to right, transparent, black 18%, black 82%, transparent),
-      linear-gradient(to bottom, transparent, black 25%, black 75%, transparent);
-    mask-composite: intersect;
   }
 
   .list li.is-active {
