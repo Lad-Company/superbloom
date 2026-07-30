@@ -1,6 +1,5 @@
 ---
 import Layout from '../../layouts/Layout.astro'
-import Navigation from '../../components/Navigation.astro'
 import Footer from '../../components/Footer.astro'
 import ProductGrid from '../../components/shop/ProductGrid.astro'
 import {listProducts} from '../../lib/shopify'
@@ -15,8 +14,7 @@ try {
 }
 ---
 
-<Layout title="Shop | Superbloom House">
-  <Navigation role="dark" />
+<Layout title="Shop | Superbloom House" navRole="dark">
   <main>
     <header class="shop-header">
       <h1 class="type-h7">Shop</h1>

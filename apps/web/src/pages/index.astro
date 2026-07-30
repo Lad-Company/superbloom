@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro'
-import Navigation from '../components/Navigation.astro'
 import Footer from '../components/Footer.astro'
 import HomepageComposition from '../components/home/HomepageComposition.astro'
 import {sanityClient} from '../lib/sanity'
@@ -10,8 +9,7 @@ import type {HomepageQueryResult} from '../sanity.types'
 const homepage: HomepageQueryResult = await sanityClient.fetch(homepageQuery)
 ---
 
-<Layout>
-  <Navigation role="dark" />
+<Layout navRole="dark">
   {homepage && <HomepageComposition homepage={homepage} />}
   <Footer />
 </Layout>

@@ -1,6 +1,5 @@
 ---
 import Layout from '../../../../layouts/Layout.astro'
-import Navigation from '../../../../components/Navigation.astro'
 import Footer from '../../../../components/Footer.astro'
 import ContactBand from '../../../../components/ContactBand.astro'
 import ArticleDetail from '../../../../components/editorial/ArticleDetail.astro'
@@ -25,8 +24,8 @@ const article = result.article
   description={seoDescription(article.overview)}
   image={seoImage(article.leadMedia)}
   canonicalUrl={`/zine/issues/${result.issueSlug}/${article.slug}`}
+  navRole="light"
 >
-  <Navigation role="light" />
   <ArticleDetail article={article} />
   <ContactBand role="brand-deep" />
   <Footer />
