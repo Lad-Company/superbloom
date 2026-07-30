@@ -44,7 +44,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
         <ol class="list" data-capes-list>
           {
             displayedCapabilities.map((cap, index) => (
-              <li class:list={['type-h5 md:type-h3', { 'is-active': index === 0 }]} data-cap data-index={index}>
+              <li class:list={['type-h4 md:type-h3', { 'is-active': index === 0 }]} data-cap data-index={index}>
                 {cap.title}
               </li>
             ))
