@@ -19,6 +19,8 @@ import { caseStudySections } from '../../lib/caseStudySections';
 </nav>
 
 <script>
+  import { getLenis } from '../../lib/motion';
+
   const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-spine-link]')];
   const sections = links
     .map((link) => document.getElementById(link.dataset.spineLink ?? ''))
@@ -55,10 +57,17 @@ import { caseStudySections } from '../../lib/caseStudySections';
       const section = document.getElementById(link.dataset.spineLink ?? '');
       if (!section) return;
       event.preventDefault();
-      section.scrollIntoView({
-        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-        block: 'start',
-      });
+      // Scroll through Lenis when smooth scroll is active: a native
+      // scrollIntoView races Lenis's raf loop and the scroll stalls.
+      const lenis = getLenis();
+      if (lenis) {
+        lenis.scrollTo(section);
+      } else {
+        section.scrollIntoView({
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          block: 'start',
+        });
+      }
       history.replaceState(null, '', link.hash);
       section.focus({ preventScroll: true });
       setActive(section.id);

@@ -102,7 +102,7 @@ const gaMode =
     <slot />
     <CartDrawer />
     <script>
-      import { initMotion, initSmoothScroll } from '../lib/motion';
+      import { getLenis, initMotion, initSmoothScroll } from '../lib/motion';
       import { initAnalytics } from '../lib/analytics';
       import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -110,13 +110,42 @@ const gaMode =
 
       let destroyMotion = () => {};
       let destroySmoothScroll = () => {};
+      // Recorded on astro:before-preparation so page-load can tell fresh
+      // navigations (land at the top) from history traversal (browser restores
+      // the saved scroll position).
+      let navigationType: 'push' | 'replace' | 'traverse' = 'push';
+
+      // Fresh route navigations land at the top of the new page; a URL hash
+      // lands on its section. Scrolling goes through Lenis (when active) so its
+      // internal scroll state resets too — otherwise Lenis re-applies the
+      // previous page's offset on the next frame and the new page appears to
+      // load scrolled down (e.g. at the footer).
+      const settleScrollPosition = () => {
+        if (navigationType === 'traverse') return;
+        const hash = window.location.hash;
+        const target = hash ? document.getElementById(hash.slice(1)) : null;
+        const lenis = getLenis();
+        if (lenis) {
+          lenis.scrollTo(target ?? 0, { immediate: true, force: true });
+        } else if (target) {
+          target.scrollIntoView();
+        } else {
+          window.scrollTo(0, 0);
+        }
+      };
 
       const setup = () => {
         destroySmoothScroll = initSmoothScroll();
+        settleScrollPosition();
         // The full page-entry Type Reveal plays on the genuine first load and
         // on every View Transition navigation.
         destroyMotion = initMotion();
-        requestAnimationFrame(() => ScrollTrigger.refresh());
+        // Re-assert after ScrollTrigger measures: pin spacers and splits shift
+        // layout, and Lenis must not drift back to a stale offset.
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+          settleScrollPosition();
+        });
       };
 
       const teardown = () => {
@@ -136,6 +165,10 @@ const gaMode =
         // visible-then-hidden.
         const newDocument = (event as unknown as { newDocument?: Document }).newDocument;
         newDocument?.documentElement.classList.add('js');
+      });
+      document.addEventListener('astro:before-preparation', (event) => {
+        const type = (event as Event & { navigationType?: typeof navigationType }).navigationType;
+        if (type) navigationType = type;
       });
     </script>
     <style is:global>

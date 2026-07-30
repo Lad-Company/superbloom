@@ -21,6 +21,9 @@ export function initSmoothScroll(): () => void {
   gsap.ticker.lagSmoothing(0);
 
   const onAnchorClick = (event: MouseEvent) => {
+    // A component-level handler (e.g. the case study spine nav) may have
+    // already claimed this click; whoever prevents default first wins.
+    if (event.defaultPrevented) return;
     const anchor = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>('a[href^="#"]');
     const hash = anchor?.getAttribute('href');
     if (!hash || hash === '#') return;
