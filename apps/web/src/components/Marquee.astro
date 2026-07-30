@@ -1,28 +1,86 @@
 ---
 interface Props {
-  text: string;
+  text?: string;
 }
 
 const { text } = Astro.props;
+const hasSlot = Astro.slots.has('default');
 ---
 
-<div class="marquee-track" aria-hidden="true" data-marquee>
+<div
+  class:list={['marquee-track', hasSlot && 'marquee-track--items']}
+  aria-hidden={hasSlot ? undefined : 'true'}
+  data-marquee
+>
   <div class="marquee-content">
-    <p class="marquee-text">{text}</p>
-    <p class="marquee-text">{text}</p>
+    {
+      hasSlot ? (
+        <>
+          <div class="marquee-set">
+            <slot />
+          </div>
+          <div class="marquee-set" aria-hidden="true" inert>
+            <slot />
+          </div>
+        </>
+      ) : (
+        <>
+          <p class="marquee-text">{text}</p>
+          <p class="marquee-text">{text}</p>
+        </>
+      )
+    }
   </div>
 </div>
+
+<script>
+  const MARQUEE_SLOW_RATE = 0.25;
+
+  function setMarqueeRate(content: Element, rate: number) {
+    for (const animation of content.getAnimations()) {
+      if (typeof animation.updatePlaybackRate === 'function') {
+        animation.updatePlaybackRate(rate);
+      } else {
+        animation.playbackRate = rate;
+      }
+    }
+  }
+
+  function initMarqueeHover() {
+    document.querySelectorAll<HTMLElement>('[data-marquee]').forEach((track) => {
+      if (track.dataset.hoverBound) return;
+      track.dataset.hoverBound = 'true';
+      const content = track.querySelector('.marquee-content');
+      if (!content) return;
+      track.addEventListener('pointerenter', () => setMarqueeRate(content, MARQUEE_SLOW_RATE));
+      track.addEventListener('pointerleave', () => setMarqueeRate(content, 1));
+    });
+  }
+
+  document.addEventListener('astro:page-load', initMarqueeHover);
+</script>
 
 <style>
   .marquee-track {
     overflow: hidden;
     padding: var(--space-2xl) 0;
   }
+  .marquee-track--items {
+    padding: 0;
+  }
   .marquee-content {
     display: flex;
     width: max-content;
     animation: marquee-scroll 48s linear infinite;
     will-change: transform;
+  }
+  /* Each set carries its trailing gap as padding so the -50% wrap lands
+     exactly one set-width over and the seam stays seamless. */
+  .marquee-set {
+    display: flex;
+    align-items: start;
+    gap: var(--page-gutter);
+    padding-right: var(--page-gutter);
   }
   .marquee-text {
     margin: 0;
@@ -40,9 +98,28 @@ const { text } = Astro.props;
       transform: translateX(-50%);
     }
   }
+  @media (max-width: 959px) {
+    .marquee-set {
+      gap: 16px;
+      padding-right: 16px;
+    }
+  }
+  @media (max-width: 599px) {
+    .marquee-set {
+      gap: 12px;
+      padding-right: 12px;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .marquee-content {
       animation-play-state: paused;
+    }
+    /* Items stay reachable: static, manually scrollable rail. */
+    .marquee-track--items {
+      overflow-x: auto;
+    }
+    .marquee-track--items .marquee-content {
+      animation: none;
     }
   }
 </style>

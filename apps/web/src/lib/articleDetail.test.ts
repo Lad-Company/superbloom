@@ -51,10 +51,9 @@ describe('Article Detail contract', () => {
     expect(source).toContain('--fg: #fff')
   })
 
-  it('renders homepage News with the shared card carousel', () => {
-    expect(homepageNewsSource).toContain("import CardCarousel from '../CardCarousel.astro'")
-    expect(homepageNewsSource).toContain('<CardCarousel')
-    expect(homepageNewsSource).toContain("heading={showHeadline ? (headline ?? 'News') : null}")
+  it('renders homepage News as an endlessly looping marquee', () => {
+    expect(homepageNewsSource).toContain("import Marquee from '../Marquee.astro'")
+    expect(homepageNewsSource).toContain('<Marquee>')
   })
 
   it('uses the homepage authored News list instead of implicit latest items', () => {
