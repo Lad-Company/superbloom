@@ -140,6 +140,7 @@ const imageRendering =
   }
   {!hasAsset && <div class="placeholder-content" />}
   <slot />
+  <slot name="overlay" />
   {
     asset?._type === 'mux.video' && asset.playbackId && controls && (
       <button
