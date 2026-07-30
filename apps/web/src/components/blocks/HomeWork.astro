@@ -141,10 +141,18 @@ const rowStartFor = (index: number): number => {
     text-decoration: none;
   }
 
-  /* On desktop the cell (derived from the media's aspect ratio) defines the
-     shape; the image fills it so neighbouring edges touch exactly. On mobile
-     the media keeps its own aspect ratio and stacks. */
+  /* Desktop: the section drops the page gutters so the mosaic media bleeds to
+     the viewport edges; the header keeps the page inset and captions keep
+     their gutter padding. The cell (derived from the media's aspect ratio)
+     defines the shape; the image fills it so neighbouring edges touch exactly.
+     On mobile the media keeps its own aspect ratio and stacks. */
   @media (min-width: 1024px) {
+    .work {
+      padding-inline: 0;
+    }
+    .header {
+      padding-inline: var(--page-inset);
+    }
     .mosaic-item :global(.media-frame) {
       height: 100%;
       aspect-ratio: auto !important;
