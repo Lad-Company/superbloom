@@ -26,8 +26,11 @@ const {media, ratio = '16:9', title, controls = true} = Astro.props
   }
 
   @media (max-width: 768px) {
+    /* Mobile featured media sits flush under the hero — the hero's own
+       32px padding-bottom plus this 32px top form the consistent 64px
+       hand-off used across pages. */
     .featured-media {
-      padding: var(--space-3xs) var(--space-3xs) var(--space-xl);
+      padding: var(--space-xs) var(--space-3xs) var(--space-xl);
     }
   }
 </style>

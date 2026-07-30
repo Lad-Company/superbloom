@@ -68,11 +68,15 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
 
 <style>
   /* Shared H1 — desktop is the Figma 200px/78% type-h1 token; below 1024 it
-     scales with the viewport so the heading wraps to ≤4 lines (line-clamp-4)
-     with no x-overflow. */
+     scales with the viewport with no x-overflow. The type-h1 shortcut also
+     applies line-clamp-4 from Uno; we override it here so long hero titles
+     (e.g. "Superbloom House's 5th-Birthday Move? Open a Shop and Give the
+     Artists All The…") wrap to every line instead of truncation. */
   .hero-heading {
     margin: 0;
     max-width: 21ch;
+    display: block;
+    overflow: visible;
   }
 
   @media (max-width: 1023px) {
@@ -92,12 +96,16 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
   }
 
   @media (max-width: 1023px) {
+    /* Mobile text hero anchors the heading at the bottom of the section so
+       the min-height empty band sits at the top instead of below the
+       heading — gives Work, Who We Are, Shop, and News Index a tight
+       hand-off into the page below and a deliberate hero moment above. */
     .hero-text {
       display: flex;
-      min-height: 85svh;
+      min-height: 60svh;
       flex-direction: column;
       justify-content: flex-end;
-      padding: 0 var(--space-3xs) var(--space-s);
+      padding: var(--space-xl) var(--space-3xs) var(--space-xs);
     }
   }
 
@@ -204,17 +212,22 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
   }
 
   @media (max-width: 1023px) {
+    /* Bottom-anchored so the eyebrow/heading/tags sit at the bottom of the
+       hero, with the min-height empty band above them — keeps the
+       lead-media hand-off tight while preserving a deliberate hero moment. */
     .hero-case {
       min-height: 620px;
       padding-top: var(--space-3xl);
+      justify-content: flex-end;
     }
   }
 
   @media (max-width: 767px) {
     .hero-case {
       min-height: 520px;
-      padding-top: var(--space-xl);
+      padding-top: var(--space-l);
       padding-bottom: var(--space-xs);
+      justify-content: flex-end;
     }
 
     .case-eyebrow {

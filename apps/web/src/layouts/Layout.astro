@@ -44,6 +44,33 @@ const gaMode =
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <SEOHead title={title} description={description} canonicalUrl={canonical} image={image} />
+    {/* Preload the site fonts so they are available before first paint. Without
+       these, the heading wraps with the system fallback (Arial Narrow / Inter)
+       and re-flows when PP Neue Corp / Graphik swap in via font-display: swap.
+       That re-flow is what makes the heading visibly shift lower on hard
+       refresh, while navbar navigations keep the heading stable because the
+       fonts are already cached. */}
+    <link
+      rel="preload"
+      href="/fonts/PPNeueCorp-TightUltrabold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/PPNeueCorp-CompactUltrabold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/Graphik-Medium.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {gaMode !== 'off' && (
       <>

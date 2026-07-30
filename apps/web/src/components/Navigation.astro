@@ -46,35 +46,39 @@ const links = [
     >
   </div>
   <details class="compact-menu" data-dropdown>
-    <summary class="type-label">Menu</summary>
+    <summary class="compact-toggle" aria-label="Menu">
+      <span class="compact-toggle__icon" aria-hidden="true"></span>
+    </summary>
     <div class="compact-panel">
       <ul>
         {
           links.map((link) => (
             <li>
-              <a href={link.href} class="type-label underline-draw" data-route-link>
+              <a href={link.href} class="compact-link" data-route-link>
                 {link.label}
               </a>
             </li>
           ))
         }
       </ul>
-      <a
-        href="#contact"
-        class:list={['btn', 'btn-secondary', 'surface-wipe', 'type-label']}
-        data-motion-control
-        data-lets-chat><span class="nav__label">Let's Chat</span></a
-      >
-      <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control
-        ><span class="nav__label">Shop</span></a
-      >
-      <a
-        href="/cart"
-        class="type-label underline-draw"
-        data-cart-link
-        hidden
-        aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a
-      >
+      <div class="compact-actions">
+        <a
+          href="#contact"
+          class:list={['btn', 'btn-secondary', 'surface-wipe', 'compact-btn-label']}
+          data-motion-control
+          data-lets-chat><span class="nav__label">Let's Chat</span></a
+        >
+        <a href="/shop" class="btn btn-tertiary surface-wipe compact-btn-label" data-motion-control
+          ><span class="nav__label">Shop</span></a
+        >
+        <a
+          href="/cart"
+          class="type-label underline-draw"
+          data-cart-link
+          hidden
+          aria-label="Cart, 0 items">Cart <span data-cart-count>0</span></a
+        >
+      </div>
     </div>
   </details>
 </nav>
@@ -210,38 +214,109 @@ const links = [
     }
     .compact-menu {
       display: block;
-      position: relative;
     }
-    .compact-menu summary {
+
+    /* Toggle button (hamburger, morphs to X when the panel is open). */
+    .compact-toggle {
+      position: relative;
+      z-index: 60;
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
       cursor: pointer;
       list-style: none;
-      padding: var(--space-3xs) 16px;
-      border: 1px solid currentColor;
-      border-radius: var(--radius-control);
     }
-    .compact-menu summary::-webkit-details-marker {
+    .compact-toggle::-webkit-details-marker {
       display: none;
     }
-    .compact-panel {
+    .compact-toggle__icon,
+    .compact-toggle__icon::before,
+    .compact-toggle__icon::after {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 2px;
+      background: currentColor;
+      transition: transform var(--motion-quick) var(--motion-ease-out),
+        opacity var(--motion-instant) linear;
+    }
+    .compact-toggle__icon::before {
       position: absolute;
-      top: calc(100% + var(--space-3xs));
-      right: 0;
+      transform: translateY(-8px);
+    }
+    .compact-toggle__icon::after {
+      position: absolute;
+      transform: translateY(8px);
+    }
+    .compact-menu[open] .compact-toggle__icon {
+      background: transparent;
+    }
+    .compact-menu[open] .compact-toggle__icon::before {
+      transform: rotate(45deg);
+    }
+    .compact-menu[open] .compact-toggle__icon::after {
+      transform: rotate(-45deg);
+    }
+
+    /* Full-screen overlay panel with a magenta frame. */
+    .compact-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
       display: flex;
       flex-direction: column;
-      gap: var(--space-3xs);
-      min-width: 220px;
-      padding: var(--space-2xs);
-      background: var(--bg);
-      color: var(--fg);
-      border-radius: var(--radius-control);
+      padding: calc(var(--space-2xs) + 40px) var(--space-2xs) var(--space-2xs);
+      background: #000;
+      color: #fff;
+      overflow-y: auto;
     }
     .compact-panel ul {
       display: flex;
       flex-direction: column;
-      gap: var(--space-2xs);
+      gap: var(--space-3xs);
+      margin-top: var(--space-2xs);
     }
-    .compact-panel .btn {
+    .compact-link {
+      font-family: var(--font-display-tight);
+      font-weight: 750;
+      font-size: clamp(48px, 13vw, 64px);
+      line-height: 0.95;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      color: #fff;
+    }
+    .compact-actions {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3xs);
+    }
+    .compact-actions .btn {
+      display: block;
       text-align: center;
+      padding: var(--space-3xs) 16px;
+    }
+    .compact-btn-label {
+      font-family: var(--font-interface);
+      font-weight: 750;
+      font-size: 28px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .compact-actions .btn-tertiary {
+      background: #2a2a2a;
+      color: #fff;
+    }
+
+    /* Flip logo + toggle to white so they read on the black overlay. */
+    .navigation:has(.compact-menu[open]) {
+      color: #fff;
+    }
+    .navigation:has(.compact-menu[open]) .logo {
+      position: relative;
+      z-index: 60;
     }
   }
 
@@ -251,6 +326,14 @@ const links = [
     }
     .logo {
       max-width: 13ch;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .compact-toggle__icon,
+    .compact-toggle__icon::before,
+    .compact-toggle__icon::after {
+      transition: none;
     }
   }
 </style>

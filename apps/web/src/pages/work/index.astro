@@ -108,9 +108,12 @@ const allWorkHeading = 'All Work'
     margin: 0;
   }
   @media (max-width: 1023px) {
-    .featured-work,
+    .featured-work {
+      padding: var(--space-xs) var(--space-3xs) 0;
+    }
     .all-work {
       padding-inline: var(--space-3xs);
+      padding-top: var(--space-xs);
     }
   }
 </style>
