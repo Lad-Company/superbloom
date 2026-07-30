@@ -2,6 +2,7 @@
 import SurfaceSection from './SurfaceSection.astro'
 import PageGrid from './PageGrid.astro'
 import Button from './Button.astro'
+import SelectDropdown from './SelectDropdown.astro'
 
 type ContactSurfaceRole = 'brand-accent' | 'brand-deep' | 'brand-muted' | 'brand-tertiary'
 
@@ -23,22 +24,19 @@ const {role} = Astro.props
       <div class="page-grid-item contact-right">
         <form class="contact-form" id="contact-form">
           <div class="fields">
-            <div class="field-select">
-              <label class="sr-only" for="contact-inquiry-type">Inquiry type</label>
-              <select
-                id="contact-inquiry-type"
-                name="inquiryType"
-                class="input input--filled"
-                required
-              >
-                <option value="" disabled selected>Inquiry type*</option>
-                <option value="agency-partner">I am a brand looking for an agency partner</option>
-                <option value="creator">I am a Creator</option>
-                <option value="press">I am press / media</option>
-                <option value="other">Other</option>
-              </select>
-              <span class="select-arrow" aria-hidden="true"></span>
-            </div>
+            <SelectDropdown
+              name="inquiryType"
+              label="Inquiry type"
+              placeholder="Inquiry type*"
+              required
+              filled
+              options={[
+                {value: 'agency-partner', label: 'I am a brand looking for an agency partner'},
+                {value: 'creator', label: 'I am a Creator'},
+                {value: 'press', label: 'I am press / media'},
+                {value: 'other', label: 'Other'},
+              ]}
+            />
             <label class="sr-only" for="contact-name">Name</label>
             <input
               class="input"
@@ -59,19 +57,20 @@ const {role} = Astro.props
               autocomplete="email"
               required
             />
-            <div class="field-select">
-              <label class="sr-only" for="contact-hear-about-us">How did you hear about us?</label>
-              <select id="contact-hear-about-us" name="hearAboutUs" class="input" required>
-                <option value="" disabled selected>How did you hear about us?*</option>
-                <option value="referral">Referral</option>
-                <option value="instagram">Instagram</option>
-                <option value="linkedin">LinkedIn</option>
-                <option value="google">Google</option>
-                <option value="event">Event</option>
-                <option value="other">Other</option>
-              </select>
-              <span class="select-arrow" aria-hidden="true"></span>
-            </div>
+            <SelectDropdown
+              name="hearAboutUs"
+              label="How did you hear about us?"
+              placeholder="How did you hear about us?*"
+              required
+              options={[
+                {value: 'referral', label: 'Referral'},
+                {value: 'instagram', label: 'Instagram'},
+                {value: 'linkedin', label: 'LinkedIn'},
+                {value: 'google', label: 'Google'},
+                {value: 'event', label: 'Event'},
+                {value: 'other', label: 'Other'},
+              ]}
+            />
             <label class="sr-only" for="contact-message">Message</label>
             <textarea
               class="input input--message"
@@ -166,63 +165,6 @@ const {role} = Astro.props
   }
   .fields {
     gap: var(--space-3xs);
-  }
-  .input {
-    box-sizing: border-box;
-    width: 100%;
-    height: 56px;
-    padding: 0 var(--space-2xs);
-    appearance: none;
-    background: transparent;
-    border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
-    border-radius: var(--radius-control);
-    color: var(--fg);
-    font-family: var(--font-body);
-    font-size: 19px;
-    font-weight: 500;
-    line-height: 1.3;
-    letter-spacing: -0.02em;
-  }
-  .input::placeholder {
-    color: color-mix(in srgb, var(--fg) 50%, transparent);
-  }
-  .input:focus {
-    outline: none;
-    border-color: color-mix(in srgb, var(--fg) 60%, transparent);
-  }
-  .input--filled {
-    background: var(--fg);
-    border-color: color-mix(in srgb, var(--fg) 12%, transparent);
-    color: var(--bg);
-  }
-  .input--message {
-    height: auto;
-    padding-top: 16px;
-    padding-bottom: 16px;
-    resize: vertical;
-  }
-  .field-select {
-    position: relative;
-  }
-  .field-select select {
-    cursor: pointer;
-    padding-right: 40px;
-  }
-  .select-arrow {
-    position: absolute;
-    top: 50%;
-    right: var(--space-2xs);
-    width: 0;
-    height: 0;
-    pointer-events: none;
-    transform: translateY(-50%);
-    border-right: 4px solid transparent;
-    border-bottom: 0;
-    border-left: 4px solid transparent;
-    border-top: 5px solid currentColor;
-  }
-  .input--filled + .select-arrow {
-    color: var(--bg);
   }
   .contact-actions {
     display: flex;

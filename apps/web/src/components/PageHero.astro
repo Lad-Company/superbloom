@@ -1,0 +1,221 @@
+---
+import MediaFrame, { type Media } from './MediaFrame.astro';
+import Button from './Button.astro';
+import { control } from '../lib/surfaceRole';
+
+interface Props {
+  heading: string;
+  eyebrow?: string | null;
+  tags?: string[];
+  subheading?: string | null;
+  media?: Media | null;
+  /** Media hero aspect variant: home 3/2, zine 16:9 (capped at 90svh). */
+  mediaRatio?: '3:2' | '16:9';
+  /** Media hero overlay CTA (external link, e.g. zine PDF/issuu). */
+  ctaLabel?: string | null;
+  ctaHref?: string | null;
+  id?: string;
+}
+
+const { heading, eyebrow, tags, subheading, media, mediaRatio = '3:2', ctaLabel, ctaHref, id } =
+  Astro.props;
+
+// Layout mode derives from props: media → media hero (home); eyebrow/tags →
+// case hero (work/[slug]); otherwise the plain text hero (work, who-we-are,
+// index).
+const isMedia = Boolean(media);
+const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0));
+---
+
+{
+  isMedia ? (
+    <section class:list={['hero-media', `ratio-${mediaRatio.replace(':', '-')}`]} style={control.onDark}>
+      <MediaFrame media={media} ratio="fill" sizes="100vw" title={heading} priority>
+        <div class="scrim"></div>
+        <div class="overlay">
+          <h1 id={id} class="type-h1 hero-heading" data-motion-text data-unit="chars" data-blur data-scroll="false">{heading}</h1>
+          {subheading && <p class="type-caption sub">{subheading}</p>}
+          {ctaLabel && ctaHref && (
+            <div class="cta">
+              <Button href={ctaHref} label={ctaLabel} target="_blank" rel="noopener noreferrer" />
+            </div>
+          )}
+        </div>
+      </MediaFrame>
+    </section>
+  ) : isCase ? (
+    <header class="hero-case">
+      {eyebrow && <p class="case-eyebrow type-h5">{eyebrow}</p>}
+      <h1 id={id} class="type-h1 hero-heading" data-motion-text data-unit="chars" data-blur data-scroll="false">{heading}</h1>
+      {tags && tags.length > 0 && (
+        <ul class="case-tags type-label" aria-label="Capabilities">
+          {tags.map((tag) => (
+            <li>{tag}</li>
+          ))}
+        </ul>
+      )}
+    </header>
+  ) : (
+    <section class="hero-text">
+      <h1 id={id} class="type-h1 hero-heading" data-motion-text data-unit="chars" data-blur data-scroll="false">{heading}</h1>
+    </section>
+  )
+}
+
+<style>
+  /* Shared H1 — desktop is the Figma 200px/78% type-h1 token; below 1024 it
+     scales with the viewport so the heading wraps to ≤4 lines (line-clamp-4)
+     with no x-overflow. */
+  .hero-heading {
+    margin: 0;
+    max-width: 21ch;
+  }
+
+  @media (max-width: 1023px) {
+    .hero-heading {
+      max-width: none;
+      font-size: clamp(64px, 18vw, 160px);
+    }
+  }
+
+  /* Text hero */
+  .hero-text {
+    padding: var(--space-4xl) var(--page-inset) var(--space-3xl);
+  }
+
+  @media (max-width: 1023px) {
+    .hero-text {
+      display: flex;
+      min-height: 85svh;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 var(--space-3xs) var(--space-s);
+    }
+  }
+
+  /* Media hero (home 3/2, zine 16:9 capped) */
+  .hero-media {
+    position: relative;
+    aspect-ratio: 3 / 2;
+    overflow: clip;
+    color: var(--bg);
+  }
+
+  /* Ratio variants apply on desktop only: scoped to min-width so this 0,2,0
+     rule can't outspecificity the single-class mobile reset below (which sets
+     aspect-ratio: auto and lets min-height: 100svh drive the section). */
+  @media (min-width: 1024px) {
+    .hero-media.ratio-16-9 {
+      aspect-ratio: 16 / 9;
+      max-height: 90svh;
+    }
+  }
+
+  .hero-media :global(media-frame) {
+    position: absolute;
+    inset: 0;
+  }
+
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.35));
+    pointer-events: none;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--page-gutter);
+    align-items: end;
+    padding: var(--space-xl) var(--page-inset);
+    pointer-events: none;
+  }
+
+  .overlay .hero-heading {
+    grid-column: 1 / 3;
+  }
+
+  .sub {
+    grid-column: 3;
+    margin: 0;
+    align-self: end;
+  }
+
+  .cta {
+    grid-column: 1 / 3;
+    pointer-events: auto;
+  }
+
+  @media (max-width: 1023px) {
+    .hero-media {
+      aspect-ratio: auto;
+      min-height: 100svh;
+      max-height: none;
+    }
+
+    .overlay {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-s);
+      padding: var(--space-3xs);
+    }
+
+    .overlay .hero-heading,
+    .sub,
+    .cta {
+      grid-column: 1;
+    }
+  }
+
+  /* Case hero (work/[slug]) — eyebrow → heading → tags, top-anchored inside
+     the case-primary surface. */
+  .hero-case {
+    display: flex;
+    flex-direction: column;
+    min-height: 700px;
+    padding: var(--space-4xl) var(--page-inset) var(--space-m);
+  }
+
+  .case-eyebrow {
+    margin: 0 0 var(--space-s);
+  }
+
+  .case-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs-4);
+    margin: var(--space-l) 0 0;
+  }
+
+  .case-tags li {
+    padding: var(--space-xs-4);
+    border: 1px solid currentColor;
+    border-radius: var(--radius-control);
+  }
+
+  @media (max-width: 1023px) {
+    .hero-case {
+      min-height: 620px;
+      padding-top: var(--space-3xl);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .hero-case {
+      min-height: 520px;
+      padding-top: var(--space-xl);
+      padding-bottom: var(--space-xs);
+    }
+
+    .case-eyebrow {
+      font-size: 32px;
+    }
+
+    .case-tags {
+      margin-top: var(--space-s);
+      font-size: 15px;
+    }
+  }
+</style>

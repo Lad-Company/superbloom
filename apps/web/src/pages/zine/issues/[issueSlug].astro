@@ -1,6 +1,5 @@
 ---
 import Layout from '../../../layouts/Layout.astro'
-import Navigation from '../../../components/Navigation.astro'
 import Footer from '../../../components/Footer.astro'
 import ContactBand from '../../../components/ContactBand.astro'
 import IssueDetail from '../../../components/zine/IssueDetail.astro'
@@ -30,8 +29,8 @@ const pastIssues = await sanityClient.fetch(issueArchiveQuery, {slug: issue.slug
   description={seoDescription(issue.editorLetter?.body)}
   image={seoImage(issue.heroMedia)}
   canonicalUrl={`/zine/issues/${issue.slug}`}
+  navRole="dark"
 >
-  <Navigation role="dark" />
   <IssueDetail issue={issue} pastIssues={pastIssues} />
   <ContactBand role="brand-deep" />
   <Footer />

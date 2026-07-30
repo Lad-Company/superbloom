@@ -1,6 +1,5 @@
 ---
 import Layout from '../../layouts/Layout.astro'
-import Navigation from '../../components/Navigation.astro'
 import Footer from '../../components/Footer.astro'
 import ContactBand from '../../components/ContactBand.astro'
 import IssueDetail from '../../components/zine/IssueDetail.astro'
@@ -28,8 +27,8 @@ const currentIssueHref =
   description={seoDescription(zineLanding.currentIssue.editorLetter?.body)}
   image={seoImage(zineLanding.currentIssue.heroMedia)}
   canonicalUrl="/zine"
+  navRole="dark"
 >
-  <Navigation role="dark" />
   <IssueDetail
     issue={zineLanding.currentIssue}
     pastIssues={zineLanding.pastIssues ?? []}
