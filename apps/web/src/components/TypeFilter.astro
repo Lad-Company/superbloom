@@ -1,5 +1,6 @@
 ---
 import {ARTICLE_TYPES, ARTICLE_TYPE_LABELS, type ArticleTypeFilter} from '../lib/articleTypes'
+import DropdownChevron from './DropdownChevron.astro'
 
 export interface Props {
   value: ArticleTypeFilter | null
@@ -23,18 +24,11 @@ const hrefFor = (type: ArticleTypeFilter | null) => {
   <button type="button" class="type-filter-label type-h5 underline-draw" data-mode-swap>
     Filter by
   </button>
-  <details class="type-filter-dropdown">
+  <details class="type-filter-dropdown" data-dropdown>
     <summary class="type-filter-summary type-h5">
       <span class="type-filter-value underline-draw">{value ? ARTICLE_TYPE_LABELS[value] : 'Type'}</span>
       <span class="type-filter-arrow" aria-hidden="true">
-        <svg viewBox="0 0 18 9" width="18" height="9" fill="none">
-          <path
-            d="M1 1L9 8L17 1"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"></path>
-        </svg>
+        <DropdownChevron />
       </span>
     </summary>
     <ul class="type-filter-menu">
@@ -63,40 +57,15 @@ const hrefFor = (type: ArticleTypeFilter | null) => {
 
 <script>
   import {initBrowseSwap} from '../lib/browseSwap'
+  import {initDropdownDismiss} from '../lib/dropdownDismiss'
 
   // Shares the SortControl in-place swap: selecting a type swaps only the
   // browse section instead of reloading the page.
   initBrowseSwap()
 
-  declare global {
-    interface Window {
-      __sbhTypeFilterBound?: boolean
-    }
-  }
-
-  // The details/summary dropdown works without JS; this only adds dismiss
-  // behaviors (outside pointer, Escape).
-  if (!window.__sbhTypeFilterBound) {
-    window.__sbhTypeFilterBound = true
-
-    document.addEventListener('pointerdown', (event) => {
-      const target = event.target as Element | null
-      document
-        .querySelectorAll<HTMLDetailsElement>('[data-type-filter-root] details[open]')
-        .forEach((dropdown) => {
-          if (target && dropdown.contains(target)) return
-          dropdown.open = false
-        })
-    })
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape') return
-      const open = document.querySelector<HTMLDetailsElement>('[data-type-filter-root] details[open]')
-      if (!open) return
-      open.open = false
-      open.querySelector('summary')?.focus()
-    })
-  }
+  // The details/summary dropdown works without JS; shared dismissal adds
+  // outside-pointer and Escape close behaviors.
+  initDropdownDismiss()
 </script>
 
 <style>

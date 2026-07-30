@@ -110,9 +110,9 @@
 }
 
 /* Type Reveal gating: only hide when JavaScript is available so no-JS and
-   reduced-motion visitors always get the final, readable content. Astro resets
-   the <html> element on View Transition swaps, dropping this class, so only the
-   genuine initial load hides content for the page-entry reveal. */
+   reduced-motion visitors always get the final, readable content. Layout
+   re-stamps the incoming document's <html> with `js` on every View Transition
+   swap, so the reveal plays on client-side navigations too. */
 html.js [data-motion-text] {
   opacity: 0;
 }

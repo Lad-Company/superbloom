@@ -9,6 +9,7 @@ interface Props {
   class?: string
   showNextButton?: boolean
   showControls?: boolean
+  scrollJack?: boolean
   buttonProps?: ButtonProps
   previousButtonProps?: ButtonProps
   nextButtonProps?: ButtonProps
@@ -20,6 +21,7 @@ const {
   class: className,
   showNextButton = true,
   showControls = true,
+  scrollJack = true,
   buttonProps = {},
   previousButtonProps = {},
   nextButtonProps = {},
@@ -28,9 +30,10 @@ const {
 const mergedPreviousProps = {
   type: 'button' as const,
   'aria-label': `Previous ${heading ?? label}`,
+  'data-motion-control': true,
   ...buttonProps,
   ...previousButtonProps,
-  class: ['control', 'previous', buttonProps.class, previousButtonProps.class]
+  class: ['control', 'previous', 'surface-wipe', buttonProps.class, previousButtonProps.class]
     .filter(Boolean)
     .join(' '),
 }
@@ -38,15 +41,20 @@ const mergedPreviousProps = {
 const mergedNextProps = {
   type: 'button' as const,
   'aria-label': `Next ${heading ?? label}`,
+  'data-motion-control': true,
   ...buttonProps,
   ...nextButtonProps,
-  class: ['control', 'next', buttonProps.class, nextButtonProps.class]
+  class: ['control', 'next', 'surface-wipe', buttonProps.class, nextButtonProps.class]
     .filter(Boolean)
     .join(' '),
 }
 ---
 
-<card-carousel class:list={['card-carousel', className]} aria-label={label}>
+<card-carousel
+  class:list={['card-carousel', className]}
+  aria-label={label}
+  data-scroll-jack={scrollJack ? 'true' : 'false'}
+>
   {
     (heading || showControls) && (
       <div class="header">
@@ -54,11 +62,11 @@ const mergedNextProps = {
         {showControls && (
           <div class="controls" aria-label={`${heading ?? label} controls`}>
             <button {...mergedPreviousProps}>
-              ←
+              <span class="control__icon" aria-hidden="true">←</span>
             </button>
             {showNextButton && (
               <button {...mergedNextProps}>
-                →
+                <span class="control__icon" aria-hidden="true">→</span>
               </button>
             )}
           </div>
@@ -85,7 +93,7 @@ const mergedNextProps = {
       this.dataset.enhanced = 'true'
 
       const railContainer = (this.querySelector('.rail') as HTMLElement | null) ?? this
-      if (this.track) {
+      if (this.track && this.dataset.scrollJack !== 'false') {
         this.railHandle = initHorizontalRail(this, railContainer, this.track)
       }
 
@@ -162,6 +170,13 @@ const mergedNextProps = {
     background: transparent;
     color: inherit;
     cursor: pointer;
+    --wipe-surface: var(--fg);
+    --wipe-ink: var(--bg);
+  }
+
+  .control__icon {
+    position: relative;
+    z-index: 2;
   }
 
   .control:focus-visible {

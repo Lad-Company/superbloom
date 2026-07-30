@@ -1,0 +1,36 @@
+/* Shared form field primitives: text inputs, textareas, and the trigger of
+   the custom SelectDropdown all wear the same field chrome. */
+.input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 56px;
+  padding: 0 var(--space-2xs);
+  appearance: none;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
+  border-radius: var(--radius-control);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+.input::placeholder {
+  color: color-mix(in srgb, var(--fg) 50%, transparent);
+}
+.input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--fg) 60%, transparent);
+}
+.input--filled {
+  background: var(--fg);
+  border-color: color-mix(in srgb, var(--fg) 12%, transparent);
+  color: var(--bg);
+}
+.input--message {
+  height: auto;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  resize: vertical;
+}

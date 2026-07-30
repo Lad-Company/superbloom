@@ -1,10 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro'
-import Navigation from '../../components/Navigation.astro'
 import ContactBand from '../../components/ContactBand.astro'
 import Footer from '../../components/Footer.astro'
 import CaseStudyComposition from '../../components/case/CaseStudyComposition.astro'
 import {sanityClient} from '../../lib/sanity'
+import {caseBrandVars} from '../../lib/caseBrandVars'
 import {caseStudyBySlugQuery} from '../../lib/queries'
 import {seoDescription, seoImage} from '../../lib/seo'
 import type {CaseStudyBySlugQueryResult} from '../../sanity.types'
@@ -22,10 +22,10 @@ if (!caseStudy) {
   title={caseStudy.title ?? 'Case Study'}
   description={seoDescription((caseStudy as {summary?: unknown}).summary)}
   image={seoImage(caseStudy.leadMedia)}
+  navRole="case-primary"
+  bodyStyle={caseBrandVars(caseStudy)}
 >
-  <CaseStudyComposition caseStudy={caseStudy}>
-    <Navigation slot="navigation" role="case-primary" />
-  </CaseStudyComposition>
+  <CaseStudyComposition caseStudy={caseStudy} />
   <ContactBand role="brand-deep" />
   <Footer />
 </Layout>

@@ -300,4 +300,12 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
       will-change: auto;
     }
   }
+
+  /* Mobile hides the cluster at the component level so every pointer-follow
+     section (home, zine landing, who-we-are) paints full-bleed text only. */
+  @media (max-width: 767px) {
+    .pointer-follow {
+      display: none;
+    }
+  }
 </style>

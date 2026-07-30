@@ -1,0 +1,286 @@
+---
+import DropdownChevron from './DropdownChevron.astro'
+
+export interface SelectDropdownOption {
+  value: string
+  label: string
+}
+
+// Form-field counterpart to the browse TypeFilter: same details/summary
+// pattern, chevron, menu styling, and shared dismissal, but choosing an option
+// writes to a hidden text input so the value submits with the surrounding form
+// and native `required` validation still gates submission. The input stays
+// programmatically focusable (invisible but not display:none) so the browser
+// can anchor its validation message to the field.
+export interface Props {
+  name: string
+  label: string
+  placeholder: string
+  options: SelectDropdownOption[]
+  value?: string
+  required?: boolean
+  filled?: boolean
+  class?: string
+}
+
+const {
+  name,
+  label,
+  placeholder,
+  options,
+  value = '',
+  required = false,
+  filled = false,
+  class: className,
+  ...rest
+} = Astro.props
+
+const selected = options.find((option) => option.value === value)
+---
+
+<details class:list={['select-dropdown', className]} data-dropdown data-select-dropdown {...rest}>
+  <summary class:list={['select-dropdown-trigger', 'input', filled && 'input--filled']}>
+    <span
+      class:list={['select-dropdown-value', !selected && 'is-placeholder']}
+      data-select-dropdown-value
+      data-placeholder-text={placeholder}>{selected ? selected.label : placeholder}</span
+    >
+    <span class="select-dropdown-arrow" aria-hidden="true">
+      <DropdownChevron />
+    </span>
+  </summary>
+  <ul class="select-dropdown-menu" role="listbox" aria-label={label}>
+    {
+      options.map((option) => (
+        <li>
+          <button
+            type="button"
+            class="select-dropdown-option underline-draw"
+            role="option"
+            aria-selected={option.value === value}
+            data-option-value={option.value}
+          >
+            {option.label}
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+  <input
+    class="select-dropdown-input"
+    type="text"
+    name={name}
+    value={value}
+    required={required}
+    tabindex="-1"
+    aria-hidden="true"
+    data-select-dropdown-input
+  />
+</details>
+
+<script>
+  import {initDropdownDismiss} from '../lib/dropdownDismiss'
+
+  // Outside-pointer and Escape dismissal shared with the browse dropdowns.
+  initDropdownDismiss()
+
+  declare global {
+    interface Window {
+      __sbhSelectDropdownBound?: boolean
+    }
+  }
+
+  // All behavior is delegated from the document so dropdowns keep working
+  // across View Transition swaps without per-instance setup.
+  if (!window.__sbhSelectDropdownBound) {
+    window.__sbhSelectDropdownBound = true
+
+    const rootOf = (node: Element | null) =>
+      node?.closest<HTMLDetailsElement>('[data-select-dropdown]') ?? null
+
+    // Mirrors the hidden input's value into the trigger label and option
+    // selection state; falls back to the placeholder when nothing matches.
+    const syncDisplay = (root: HTMLDetailsElement) => {
+      const input = root.querySelector<HTMLInputElement>('[data-select-dropdown-input]')
+      const display = root.querySelector<HTMLElement>('[data-select-dropdown-value]')
+      if (!input || !display) return
+      const options = Array.from(root.querySelectorAll<HTMLElement>('[data-option-value]'))
+      const current = options.find((option) => option.dataset.optionValue === input.value)
+      display.textContent = current ? current.textContent : (display.dataset.placeholderText ?? '')
+      display.classList.toggle('is-placeholder', !current)
+      options.forEach((option) => option.setAttribute('aria-selected', String(option === current)))
+    }
+
+    document.addEventListener('click', (event) => {
+      const button = (event.target as Element | null)?.closest<HTMLElement>(
+        '[data-select-dropdown] [data-option-value]',
+      )
+      const root = rootOf(button ?? null)
+      if (!button || !root) return
+      const input = root.querySelector<HTMLInputElement>('[data-select-dropdown-input]')
+      if (!input) return
+      input.value = button.dataset.optionValue ?? ''
+      syncDisplay(root)
+      root.open = false
+      root.querySelector('summary')?.focus()
+      input.dispatchEvent(new Event('change', {bubbles: true}))
+    })
+
+    // Keyboard parity with a native select: arrows on the closed trigger open
+    // the menu, arrows/Home/End move between options once open.
+    document.addEventListener('keydown', (event) => {
+      const root = rootOf(event.target as Element | null)
+      if (!root) return
+
+      if (
+        !root.open &&
+        (event.target as Element).closest('summary') &&
+        (event.key === 'ArrowDown' || event.key === 'ArrowUp')
+      ) {
+        event.preventDefault()
+        root.open = true
+        root.querySelector<HTMLElement>('[data-option-value]')?.focus()
+        return
+      }
+
+      if (!root.open) return
+      const options = Array.from(root.querySelectorAll<HTMLElement>('[data-option-value]'))
+      const index = options.indexOf(event.target as HTMLElement)
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault()
+        const next = event.key === 'ArrowDown' ? index + 1 : index - 1
+        options[Math.min(options.length - 1, Math.max(0, next))]?.focus()
+      } else if (event.key === 'Home') {
+        event.preventDefault()
+        options[0]?.focus()
+      } else if (event.key === 'End') {
+        event.preventDefault()
+        options[options.length - 1]?.focus()
+      }
+    })
+
+    // Tabbing away closes the menu, matching native select behavior.
+    document.addEventListener('focusout', (event) => {
+      const root = rootOf(event.target as Element | null)
+      if (!root || !root.open) return
+      const next = event.relatedTarget as Element | null
+      if (next && root.contains(next)) return
+      root.open = false
+    })
+
+    // A form reset (e.g. after a successful contact submit) restores input
+    // default values; re-sync the visible labels once values settle.
+    document.addEventListener('reset', (event) => {
+      if (!(event.target instanceof HTMLFormElement)) return
+      event.target
+        .querySelectorAll<HTMLDetailsElement>('[data-select-dropdown]')
+        .forEach((root) => setTimeout(() => syncDisplay(root)))
+    })
+  }
+</script>
+
+<style>
+  .select-dropdown {
+    position: relative;
+  }
+
+  /* Field chrome (border, height, font) comes from the global .input class;
+     this only adds the trigger layout and hides the native details marker. */
+  .select-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3xs);
+    padding-right: 6px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .select-dropdown-trigger::-webkit-details-marker {
+    display: none;
+  }
+
+  .select-dropdown-trigger::marker {
+    content: none;
+  }
+
+  .select-dropdown-value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .select-dropdown-value.is-placeholder {
+    color: color-mix(in srgb, currentColor 50%, transparent);
+  }
+
+  .select-dropdown-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    transition: transform var(--motion-quick) var(--motion-ease-out);
+  }
+
+  .select-dropdown[open] .select-dropdown-arrow {
+    transform: rotate(180deg);
+  }
+
+  /* Menu card mirrors the TypeFilter menu; width follows the field so long
+     form options wrap instead of overflowing the viewport. */
+  .select-dropdown-menu {
+    position: absolute;
+    z-index: 10;
+    top: 100%;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs-4);
+    width: 100%;
+    margin-top: var(--space-xs-4);
+    padding: var(--space-3xs);
+    background: var(--bg);
+    border: 1px solid var(--fg-12);
+    border-radius: var(--radius-control);
+  }
+
+  .select-dropdown-option {
+    display: block;
+    width: 100%;
+    padding: var(--space-xs-4) var(--space-3xs);
+    background: none;
+    border: 0;
+    color: var(--fg);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .select-dropdown-option:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: -2px;
+  }
+
+  /* Invisible but focusable so native required validation can anchor its
+     message over the trigger; pointer events fall through to the summary. */
+  .select-dropdown-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 56px;
+    padding: 0;
+    background: none;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .select-dropdown-arrow {
+      transition: none;
+    }
+  }
+</style>

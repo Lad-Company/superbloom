@@ -1,6 +1,5 @@
 ---
 import Layout from '../../layouts/Layout.astro'
-import Navigation from '../../components/Navigation.astro'
 import Footer from '../../components/Footer.astro'
 import Button from '../../components/Button.astro'
 import {getCart} from '../../lib/shopify'
@@ -13,8 +12,7 @@ const money = (amount: string, currency: string) =>
 const error = Astro.url.searchParams.get('error')
 ---
 
-<Layout title="Cart | Superbloom House">
-  <Navigation role="light" />
+<Layout title="Cart | Superbloom House" navRole="light">
   <main class="cart" data-cart>
     <h1 class="type-h7">Cart</h1>
     {error === 'checkout' && <p role="alert">Could not proceed to checkout. Please try again.</p>}
