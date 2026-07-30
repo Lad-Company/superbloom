@@ -58,7 +58,8 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
 
     h2 {
       max-width: none;
-      font-size: clamp(40px, 12vw, 72px);
+      /* Match the mobile type-h4 (80px) used by the Capes list below. */
+      font-size: 80px;
     }
   }
 </style>
