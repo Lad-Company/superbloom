@@ -1,5 +1,6 @@
 ---
 import type {ArticleTypeFilter} from '../lib/articleTypes'
+import DropdownChevron from './DropdownChevron.astro'
 
 export interface Props {
   value: 'newest' | 'oldest'
@@ -24,14 +25,7 @@ const actionLabel =
   <a class="sort-toggle type-h5" href={href} data-sort-toggle aria-label={actionLabel}>
     <span class="sort-toggle-text underline-draw">Date</span>
     <span class="sort-arrow" data-direction={value} aria-hidden="true">
-      <svg viewBox="0 0 18 9" width="18" height="9" fill="none">
-        <path
-          d="M1 1L9 8L17 1"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"></path>
-      </svg>
+      <DropdownChevron />
     </span>
   </a>
 </div>
