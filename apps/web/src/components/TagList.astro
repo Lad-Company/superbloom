@@ -16,9 +16,15 @@ const tagList = (tags ?? []).slice(0, maxTags)
 {
   (typeLabel || tagList.length > 0) && (
     <ul class="tag-list">
-      {typeLabel && <li class="tag type-label">{typeLabel}</li>}
+      {typeLabel && (
+        <li class="tag type-label surface-wipe">
+          <span class="tag__label">{typeLabel}</span>
+        </li>
+      )}
       {tagList.map((tag) => (
-        <li class="tag type-label">{tag.title}</li>
+        <li class="tag type-label surface-wipe">
+          <span class="tag__label">{tag.title}</span>
+        </li>
       ))}
     </ul>
   )
@@ -43,5 +49,40 @@ const tagList = (tags ?? []).slice(0, maxTags)
     color: var(--bg);
     backdrop-filter: blur(var(--frosted-layer-blur));
     -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
+    /* Surface Wipe fill: keeps the frosted look, brighter fill with darker ink */
+    --wipe-surface: rgba(255, 255, 255, 0.45);
+    --wipe-ink: rgba(0, 0, 0, 0.85);
+  }
+
+  .tag::before {
+    backdrop-filter: blur(var(--frosted-layer-blur));
+    -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
+  }
+
+  .tag .tag__label {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Reveal the shared Surface Wipe from card hover/focus: the whole card is
+     the link, so the fill triggers from the card rather than the tag itself.
+     Covers EditorialCard-based cards, HomeWork mosaic items, and shop
+     ProductGrid cards. Direct tag hover is handled by .surface-wipe itself. */
+  :global(.editorial-card:hover) .tag,
+  :global(.editorial-card:focus-visible) .tag,
+  :global(.mosaic-item:hover) .tag,
+  :global(.mosaic-item:focus-visible) .tag,
+  :global(.product a:hover) .tag,
+  :global(.product a:focus-visible) .tag {
+    color: var(--wipe-ink);
+  }
+
+  :global(.editorial-card:hover) .tag::before,
+  :global(.editorial-card:focus-visible) .tag::before,
+  :global(.mosaic-item:hover) .tag::before,
+  :global(.mosaic-item:focus-visible) .tag::before,
+  :global(.product a:hover) .tag::before,
+  :global(.product a:focus-visible) .tag::before {
+    transform: scaleY(1);
   }
 </style>
