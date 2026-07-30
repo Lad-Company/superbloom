@@ -4,7 +4,7 @@ import PortableText from '../PortableText.astro'
 import ArticleBodyRenderer from './ArticleBodyRenderer.astro'
 import MixedArticleCard from '../MixedArticleCard.astro'
 import CardCarousel from '../CardCarousel.astro'
-import TagList from '../TagList.astro'
+import PageHero from '../PageHero.astro'
 import type {ContentLayoutRowValue} from '../ContentLayoutRow.astro'
 import type {TypedObject} from 'astro-portabletext/types'
 import type {
@@ -55,10 +55,11 @@ const relatedItems = article.relatedItems ?? []
 ---
 
 <article class="article-detail">
-  <header class="hero">
-    {article.tags && <TagList tags={article.tags} />}
-    <h1 class="type-h3">{article.title}</h1>
-  </header>
+  <PageHero
+    heading={article.title ?? ''}
+    tags={article.tags?.map((tag) => tag.title ?? '').filter(Boolean)}
+    headingSize="h3"
+  />
 
   {
     article.leadMedia && (
@@ -102,19 +103,9 @@ const relatedItems = article.relatedItems ?? []
 </article>
 
 <style>
-  .hero {
-    position: relative;
-    padding: var(--space-xl) var(--page-inset) var(--space-xs);
-  }
-
   h1,
   h2 {
     margin: 0;
-  }
-
-  .hero :global(.tag-list) {
-    position: static;
-    margin-bottom: var(--space-3xs);
   }
 
   .lead-media {
@@ -147,10 +138,6 @@ const relatedItems = article.relatedItems ?? []
   }
 
   @media (max-width: 768px) {
-    .hero {
-      padding-top: var(--space-xl);
-    }
-
     .overview {
       grid-template-columns: 1fr;
     }

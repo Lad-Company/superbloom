@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import Footer from '../../components/Footer.astro'
+import PageHero from '../../components/PageHero.astro'
 import ProductGrid from '../../components/shop/ProductGrid.astro'
 import {listProducts} from '../../lib/shopify'
 
@@ -16,9 +17,7 @@ try {
 
 <Layout title="Shop | Superbloom House" navRole="dark">
   <main>
-    <header class="shop-header">
-      <h1 class="type-h7">Shop</h1>
-    </header>
+    <PageHero heading="Shop" />
     {
       error ? (
         <p class="message">Unable to load products. Please try again.</p>
@@ -44,12 +43,6 @@ try {
     --fg-60: rgba(255, 255, 255, 0.6);
     background: #000000;
     color: #ffffff;
-  }
-  .shop-header {
-    padding: var(--space-2xl) var(--page-inset) var(--space-s);
-  }
-  .shop-header h1 {
-    margin: 0;
   }
   .message {
     padding: var(--space-xl) var(--page-inset);

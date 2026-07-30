@@ -9,6 +9,8 @@ interface Props {
   tags?: string[];
   subheading?: string | null;
   media?: Media | null;
+  /** Heading type scale: default h1 (200px); h3 (120px) for compact headers. */
+  headingSize?: 'h1' | 'h3';
   /** Media hero aspect variant: home 3/2, zine 16:9 (capped at 90svh). */
   mediaRatio?: '3:2' | '16:9';
   /** Media hero overlay CTA (external link, e.g. zine PDF/issuu). */
@@ -17,8 +19,10 @@ interface Props {
   id?: string;
 }
 
-const { heading, eyebrow, tags, subheading, media, mediaRatio = '3:2', ctaLabel, ctaHref, id } =
+const { heading, eyebrow, tags, subheading, media, headingSize = 'h1', mediaRatio = '3:2', ctaLabel, ctaHref, id } =
   Astro.props;
+
+const headingClass = ['hero-heading', `type-${headingSize}`, headingSize !== 'h1' && 'hero-heading-compact'];
 
 // Layout mode derives from props: media → media hero (home); eyebrow/tags →
 // case hero (work/[slug]); otherwise the plain text hero (work, who-we-are,
@@ -33,7 +37,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
       <MediaFrame media={media} ratio="fill" sizes="100vw" title={heading} priority>
         <div class="scrim"></div>
         <div class="overlay">
-          <h1 id={id} class="type-h1 hero-heading" data-motion-text data-unit="chars" data-blur data-scroll="false">{heading}</h1>
+          <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-blur data-scroll="false">{heading}</h1>
           {subheading && <p class="type-caption sub">{subheading}</p>}
           {ctaLabel && ctaHref && (
             <div class="cta">
@@ -46,7 +50,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
   ) : isCase ? (
     <header class="hero-case">
       {eyebrow && <p class="case-eyebrow type-h5">{eyebrow}</p>}
-      <h1 id={id} class="type-h1 hero-heading" data-motion-text data-unit="chars" data-blur data-scroll="false">{heading}</h1>
+      <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-blur data-scroll="false">{heading}</h1>
       {tags && tags.length > 0 && (
         <ul class="case-tags type-label" aria-label="Capabilities">
           {tags.map((tag) => (
@@ -57,7 +61,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     </header>
   ) : (
     <section class="hero-text">
-      <h1 id={id} class="type-h1 hero-heading" data-motion-text data-unit="chars" data-blur data-scroll="false">{heading}</h1>
+      <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-blur data-scroll="false">{heading}</h1>
     </section>
   )
 }
@@ -76,11 +80,15 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
       max-width: none;
       font-size: clamp(64px, 18vw, 160px);
     }
+
+    .hero-heading-compact {
+      font-size: clamp(48px, 12vw, 120px);
+    }
   }
 
   /* Text hero */
   .hero-text {
-    padding: var(--space-4xl) var(--page-inset) var(--space-3xl);
+    padding: var(--space-3xl) var(--page-inset) var(--space-l);
   }
 
   @media (max-width: 1023px) {
@@ -175,7 +183,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     display: flex;
     flex-direction: column;
     min-height: 700px;
-    padding: var(--space-4xl) var(--page-inset) var(--space-m);
+    padding: var(--space-3xl) var(--page-inset) var(--space-m);
   }
 
   .case-eyebrow {
