@@ -47,6 +47,10 @@ export function revealStats(container: HTMLElement, itemSelector: string): () =>
     const suffix = match[2] ?? ''
     const counter = {val: 0}
 
+    // Start at zero so the scroll-in reads as a count-up rather than the
+    // SSR'd final value snapping to 0 when the trigger fires.
+    valueEl.textContent = `${(0).toFixed(decimals)}${suffix}`
+
     counters.push(
       gsap.to(counter, {
         val: target,
