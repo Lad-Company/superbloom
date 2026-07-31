@@ -26,7 +26,15 @@ const { statement, media = [] } = Astro.props;
     position: relative;
     z-index: 1;
     margin: 0;
-    max-width: 24ch;
+    /* Figma R3: the statement column is 1034px on desktop; narrower viewports
+       are constrained by the container before this ever binds. */
+    max-width: 1034px;
+  }
+
+  /* The pointer-follow cluster trails the cursor behind the statement, not
+     over it. */
+  .intro :global(.pointer-follow) {
+    z-index: 0;
   }
 
   @media (max-width: 768px) {

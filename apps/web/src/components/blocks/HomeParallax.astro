@@ -27,9 +27,20 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
     display: flex;
     align-items: center;
     min-height: clamp(460px, 56vw, 760px);
-    padding: clamp(var(--space-3xl), 12vw, var(--space-4xl)) var(--page-inset);
-    overflow: hidden;
+    /* No bottom padding: the section hands off flush to the Capes section. */
+    padding: clamp(var(--space-3xl), 12vw, var(--space-4xl)) var(--page-inset) 0;
+    /* Let the pointer layers bleed past the top/bottom edges so they slide
+       underneath the neighboring sections (which paint above with their own
+       backgrounds); clip only horizontally so no scrollbar appears. */
+    overflow-x: clip;
+    overflow-y: visible;
     isolation: isolate;
+  }
+
+  /* Match the zine landing intro: the pointer layers float underneath the
+     section's content rather than covering it. */
+  .home-parallax :global(.pointer-follow) {
+    z-index: 0;
   }
 
   .content {
@@ -53,7 +64,7 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
   @media (max-width: 767px) {
     .home-parallax {
       min-height: 420px;
-      padding: var(--space-2xl) var(--space-3xs);
+      padding: var(--space-2xl) var(--space-3xs) 0;
     }
 
     h2 {

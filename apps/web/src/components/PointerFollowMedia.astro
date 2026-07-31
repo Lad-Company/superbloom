@@ -113,9 +113,11 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
       const offscreen = bounds.bottom < 0 || bounds.top > window.innerHeight
       const rest = restingAnchor(bounds)
 
-      // Interpolate the anchor from `rest` toward the cursor position based
-      // on the cursor's distance from the nearest section edge. This avoids
-      // a hard on/off flip when the pointer crosses the section boundary.
+      // While the cursor is inside the section the anchor tracks it fully, so
+      // layers may follow right up to the section edge (overflow clipping
+      // crops whatever bleeds past). Only once the cursor leaves the section
+      // does the anchor ease back to rest over `edgeDampZone`, which avoids a
+      // hard on/off flip at the boundary.
       let anchorX = rest.x
       let anchorY = rest.y
       if (!offscreen && hasPointer) {
@@ -125,7 +127,7 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
           pointerY - bounds.top,
           bounds.bottom - pointerY,
         )
-        const raw = Math.max(0, Math.min(1, minDist / POINTER_FOLLOW.edgeDampZone))
+        const raw = Math.max(0, Math.min(1, 1 + minDist / POINTER_FOLLOW.edgeDampZone))
         const damp = raw * raw * (3 - 2 * raw) // smoothstep
         anchorX = rest.x + (pointerX - bounds.left - rest.x) * damp
         anchorY = rest.y + (pointerY - bounds.top - rest.y) * damp

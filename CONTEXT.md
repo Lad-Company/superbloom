@@ -52,6 +52,8 @@ content, and experiential campaigns for brand clients.
   blog, magazine.
 - **Zine Issue** — one edition; contains one or more ordered Zine Articles.
   _Avoid_: volume, edition.
+- **Super-Header** — the optional kicker above a Zine Issue's hero title (the
+  `eyebrow` field, e.g. "Issue No. 5"). _Avoid_: announcement bar, masthead.
 - **Zine Article** — a long-form story belonging to exactly one Zine Issue.
   _Avoid_: Editorial Article, News.
 - **News** — press, announcements, and coverage of Superbloom; a lightweight

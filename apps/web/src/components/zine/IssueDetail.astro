@@ -41,6 +41,7 @@ interface Props {
   issue: {
     title?: string | null
     slug?: string | null
+    eyebrow?: string | null
     cardMedia?: Media | null
     heroMedia?: Media | null
     editorLetter?: {
@@ -78,10 +79,9 @@ const overrideFor = (id?: string | null) =>
 <article class="issue-detail">
   <PageHero
     heading={issue.title ?? ''}
+    eyebrow={issue.eyebrow}
     media={issue.heroMedia}
     mediaRatio="16:9"
-    ctaLabel={readZineHref ? 'Explore the Issue' : null}
-    ctaHref={readZineHref}
   />
 
   {landingIntro && <ZineLandingIntro {...landingIntro} />}

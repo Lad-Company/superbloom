@@ -19,7 +19,7 @@ const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-
 <SurfaceSection role={role} id={id} tabindex={-1} class="results-surface">
   <div class="results">
     <h2 class="type-section-heading">{label}</h2>
-    <ul>
+    <ul data-results-stats>
       {(results.stats ?? []).map((stat) => (
         <li>
           <Metric value={stat.value} label={stat.label} />
@@ -31,6 +31,28 @@ const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-
     ))}
   </div>
 </SurfaceSection>
+
+<script>
+  import {revealStats} from '../../lib/motion';
+
+  const cleanups: Array<() => void> = [];
+  const initStats = () =>
+    document.querySelectorAll<HTMLElement>('[data-results-stats]').forEach((container) => {
+      if (container.dataset.statsInitialized) return;
+      container.dataset.statsInitialized = 'true';
+      const destroy = revealStats(container, ':scope > li');
+      cleanups.push(() => {
+        destroy();
+        delete container.dataset.statsInitialized;
+      });
+    });
+
+  const cleanupAll = () => cleanups.splice(0).forEach((cleanup) => cleanup());
+
+  initStats();
+  document.addEventListener('astro:page-load', initStats);
+  document.addEventListener('astro:before-swap', cleanupAll);
+</script>
 
 <style>
   :global(.results-surface) {

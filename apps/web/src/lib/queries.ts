@@ -365,6 +365,7 @@ const zineArticleCardProjection = `
 const zineIssueProjection = `
   title,
   "slug": slug.current,
+  eyebrow,
   "cardMedia": cardMedia${mediaProjection},
   "heroMedia": heroMedia${mediaProjection},
   editorLetter{

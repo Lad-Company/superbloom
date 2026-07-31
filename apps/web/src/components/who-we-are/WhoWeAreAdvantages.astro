@@ -48,8 +48,12 @@ const { headline, blocks } = Astro.props;
     color: var(--fg);
     display: flex;
     flex-direction: column;
-    gap: var(--space-2xl);
-    padding: var(--space-4xl) var(--page-inset);
+    /* 160px between the section header and the list. */
+    gap: var(--space-3xl);
+    /* No bottom padding: the next section's own 200px top padding is the
+       global inter-section rhythm (var(--space-4xl)), so padding here would
+       double it. */
+    padding: var(--space-4xl) var(--page-inset) 0;
   }
 
   .advantages-header p {
@@ -62,7 +66,8 @@ const { headline, blocks } = Astro.props;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--space-4xl);
+    /* 24px between items on desktop (var(--space-2xs)). */
+    gap: var(--space-2xs);
   }
 
   .advantage-item {
@@ -97,7 +102,13 @@ const { headline, blocks } = Astro.props;
 
   @media (max-width: 768px) {
     .advantages-section {
-      padding: var(--space-2xl) var(--space-3xs);
+      padding: var(--space-2xl) var(--space-3xs) 0;
+    }
+
+    /* Stacked items need more air than the desktop 24px, otherwise each
+       item's media bleeds into the next item's heading. */
+    .advantages-list {
+      gap: var(--space-m);
     }
 
     .advantage-item {

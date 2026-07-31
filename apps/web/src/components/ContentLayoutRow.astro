@@ -97,6 +97,9 @@ const sizesFor = (width?: ContentLayoutWidth | null) =>
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: var(--page-gutter);
+    /* Text blocks top-align with the media beside them rather than stretching
+       to the row height. */
+    align-items: start;
   }
   .content-layout-row.single {
     display: flex;

@@ -44,7 +44,6 @@ const queryFor = (nextPage: number) => {
 }
 
 const heroHeading = workIndex?.heroHeading ?? 'Unexpected minds. Unignorable work.'
-const allWorkHeading = 'All Work'
 ---
 
 <Layout title="Our Work" description={heroHeading} navRole="dark">
@@ -67,10 +66,7 @@ const allWorkHeading = 'All Work'
       )
     }
 
-    <div class:list={['all-work', featured.length === 0 && 'all-work--lead']}>
-      <div class="all-work-header">
-        <h2 class="type-h3 all-work-heading">{allWorkHeading}</h2>
-      </div>
+    <div class="all-work">
       <ContentCardList class="all-card-list">
         {
           caseStudies.map((cs) => (
@@ -98,23 +94,9 @@ const allWorkHeading = 'All Work'
     min-width: 0;
     padding: var(--space-4xl) var(--page-inset);
   }
-  /* When there is no Featured block, All Work is the first item after the
-     header, so it uses the 96px header→content hand-off instead of the 200px
-     between-sections rhythm. */
-  .all-work--lead {
-    padding-top: var(--space-xl);
-  }
   .featured-work {
     display: grid;
     padding: var(--space-xl) var(--page-inset) 0;
-  }
-  .all-work-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-  }
-  .all-work-heading {
-    margin: 0;
   }
   @media (max-width: 1023px) {
     .featured-work {

@@ -29,6 +29,12 @@ export const zineIssue = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'eyebrow',
+      title: 'Super-Header',
+      type: 'string',
+      description: 'Optional kicker shown above the issue title in the hero, e.g. "Issue No. 5".',
+    }),
+    defineField({
       name: 'cardMedia',
       title: 'Card Image',
       type: 'mediaBox',

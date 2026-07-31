@@ -59,8 +59,8 @@ describe('Homepage CMS contract', () => {
     expect(homepageCompositionSource).toContain('preset={homepage.work?.layoutPreset}')
   })
 
-  it('renders the Zine promo at a compact US Letter-like ratio', () => {
+  it('renders the Zine promo at a compact US Letter-like ratio in a true 50/50 split', () => {
     expect(homeZineComponentSource).toContain('ratio="4:5"')
-    expect(homeZineComponentSource).toContain('grid-template-columns: minmax(0, 540px) minmax(0, 1fr)')
+    expect(homeZineComponentSource).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))')
   })
 })

@@ -101,8 +101,8 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
     > flips.
 - **`PageHero`** — the single page-header block. One shared H1 (200px/78%
   desktop, `clamp(64px, 18vw, 160px)` below 1024, ≤4 lines) with three modes
-  derived from props: text (default), media (home 3/2, zine 16:9 + CTA), case
-  (eyebrow + tags).
+  derived from props: text (default), media (home 3/2, zine 16:9 + optional
+  Super-Header kicker), case (eyebrow + tags).
 - **`Button`** — variants solid / translucent / outline / icon. The canonical
   contained-control affordance.
 - **`Icon`**, form controls, **`TagList`** (overlay + inline), **`Metric`**.
@@ -206,8 +206,10 @@ eyebrows, nav labels, and order stay in lockstep.
   `articleType == "zine"`, and exactly one format — an ISSUU Flipbook URL *or* a
   PDF asset (not both, not neither). Membership/order live only on the Issue; a
   Zine Article publishes only when exactly one Issue references it.
-- Issue owns card media, hero media, and a **Letter from the Editor** section
-  (media, heading, body, editable CTA label defaulting to "Read the Zine").
+- Issue owns card media, hero media, an optional **Super-Header** kicker above
+  the hero title (`eyebrow`, e.g. "Issue No. 5"), and a **Letter from the
+  Editor** section (media, heading, body, editable CTA label defaulting to
+  "Read the Zine").
 - Routes: `/zine` (current issue via the `zineLanding` singleton),
   `/zine/issues/[slug]` (archive). The current issue's archive URL redirects to
   `/zine` and is excluded from the sitemap.

@@ -6,13 +6,11 @@ interface Props {
   unit?: 'lines' | 'words' | 'chars';
   /** Reveal on scroll into view. Set false to reveal immediately (e.g. heroes). */
   scroll?: boolean;
-  /** Hero-only blur-to-focus. Reserved for large display moments. */
-  blur?: boolean;
   start?: string;
   class?: string;
 }
 
-const { as: Tag = 'span', unit = 'lines', scroll = true, blur = false, start, class: className } = Astro.props;
+const { as: Tag = 'span', unit = 'lines', scroll = true, start, class: className } = Astro.props;
 ---
 
 <Tag
@@ -20,7 +18,6 @@ const { as: Tag = 'span', unit = 'lines', scroll = true, blur = false, start, cl
   data-motion-text
   data-unit={unit}
   data-scroll={String(scroll)}
-  data-blur={blur ? '' : undefined}
   data-start={start}
 >
   <slot />
