@@ -1863,6 +1863,13 @@
         },
         "optional": true
       },
+      "eyebrow": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "string"
+        },
+        "optional": true
+      },
       "cardMedia": {
         "type": "objectAttribute",
         "value": {
