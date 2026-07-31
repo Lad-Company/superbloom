@@ -27,7 +27,8 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
     display: flex;
     align-items: center;
     min-height: clamp(460px, 56vw, 760px);
-    padding: clamp(var(--space-3xl), 12vw, var(--space-4xl)) var(--page-inset);
+    /* No bottom padding: the section hands off flush to the Capes section. */
+    padding: clamp(var(--space-3xl), 12vw, var(--space-4xl)) var(--page-inset) 0;
     overflow: hidden;
     isolation: isolate;
   }
@@ -53,7 +54,7 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
   @media (max-width: 767px) {
     .home-parallax {
       min-height: 420px;
-      padding: var(--space-2xl) var(--space-3xs);
+      padding: var(--space-2xl) var(--space-3xs) 0;
     }
 
     h2 {
