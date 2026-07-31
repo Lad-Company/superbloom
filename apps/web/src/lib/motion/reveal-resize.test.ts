@@ -23,7 +23,7 @@ const gsapModule = await import('gsap')
 // Regression test for the bug: the home header text disappears on window
 // resize. The Type Reveal animation re-creates its paused fromTo tween when
 // splitText re-splits on resize, and the paused tween immediately renders the
-// "from" state (autoAlpha 0, yPercent 100, blur 12px) on the new split units,
+// "from" state (autoAlpha 0, yPercent 100) on the new split units,
 // hiding them permanently.
 //
 // GSAP's internal ticker doesn't reliably advance under vi.useFakeTimers, so
@@ -46,7 +46,7 @@ describe('revealText on window resize', () => {
 
     // Reveal plays immediately (data-scroll="false" behavior). Use chars unit
     // because the PageHero.astro h1 uses data-unit="chars".
-    await revealText(h1, {unit: 'chars', blur: true, scroll: false})
+    await revealText(h1, {unit: 'chars', scroll: false})
 
     // Force the GSAP timeline to its end frame so the reveal is "complete"
     // and the targets are in the visible end-state. This simulates the user

@@ -17,8 +17,6 @@ export interface RevealOptions {
   delay?: number
   /** Vertical release distance in px. */
   y?: number
-  /** Hero-only blur-to-focus. Reserved for large display moments. */
-  blur?: boolean
 }
 
 export interface RevealHandle {
@@ -75,7 +73,6 @@ export async function revealText(
     duration = unit === 'chars' ? MOTION.deliberate : MOTION.standard,
     delay = 0,
     y = unit === 'chars' ? 18 : undefined,
-    blur = false,
   } = options
 
   if (prefersReducedMotion()) {
@@ -124,7 +121,6 @@ export async function revealText(
         yPercent: 0,
         y: 0,
         autoAlpha: 1,
-        filter: 'none',
       })
       tween = null
       return
@@ -135,12 +131,10 @@ export async function revealText(
       autoAlpha: 0,
     }
     if (y !== undefined) fromVars.y = y
-    if (blur) fromVars.filter = 'blur(12px)'
     tween = gsap.fromTo(targets, fromVars, {
       yPercent: 0,
       y: 0,
       autoAlpha: 1,
-      filter: blur ? 'blur(0px)' : undefined,
       duration,
       delay,
       ease: EASE.out,

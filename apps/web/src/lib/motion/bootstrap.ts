@@ -22,7 +22,6 @@ export function initMotion(): () => void {
     revealText(el, {
       unit: (el.dataset.unit as 'lines' | 'words' | 'chars') || 'lines',
       scroll: el.dataset.scroll !== 'false',
-      blur: el.dataset.blur !== undefined,
       start: el.dataset.start || undefined,
     }).then((handle) => handles.push(handle))
   }
