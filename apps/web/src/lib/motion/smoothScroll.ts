@@ -40,6 +40,16 @@ export function initSmoothScroll(): () => void {
   return () => {
     document.removeEventListener('click', onAnchorClick);
     gsap.ticker.remove(raf);
+    // Halt the smooth-scroll programmatic tween before destroy. Lenis's internal
+    // GSAP tween (driven by `lenis.scrollTo`) keeps firing onUpdate after the
+    // instance is otherwise torn down, and each tick calls `setScroll()` →
+    // `window.scrollTo({ top: <lerp-toward-target>, behavior: 'instant' })`.
+    // Without stopping it, the orphan tween keeps driving the *next* page's
+    // scroll position toward the previous page's target (e.g. ~3500px into a
+    // case study when the user clicked a case-study card from deep on /). The
+    // post-swap scrollTo(0, 0) in the Layout + Astro's hard-reset fight it,
+    // but the orphan wins and the next page boots mid-section.
+    lenis?.stop();
     lenis?.destroy();
     lenis = null;
     if (previousScrollRestoration !== null) history.scrollRestoration = previousScrollRestoration;
