@@ -1,6 +1,5 @@
 ---
 import MediaFrame, { type Media } from './MediaFrame.astro';
-import Button from './Button.astro';
 import { control } from '../lib/surfaceRole';
 
 interface Props {
@@ -13,13 +12,10 @@ interface Props {
   headingSize?: 'h1' | 'h3';
   /** Media hero aspect variant: home 3/2, zine 16:9 (capped at 90svh). */
   mediaRatio?: '3:2' | '16:9';
-  /** Media hero overlay CTA (external link, e.g. zine PDF/issuu). */
-  ctaLabel?: string | null;
-  ctaHref?: string | null;
   id?: string;
 }
 
-const { heading, eyebrow, tags, subheading, media, headingSize = 'h1', mediaRatio = '3:2', ctaLabel, ctaHref, id } =
+const { heading, eyebrow, tags, subheading, media, headingSize = 'h1', mediaRatio = '3:2', id } =
   Astro.props;
 
 const headingClass = ['hero-heading', `type-${headingSize}`, headingSize !== 'h1' && 'hero-heading-compact'];
@@ -42,11 +38,6 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
             <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-scroll="false">{heading}</h1>
           </div>
           {subheading && <p class="type-caption sub">{subheading}</p>}
-          {ctaLabel && ctaHref && (
-            <div class="cta">
-              <Button href={ctaHref} label={ctaLabel} target="_blank" rel="noopener noreferrer" />
-            </div>
-          )}
         </div>
       </MediaFrame>
     </section>
@@ -178,11 +169,6 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     align-self: end;
   }
 
-  .cta {
-    grid-column: 1 / 3;
-    pointer-events: auto;
-  }
-
   @media (max-width: 1023px) {
     .hero-media {
       aspect-ratio: auto;
@@ -197,8 +183,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     }
 
     .overlay .heading-stack,
-    .sub,
-    .cta {
+    .sub {
       grid-column: 1;
     }
   }

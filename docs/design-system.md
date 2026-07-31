@@ -101,8 +101,8 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
     > flips.
 - **`PageHero`** — the single page-header block. One shared H1 (200px/78%
   desktop, `clamp(64px, 18vw, 160px)` below 1024, ≤4 lines) with three modes
-  derived from props: text (default), media (home 3/2, zine 16:9 + CTA +
-  optional Super-Header kicker), case (eyebrow + tags).
+  derived from props: text (default), media (home 3/2, zine 16:9 + optional
+  Super-Header kicker), case (eyebrow + tags).
 - **`Button`** — variants solid / translucent / outline / icon. The canonical
   contained-control affordance.
 - **`Icon`**, form controls, **`TagList`** (overlay + inline), **`Metric`**.
