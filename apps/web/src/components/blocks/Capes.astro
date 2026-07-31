@@ -58,6 +58,9 @@ const displayedCapabilities = capabilities.slice(0, 8);
 <style>
   .capes {
     position: relative;
+    /* Stack above the home parallax section so its bleeding pointer layers
+       float underneath this section. */
+    z-index: 1;
     background: var(--bg);
     color: var(--bg);
   }
