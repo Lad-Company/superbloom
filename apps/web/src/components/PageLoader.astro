@@ -25,6 +25,9 @@
     z-index: 100;
     display: grid;
     place-items: center;
+    /* Dynamic viewport height keeps the cue centered on the visible screen on
+       mobile, where the browser chrome shifts the layout viewport. */
+    height: 100dvh;
     background: var(--bg);
     opacity: 1;
     transition: opacity 0.6s var(--motion-ease-out);
