@@ -1326,6 +1326,27 @@
           },
           "optional": true
         },
+        "layoutPreset": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "stagger-right"
+              },
+              {
+                "type": "string",
+                "value": "stagger-left"
+              },
+              {
+                "type": "string",
+                "value": "split-stagger"
+              }
+            ]
+          },
+          "optional": true
+        },
         "items": {
           "type": "objectAttribute",
           "value": {

@@ -19,6 +19,10 @@ const homepageQuerySource = readFileSync(
   new URL('../../../apps/web/src/lib/queries.ts', import.meta.url),
   'utf8',
 )
+const workMosaicSource = readFileSync(
+  new URL('../../../apps/web/src/lib/workMosaic.ts', import.meta.url),
+  'utf8',
+)
 
 describe('Homepage CMS contract', () => {
   it('does not expose or render the retired Feature section', () => {
@@ -42,6 +46,17 @@ describe('Homepage CMS contract', () => {
     expect(homeWorkComponentSource).toContain('class="mosaic"')
     expect(homeWorkComponentSource).toContain('grid-auto-rows: 1cqw')
     expect(homeWorkComponentSource).not.toContain('<ContentCardList')
+  })
+
+  it('offers a layoutPreset select whose values match the web mosaic presets', () => {
+    expect(homeWorkSchemaSource).toContain("name: 'layoutPreset'")
+    const presetNames = [...workMosaicSource.matchAll(/^ {2}'([a-z-]+)': \{$/gm)].map((m) => m[1])
+    expect(presetNames.length).toBeGreaterThanOrEqual(3)
+    for (const name of presetNames) {
+      expect(homeWorkSchemaSource).toContain(`value: '${name}'`)
+    }
+    expect(homepageQuerySource).toContain('layoutPreset')
+    expect(homepageCompositionSource).toContain('preset={homepage.work?.layoutPreset}')
   })
 
   it('renders the Zine promo at a compact US Letter-like ratio', () => {

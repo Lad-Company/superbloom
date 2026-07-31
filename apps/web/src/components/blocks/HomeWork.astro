@@ -4,6 +4,11 @@ import MediaFrame, {type Media, type MediaRatio} from '../MediaFrame.astro'
 import TagList from '../TagList.astro'
 import Button from '../Button.astro'
 import type {MediaAspectRatio} from '../../lib/contentCard'
+import {
+  WORK_MOSAIC_PRESETS,
+  resolveMosaic,
+  type WorkMosaicPresetName,
+} from '../../lib/workMosaic'
 
 interface WorkItem {
   _id: string | null
@@ -17,55 +22,37 @@ interface WorkItem {
 interface Props {
   headline?: string | null
   ctaLabel?: string | null
+  /** Desktop mosaic arrangement, selected in the CMS. Unknown values fall back
+     to the default preset; see lib/workMosaic for the preset contract. */
+  preset?: string | null
   items: Array<{
     item: WorkItem
     mediaAspectRatio?: MediaAspectRatio | null
   }>
 }
 
-const {headline = 'Our Work', ctaLabel = 'View all', items} = Astro.props
+const {headline = 'Our Work', ctaLabel = 'View all', preset, items} = Astro.props
 
-// Fixed 4-slot interlocking mosaic. Each slot owns its column span, its
-// default orientation, and how wide its floating caption may grow before it
-// would collide with a neighbouring image.
-const SLOTS = [
-  {column: '1 / span 8', span: 8, ratio: '16:9', captionMax: '16cqw'},
-  {column: '9 / span 4', span: 4, ratio: '4:5', captionMax: '33cqw'},
-  {column: '3 / span 6', span: 6, ratio: '1:1', captionMax: '33cqw'},
-  {column: '7 / span 6', span: 6, ratio: '16:9', captionMax: '50cqw'},
-] as const
+const asPreset = (value: string | null | undefined) =>
+  value && value in WORK_MOSAIC_PRESETS
+    ? WORK_MOSAIC_PRESETS[value as WorkMosaicPresetName]
+    : null
 
-// Height / width for each supported aspect ratio, used to derive a card's row
-// span on the proportional (1cqw) row grid so image edges interlock exactly.
-const RATIO_HW: Record<string, number> = {
-  '2:1': 1 / 2,
-  '16:9': 9 / 16,
-  '3:2': 2 / 3,
-  '1:1': 1,
-  '4:5': 5 / 4,
-  '9:16': 16 / 9,
-}
+// Resolution order: dev-only ?workPreset= override (for VQA), then the
+// CMS-selected preset, then the default.
+const activePreset =
+  (import.meta.env.DEV ? asPreset(Astro.url.searchParams.get('workPreset')) : null) ??
+  asPreset(preset) ??
+  WORK_MOSAIC_PRESETS['stagger-right']
 
-const displayedItems = items.slice(0, SLOTS.length).map((entry, index) => {
-  const slot = SLOTS[index]
-  const ratio = entry.mediaAspectRatio && RATIO_HW[entry.mediaAspectRatio] ? entry.mediaAspectRatio : slot.ratio
-  const rowSpan = Math.max(1, Math.round((slot.span / 12) * 100 * RATIO_HW[ratio]))
-  return {entry, slot, ratio, rowSpan}
-})
-
-// Vertical placement: slots 1 & 2 share the top edge; slot 3 butts against the
-// bottom of slot 1; slot 4 butts against the bottom of slot 3.
-const rowStartFor = (index: number): number => {
-  switch (index) {
-    case 0:
-    case 1:
-      return 1
-    case 2:
-      return 1 + (displayedItems[0]?.rowSpan ?? 0)
-    default:
-      return 1 + (displayedItems[0]?.rowSpan ?? 0) + (displayedItems[2]?.rowSpan ?? 0)
-  }
-}
+// Interlocking 4-slot mosaic. Each preset slot owns its column span, default
+// ratio, and caption anchor; row spans and caption lanes are derived from the
+// grid geometry so media edges interlock and captions never touch media.
+const displayedItems = items.slice(0, activePreset.slots.length)
+const resolvedSlots = resolveMosaic(
+  activePreset,
+  (index) => displayedItems[index]?.mediaAspectRatio,
+)
 ---
 
 <SurfaceSection role="light">
@@ -79,19 +66,20 @@ const rowStartFor = (index: number): number => {
     {
       displayedItems.length > 0 && (
         <div class="mosaic">
-          {displayedItems.map(({entry, slot, ratio, rowSpan}, index) => {
+          {displayedItems.map((entry, index) => {
+            const slot = resolvedSlots[index]
             const {item} = entry
             const href = item.slug ? `/work/${item.slug}` : '#'
             return (
               <a
-                class="mosaic-item"
+                class:list={['mosaic-item', `caption-${slot.captionAnchor}`]}
                 href={href}
-                style={`--gc: ${slot.column}; --cap-max: ${slot.captionMax}; grid-row: ${rowStartFor(index)} / span ${rowSpan};`}
+                style={`--gc: ${slot.gridColumn}; --cap-max: ${slot.captionMaxCqw}cqw; grid-row: ${slot.rowStart} / span ${slot.rowSpan};`}
               >
                 <MediaFrame
                   media={item.media}
-                  ratio={ratio as MediaRatio}
-                  sizes="(max-width: 1023px) 100vw, 67vw"
+                  ratio={slot.ratio as MediaRatio}
+                  sizes={`(max-width: 1023px) 100vw, ${slot.widthVw}vw`}
                   title={item.title}
                 >
                   <TagList slot="overlay" tags={item.tags} />
@@ -170,6 +158,14 @@ const rowStartFor = (index: number): number => {
     display: flex;
     flex-direction: column;
     gap: var(--space-xs-4);
+  }
+
+  /* Presets may anchor a caption to the slot's right edge when the clear lane
+     sits on that side; the gutter padding still keeps text off the screen
+     edge and neighbouring media. Inert on mobile, where captions go static. */
+  .mosaic-item.caption-right .caption {
+    left: auto;
+    right: 0;
   }
 
   .headline,

@@ -22,6 +22,22 @@ export const homeWorkBlock = defineType({
       initialValue: 'View all',
     }),
     defineField({
+      name: 'layoutPreset',
+      title: 'Layout Preset',
+      description:
+        'Desktop mosaic arrangement (mobile always stacks). Values must match the presets in apps/web/src/lib/workMosaic.ts.',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Stagger Right (default)', value: 'stagger-right'},
+          {title: 'Stagger Left', value: 'stagger-left'},
+          {title: 'Split Stagger', value: 'split-stagger'},
+        ],
+        layout: 'radio' as const,
+      },
+      initialValue: 'stagger-right',
+    }),
+    defineField({
       name: 'items',
       title: 'Case Studies',
       description:
