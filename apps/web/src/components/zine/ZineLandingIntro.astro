@@ -50,19 +50,6 @@ const resolvedCtaLabel = ctaLabel ?? 'Explore the issue'
     z-index: 0;
   }
 
-  /* Desktop: soften the cursor-follow backdrop with a light blur and let the
-     layers dissolve into the section's top and bottom edges. */
-  @media (min-width: 768px) {
-    .zine-landing-intro :global(.pointer-follow.zine-media) {
-      mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
-      -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
-    }
-
-    .zine-landing-intro :global(.pointer-follow.zine-media .follow-item) {
-      filter: blur(5.6px);
-    }
-  }
-
   .content {
     position: relative;
     z-index: 1;
