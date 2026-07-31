@@ -1,14 +1,14 @@
 ---
-import MediaFrame, {type Media, type MediaRatio} from '../MediaFrame.astro'
+import MediaFrame, {type Media, type MediaPlaybackProfile, type MediaRatio} from '../MediaFrame.astro'
 
 interface Props {
   media: Media | null
   ratio?: MediaRatio | null
   title: string
-  controls?: boolean
+  controls?: MediaPlaybackProfile
 }
 
-const {media, ratio = '16:9', title, controls = true} = Astro.props
+const {media, ratio = '16:9', title, controls = 'full'} = Astro.props
 ---
 
 <section class="featured-media">

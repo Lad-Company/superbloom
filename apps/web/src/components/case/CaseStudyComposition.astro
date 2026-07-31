@@ -44,6 +44,7 @@ const capabilityTitles = (caseStudy.capabilities ?? [])
           sizes="(max-width: 1439px) 100vw, 1440px"
           title={caseStudy.title}
           priority
+          controls={caseStudy.leadMedia.asset?._type === 'mux.video' ? 'full' : 'none'}
         />
       </div>
     </SurfaceSection>

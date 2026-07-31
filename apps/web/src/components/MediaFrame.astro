@@ -32,6 +32,19 @@ export interface Media {
   decorative?: boolean | null
 }
 
+/** Playback profiles covered by `media-playback-spec.md`:
+ *  - `'none'` (Ambient — cards, background, scroll-driven) renders no controls
+ *    and is the default. Visibility-gated muted loop, paused when offscreen,
+ *    background-tab, reduced-motion, or `active=false`.
+ *  - `'compact'` (rare mid-page featured video) shows the play/pause button
+ *    as a free-floating 40px circle bottom-right, no scrubber, no mute toggle.
+ *  - `'full'` (Presented — WhoWeAre featured, Case Study lead video) shows the
+ *    Media Control Bar: play/pause + scrubber + mute toggle. Visibility-gated
+ *    muted loop still applies — the bar adds user override, not ambient
+ *    gating.
+ */
+export type MediaPlaybackProfile = 'none' | 'compact' | 'full'
+
 interface Props {
   media?: Media | null
   ratio?: MediaRatio | null
@@ -39,7 +52,7 @@ interface Props {
   title?: string | null
   priority?: boolean
   active?: boolean
-  controls?: boolean
+  controls?: MediaPlaybackProfile
   class?: string
 }
 
@@ -50,7 +63,7 @@ const {
   title,
   priority = false,
   active = true,
-  controls = false,
+  controls = 'none',
   class: className,
 } = Astro.props
 
@@ -85,6 +98,9 @@ const videoPoster =
   asset?._type === 'mux.video' && asset.playbackId
     ? `https://image.mux.com/${asset.playbackId}/thumbnail.jpg?time=0`
     : undefined
+const isVideo = asset?._type === 'mux.video' && Boolean(asset.playbackId)
+const showControls = isVideo && controls !== 'none'
+const isFullControls = isVideo && controls === 'full'
 const imageRendering =
   asset?._type === 'image' && asset.asset?._ref
     ? buildImageRendering({
@@ -109,9 +125,10 @@ const imageRendering =
     {'media-placeholder': !hasAsset, intrinsic: mediaRatio === 'intrinsic'},
   ]}
   style={styleAttr}
+  data-controls={controls}
 >
   {
-    asset?._type === 'mux.video' && asset.playbackId && videoPoster && (
+    isVideo && videoPoster && (
       <img
         class="media-frame__poster"
         src={videoPoster}
@@ -124,9 +141,9 @@ const imageRendering =
     )
   }
   {
-    asset?._type === 'mux.video' && asset.playbackId && (
+    isVideo && (
       <mux-player
-        playback-id={asset.playbackId}
+        playback-id={asset?._type === 'mux.video' ? asset.playbackId ?? undefined : undefined}
         poster={videoPoster}
         metadata-video-title={title ?? undefined}
         stream-type="on-demand"
@@ -152,10 +169,76 @@ const imageRendering =
     )
   }
   {!hasAsset && <div class="placeholder-content" />}
-  <slot />
-  <slot name="overlay" />
   {
-    asset?._type === 'mux.video' && asset.playbackId && controls && (
+    /*
+     * Controls are rendered before the default slot so any overlay headline /
+     * CTA dropped in via <slot /> sits above the bar and stays readable
+     * (no shadow, no z-fighting — DOM order alone). On Presented media with
+     * no overlay (today's only consumers: WhoWeAre featured & Case Study
+     * lead), this is invisible because nothing else fills the slot.
+     */
+    showControls && isFullControls && (
+      <div class="media-controls" data-media-controls>
+        <button
+          type="button"
+          class="media-controls__btn media-controls__btn--play surface-wipe"
+          data-media-control
+          data-motion-control
+          aria-label="Play video"
+          aria-pressed="false"
+        >
+          <span class="media-controls__icon" aria-hidden="true">
+            <svg class="icon icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <svg class="icon icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M6 5h4v14H6zm8 0h4v14h-4z" />
+            </svg>
+          </span>
+        </button>
+        <div
+          class="media-controls__scrubber"
+          role="slider"
+          tabindex="0"
+          aria-label="Seek"
+          aria-orientation="horizontal"
+          aria-valuemin="0"
+          aria-valuemax="0"
+          aria-valuenow="0"
+          aria-valuetext="0:00 / 0:00"
+          data-media-scrubber
+        >
+          <div class="media-controls__track" data-scrubber-track>
+            <div class="media-controls__buffered" data-scrubber-buffered />
+            <div class="media-controls__played" data-scrubber-played />
+          </div>
+          <div class="media-controls__handle" data-scrubber-knob aria-hidden="true" />
+        </div>
+        <button
+          type="button"
+          class="media-controls__btn media-controls__btn--mute surface-wipe"
+          data-media-mute
+          data-motion-control
+          aria-label="Unmute video"
+          aria-pressed="false"
+        >
+          <span class="media-controls__icon" aria-hidden="true">
+            <svg class="icon icon-muted" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M4 9v6h4l5 4V5l-5 4H4z" />
+              <path d="M16 9l5 6m0-6l-5 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <svg class="icon icon-unmuted" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M4 9v6h4l5 4V5l-5 4H4z" />
+              <path d="M16 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" />
+              <path d="M20 6a6 6 0 0 1 0 12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" />
+            </svg>
+          </span>
+        </button>
+      </div>
+    )
+  }
+  {
+    showControls && !isFullControls && (
       <button
         type="button"
         class="media-control surface-wipe"
@@ -175,9 +258,16 @@ const imageRendering =
       </button>
     )
   }
+  <slot />
+  <slot name="overlay" />
 </media-frame>
 
 <script>
+  const AUTO_HIDE_MS = 2500
+  const SEEK_STEP_S = 5
+  /** Time outside [0, duration] that we consider the player still settling. */
+  const SCRUBBER_READY_EPSILON_S = 0.05
+
   class MediaFrameElement extends HTMLElement {
     static observedAttributes = ['active']
 
@@ -187,12 +277,49 @@ const imageRendering =
     private motionPreference: MediaQueryList | null = null
     private isVisible = false
     private userIntent: 'paused' | 'playing' | null = null
+
+    private isFullControls = false
+    private scrubberRoot: HTMLElement | null = null
+    private playedFill: HTMLElement | null = null
+    private bufferedFill: HTMLElement | null = null
+    private knob: HTMLElement | null = null
+    private mute: HTMLButtonElement | null = null
+    private controlsBar: HTMLElement | null = null
+    private trackElement: HTMLElement | null = null
+
+    private durationS = 0
+    private isDragging = false
+    private dragPointerId: number | null = null
+    private autoHideTimer: ReturnType<typeof setTimeout> | null = null
+
     private handleVisibilityChange = () => this.updatePlayback()
     private handleMotionChange = () => this.updatePlayback()
-    private handlePlay = () => this.updateControl()
-    private handlePause = () => this.updateControl()
+    private handlePlay = () => {
+      this.updateControl()
+      this.refreshScrubber()
+      this.scheduleAutoHide()
+    }
+    private handlePause = () => {
+      this.updateControl()
+      this.refreshScrubber()
+      this.showControlsBar()
+    }
+    private handleActivity = () => this.markActivity()
     private handleControlClick = () => this.togglePlayback()
     private handleReady = () => this.setAttribute('data-video-ready', '')
+    private handleMuteClick = () => this.toggleMute()
+    private handleVolumeChange = () => this.updateMute()
+
+    private handleTimeUpdate = () => this.refreshScrubber()
+    private handleDurationChange = () => this.refreshScrubber()
+    private handleLoadedMeta = () => this.refreshScrubber()
+    private handleProgress = () => this.refreshBuffered()
+    private handleSeeked = () => {
+      this.refreshScrubber()
+      this.scheduleAutoHide()
+    }
+    private handleScrubberPointerDown = (event: PointerEvent) => this.startScrub(event)
+    private handleScrubberKey = (event: KeyboardEvent) => this.onScrubberKey(event)
 
     async connectedCallback() {
       const player = this.querySelector('mux-player') as HTMLVideoElement | null
@@ -203,20 +330,56 @@ const imageRendering =
       }
       this.player = player
       this.control = this.querySelector('[data-media-control]') as HTMLButtonElement | null
+      this.isFullControls = this.dataset.controls === 'full'
+      this.controlsBar = this.querySelector('[data-media-controls]') as HTMLElement | null
+      this.scrubberRoot = this.querySelector('[data-media-scrubber]') as HTMLElement | null
+      this.playedFill = this.querySelector('[data-scrubber-played]') as HTMLElement | null
+      this.bufferedFill = this.querySelector('[data-scrubber-buffered]') as HTMLElement | null
+      this.knob = this.querySelector('[data-scrubber-knob]') as HTMLElement | null
+      this.trackElement = this.querySelector('[data-scrubber-track]') as HTMLElement | null
+      this.mute = this.querySelector('[data-media-mute]') as HTMLButtonElement | null
 
       if (this.player) {
         this.player.addEventListener('play', this.handlePlay)
         this.player.addEventListener('pause', this.handlePause)
+        this.player.addEventListener('volumechange', this.handleVolumeChange)
         // Keep the static poster painted until the player can show a real
         // frame, so the video swaps in without a gray-box flash.
         this.player.addEventListener('playing', this.handleReady)
         this.player.addEventListener('canplay', this.handleReady)
+
+        if (this.isFullControls) {
+          this.player.addEventListener('timeupdate', this.handleTimeUpdate)
+          this.player.addEventListener('durationchange', this.handleDurationChange)
+          this.player.addEventListener('loadedmetadata', this.handleLoadedMeta)
+          this.player.addEventListener('progress', this.handleProgress)
+          this.player.addEventListener('seeked', this.handleSeeked)
+        }
       }
 
       if (this.control) {
         this.control.addEventListener('click', this.handleControlClick)
         this.updateControl()
       }
+
+      if (this.mute) {
+        this.mute.addEventListener('click', this.handleMuteClick)
+        this.updateMute()
+      }
+
+      if (this.isFullControls && this.scrubberRoot) {
+        const scrubber = this.scrubberRoot
+        scrubber.addEventListener('pointerdown', this.handleScrubberPointerDown)
+        scrubber.addEventListener('keydown', this.handleScrubberKey)
+      }
+      // Single host-element activity tracker — pointermove and focusin
+      // bubble up from any control or scrubber inside the frame, so the
+      // entire bar (and any future overlays) shows on hover-or-focus and
+      // re-schedules the auto-hide in one place. See media-playback-spec
+      // §5.1 / OQ4 — "auto-hide after inactivity, hover/focus/pause to show."
+      this.addEventListener('pointermove', this.handleActivity)
+      this.addEventListener('pointerdown', this.handleActivity)
+      this.addEventListener('focusin', this.handleActivity)
 
       if (!this.player) return
 
@@ -234,6 +397,7 @@ const imageRendering =
       this.motionPreference.addEventListener('change', this.handleMotionChange)
 
       this.updatePlayback()
+      this.refreshScrubber()
     }
 
     attributeChangedCallback() {
@@ -248,7 +412,32 @@ const imageRendering =
       this.player?.removeEventListener('pause', this.handlePause)
       this.player?.removeEventListener('playing', this.handleReady)
       this.player?.removeEventListener('canplay', this.handleReady)
+      this.player?.removeEventListener('volumechange', this.handleVolumeChange)
+      this.player?.removeEventListener('timeupdate', this.handleTimeUpdate)
+      this.player?.removeEventListener('durationchange', this.handleDurationChange)
+      this.player?.removeEventListener('loadedmetadata', this.handleLoadedMeta)
+      this.player?.removeEventListener('progress', this.handleProgress)
+      this.player?.removeEventListener('seeked', this.handleSeeked)
       this.control?.removeEventListener('click', this.handleControlClick)
+      this.mute?.removeEventListener('click', this.handleMuteClick)
+      this.scrubberRoot?.removeEventListener('pointerdown', this.handleScrubberPointerDown)
+      this.scrubberRoot?.removeEventListener('keydown', this.handleScrubberKey)
+      this.removeEventListener('pointermove', this.handleActivity)
+      this.removeEventListener('pointerdown', this.handleActivity)
+      this.removeEventListener('focusin', this.handleActivity)
+      if (this.autoHideTimer !== null) {
+        clearTimeout(this.autoHideTimer)
+        this.autoHideTimer = null
+      }
+      if (this.dragPointerId !== null) {
+        try {
+          this.trackElement?.releasePointerCapture(this.dragPointerId)
+        } catch {
+          // already released by the browser; swallow
+        }
+        this.dragPointerId = null
+      }
+      this.isDragging = false
     }
 
     private updatePlayback() {
@@ -289,6 +478,8 @@ const imageRendering =
         this.player.pause?.()
       }
       this.updateControl()
+      this.refreshScrubber()
+      this.showControlsBar()
     }
 
     private updateControl() {
@@ -298,6 +489,214 @@ const imageRendering =
       this.control.setAttribute('aria-label', isPlaying ? 'Pause video' : 'Play video')
       this.control.setAttribute('aria-pressed', String(isPlaying))
       this.control.dataset.state = isPlaying ? 'playing' : 'paused'
+    }
+
+    private toggleMute() {
+      if (!this.player) return
+      const next = this.player.muted
+      this.player.muted = !next
+      // Unmuting requires a user gesture, which the click already satisfied.
+      if (!this.player.paused && this.player.muted === false) {
+        // Play() resolves the autoplay-policy promise once unmuted; harmless noop if already playing.
+        this.player.play?.().catch(() => {})
+      }
+      this.updateMute()
+    }
+
+    private updateMute() {
+      if (!this.mute || !this.player) return
+      const isMuted = this.player.muted
+      this.mute.setAttribute('aria-label', isMuted ? 'Unmute video' : 'Mute video')
+      this.mute.setAttribute('aria-pressed', String(!isMuted))
+      this.mute.dataset.state = isMuted ? 'muted' : 'playing'
+    }
+
+    private readDuration(): number {
+      if (!this.player) return 0
+      const d = this.player.duration
+      if (!d || !Number.isFinite(d) || d < 0) return 0
+      return d
+    }
+
+    private currentTime(): number {
+      if (!this.player) return 0
+      const t = this.player.currentTime
+      if (!Number.isFinite(t)) return 0
+      return Math.max(0, t)
+    }
+
+    private formatTime(valueS: number): string {
+      const total = Math.max(0, Math.round(valueS))
+      const minutes = Math.floor(total / 60)
+      const seconds = total % 60
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+
+    private ratioFromEvent(target: HTMLElement, clientX: number): number {
+      const rect = target.getBoundingClientRect()
+      if (rect.width <= 0) return 0
+      const clamped = Math.min(Math.max(clientX - rect.left, 0), rect.width)
+      return clamped / rect.width
+    }
+
+    private refreshScrubber() {
+      if (!this.isFullControls || !this.scrubberRoot) return
+      this.durationS = this.readDuration()
+      const current = this.currentTime()
+      const ratio =
+        this.durationS > SCRUBBER_READY_EPSILON_S ? current / this.durationS : 0
+      const pct = `${Math.min(100, Math.max(0, ratio * 100)).toFixed(2)}%`
+
+      if (this.playedFill && !this.isDragging) {
+        this.playedFill.style.width = pct
+      }
+      if (this.knob && !this.isDragging) {
+        this.knob.style.left = pct
+      }
+
+      const durationSafe = this.durationS > 0 ? this.durationS : 0
+      const currentSafe = this.durationS > 0 ? current : 0
+      this.scrubberRoot.setAttribute('aria-valuemin', '0')
+      this.scrubberRoot.setAttribute('aria-valuemax', String(Math.round(durationSafe)))
+      this.scrubberRoot.setAttribute('aria-valuenow', String(Math.round(currentSafe)))
+      this.scrubberRoot.setAttribute(
+        'aria-valuetext',
+        `${this.formatTime(currentSafe)} / ${this.formatTime(durationSafe)}`,
+      )
+      this.refreshBuffered()
+    }
+
+    private refreshBuffered() {
+      if (!this.isFullControls || !this.bufferedFill || !this.player) return
+      const duration = this.readDuration()
+      if (duration <= SCRUBBER_READY_EPSILON_S) {
+        this.bufferedFill.style.width = '0%'
+        return
+      }
+      const buffered = this.player.buffered
+      let end = 0
+      for (let i = 0; i < buffered.length; i++) {
+        end = Math.max(end, buffered.end(i))
+      }
+      const ratio = Math.min(1, end / duration)
+      this.bufferedFill.style.width = `${(ratio * 100).toFixed(2)}%`
+    }
+
+    private seekToRatio(ratio: number) {
+      if (!this.player || this.durationS <= SCRUBBER_READY_EPSILON_S) return
+      const clamped = Math.min(1, Math.max(0, ratio))
+      this.player.currentTime = clamped * this.durationS
+      this.refreshScrubber()
+    }
+
+    private startScrub(event: PointerEvent) {
+      if (!this.player || !this.scrubberRoot || !this.trackElement) return
+      if (this.durationS <= SCRUBBER_READY_EPSILON_S) {
+        // Scrubber has no timeline yet (poster showing, mux-player still
+        // fetching metadata). Ignore the gesture rather than confusing the
+        // user with a no-op seek.
+        return
+      }
+      if (event.button !== undefined && event.button !== 0) return
+      this.isDragging = true
+      this.dragPointerId = event.pointerId
+      this.trackElement.setPointerCapture(event.pointerId)
+      this.trackElement.addEventListener('pointermove', this.handleScrubMove)
+      this.trackElement.addEventListener('pointerup', this.handleScrubEnd)
+      this.trackElement.addEventListener('pointercancel', this.handleScrubEnd)
+      this.scrubberRoot.classList.add('is-dragging')
+      this.scrubberRoot.focus({preventScroll: true})
+      this.seekToRatio(this.ratioFromEvent(this.trackElement, event.clientX))
+      this.markActivity()
+    }
+
+    private handleScrubMove = (event: PointerEvent) => {
+      if (!this.isDragging || !this.trackElement) return
+      this.seekToRatio(this.ratioFromEvent(this.trackElement, event.clientX))
+    }
+
+    private handleScrubEnd = (event: PointerEvent) => {
+      if (!this.trackElement) return
+      this.isDragging = false
+      try {
+        this.trackElement.releasePointerCapture(event.pointerId)
+      } catch {
+        // already released
+      }
+      this.trackElement.removeEventListener('pointermove', this.handleScrubMove)
+      this.trackElement.removeEventListener('pointerup', this.handleScrubEnd)
+      this.trackElement.removeEventListener('pointercancel', this.handleScrubEnd)
+      this.scrubberRoot?.classList.remove('is-dragging')
+      this.dragPointerId = null
+      // Mouse-up after a click-to-seek should count as play intent: the user
+      // explicitly engaged with the timeline, so don't let an offscreen pause
+      // immediately undo it.
+      if (this.userIntent === null) this.userIntent = 'playing'
+      this.refreshScrubber()
+      this.scheduleAutoHide()
+    }
+
+    private onScrubberKey(event: KeyboardEvent) {
+      if (!this.player || this.durationS <= SCRUBBER_READY_EPSILON_S) return
+      let handled = false
+      switch (event.key) {
+        case 'ArrowLeft':
+          this.player.currentTime = Math.max(0, this.currentTime() - SEEK_STEP_S)
+          handled = true
+          break
+        case 'ArrowRight':
+          this.player.currentTime = Math.min(
+            this.durationS,
+            this.currentTime() + SEEK_STEP_S,
+          )
+          handled = true
+          break
+        case 'Home':
+          this.player.currentTime = 0
+          handled = true
+          break
+        case 'End':
+          this.player.currentTime = this.durationS
+          handled = true
+          break
+        default:
+          break
+      }
+      if (handled) {
+        event.preventDefault()
+        this.refreshScrubber()
+        this.markActivity()
+      }
+    }
+
+    private markActivity() {
+      if (!this.isFullControls || !this.controlsBar) return
+      this.showControlsBar()
+      this.scheduleAutoHide()
+    }
+
+    private showControlsBar() {
+      this.removeAttribute('data-controls-hidden')
+    }
+
+    private scheduleAutoHide() {
+      if (this.autoHideTimer !== null) {
+        clearTimeout(this.autoHideTimer)
+        this.autoHideTimer = null
+      }
+      if (!this.isFullControls || !this.player) return
+      // Always show while paused — see media-playback-spec §5.1 / §9.
+      if (this.player.paused) {
+        this.showControlsBar()
+        return
+      }
+      this.autoHideTimer = setTimeout(() => {
+        this.autoHideTimer = null
+        // Re-check pause at the moment of hiding so a pause during the timer
+        // doesn't accidentally dim the bar.
+        if (this.player?.paused) return
+        this.setAttribute('data-controls-hidden', '')
+      }, AUTO_HIDE_MS)
     }
   }
 
@@ -361,6 +760,10 @@ const imageRendering =
     background: linear-gradient(135deg, var(--fg-12) 0%, var(--fg-8) 100%);
   }
 
+  /* Backwards-compatible compact profile — single button free-floating
+     bottom-right. Used by mid-page featured videos that aren't full-bleed
+     Presented media; the existing callers that migrated are unchanged in
+     layout. */
   .media-control {
     position: absolute;
     right: var(--space-3xs);
@@ -407,5 +810,197 @@ const imageRendering =
   .media-control:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
+  }
+
+  /* Presented profile (`controls="full"`) — Media Control Bar pinned to the
+     bottom inset of the media, above the scrim, below any overlay headline
+     (DOM order handles the layering — bar renders before <slot /> so an
+     overlay H1/CTA floated in via slot sits on top). Row layout: play/pause
+     (left) | scrubber (flex:1) | mute toggle (right edge). No shadows; tokens
+     drive all color and motion. */
+  .media-controls {
+    position: absolute;
+    left: var(--space-3xs);
+    right: var(--space-3xs);
+    bottom: var(--space-3xs);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3xs);
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity var(--motion-quick) var(--motion-ease-out);
+    color: var(--control-fg);
+  }
+
+  @media (min-width: 1024px) {
+    .media-controls {
+      left: var(--page-inset);
+      right: var(--page-inset);
+      bottom: var(--space-3xs);
+    }
+  }
+
+  .media-frame[data-controls-hidden] .media-controls {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .media-controls__btn {
+    position: relative;
+    z-index: 0;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: var(--control-bg);
+    color: var(--control-fg);
+    cursor: pointer;
+    /* Surface Wipe variables — the .surface-wipe class adds the
+       hover/focus color-flip pseudo-elements and the is-pressed scale;
+       these vars drive the direction of the flip so the play/mute
+       buttons feel like the rest of the site's contained controls. */
+    --wipe-surface: var(--control-fg);
+    --wipe-ink: var(--control-bg);
+    --wipe-outline: var(--surface-wipe-outline);
+    transition: transform var(--motion-instant) var(--motion-ease-out);
+  }
+
+  .media-controls__btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 10px;
+  }
+
+  .media-controls__icon {
+    /* Sits above the .surface-wipe::before (z-1) so the icon glyph is
+       visible while the wipe overlay scrolls up over the button on
+       hover/focus, and below ::after (z-3) so the focus ring still
+       draws on top. Mirrors .surface-wipe .btn__label in motion.css. */
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+  }
+
+  .media-controls__icon svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transition: opacity var(--motion-quick) var(--motion-ease-out);
+  }
+
+  /* Play button: icon reflects paused / playing state. */
+  .media-controls__btn--play[data-state='playing'] .icon-play,
+  .media-controls__btn--play[data-state='paused'] .icon-pause {
+    opacity: 0;
+  }
+
+  /* Mute button: icon reflects muted / unmuted state. */
+  .media-controls__btn--mute[data-state='muted'] .icon-unmuted,
+  .media-controls__btn--mute[data-state='playing'] .icon-muted {
+    opacity: 0;
+  }
+
+  /* Scrubber — interactive bar with ≥24px hit area (transparent vertical
+     padding), 4px pill track. Hover/focus grows the track to 6px and shows
+     the knob. Track color tokens resolve to pure black/white on the parent
+     surface via --control-fg / --bg-20 / --bg-60, so the same component
+     reads correctly on light or dark media. */
+  .media-controls__scrubber {
+    flex: 1 1 auto;
+    min-width: 0;
+    position: relative;
+    display: block;
+    padding-block: 10px;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    outline: none;
+    touch-action: none;
+  }
+
+  .media-controls__track {
+    position: relative;
+    height: 4px;
+    border-radius: var(--radius-control);
+    background: var(--bg-20);
+    overflow: visible;
+    transition: height var(--motion-quick) var(--motion-ease-out);
+  }
+
+  .media-controls__buffered,
+  .media-controls__played {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .media-controls__buffered {
+    background: var(--bg-60);
+  }
+
+  .media-controls__played {
+    background: var(--control-fg);
+  }
+
+  .media-controls__handle {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--control-fg);
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity var(--motion-quick) var(--motion-ease-out),
+      transform var(--motion-quick) var(--motion-ease-out);
+  }
+
+  .media-controls__scrubber:hover .media-controls__track,
+  .media-controls__scrubber:focus-visible .media-controls__track,
+  .media-controls__scrubber.is-dragging .media-controls__track {
+    height: 6px;
+  }
+
+  .media-controls__scrubber:hover .media-controls__handle,
+  .media-controls__scrubber:focus-visible .media-controls__handle,
+  .media-controls__scrubber.is-dragging .media-controls__handle {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+
+  .media-controls__scrubber:focus-visible {
+    outline: 2px solid var(--control-fg);
+    outline-offset: 4px;
+    border-radius: var(--radius-control);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .media-controls,
+    .media-controls__icon svg,
+    .media-controls__btn,
+    .media-controls__track,
+    .media-controls__handle {
+      transition: none;
+    }
+    .media-controls__scrubber:hover .media-controls__handle,
+    .media-controls__scrubber:focus-visible .media-controls__handle {
+      transform: translate(-50%, -50%);
+    }
   }
 </style>

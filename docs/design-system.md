@@ -71,6 +71,34 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
   loading priority, visibility-aware playback (hidden/offscreen/background-tab
   video is always paused). Does not know its parent's content type or destination,
   and does not construct routes.
+
+  **Playback profile** is a `controls` enum with three values:
+
+  - `'none'` (default — **Ambient**) — muted loop, visibility-gated, paused on
+    offscreen/background-tab/reduced-motion/`active=false`. No control DOM, not
+    focusable, not in the tab order. Cards, grids, background media, the
+    pointer-follow cluster, and Capes.
+  - `'compact'` — single play/pause button free-floating bottom-right
+    (40px circle, `surface-wipe`, `aria-pressed`). Existing boolean default for
+    mid-page featured videos.
+  - `'full'` (**Presented**) — Media Control Bar pinned to the bottom inset of
+    the media: play/pause (left) | scrubber (flex:1, role=slider, keyboard
+    ±5s/Home/End) | mute toggle (right edge). Plays muted loop by default; the
+    bar is the user-override surface, not an alternative to the ambient gating.
+    Auto-hides after 2.5s of pointer/focus idle while playing; reappears on any
+    pointer movement, focus, or pause; always visible under reduced-motion user
+    intent and when the user is paused. Today: WhoWeAre featured media + Case
+    Study lead media (full-bleed video only).
+
+    > Surface assignment deviation from the spec: `docs/media-playback-spec.md`
+    > §2 lists the **Home hero (3:2)** and the **Zine hero (16:9)** as
+    > Presented. They ship as Ambient today. Decision rationale: the hero is
+    > an art-directed poster canvas, not a watchable clip — a play/pause or
+    > scrubber would compete with the headline/CTA composition that already
+    > fixes the bottom band. Re-evaluate per Figma if/when the hero becomes a
+    > clip the reader is expected to scrub. Annual reviewer: when re-litigating,
+    > PageHero's media-mode path is the single change point — no other surface
+    > flips.
 - **`PageHero`** — the single page-header block. One shared H1 (200px/78%
   desktop, `clamp(64px, 18vw, 160px)` below 1024, ≤4 lines) with three modes
   derived from props: text (default), media (home 3/2, zine 16:9 + CTA), case
@@ -295,7 +323,15 @@ never obscures readable type. Reuse a primitive before writing a page-local time
 
 **Primitives.**
 1. **Text Link** — Underline Draw.
-2. **Contained Control** — Surface Wipe + `scale(0.98)` press.
+2. **Contained Control** — Surface Wipe + `scale(0.98)` press. The Media Control
+   Bar on Presented `MediaFrame` instances (.media-controls__btn) inherits
+   this primitive and adds an `auto-hide` recipe: opacity fade via
+   `--motion-quick`, schedule on play, cancel-and-reschedule on any
+   `pointermove` / `pointerdown` / `focusin` (the events bubble from any
+   control or scrubber interaction up to the host `<media-frame>` element).
+   Always show while paused; show under reduced-motion so the user can opt
+   in via the play button. Knob grow / track height grow mirror the same
+   recipe inside the scrubber.
 3. **Type Reveal** — lines/words by default; chars reserved for hero/route moments.
 4. **Three-Phase Loading** — skeleton → single progress cue → content release;
    only for waits >400ms; never spinner + skeleton together.
