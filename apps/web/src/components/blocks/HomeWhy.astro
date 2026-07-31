@@ -25,7 +25,7 @@ const {headline, body, ctaLabel, ctaHref, media} = Astro.props
     {
       media && (
         <div class="visual">
-          <MediaFrame {media} ratio="3:2" sizes="(max-width: 1023px) 100vw, 90vw" title={headline} />
+          <MediaFrame {media} ratio="3:2" sizes="(max-width: 1023px) 100vw, 50vw" title={headline} />
         </div>
       )
     }
@@ -35,7 +35,8 @@ const {headline, body, ctaLabel, ctaHref, media} = Astro.props
 <style>
   .why {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 0.72fr);
+    /* True 50/50: text and media blocks each take half the width. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--page-gutter);
     padding: var(--space-4xl) var(--page-inset);
     align-items: start;

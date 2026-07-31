@@ -29,7 +29,7 @@ const href = issue?.slug
     <MediaFrame
       media={promoMedia}
       ratio="4:5"
-      sizes="(max-width: 1023px) 100vw, 540px"
+      sizes="(max-width: 1023px) 100vw, 50vw"
       title={promoHeadline}
       class="media"
     />
@@ -44,7 +44,8 @@ const href = issue?.slug
 <style>
   .home-zine {
     display: grid;
-    grid-template-columns: minmax(0, 540px) minmax(0, 1fr);
+    /* True 50/50: media and text blocks each take half the width. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--page-gutter);
     align-items: start;
     padding: var(--space-3xl) var(--page-inset);
