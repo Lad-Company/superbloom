@@ -90,9 +90,11 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     }
   }
 
-  /* Text hero */
+  /* Text hero — top padding clears the overlay nav so there is a true 160px of
+     visible space above the heading; bottom is 0 so the following section owns
+     the header→content hand-off (96px on the browse/detail pages). */
   .hero-text {
-    padding: var(--space-3xl) var(--page-inset) var(--space-l);
+    padding: calc(var(--nav-height) + var(--space-3xl)) var(--page-inset) 0;
   }
 
   @media (max-width: 1023px) {
@@ -146,7 +148,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--page-gutter);
     align-items: end;
-    padding: var(--space-xl) var(--page-inset);
+    padding: var(--space-l) var(--page-inset);
     pointer-events: none;
   }
 
@@ -186,12 +188,14 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
   }
 
   /* Case hero (work/[slug]) — eyebrow → heading → tags, top-anchored inside
-     the case-primary surface. */
+     the case-primary surface. Height is content-driven (no min-height) and the
+     tags sit flush to the bottom edge, so the following lead media's own 32px
+     top padding is the entire header→media hand-off (Figma case hero). Top
+     padding clears the overlay nav for a true 160px above the eyebrow. */
   .hero-case {
     display: flex;
     flex-direction: column;
-    min-height: 700px;
-    padding: var(--space-3xl) var(--page-inset) var(--space-m);
+    padding: calc(var(--nav-height) + var(--space-3xl)) var(--page-inset) 0;
   }
 
   .case-eyebrow {
@@ -211,31 +215,21 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     border-radius: var(--radius-control);
   }
 
-  @media (max-width: 1023px) {
-    /* Bottom-anchored so the eyebrow/heading/tags sit at the bottom of the
-       hero, with the min-height empty band above them — keeps the
-       lead-media hand-off tight while preserving a deliberate hero moment. */
-    .hero-case {
-      min-height: 620px;
-      padding-top: var(--space-3xl);
-      justify-content: flex-end;
-    }
-  }
-
   @media (max-width: 767px) {
+    /* Mobile case hero (Figma 375 symbol): 96px top (below the nav), 12px
+       sides, 32px eyebrow→heading, 64px heading→tags, tags flush to the bottom
+       edge so the lead media's 32px top padding is the whole hand-off. */
     .hero-case {
-      min-height: 520px;
-      padding-top: var(--space-l);
-      padding-bottom: var(--space-xs);
-      justify-content: flex-end;
+      padding: calc(var(--nav-height) + var(--space-xl)) var(--space-3xs) 0;
     }
 
     .case-eyebrow {
+      margin-bottom: var(--space-xs);
       font-size: 32px;
     }
 
     .case-tags {
-      margin-top: var(--space-s);
+      margin-top: var(--space-m);
       font-size: 15px;
     }
   }

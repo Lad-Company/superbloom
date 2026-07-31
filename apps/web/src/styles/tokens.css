@@ -31,6 +31,11 @@
   --page-margin-2: 32px;
   --page-inset: var(--page-margin-2);
 
+  /* Overlay nav occupies the top of the page (position: absolute), so
+     top-anchored headers add this to their top padding to keep a true 160px of
+     clear space below the nav. Tracks the nav's natural height per breakpoint. */
+  --nav-height: 80px;
+
   /* Radius */
   --radius-control: 6px;
   --radius-media: 0;
@@ -66,4 +71,11 @@
   --font-marquee: 'PP Neue Corp Compact', 'Arial Narrow', system-ui, sans-serif;
   --font-body: 'Graphik', 'Inter', system-ui, sans-serif;
   --font-interface: var(--font-display-tight);
+}
+
+/* Small screens collapse the nav to a shorter compact bar. */
+@media (max-width: 767px) {
+  :root {
+    --nav-height: 56px;
+  }
 }

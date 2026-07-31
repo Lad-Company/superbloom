@@ -43,7 +43,9 @@ const faqs = page?.faqs ?? [];
 
 <Layout title="Who We Are" description={introStatement} image={seoImage(featuredMedia)} navRole="dark">
   <SurfaceSection role="dark">
-    <PageHero heading={heroHeading} />
+    <div class="who-hero-pad">
+      <PageHero heading={heroHeading} />
+    </div>
   </SurfaceSection>
 
   <SurfaceSection role="brand-accent">
@@ -97,5 +99,15 @@ const faqs = page?.faqs ?? [];
 <style>
   .discipline-section {
     padding: var(--space-4xl) 0;
+  }
+
+  /* The header (dark) and the lead media (accent) are separate colored
+     sections, so the 96px header→media hand-off must sit on the black header,
+     not inside the colored media box. Desktop only; the mobile hero keeps its
+     own bottom padding. */
+  @media (min-width: 1024px) {
+    .who-hero-pad {
+      padding-bottom: var(--space-xl);
+    }
   }
 </style>

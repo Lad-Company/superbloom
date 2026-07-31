@@ -18,6 +18,9 @@ const {media, ratio = '16:9', title, controls = 'full'} = Astro.props
 <style>
   .featured-media {
     background: var(--bg);
+    /* 32px media inset inside the colored box (matches the case-study lead
+       media). The larger 96px header→media hand-off lives on the black header
+       above (see who-we-are), not in this blue box. */
     padding: var(--space-xs) var(--page-inset) var(--space-2xl);
   }
 
