@@ -12,12 +12,15 @@ import SurfaceSection from '../../components/SurfaceSection.astro'
 import {parseArticleTypeFilter} from '../../lib/articleTypes'
 import {indexPageQuery, indexViewAllNewestQuery, indexViewAllOldestQuery} from '../../lib/queries'
 import {sanityClient} from '../../lib/sanity'
+import {setPublicCache} from '../../lib/cacheHeaders'
 import type {
   IndexPageQueryResult,
   IndexViewAllNewestQueryResult,
   IndexViewAllOldestQueryResult,
 } from '../../sanity.types'
 import type {PartialContentCardSettings} from '../../lib/contentCard'
+
+setPublicCache(Astro.response)
 
 const BATCH_SIZE = 12
 const sort = Astro.url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest'

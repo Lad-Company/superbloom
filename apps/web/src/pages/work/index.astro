@@ -8,9 +8,12 @@ import ContentCardList from '../../components/ContentCardList.astro'
 import WorkCard from '../../components/WorkCard.astro'
 import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro'
 import {sanityClient} from '../../lib/sanity'
+import {setPublicCache} from '../../lib/cacheHeaders'
 import {workIndexQuery, caseStudiesNewestQuery} from '../../lib/queries'
 import type {CaseStudiesNewestQueryResult, WorkIndexQueryResult} from '../../sanity.types'
 import type {PartialContentCardSettings} from '../../lib/contentCard'
+
+setPublicCache(Astro.response)
 
 const BATCH_SIZE = 12
 const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10)

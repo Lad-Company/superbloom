@@ -165,8 +165,6 @@ const imageRendering =
 </media-frame>
 
 <script>
-  import '@mux/mux-player'
-
   class MediaFrameElement extends HTMLElement {
     static observedAttributes = ['active']
 
@@ -182,8 +180,14 @@ const imageRendering =
     private handlePause = () => this.updateControl()
     private handleControlClick = () => this.togglePlayback()
 
-    connectedCallback() {
-      this.player = this.querySelector('mux-player') as HTMLVideoElement | null
+    async connectedCallback() {
+      const player = this.querySelector('mux-player') as HTMLVideoElement | null
+      if (player) {
+        // Image-only frames skip the mux chunk entirely.
+        await import('@mux/mux-player')
+        if (!this.isConnected) return
+      }
+      this.player = player
       this.control = this.querySelector('[data-media-control]') as HTMLButtonElement | null
 
       if (this.player) {

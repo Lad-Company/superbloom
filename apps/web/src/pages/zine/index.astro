@@ -4,6 +4,7 @@ import Footer from '../../components/Footer.astro'
 import ContactBand from '../../components/ContactBand.astro'
 import IssueDetail from '../../components/zine/IssueDetail.astro'
 import {sanityClient} from '../../lib/sanity'
+import {setPublicCache} from '../../lib/cacheHeaders'
 import {zineLandingQuery} from '../../lib/queries'
 import {seoDescription, seoImage} from '../../lib/seo'
 
@@ -13,6 +14,8 @@ if (!zineLanding?.currentIssue) {
   Astro.response.status = 404
   return Astro.rewrite('/404')
 }
+
+setPublicCache(Astro.response)
 
 const introFallbackMedia = [
   zineLanding.currentIssue.heroMedia,
