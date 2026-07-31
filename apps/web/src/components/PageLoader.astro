@@ -1,0 +1,100 @@
+---
+// Global first-load veil. Painted from SSR so it covers the page before any
+// media resolves; the Layout body script lifts it (`data-loader-done`) once
+// fonts and above-the-fold media are ready, so visitors never watch media
+// fold in. Hidden entirely without JS (no-JS/SEO always see the real page) and
+// dismissed immediately on View Transition navigations (the route swipe owns
+// those), so it only ever runs on a genuine hard load.
+---
+
+<div class="page-loader" data-page-loader aria-hidden="true">
+  <div class="page-loader__cue">
+    <span class="page-loader__logo" role="img" aria-label="Superbloom House"></span>
+    <span class="page-loader__bar"></span>
+  </div>
+</div>
+
+<style is:global>
+  .page-loader {
+    display: none;
+  }
+
+  html.js .page-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    background: var(--bg);
+    opacity: 1;
+    transition: opacity 0.6s var(--motion-ease-out);
+  }
+
+  html.js .page-loader[data-loader-done] {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .page-loader__cue {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2xs);
+  }
+
+  .page-loader__logo {
+    display: block;
+    width: clamp(200px, 40vw, 360px);
+    aspect-ratio: 697 / 41;
+    background-color: var(--fg);
+    mask-image: url('/superbloom-house-logo.svg');
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-image: url('/superbloom-house-logo.svg');
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+  }
+
+  .page-loader__bar {
+    position: relative;
+    display: block;
+    width: 120px;
+    height: 2px;
+    overflow: hidden;
+    background: var(--fg-12);
+  }
+
+  .page-loader__bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    background: var(--fg);
+    animation: sbh-loader-indeterminate 1.1s linear infinite;
+  }
+
+  @keyframes sbh-loader-indeterminate {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(350%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.js .page-loader {
+      transition: none;
+    }
+
+    .page-loader__bar::after {
+      width: 100%;
+      opacity: 0.4;
+      animation: none;
+      transform: none;
+    }
+  }
+</style>

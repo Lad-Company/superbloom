@@ -24,7 +24,13 @@ export async function splitText(
   onResplit?: () => void,
 ): Promise<SplitHandle> {
   if (document.fonts?.ready) {
-    await document.fonts.ready;
+    // Split once webfonts are in so line wrapping is accurate, but never let a
+    // slow font load hold the heading blank — reveal after a short cap either
+    // way (a fallback re-split on resize corrects any late reflow).
+    await Promise.race([
+      document.fonts.ready,
+      new Promise<void>((resolve) => window.setTimeout(resolve, 200)),
+    ]);
   }
 
   let instance = new SplitType(el, { types: units, tagName: 'span' });

@@ -111,6 +111,19 @@ const imageRendering =
   style={styleAttr}
 >
   {
+    asset?._type === 'mux.video' && asset.playbackId && videoPoster && (
+      <img
+        class="media-frame__poster"
+        src={videoPoster}
+        alt=""
+        loading={priority ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : 'auto'}
+        decoding="async"
+        aria-hidden="true"
+      />
+    )
+  }
+  {
     asset?._type === 'mux.video' && asset.playbackId && (
       <mux-player
         playback-id={asset.playbackId}
@@ -179,6 +192,7 @@ const imageRendering =
     private handlePlay = () => this.updateControl()
     private handlePause = () => this.updateControl()
     private handleControlClick = () => this.togglePlayback()
+    private handleReady = () => this.setAttribute('data-video-ready', '')
 
     async connectedCallback() {
       const player = this.querySelector('mux-player') as HTMLVideoElement | null
@@ -193,6 +207,10 @@ const imageRendering =
       if (this.player) {
         this.player.addEventListener('play', this.handlePlay)
         this.player.addEventListener('pause', this.handlePause)
+        // Keep the static poster painted until the player can show a real
+        // frame, so the video swaps in without a gray-box flash.
+        this.player.addEventListener('playing', this.handleReady)
+        this.player.addEventListener('canplay', this.handleReady)
       }
 
       if (this.control) {
@@ -228,6 +246,8 @@ const imageRendering =
       this.motionPreference?.removeEventListener('change', this.handleMotionChange)
       this.player?.removeEventListener('play', this.handlePlay)
       this.player?.removeEventListener('pause', this.handlePause)
+      this.player?.removeEventListener('playing', this.handleReady)
+      this.player?.removeEventListener('canplay', this.handleReady)
       this.control?.removeEventListener('click', this.handleControlClick)
     }
 
@@ -306,6 +326,27 @@ const imageRendering =
 
   .media-frame.intrinsic img {
     height: auto;
+  }
+
+  /* Video frames stack a static poster under the player so the frame paints an
+     image at first load instead of a blank box; the poster fades out once the
+     player can show a real frame (see `data-video-ready`). */
+  .media-frame :global(mux-player),
+  .media-frame__poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .media-frame__poster {
+    pointer-events: none;
+    transition: opacity var(--motion-standard) var(--motion-ease-out);
+  }
+
+  .media-frame[data-video-ready] .media-frame__poster {
+    opacity: 0;
   }
 
   .media-placeholder {

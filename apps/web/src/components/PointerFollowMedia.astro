@@ -242,7 +242,9 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
   document.addEventListener('pointerleave', clearPointer)
   mm.addEventListener('change', () => (mm.matches ? stopLoop() : startLoop()))
 
-  document.addEventListener('astro:page-load', boot)
+  // Deferred by Layout until after the hero reveal so the parallax rAF loop
+  // doesn't share frames with the Type Reveal.
+  document.addEventListener('sbh:motion-deferred', boot)
   document.addEventListener('astro:before-swap', teardown)
 </script>
 

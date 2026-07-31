@@ -261,6 +261,8 @@ const displayedCapabilities = capabilities.slice(0, 8);
 
   const cleanupAll = () => cleanups.splice(0).forEach((cleanup) => cleanup());
 
-  document.addEventListener('astro:page-load', initCapes);
+  // Deferred by Layout until after the hero reveal so pin creation + refresh
+  // never reflow on the same frames as the Type Reveal.
+  document.addEventListener('sbh:motion-deferred', initCapes);
   document.addEventListener('astro:before-swap', cleanupAll);
 </script>

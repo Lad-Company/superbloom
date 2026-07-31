@@ -7,6 +7,7 @@ import { ClientRouter } from 'astro:transitions';
 import SEOHead from '../components/SEOHead.astro';
 import Navigation from '../components/Navigation.astro';
 import CartDrawer from '../components/cart/CartDrawer.astro';
+import PageLoader from '../components/PageLoader.astro';
 import { type SurfaceRole } from '../lib/surfaceRole';
 
 interface Props {
@@ -71,6 +72,10 @@ const gaMode =
       type="font/woff2"
       crossorigin
     />
+    {/* Warm the Mux hosts (poster thumbnails + HLS manifests) so video frames
+       don't pay a fresh DNS+TLS round trip when the player upgrades. */}
+    <link rel="preconnect" href="https://image.mux.com" crossorigin />
+    <link rel="preconnect" href="https://stream.mux.com" crossorigin />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {gaMode !== 'off' && (
       <>
@@ -125,11 +130,12 @@ const gaMode =
     </style>
   </head>
   <body style={bodyStyle}>
+    <PageLoader />
     {navRole && <Navigation role={navRole} />}
     <slot />
     <CartDrawer />
     <script>
-      import { getLenis, initMotion, initSmoothScroll } from '../lib/motion';
+      import { getLenis, initMotion, initSmoothScroll, prefersReducedMotion } from '../lib/motion';
       import { initAnalytics } from '../lib/analytics';
       import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -137,6 +143,38 @@ const gaMode =
 
       let destroyMotion = () => {};
       let destroySmoothScroll = () => {};
+      // The global veil only runs on the genuine first load; View Transition
+      // navigations dismiss it in astro:before-swap and this flips false.
+      let isFirstLoad = true;
+
+      const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
+
+      // Resolve once fonts and every above-the-fold media element (the eager /
+      // high-priority images, which include each video frame's poster) are in,
+      // capped so a slow asset can never strand the veil.
+      const whenCriticalMediaReady = (timeoutMs: number) => {
+        const imgs = Array.from(
+          document.querySelectorAll<HTMLImageElement>('img[fetchpriority="high"], img[loading="eager"]'),
+        ).filter((img) => !img.complete);
+        const imgReady = imgs.map(
+          (img) =>
+            new Promise<void>((resolve) => {
+              img.addEventListener('load', () => resolve(), { once: true });
+              img.addEventListener('error', () => resolve(), { once: true });
+            }),
+        );
+        const fontsReady = document.fonts?.ready ?? Promise.resolve();
+        return Promise.race([Promise.all([...imgReady, fontsReady]), wait(timeoutMs)]);
+      };
+
+      const runPageLoader = async (loader: HTMLElement) => {
+        const minVisibleMs = prefersReducedMotion() ? 0 : 400;
+        const start = performance.now();
+        await whenCriticalMediaReady(4000);
+        const remaining = minVisibleMs - (performance.now() - start);
+        if (remaining > 0) await wait(remaining);
+        loader.setAttribute('data-loader-done', '');
+      };
       // Recorded on astro:before-preparation so page-load can tell fresh
       // navigations (land at the top) from history traversal (browser restores
       // the saved scroll position).
@@ -161,18 +199,54 @@ const gaMode =
         }
       };
 
-      const setup = () => {
+      // Heavier scroll systems (Capes pin, parallax rAF) listen for this and
+      // init only once the hero reveal has had the first frames to itself, so
+      // their pin-spacer/refresh reflow never competes with the reveal.
+      const runDeferredMotion = () => {
+        document.dispatchEvent(new CustomEvent('sbh:motion-deferred'));
+        // Re-assert after ScrollTrigger measures: pin spacers and splits shift
+        // layout, and Lenis must not drift back to a stale offset.
+        ScrollTrigger.refresh();
+        settleScrollPosition();
+      };
+
+      const scheduleDeferredMotion = () => {
+        // No reveal competes under reduced motion, so bring everything up now.
+        if (prefersReducedMotion()) {
+          runDeferredMotion();
+          return;
+        }
+        const idle = (
+          window as Window & {
+            requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+          }
+        ).requestIdleCallback;
+        if (idle) {
+          idle(runDeferredMotion, { timeout: 1200 });
+        } else {
+          window.setTimeout(runDeferredMotion, 800);
+        }
+      };
+
+      const setup = async () => {
         destroySmoothScroll = initSmoothScroll();
         settleScrollPosition();
+        // First hard load: hold the veil until fonts + above-the-fold media are
+        // ready, so startup layout work and any media fetch happen behind it and
+        // the hero reveal plays on a clean frame as the veil lifts.
+        if (isFirstLoad) {
+          const loader = document.querySelector<HTMLElement>('[data-page-loader]');
+          if (loader && !loader.hasAttribute('data-loader-done')) {
+            await runPageLoader(loader);
+          }
+        }
+        isFirstLoad = false;
         // The full page-entry Type Reveal plays on the genuine first load and
         // on every View Transition navigation.
         destroyMotion = initMotion();
-        // Re-assert after ScrollTrigger measures: pin spacers and splits shift
-        // layout, and Lenis must not drift back to a stale offset.
-        requestAnimationFrame(() => {
-          ScrollTrigger.refresh();
-          settleScrollPosition();
-        });
+        // Let the reveal own the first frames, then bring up the heavy scroll
+        // systems and re-measure on idle (fixed beat where idle is unavailable).
+        scheduleDeferredMotion();
       };
 
       const teardown = () => {
@@ -192,6 +266,9 @@ const gaMode =
         // visible-then-hidden.
         const newDocument = (event as unknown as { newDocument?: Document }).newDocument;
         newDocument?.documentElement.classList.add('js');
+        // The route swipe owns navigations, so the incoming page's veil starts
+        // already dismissed and never flashes over a client-side transition.
+        newDocument?.querySelector('[data-page-loader]')?.setAttribute('data-loader-done', '');
       });
       document.addEventListener('astro:before-preparation', (event) => {
         const type = (event as Event & { navigationType?: typeof navigationType }).navigationType;

@@ -115,6 +115,17 @@
    swap, so the reveal plays on client-side navigations too. */
 html.js [data-motion-text] {
   opacity: 0;
+  /* Safety net: if the JS reveal never runs (script error, split failure), the
+     heading must not stay blank. The delayed no-fill-during-delay animation
+     reveals it; the JS path sets inline opacity:1 first, so this never fires
+     when motion is working. */
+  animation: sbh-reveal-fallback 0s linear 1.2s forwards;
+}
+
+@keyframes sbh-reveal-fallback {
+  to {
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
