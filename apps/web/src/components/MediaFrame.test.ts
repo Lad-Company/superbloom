@@ -93,12 +93,17 @@ describe('MediaFrame playback profiles', () => {
   it('volume icon has breathing room between the speaker body and the wave / X glyph', () => {
     // Speaker body sits in the left half (x=4-13) so the wave arcs (x=16+)
     // and the muted X (x=16-21) have room to render without colliding
-    // with the cone. Stroke is bumped to 1.8 with linejoin/linecap round
-    // for the X so the muted state reads cleanly at 22px.
+    // with the cone. The wave arcs are concentric ~90° sweeps around the
+    // cone tip (13,12) at radii 4.5 / 8.5 — a uniform 4-unit gap between
+    // bars, so they neither overlap nor sprawl — and the outer bar tops
+    // out at x=21.5 (+0.9 stroke), inside the 24-unit viewBox so the
+    // active icon is never clipped by the icon edge. Stroke is bumped to
+    // 1.8 with linejoin/linecap round for the X so the muted state reads
+    // cleanly at 22px.
     expect(source).toContain('M4 9v6h4l5 4V5l-5 4H4z')
     expect(source).toContain('M16 9l5 6m0-6l-5 6')
-    expect(source).toContain('M16 9a4 4 0 0 1 0 6')
-    expect(source).toContain('M20 6a6 6 0 0 1 0 12')
+    expect(source).toContain('M16.2 8.8a4.5 4.5 0 0 1 0 6.4')
+    expect(source).toContain('M19 6a8.5 8.5 0 0 1 0 12')
     expect(source).toContain('stroke-linejoin="round"')
   })
 
