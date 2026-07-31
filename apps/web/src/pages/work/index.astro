@@ -44,7 +44,6 @@ const queryFor = (nextPage: number) => {
 }
 
 const heroHeading = workIndex?.heroHeading ?? 'Unexpected minds. Unignorable work.'
-const allWorkHeading = 'All Work'
 ---
 
 <Layout title="Our Work" description={heroHeading} navRole="dark">
@@ -68,9 +67,6 @@ const allWorkHeading = 'All Work'
     }
 
     <div class="all-work">
-      <div class="all-work-header">
-        <h2 class="type-h3 all-work-heading">{allWorkHeading}</h2>
-      </div>
       <ContentCardList class="all-card-list">
         {
           caseStudies.map((cs) => (
@@ -101,14 +97,6 @@ const allWorkHeading = 'All Work'
   .featured-work {
     display: grid;
     padding: var(--space-xl) var(--page-inset) 0;
-  }
-  .all-work-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-  }
-  .all-work-heading {
-    margin: 0;
   }
   @media (max-width: 1023px) {
     .featured-work {
