@@ -102,6 +102,9 @@ const currentYear = new Date().getFullYear()
       }
       <div class="col">
         <p>All content ©<br />Superbloom House {currentYear}</p>
+        <button type="button" class="underline-draw cc-settings" data-cc-reopen>
+          Cookie settings
+        </button>
       </div>
     </div>
   </footer>
@@ -251,6 +254,15 @@ const currentYear = new Date().getFullYear()
   }
   p {
     margin: 0;
+  }
+  .cc-settings {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
   }
   @media (max-width: 1023px) {
     .footer {

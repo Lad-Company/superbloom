@@ -1,0 +1,141 @@
+---
+import {vars} from '../lib/surfaceRole'
+import Button from './Button.astro'
+---
+
+<aside
+  class="cookie-consent"
+  data-cookie-consent
+  hidden
+  role="dialog"
+  aria-modal="false"
+  aria-labelledby="cookie-consent-title"
+  aria-describedby="cookie-consent-desc"
+  style={vars.dark}
+>
+  <div class="cc-panel">
+    <div class="cc-copy">
+      <p id="cookie-consent-title" class="type-label">Cookies</p>
+      <p id="cookie-consent-desc" class="type-caption">
+        We use Google Analytics to understand how the site is used. Accept to allow analytics
+        cookies, or reject to keep them off. You can change this anytime via “Cookie settings” in
+        the footer.
+      </p>
+    </div>
+    <div class="cc-actions">
+      <Button as="button" type="button" label="Reject all" class="cc-reject" data-cc-reject />
+      <Button as="button" type="button" label="Accept all" class="cc-accept" data-cc-accept />
+    </div>
+  </div>
+</aside>
+
+<script>
+  import {readConsent, writeConsent} from '../lib/consent'
+
+  const getBanner = () => document.querySelector<HTMLElement>('[data-cookie-consent]')
+
+  const hideBanner = () => getBanner()?.setAttribute('hidden', '')
+
+  const showBanner = (focus = false) => {
+    const banner = getBanner()
+    if (!banner) return
+    banner.removeAttribute('hidden')
+    if (focus) banner.querySelector<HTMLElement>('[data-cc-accept]')?.focus()
+  }
+
+  const syncBanner = () => {
+    if (readConsent() === null) showBanner()
+    else hideBanner()
+  }
+
+  const resolve = (status: 'granted' | 'denied') => {
+    writeConsent(status)
+    window.gtag?.('consent', 'update', {analytics_storage: status})
+    hideBanner()
+  }
+
+  // Bound once on the persistent document so it survives Astro View Transitions,
+  // which swap the banner markup on every navigation.
+  const w = window as Window & {__ccBound?: boolean}
+  if (!w.__ccBound) {
+    w.__ccBound = true
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement | null
+      if (target?.closest('[data-cc-accept]')) resolve('granted')
+      else if (target?.closest('[data-cc-reject]')) resolve('denied')
+      else if (target?.closest('[data-cc-reopen]')) showBanner(true)
+    })
+  }
+
+  document.addEventListener('astro:page-load', syncBanner)
+</script>
+
+<style>
+  .cookie-consent {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 30;
+    background: var(--bg);
+    color: var(--fg);
+    border-top: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+    backdrop-filter: blur(var(--frosted-layer-blur));
+    -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
+  }
+  .cookie-consent[hidden] {
+    display: none;
+  }
+  .cc-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2xs);
+    padding: var(--space-2xs) var(--page-inset);
+  }
+  .cc-copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs-4);
+    max-width: 68ch;
+  }
+  .cc-copy p {
+    margin: 0;
+  }
+  #cookie-consent-desc {
+    color: color-mix(in srgb, var(--fg) 70%, transparent);
+  }
+  .cc-actions {
+    display: flex;
+    gap: var(--space-3xs);
+    flex-shrink: 0;
+  }
+
+  .cookie-consent:not([hidden]) {
+    animation: cc-rise var(--motion-standard) var(--motion-ease-out) both;
+  }
+  @keyframes cc-rise {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cookie-consent:not([hidden]) {
+      animation: none;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .cc-panel {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-xs);
+    }
+    .cc-actions {
+      justify-content: stretch;
+    }
+    .cc-actions :global(.btn) {
+      flex: 1;
+    }
+  }
+</style>
