@@ -90,6 +90,7 @@ export const homepageQuery = defineQuery(`
     work{
       headline,
       ctaLabel,
+      layoutPreset,
       "items": items[0...4]{
         mediaAspectRatio,
         "item": caseStudy->{

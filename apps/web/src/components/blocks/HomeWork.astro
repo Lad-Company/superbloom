@@ -22,23 +22,28 @@ interface WorkItem {
 interface Props {
   headline?: string | null
   ctaLabel?: string | null
-  /** Desktop mosaic arrangement; see lib/workMosaic for the preset contract. */
-  preset?: WorkMosaicPresetName
+  /** Desktop mosaic arrangement, selected in the CMS. Unknown values fall back
+     to the default preset; see lib/workMosaic for the preset contract. */
+  preset?: string | null
   items: Array<{
     item: WorkItem
     mediaAspectRatio?: MediaAspectRatio | null
   }>
 }
 
-const {headline = 'Our Work', ctaLabel = 'View all', preset = 'stagger-right', items} = Astro.props
+const {headline = 'Our Work', ctaLabel = 'View all', preset, items} = Astro.props
 
-// Dev-only override so the three presets can be VQA'd via
-// /?workPreset=stagger-left or /?workPreset=split-stagger.
-const requestedPreset = import.meta.env.DEV ? Astro.url.searchParams.get('workPreset') : null
+const asPreset = (value: string | null | undefined) =>
+  value && value in WORK_MOSAIC_PRESETS
+    ? WORK_MOSAIC_PRESETS[value as WorkMosaicPresetName]
+    : null
+
+// Resolution order: dev-only ?workPreset= override (for VQA), then the
+// CMS-selected preset, then the default.
 const activePreset =
-  requestedPreset && requestedPreset in WORK_MOSAIC_PRESETS
-    ? WORK_MOSAIC_PRESETS[requestedPreset as WorkMosaicPresetName]
-    : WORK_MOSAIC_PRESETS[preset]
+  (import.meta.env.DEV ? asPreset(Astro.url.searchParams.get('workPreset')) : null) ??
+  asPreset(preset) ??
+  WORK_MOSAIC_PRESETS['stagger-right']
 
 // Interlocking 4-slot mosaic. Each preset slot owns its column span, default
 // ratio, and caption anchor; row spans and caption lanes are derived from the
