@@ -150,9 +150,9 @@ const overrideFor = (id?: string | null) =>
     /* True 50/50: media and copy blocks each take half the width. */
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
-    /* Design calls for min 56px between the columns (page-gutter is 24px). */
-    gap: max(56px, var(--page-gutter));
-    padding: clamp(var(--space-3xl), 14vw, 240px) var(--page-inset);
+    /* Min 64px between the columns (page-gutter is 24px). */
+    gap: max(var(--space-m), var(--page-gutter));
+    padding: clamp(var(--space-3xl), 14vw, var(--space-4xl)) var(--page-inset);
     background: #c3e4d3;
     color: #000;
   }

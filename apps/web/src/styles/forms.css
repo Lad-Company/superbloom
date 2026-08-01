@@ -30,7 +30,7 @@
 }
 .input--message {
   height: auto;
-  padding-top: 16px;
-  padding-bottom: 16px;
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-16);
   resize: vertical;
 }

@@ -136,7 +136,7 @@ const links = [
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    padding: 19px var(--page-gutter);
+    padding: var(--space-16) var(--page-gutter);
     width: 100%;
     color: var(--fg);
     --fg-12: color-mix(in srgb, var(--fg) 12%, transparent);
@@ -176,7 +176,7 @@ const links = [
     justify-self: end;
   }
   .btn {
-    padding: var(--space-3xs) 16px;
+    padding: var(--space-3xs) var(--space-16);
     border-radius: var(--radius-control);
     backdrop-filter: blur(var(--frosted-layer-blur));
     -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
@@ -297,7 +297,7 @@ const links = [
     .compact-actions .btn {
       display: block;
       text-align: center;
-      padding: var(--space-3xs) 16px;
+      padding: var(--space-3xs) var(--space-16);
     }
     .compact-btn-label {
       font-family: var(--font-interface);
