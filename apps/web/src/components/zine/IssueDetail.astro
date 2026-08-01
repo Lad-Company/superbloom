@@ -93,7 +93,7 @@ const overrideFor = (id?: string | null) =>
           <MediaFrame
             media={issue.editorLetter.media ?? issue.heroMedia}
             ratio="1:1"
-            sizes="(max-width: 767px) 100vw, 58vw"
+            sizes="(max-width: 1023px) 100vw, 50vw"
             title={issue.editorLetter.heading}
           >
             <TagList slot="overlay" tags={editorLetterLabels} />
@@ -147,9 +147,11 @@ const overrideFor = (id?: string | null) =>
 
   .editor-letter {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+    /* True 50/50: media and copy blocks each take half the width. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
-    gap: clamp(var(--space-l), 10vw, var(--space-4xl));
+    /* Design calls for min 56px between the columns (page-gutter is 24px). */
+    gap: max(56px, var(--page-gutter));
     padding: clamp(var(--space-3xl), 14vw, 240px) var(--page-inset);
     background: #c3e4d3;
     color: #000;
@@ -159,7 +161,7 @@ const overrideFor = (id?: string | null) =>
     display: flex;
     flex-direction: column;
     align-items: start;
-    gap: var(--space-2xs);
+    gap: var(--space-xs);
     max-width: 540px;
   }
 
@@ -198,15 +200,20 @@ const overrideFor = (id?: string | null) =>
     white-space: nowrap;
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: 1023px) {
     .editor-letter {
       grid-template-columns: 1fr;
       gap: var(--space-m);
-      padding-block: var(--space-xl);
     }
 
     .editor-letter-copy {
       max-width: none;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .editor-letter {
+      padding-block: var(--space-xl);
     }
   }
 </style>

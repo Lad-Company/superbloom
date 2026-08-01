@@ -178,10 +178,13 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
       max-height: none;
     }
 
+    /* Mobile media hero: 24px between stacked hero items (heading ↔ subcopy;
+       kicker ↔ heading already uses --space-2xs in .heading-stack) and 64px
+       beneath the last item so more media shows before the section edge. */
     .overlay {
       grid-template-columns: minmax(0, 1fr);
-      gap: var(--space-s);
-      padding: var(--space-3xs);
+      gap: var(--space-2xs);
+      padding: var(--space-3xs) var(--space-3xs) var(--space-m);
     }
 
     .overlay .heading-stack,

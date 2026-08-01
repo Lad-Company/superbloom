@@ -9,9 +9,9 @@ describe('TagList hover fill', () => {
     expect(source).toContain('tag__label')
   })
 
-  it('fills with a brighter frosted layer and darker ink', () => {
-    expect(source).toContain('--wipe-surface: rgba(255, 255, 255, 0.45)')
-    expect(source).toContain('--wipe-ink: rgba(0, 0, 0, 0.85)')
+  it('fills with solid white and full-opacity black ink', () => {
+    expect(source).toContain('--wipe-surface: #ffffff')
+    expect(source).toContain('--wipe-ink: #000000')
     expect(source).toContain('backdrop-filter: blur(var(--frosted-layer-blur))')
   })
 
