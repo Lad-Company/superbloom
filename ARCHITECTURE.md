@@ -157,6 +157,18 @@ another doc, that doc is authoritative.
   dataset holds no sensitive data and assets are already publicly fetchable; revoke
   with `sanity cors delete null` if that changes. Not a code bug — `MediaFrame`, the
   generated URLs, and the `srcset` comma theory were all ruled out.
+- **0024 — Fluid display ramp, fluid vertical rhythm, canonical breakpoints.**
+  `tokens.css` is the single source of truth: display type rides one shared
+  `clamp()` ramp (floor @360 → cap @1440 per step, QA-tunable floors), the top
+  three spacing steps are fluid (768 → 1440), and breakpoints are canonical
+  (768/1024, carousel 600/960) defined once as `@custom-media` with desktop-first
+  `.98` max-width boundaries, resolved by postcss-custom-media. Uno shortcuts and
+  `theme.spacing` *reference* the token vars instead of re-hardcoding literals
+  (fixing the spacing-literal duplication). Components never hand-roll `vw`
+  font-size coefficients; `tokens.test.ts` re-derives every fluid token from the
+  two curve formulas. Rejected: mobile-first cascade flip (too large a rewrite),
+  fluid body/UI type (fights user zoom), fluidizing spacing ≤96.
+  *(`docs/css-standardization-spec.md`; `docs/design-system.md` §1.)*
 
 **Superseded or amended (kept as guardrails):**
 

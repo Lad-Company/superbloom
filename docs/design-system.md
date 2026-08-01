@@ -33,8 +33,17 @@ The primary design file is
 
 ### Typography
 
-- `display-1…display-5` — PP Neue Corp Tight at 200 / 140 / 120 / 80 / 56px.
-- `editorial-title` — Graphik 38 / 24. `body` 19. `caption` 17. `label` 17 (PP Tight).
+- Display steps are **fluid** (`--type-*` in `tokens.css`, referenced by the Uno
+  `type-*` shortcuts): one shared ramp, each step scaling linearly from its floor
+  at a 360px viewport to its cap at 1440px, then plateauing — h1 64→200,
+  h2 48→140, h3 40→120, h4 40→80, h5 / section-heading 32→56. No component
+  hand-rolls a `vw` font-size; floors are QA-tunable in one place.
+  (`docs/css-standardization-spec.md` §3.)
+- The marquee rides the same ramp shape via `--type-marquee` (cap 200, floor held
+  at 80) but keeps its own face.
+- Fixed steps (fluid type would fight user zoom): `editorial-title` — Graphik
+  38 / 24. `h6` 24. `h7` 32. `body` 19. `caption` 17. `label`/`eyebrow` 17
+  (PP Tight).
 - **PP Neue Corp Tight** is the sole compact interface/navigation face (buttons,
   tags, controls, nav). **Graphik** is reserved for editorial/reading copy.
 - The **Who We Are marquee** is the *only* place the alternate PP Neue Corp display
@@ -42,9 +51,15 @@ The primary design file is
 
 ### Spacing and radius (tokens are source of truth — `tokens.css`)
 
-- Spacing scale (px): `--space-xs-4` 8, `--space-3xs` 12, `--space-2xs` 24,
-  `--space-xs` 32, `--space-s` 40, `--space-m` 64, `--space-l` 80, `--space-xl` 96,
-  `--space-2xl` 120, `--space-3xl` 160, `--space-4xl` 200.
+- Spacing scale (px): `--space-xs-4` 8, `--space-3xs` 12, `--space-16` 16,
+  `--space-2xs` 24, `--space-xs` 32, `--space-s` 40, `--space-m` 64, `--space-l` 80,
+  `--space-xl` 96, then the **fluid vertical rhythm**: `--space-2xl` 80→120,
+  `--space-3xl` 96→160, `--space-4xl` 120→200, scaling from a 768px viewport to
+  1440px on one shared curve (floor below 768, plateau past 1440). Everything 96
+  and below stays fixed so component spacing and touch targets don't fight the
+  viewport. (`docs/css-standardization-spec.md` §4.)
+- Control-internal padding below the 8px floor uses the `--pad-*` sub-scale
+  (4 / 6 / 10) rather than snapping compact controls up to the spacing scale.
 - Layout: `--page-gutter` 24px, `--page-inset` 32px.
 - Radius: `--radius-control` 6px (tags + buttons only); `--radius-media` 0 (media
   never has a radius). There is no separate field radius.
@@ -54,6 +69,12 @@ The primary design file is
 
 - `PageGrid`: 12 columns, 24px gutter, 32px inset.
 - Three ranges: **Desktop** ≥1024, **Compact** 768–1023, **Small** <768.
+  Breakpoints are canonical and defined once in `tokens.css` as custom media —
+  scoped CSS writes `@media (--bp-small)`, `(--bp-below-desktop)`,
+  `(--bp-desktop)` (carousel secondaries `(--bp-600)` / `(--bp-960)`), resolved by
+  postcss-custom-media. The cascade is desktop-first: every max-width boundary
+  uses `.98` (767.98 / 1023.98) so ranges can't overlap or gap at the exact px.
+  (`docs/css-standardization-spec.md` §5.)
 - Below 1024px: ordinary Content Cards go full-width, Info below; two-block detail
   rows stack in authored order; explicit carousels remain narrow.
 

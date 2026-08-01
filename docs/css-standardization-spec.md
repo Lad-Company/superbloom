@@ -1,7 +1,8 @@
 # CSS Standardization — Fluid Type, Fluid Spacing, Breakpoints
 
-Status: **Spec / not implemented.** Captures the investigated design and the
-decisions reached in a grilling session; a later task implements it.
+Status: **Implemented** (`feat/css-standardization`; ADR-0024). Awaiting the
+human visual QA pass from §7 (resize sweep + Figma check at 360 / 768 / 1024 /
+1440); fluid floors remain QA-tunable per §6.
 
 Related: `docs/design-system.md` (§Typography, §Spacing, §Layout and responsive
 ranges), `docs/marquee-variable-font-morph-spec.md` (the split-out marquee VF
