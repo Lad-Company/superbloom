@@ -147,13 +147,9 @@ const {role} = Astro.props
   .contact-left {
     padding-right: var(--space-xl);
   }
+  /* Headline rides the shared fluid type-h5 ramp via the Uno class. */
   .type-h5 {
     margin: 0;
-    font-family: var(--font-display-tight);
-    font-size: 56px;
-    font-weight: 750;
-    line-height: 0.88;
-    text-transform: uppercase;
   }
   .contact-form,
   .fields {
@@ -205,9 +201,6 @@ const {role} = Astro.props
     }
     .contact-left {
       padding-right: var(--space-2xs);
-    }
-    .type-h5 {
-      font-size: clamp(40px, 6vw, 56px);
     }
   }
   @media (max-width: 767px) {

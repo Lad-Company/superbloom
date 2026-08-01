@@ -65,7 +65,9 @@ const resolvedCtaLabel = ctaLabel ?? 'Explore the issue'
     max-width: none;
     margin: 0;
     font-family: var(--font-display-tight);
-    font-size: clamp(52px, 8.5vw, 128px);
+    /* Mid-page statement rides the shared type-h3 ramp (spec §3.4: snapped
+       from a bespoke 128 cap to the canonical 120 step). */
+    font-size: var(--type-h3);
     font-weight: 750;
     line-height: 0.88;
     letter-spacing: 0;
@@ -81,7 +83,6 @@ const resolvedCtaLabel = ctaLabel ?? 'Explore the issue'
     h2 {
       width: 100%;
       max-width: none;
-      font-size: clamp(52px, 13vw, 80px);
     }
   }
 </style>

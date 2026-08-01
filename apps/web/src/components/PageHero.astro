@@ -18,7 +18,7 @@ interface Props {
 const { heading, eyebrow, tags, subheading, media, headingSize = 'h1', mediaRatio = '3:2', id } =
   Astro.props;
 
-const headingClass = ['hero-heading', `type-${headingSize}`, headingSize !== 'h1' && 'hero-heading-compact'];
+const headingClass = ['hero-heading', `type-${headingSize}`];
 
 // Layout mode derives from props: media → media hero (home); eyebrow/tags →
 // case hero (work/[slug]); otherwise the plain text hero (work, who-we-are,
@@ -34,7 +34,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
         <div class="scrim"></div>
         <div class="overlay">
           <div class="heading-stack">
-            {eyebrow && <p class="hero-kicker">{eyebrow}</p>}
+            {eyebrow && <p class="type-section-heading hero-kicker">{eyebrow}</p>}
             <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-scroll="false">{heading}</h1>
           </div>
           {subheading && <p class="type-caption sub">{subheading}</p>}
@@ -61,11 +61,11 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
 }
 
 <style>
-  /* Shared H1 — desktop is the Figma 200px/78% type-h1 token; below 1024 it
-     scales with the viewport with no x-overflow. The type-h1 shortcut also
-     applies line-clamp-4 from Uno; we override it here so long hero titles
-     (e.g. "Superbloom House's 5th-Birthday Move? Open a Shop and Give the
-     Artists All The…") wrap to every line instead of truncation. */
+  /* Shared H1 — rides the fluid type-h1/type-h3 ramp tokens (one continuous
+     360→1440 curve, no 1024 snap). The shortcut also applies line-clamp-4
+     from Uno; we override it here so long hero titles (e.g. "Superbloom
+     House's 5th-Birthday Move? Open a Shop and Give the Artists All The…")
+     wrap to every line instead of truncation. */
   .hero-heading {
     margin: 0;
     max-width: 21ch;
@@ -76,11 +76,6 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
   @media (max-width: 1023px) {
     .hero-heading {
       max-width: none;
-      font-size: clamp(64px, 18vw, 160px);
-    }
-
-    .hero-heading-compact {
-      font-size: clamp(48px, 12vw, 120px);
     }
   }
 
@@ -153,16 +148,10 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     gap: var(--space-2xs);
   }
 
-  /* Super-header kicker above the H1 (e.g. zine "Issue No. 5"). Scales with
-     the hero type ramp: 56px at the 1440 design width. */
+  /* Super-header kicker above the H1 (e.g. zine "Issue No. 5"). Rides the
+     shared type-section-heading ramp via the Uno class in the markup. */
   .hero-kicker {
     margin: 0;
-    font-family: var(--font-display-tight);
-    font-size: clamp(32px, 3.9vw, 56px);
-    font-weight: 750;
-    line-height: 0.88;
-    letter-spacing: 0;
-    text-transform: uppercase;
   }
 
   .sub {
@@ -231,7 +220,6 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
 
     .case-eyebrow {
       margin-bottom: var(--space-xs);
-      font-size: 32px;
     }
 
     .case-tags {

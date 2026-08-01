@@ -54,7 +54,9 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
     margin: 0;
     max-width: 14ch;
     font-family: var(--font-display-tight);
-    font-size: clamp(44px, 7vw, 104px);
+    /* Statement rides the shared type-h3 ramp — same size as its sibling
+       Zine statement (spec §3.4). */
+    font-size: var(--type-h3);
     font-weight: 750;
     line-height: 0.9;
     letter-spacing: 0;
@@ -69,8 +71,6 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
 
     h2 {
       max-width: none;
-      /* Match the mobile type-h4 (80px) used by the Capes list below. */
-      font-size: 80px;
     }
   }
 </style>
