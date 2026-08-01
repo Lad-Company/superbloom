@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "postcss-custom-media": "^8.0.2",
     "typescript": "^6.0.3",
     "vitest": "^1.6.1"
   }

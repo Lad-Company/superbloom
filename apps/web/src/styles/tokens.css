@@ -1,4 +1,16 @@
 /* Design tokens transcribed from Figma R3 variables. Source of truth for the Uno theme. */
+
+/* Canonical breakpoints (docs/css-standardization-spec.md §5). Media queries
+   can't read var(), so breakpoints are defined once here as custom media and
+   resolved by postcss-custom-media (see apps/web/postcss.config.mjs). Scoped
+   CSS writes `@media (--bp-small)` etc. The cascade stays desktop-first: every
+   max-width boundary uses .98 so ranges never overlap or gap at the exact px. */
+@custom-media --bp-small (max-width: 767.98px);
+@custom-media --bp-below-desktop (max-width: 1023.98px);
+@custom-media --bp-desktop (min-width: 1024px);
+@custom-media --bp-600 (max-width: 599.98px);
+@custom-media --bp-960 (max-width: 959.98px);
+
 :root {
   /* Color */
   --bg: #ffffff;
@@ -15,21 +27,50 @@
   --control-fg: #ffffff;
   --surface-wipe-outline: #000000;
 
-  /* Spacing (px) */
+  /* Fluid display type (css-standardization-spec.md §3). One shared ramp:
+     every step scales linearly from its floor at a 360px viewport to its cap
+     at 1440px, then plateaus. All clamps are generated from a single curve,
+     B(vw) = (cap − floor) / 10.8 and A(px) = floor − (cap − floor) / 3, and
+     tokens.test.ts re-derives each step from that formula. Uno shortcuts and
+     scoped CSS both reference these vars; no component hand-rolls a vw
+     coefficient. Floors are QA-tunable against Figma. */
+  --type-h1: clamp(64px, 18.67px + 12.59vw, 200px);
+  --type-h2: clamp(48px, 17.33px + 8.52vw, 140px);
+  --type-h3: clamp(40px, 13.33px + 7.41vw, 120px);
+  --type-h4: clamp(40px, 26.67px + 3.7vw, 80px);
+  --type-h5: clamp(32px, 24px + 2.22vw, 56px);
+  --type-section-heading: clamp(32px, 24px + 2.22vw, 56px);
+  /* Marquee: shared ramp shape and 200 cap, floor held at 80 (§3.4). Its font
+     stays the marquee face; the variable-font width morph is a separate spec. */
+  --type-marquee: clamp(80px, 40px + 11.11vw, 200px);
+
+  /* Spacing (px). The top three steps are fluid (spec §4): they scale from
+     floor at a 768px viewport to cap at 1440px on the shared spacing curve,
+     B(vw) = (cap − floor) / 6.72 and A(px) = floor − (cap − floor) · 8/7, and
+     sit at the floor below 768. Everything 96 and below stays fixed so
+     component spacing, gaps, and touch targets don't fight the viewport. */
   --space-xs-4: 8px;
   --space-3xs: 12px;
+  --space-16: 16px;
   --space-2xs: 24px;
   --space-xs: 32px;
   --space-s: 40px;
   --space-m: 64px;
   --space-l: 80px;
   --space-xl: 96px;
-  --space-2xl: 120px;
-  --space-3xl: 160px;
-  --space-4xl: 200px;
+  --space-2xl: clamp(80px, 34.29px + 5.95vw, 120px);
+  --space-3xl: clamp(96px, 22.86px + 9.52vw, 160px);
+  --space-4xl: clamp(120px, 28.57px + 11.9vw, 200px);
   --page-gutter: 24px;
   --page-margin-2: 32px;
   --page-inset: var(--page-margin-2);
+
+  /* Control-internal padding sub-scale (tags, buttons, dropdowns, media
+     controls) — deliberately below the 8px spacing floor so compact controls
+     aren't fattened by the spacing scale. */
+  --pad-4: 4px;
+  --pad-6: 6px;
+  --pad-10: 10px;
 
   /* Overlay nav occupies the top of the page (position: absolute), so
      top-anchored headers add this to their top padding to keep a true 160px of
@@ -74,7 +115,7 @@
 }
 
 /* Small screens collapse the nav to a shorter compact bar. */
-@media (max-width: 767px) {
+@media (--bp-small) {
   :root {
     --nav-height: 56px;
   }
