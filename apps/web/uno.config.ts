@@ -50,16 +50,19 @@ export default defineConfig({
     // Type styles transcribed from Figma R3 variables. Display steps reference
     // the fluid ramp tokens in tokens.css (one shared 360→1440 curve); body/UI
     // steps stay fixed so they don't fight user zoom.
+    // NB: var() sizes need the `length:` hint — bare `text-[var(--x)]` is
+    // ambiguous and Uno emits a (broken) color declaration instead of
+    // font-size.
     'type-h1':
-      'font-display-tight font-[750] text-[var(--type-h1)] leading-[0.78] tracking-[0] uppercase line-clamp-4',
+      'font-display-tight font-[750] text-[length:var(--type-h1)] leading-[0.78] tracking-[0] uppercase line-clamp-4',
     'type-h2':
-      'font-display-tight font-[750] text-[var(--type-h2)] leading-[0.88] tracking-[0] uppercase line-clamp-4',
+      'font-display-tight font-[750] text-[length:var(--type-h2)] leading-[0.88] tracking-[0] uppercase line-clamp-4',
     'type-h3':
-      'font-display-tight font-[750] text-[var(--type-h3)] leading-[0.88] tracking-[0] uppercase line-clamp-4',
+      'font-display-tight font-[750] text-[length:var(--type-h3)] leading-[0.88] tracking-[0] uppercase line-clamp-4',
     'type-h4':
-      'font-display-tight font-[750] text-[var(--type-h4)] leading-[0.88] tracking-[0] uppercase',
+      'font-display-tight font-[750] text-[length:var(--type-h4)] leading-[0.88] tracking-[0] uppercase',
     'type-h5':
-      'font-display-tight font-[750] text-[var(--type-h5)] leading-[0.88] tracking-[0] uppercase',
+      'font-display-tight font-[750] text-[length:var(--type-h5)] leading-[0.88] tracking-[0] uppercase',
     'editorial-title':
       'font-body font-medium text-[24px] leading-[1.3] tracking-[-0.48px] lg:text-[38px] lg:leading-[1.28] lg:tracking-[-0.76px]',
     'type-h6': 'font-body font-medium text-[24px] leading-[1.2] tracking-[-0.48px]',
@@ -68,7 +71,7 @@ export default defineConfig({
     'type-eyebrow':
       'font-interface font-[750] text-[17px] leading-none tracking-[0.02em] uppercase',
     'type-section-heading':
-      'font-display-tight font-[750] text-[var(--type-section-heading)] leading-[0.88] tracking-[0] uppercase line-clamp-4',
+      'font-display-tight font-[750] text-[length:var(--type-section-heading)] leading-[0.88] tracking-[0] uppercase line-clamp-4',
     'type-body': 'font-body font-medium text-[19px] leading-[1.3] tracking-[-0.38px]',
     'type-caption': 'font-body font-medium text-[17px] leading-[1.3] tracking-[-0.02em]',
     'type-label': 'font-interface font-[750] text-[17px] leading-none tracking-[0.02em] uppercase',

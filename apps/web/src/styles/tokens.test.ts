@@ -56,6 +56,19 @@ describe('fluid spacing tokens (spec §4)', () => {
   })
 })
 
+describe('Uno shortcut wiring', () => {
+  const unoConfig = readFileSync(new URL('../../uno.config.ts', import.meta.url), 'utf8')
+
+  // Bare `text-[var(--x)]` is ambiguous in Uno and emits a color declaration
+  // instead of font-size; the length: hint is what makes the ramp apply.
+  it.each(['h1', 'h2', 'h3', 'h4', 'h5', 'section-heading'])(
+    'type-%s references its token with the length: hint',
+    (step) => {
+      expect(unoConfig).toContain(`text-[length:var(--type-${step})]`)
+    },
+  )
+})
+
 describe('canonical breakpoints (spec §5)', () => {
   it('defines each boundary once as a custom media', () => {
     expect(source).toContain('@custom-media --bp-small (max-width: 767.98px);')
