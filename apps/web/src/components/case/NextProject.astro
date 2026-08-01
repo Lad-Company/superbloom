@@ -54,7 +54,7 @@ const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground}
   .next-project :global(.next-project-card .summary) {
     color: var(--fg);
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .next-project {
       padding-block: var(--space-2xl);
     }

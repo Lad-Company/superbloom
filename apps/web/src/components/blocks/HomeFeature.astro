@@ -122,7 +122,7 @@ const { headline, body, primaryMedia, secondaryMedia } = Astro.props;
   .secondary {
     width: 100%;
   }
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .feature {
       grid-template-columns: 1fr;
       padding: var(--space-3xl) var(--space-2xs);
@@ -134,7 +134,7 @@ const { headline, body, primaryMedia, secondaryMedia } = Astro.props;
       justify-self: end;
     }
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .feature {
       padding: var(--space-2xl) var(--space-3xs);
       gap: var(--space-xl);

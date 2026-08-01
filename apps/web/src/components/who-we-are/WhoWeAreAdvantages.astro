@@ -31,7 +31,7 @@ const { headline, blocks } = Astro.props;
           <MediaFrame
             media={block.media ?? null}
             ratio="3:2"
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes="(max-width: 767.98px) 100vw, 50vw"
             title={block.heading ?? undefined}
           />
         </div>
@@ -100,7 +100,7 @@ const { headline, blocks } = Astro.props;
     border-radius: var(--radius-media);
   }
 
-  @media (max-width: 768px) {
+  @media (--bp-small) {
     .advantages-section {
       padding: var(--space-2xl) var(--space-3xs) 0;
     }

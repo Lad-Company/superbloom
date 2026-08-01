@@ -76,5 +76,5 @@ export const cardImageSizes = (settings: ContentCardSettings): string => {
   const infoSharesRow = settings.infoPosition === 'left' || settings.infoPosition === 'right';
   const pictureFraction = infoSharesRow ? cardFraction / 2 : cardFraction;
   const viewportPercentage = Math.max(1, Math.round(pictureFraction * 100));
-  return `(max-width: 1023px) 100vw, ${viewportPercentage}vw`;
+  return `(max-width: 1023.98px) 100vw, ${viewportPercentage}vw`;
 };

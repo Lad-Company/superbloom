@@ -100,13 +100,13 @@ const hasSlot = Astro.slots.has('default');
       transform: translateX(-50%);
     }
   }
-  @media (max-width: 959px) {
+  @media (--bp-960) {
     .marquee-set {
       gap: var(--space-16);
       padding-right: var(--space-16);
     }
   }
-  @media (max-width: 599px) {
+  @media (--bp-600) {
     .marquee-set {
       gap: 12px;
       padding-right: 12px;

@@ -63,12 +63,12 @@ const { headline = "What They've Been Saying", items, ctaLabel, ctaHref } = Astr
     margin: 0;
     color: var(--fg-60);
   }
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .testimonials {
       padding: var(--space-3xl) var(--space-2xs);
     }
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .testimonials {
       padding: var(--space-2xl) var(--space-3xs);
     }

@@ -73,7 +73,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     overflow: visible;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .hero-heading {
       max-width: none;
     }
@@ -86,7 +86,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     padding: calc(var(--nav-height) + var(--space-3xl)) var(--page-inset) 0;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     /* Mobile text hero anchors the heading at the bottom of the section so
        the min-height empty band sits at the top instead of below the
        heading — gives Work, Who We Are, Shop, and News Index a tight
@@ -111,7 +111,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
   /* Ratio variants apply on desktop only: scoped to min-width so this 0,2,0
      rule can't outspecificity the single-class mobile reset below (which sets
      aspect-ratio: auto and lets min-height: 100svh drive the section). */
-  @media (min-width: 1024px) {
+  @media (--bp-desktop) {
     .hero-media.ratio-16-9 {
       aspect-ratio: 16 / 9;
       max-height: 90svh;
@@ -160,7 +160,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     align-self: end;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .hero-media {
       aspect-ratio: auto;
       min-height: 100svh;
@@ -210,7 +210,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     border-radius: var(--radius-control);
   }
 
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     /* Mobile case hero (Figma 375 symbol): 96px top (below the nav), 12px
        sides, 32px eyebrow→heading, 64px heading→tags, tags flush to the bottom
        edge so the lead media's 32px top padding is the whole hand-off. */

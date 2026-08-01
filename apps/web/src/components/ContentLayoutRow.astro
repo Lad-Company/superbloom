@@ -167,7 +167,7 @@ const sizesFor = (width?: ContentLayoutWidth | null) =>
     outline: 2px solid currentColor;
     outline-offset: 3px;
   }
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .content-layout-row,
     .content-layout-row.single {
       display: grid;

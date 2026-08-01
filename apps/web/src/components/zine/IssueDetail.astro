@@ -93,7 +93,7 @@ const overrideFor = (id?: string | null) =>
           <MediaFrame
             media={issue.editorLetter.media ?? issue.heroMedia}
             ratio="1:1"
-            sizes="(max-width: 1023px) 100vw, 50vw"
+            sizes="(max-width: 1023.98px) 100vw, 50vw"
             title={issue.editorLetter.heading}
           >
             <TagList slot="overlay" tags={editorLetterLabels} />
@@ -215,7 +215,7 @@ const overrideFor = (id?: string | null) =>
     white-space: nowrap;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .editor-letter {
       grid-template-columns: 1fr;
       gap: var(--space-m);
@@ -226,7 +226,7 @@ const overrideFor = (id?: string | null) =>
     }
   }
 
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .editor-letter {
       padding-block: var(--space-xl);
     }

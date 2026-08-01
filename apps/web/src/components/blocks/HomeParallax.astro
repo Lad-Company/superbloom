@@ -63,7 +63,7 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
     text-transform: uppercase;
   }
 
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .home-parallax {
       min-height: 420px;
       padding: var(--space-2xl) var(--space-3xs) 0;

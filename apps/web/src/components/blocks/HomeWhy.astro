@@ -25,7 +25,7 @@ const {headline, body, ctaLabel, ctaHref, media} = Astro.props
     {
       media && (
         <div class="visual">
-          <MediaFrame {media} ratio="3:2" sizes="(max-width: 1023px) 100vw, 50vw" title={headline} />
+          <MediaFrame {media} ratio="3:2" sizes="(max-width: 1023.98px) 100vw, 50vw" title={headline} />
         </div>
       )
     }
@@ -57,13 +57,13 @@ const {headline, body, ctaLabel, ctaHref, media} = Astro.props
   .visual {
     padding-top: var(--space-xs);
   }
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .why {
       grid-template-columns: 1fr;
       padding: var(--space-3xl) var(--space-2xs);
     }
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .why {
       padding: var(--space-2xl) var(--space-3xs);
     }

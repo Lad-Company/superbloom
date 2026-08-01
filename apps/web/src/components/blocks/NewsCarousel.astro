@@ -102,13 +102,13 @@ const halfItems = Array.from({length: copiesPerHalf}, () => items).flat()
     width: min(88vw, 1267px);
   }
 
-  @media (max-width: 959px) {
+  @media (--bp-960) {
     .inner :global(.marquee-set) > :global(.content-card[data-card-width]) {
       width: min(56vw, 360px);
     }
   }
 
-  @media (max-width: 599px) {
+  @media (--bp-600) {
     .inner {
       padding-inline: 12px;
     }

@@ -195,7 +195,7 @@ const {role} = Astro.props
     white-space: nowrap;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .contact-band {
       padding-block: var(--space-3xl);
     }
@@ -203,7 +203,7 @@ const {role} = Astro.props
       padding-right: var(--space-2xs);
     }
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .contact-band {
       padding-block: var(--space-2xl);
     }

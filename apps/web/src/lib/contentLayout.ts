@@ -33,10 +33,10 @@ const FULL_COLUMNS = 12;
  * fraction of the content area indicated by its width field.
  */
 export const contentLayoutSizes = (width?: ContentLayoutWidth | null): string => {
-  if (!width || width === 'full') return '(max-width: 1023px) 100vw, 100vw';
+  if (!width || width === 'full') return '(max-width: 1023.98px) 100vw, 100vw';
   const columns = WIDTH_COLUMNS[width];
   const fraction = Math.round((columns / FULL_COLUMNS) * 100);
-  return `(max-width: 1023px) 100vw, ${fraction}vw`;
+  return `(max-width: 1023.98px) 100vw, ${fraction}vw`;
 };
 
 export const isContentLayoutFullBleed = (row: ContentLayoutRow): boolean =>

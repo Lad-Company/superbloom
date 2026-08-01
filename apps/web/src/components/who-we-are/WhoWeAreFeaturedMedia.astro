@@ -28,7 +28,7 @@ const {media, ratio = '16:9', title, controls = 'full'} = Astro.props
     border-radius: var(--radius-media);
   }
 
-  @media (max-width: 768px) {
+  @media (--bp-small) {
     /* Mobile featured media sits flush under the hero — the hero's own
        32px padding-bottom plus this 32px top form the consistent 64px
        hand-off used across pages. */

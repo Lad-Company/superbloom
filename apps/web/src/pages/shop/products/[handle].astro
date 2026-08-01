@@ -188,7 +188,7 @@ const formatMoney = (amount: string, currency: string) =>
   .description :global(p) {
     margin: 0 0 var(--space-3xs);
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .detail {
       grid-template-columns: 1fr;
       padding-top: calc(var(--space-4xl) + var(--space-xl));

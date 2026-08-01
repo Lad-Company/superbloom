@@ -202,7 +202,7 @@ const links = [
     display: none;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .navigation {
       display: flex;
       justify-content: space-between;
@@ -322,7 +322,7 @@ const links = [
     }
   }
 
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .navigation {
       padding: var(--space-3xs);
     }

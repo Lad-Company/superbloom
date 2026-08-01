@@ -194,7 +194,7 @@ const error = Astro.url.searchParams.get('error')
     margin-top: var(--space-xl);
     padding-top: var(--space-2xs);
   }
-  @media (max-width: 600px) {
+  @media (--bp-600) {
     li {
       grid-template-columns: 7rem 1fr;
     }

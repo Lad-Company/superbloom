@@ -25,7 +25,7 @@ const {issues} = Astro.props;
               <MediaFrame
                 media={issue.cardMedia}
                 ratio="4:5"
-                sizes="(max-width: 767px) 96px, 210px"
+                sizes="(max-width: 767.98px) 96px, 210px"
                 title={issue.title}
               />
               <span class="copy">
@@ -100,7 +100,7 @@ const {issues} = Astro.props;
     text-underline-offset: 0.15em;
   }
 
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     a {
       grid-template-columns: 96px minmax(0, 1fr);
       padding: var(--space-3xs) 0;

@@ -183,7 +183,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
     opacity: 0;
   }
 
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .overlay {
       grid-template-columns: 1fr;
       /* Halve the gap between the subtitle copy and the capability list. */
