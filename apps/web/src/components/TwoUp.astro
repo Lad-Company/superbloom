@@ -58,6 +58,10 @@ const {items} = Astro.props
   @media (max-width: 768px) {
     .two-up {
       flex-direction: column;
+      /* The desktop row pins children to flex-start; stacked, that
+         shrink-wraps each column to its content width and pins it left.
+         Stretch makes columns (and their media) full width. */
+      align-items: stretch;
       padding: var(--space-2xl) var(--space-3xs);
     }
   }

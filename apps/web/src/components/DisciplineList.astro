@@ -32,9 +32,10 @@ const { items } = Astro.props;
   .row {
     display: flex;
     gap: var(--page-gutter);
-    align-items: center;
-    /* 12px per row puts 24px between neighboring items. */
-    padding: var(--space-3xs) 0;
+    /* Description column pins to the top of the row, level with the title. */
+    align-items: flex-start;
+    /* 32px of vertical padding inside each row's divider boundaries. */
+    padding: var(--space-xs) 0;
     border-top: 1px solid var(--fg-12);
   }
   .title {
@@ -46,7 +47,6 @@ const { items } = Astro.props;
     flex: 1 0 0;
     min-width: 0;
     margin: 0;
-    padding-top: 8px;
     color: var(--fg-60);
   }
   @media (max-width: 768px) {
@@ -56,6 +56,13 @@ const { items } = Astro.props;
     .row {
       flex-direction: column;
       gap: var(--space-3xs);
+      /* Mobile keeps its pre-existing compact centered stack; the desktop
+         alignment and 32px row padding above don't apply here. */
+      align-items: center;
+      padding: var(--space-3xs) 0;
+    }
+    .description {
+      padding-top: 8px;
     }
   }
 </style>

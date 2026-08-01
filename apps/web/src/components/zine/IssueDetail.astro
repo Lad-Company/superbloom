@@ -165,12 +165,27 @@ const overrideFor = (id?: string | null) =>
     max-width: 540px;
   }
 
-  .editor-letter-copy :global(.portable-text) {
-    max-width: 480px;
+  /* Trim line-box slack (heading descent reserve, body half-leading) so the
+     32px flex gap reads as the true glyph-to-glyph distance between heading,
+     body, and CTA. Progressive enhancement: unsupported browsers keep the
+     untrimmed box gap. */
+  .editor-letter-copy h2 {
+    text-box-trim: trim-both;
+    text-box-edge: cap alphabetic;
   }
 
-  .editor-letter-copy :global(.portable-text p) {
-    margin: 0;
+  .editor-letter-copy :global(.pt) {
+    max-width: 480px;
+    text-box-trim: trim-both;
+    text-box-edge: cap alphabetic;
+  }
+
+  .editor-letter-copy :global(.pt p) {
+    margin: 0 0 var(--space-xs);
+  }
+
+  .editor-letter-copy :global(.pt p:last-child) {
+    margin-bottom: 0;
   }
 
   .editor-letter-media :global(.tag-list) {
