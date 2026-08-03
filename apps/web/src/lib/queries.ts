@@ -34,7 +34,6 @@ export const contentLayoutRowsProjection = `
       "media": media${mediaProjection}
     },
     _type == "contentLayoutText" => {
-      heading,
       text
     }
   }

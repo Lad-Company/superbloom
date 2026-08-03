@@ -18,7 +18,6 @@ describe('Article body migration', () => {
           _type: 'contentLayoutText',
           _key: 'intro-text',
           width: 'full',
-          heading: 'Introduction',
           text: [{_type: 'block'}],
         },
       ],

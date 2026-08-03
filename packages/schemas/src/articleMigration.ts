@@ -25,7 +25,6 @@ export const migrateLegacyArticleBlock = (block: LegacyArticleBlock) => {
           _type: 'contentLayoutText',
           _key: `${block._key}-text`,
           width: 'full',
-          ...(block.heading ? {heading: block.heading} : {}),
           text: block.text,
         },
       ],

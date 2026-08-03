@@ -9,11 +9,6 @@ export const contentLayoutText = defineType({
   fields: [
     contentLayoutWidthField,
     defineField({
-      name: 'heading',
-      title: 'Heading',
-      type: 'string',
-    }),
-    defineField({
       name: 'text',
       title: 'Text',
       type: 'array',
@@ -48,10 +43,19 @@ export const contentLayoutText = defineType({
     }),
   ],
   preview: {
-    select: {heading: 'heading', width: 'width'},
-    prepare: ({heading, width}) => ({
-      title: heading || 'Text',
-      subtitle: `Text · ${width || 'no width'}`,
-    }),
+    select: {text: 'text', width: 'width'},
+    prepare: ({text, width}) => {
+      const firstBlock = Array.isArray(text)
+        ? text.find((block) => block?._type === 'block')
+        : undefined
+      const firstLine = firstBlock?.children
+        ?.map((child: {text?: string}) => child?.text ?? '')
+        .join('')
+        .trim()
+      return {
+        title: firstLine || 'Text',
+        subtitle: `Text · ${width || 'no width'}`,
+      }
+    },
   },
 })

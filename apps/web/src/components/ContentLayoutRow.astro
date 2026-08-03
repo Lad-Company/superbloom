@@ -22,7 +22,6 @@ type TextBlock = {
   _type: 'contentLayoutText'
   _key?: string | null
   width?: ContentLayoutWidth | null
-  heading?: string | null
   text?: TypedObject[] | null
 }
 
@@ -81,7 +80,6 @@ const sizesFor = (width?: ContentLayoutWidth | null) =>
           )}
           {block._type === 'contentLayoutText' && (
             <div class="content-layout-text">
-              {block.heading && <h2 class="type-h5">{block.heading}</h2>}
               <PortableText value={block.text ?? []} />
             </div>
           )}
@@ -159,9 +157,6 @@ const sizesFor = (width?: ContentLayoutWidth | null) =>
   }
   .content-layout-text {
     overflow-wrap: anywhere;
-  }
-  .content-layout-text h2 {
-    margin: 0 0 0.5em;
   }
   .content-layout-text :global(a:focus-visible) {
     outline: 2px solid currentColor;

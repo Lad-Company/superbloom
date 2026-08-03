@@ -86,7 +86,6 @@ describe('Content Layout Row rendering contract', () => {
       'fullBleed',
       'width',
       'aspectRatio',
-      'heading',
       'text',
       'playbackId',
       'altText',
@@ -94,6 +93,7 @@ describe('Content Layout Row rendering contract', () => {
     ]) {
       expect(contentLayoutRowsProjection).toContain(field);
     }
+    expect(contentLayoutRowsProjection).not.toContain('heading');
     expect(editorialArticleBySlugQuery).toContain('contentLayoutRow');
     expect(caseStudyBySlugQuery).toContain('mediaLayouts');
     expect(caseStudyBySlugQuery).toContain('blocks[]');

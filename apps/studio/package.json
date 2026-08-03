@@ -23,6 +23,8 @@
     "migrate:article-body": "sanity exec migrations/migrate-article-body.ts",
     "migrate:standardize-article": "sanity exec migrations/standardize-article.ts",
     "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts",
+    "backup:text-block-headings": "sanity exec migrations/backup-text-block-headings.ts --with-user-token",
+    "migrate:text-block-headings": "pnpm run backup:text-block-headings && sanity exec migrations/remove-text-block-headings.ts --with-user-token",
     "seed:capabilities": "sanity dataset import seed-capabilities.ndjson production --replace",
     "seed:tyson": "sanity exec migrations/seed-tyson.ts"
   },

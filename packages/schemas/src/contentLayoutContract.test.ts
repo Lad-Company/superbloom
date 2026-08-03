@@ -155,12 +155,12 @@ describe('Content Layout Row contract', () => {
     expect(list).toHaveLength(7)
   })
 
-  it('provides optional heading and required rich text with emphasis, links, and lists', () => {
+  it('provides required rich text with emphasis, links, and lists and no heading field', () => {
     const heading = contentLayoutText.fields.find((field) => field.name === 'heading')
     const text = contentLayoutText.fields.find((field) => field.name === 'text')
     const block = (text as {of?: Array<{type: string; marks?: unknown}>} | undefined)?.of?.[0]
 
-    expect(heading?.validation).toBeUndefined()
+    expect(heading).toBeUndefined()
     expect(text?.validation).toBeTypeOf('function')
     expect(block?.type).toBe('block')
     const marks = block?.marks as

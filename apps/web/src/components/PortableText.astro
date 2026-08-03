@@ -10,15 +10,18 @@ interface Props {
 const { value, class: className } = Astro.props;
 ---
 
-<div class:list={['pt', className]}>
+<div class:list={['portable-text', className]}>
   <PortableText value={value} />
 </div>
 
 <style>
-  .pt :global(p) {
+  /* NOTE: this class must not be `pt` — UnoCSS scans source and generates
+     `.pt { padding-top: 1rem }` for that token, which silently offsets every
+     rich-text block (e.g. broke text/media top alignment in layout rows). */
+  .portable-text :global(p) {
     margin: 0 0 1em;
   }
-  .pt :global(p:last-child) {
+  .portable-text :global(p:last-child) {
     margin-bottom: 0;
   }
 </style>
