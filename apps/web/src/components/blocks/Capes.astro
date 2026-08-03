@@ -203,6 +203,13 @@ const displayedCapabilities = capabilities.slice(0, 8);
     .list {
       gap: var(--space-3xs);
     }
+
+    /* One-off mobile size (~20% under the h3 floor): at 80px the longest
+       capability ("ENTERTAINMENT", 13 caps) overflows a 375px viewport;
+       64px keeps it inside the 12px gutters. */
+    .list li {
+      font-size: 64px;
+    }
   }
 </style>
 
