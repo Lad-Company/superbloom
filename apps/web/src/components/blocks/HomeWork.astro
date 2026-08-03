@@ -53,6 +53,45 @@ const resolvedSlots = resolveMosaic(
   activePreset,
   (index) => displayedItems[index]?.mediaAspectRatio,
 )
+
+// Mirror of workMosaic's CAPTION_BAND_ROWS: caption text lives in the rows
+// immediately below the slot's media, so adjacent media inside that band
+// must keep text off themselves with gutter padding.
+const CAPTION_BAND_ROWS = 12
+
+// The caption's anchored side (left for caption-left, right for
+// caption-right) needs gutter padding when it sits at the page edge or
+// shares its column line with another slot — either in the same row, or in
+// the caption band below. Otherwise the text terminus aligns flush with the
+// slot's media edge and the clear lane absorbs the inner gap to anything
+// further down the band.
+const anchoredAtEdge = (index: number): boolean => {
+  const slot = activePreset.slots[index]
+  const my = resolvedSlots[index]
+  if (!my) return false
+  const isLeft = slot.captionAnchor === 'left'
+  const anchoredCol = isLeft ? slot.column - 1 : slot.column - 1 + slot.span
+  if (isLeft ? anchoredCol === 0 : anchoredCol === 12) return true
+
+  const myEnd = my.rowStart + my.rowSpan
+
+  return activePreset.slots.some((other, otherIndex) => {
+    if (otherIndex === index) return false
+    const otherLeft = other.column - 1
+    const otherRight = otherLeft + other.span
+    const colMatches = isLeft ? otherRight === anchoredCol : otherLeft === anchoredCol
+    if (!colMatches) return false
+    const oth = resolvedSlots[otherIndex]
+    if (!oth) return false
+    const othEnd = oth.rowStart + oth.rowSpan
+
+    if (my.rowStart < othEnd && oth.rowStart < myEnd) return true
+
+    const bandStart = myEnd
+    const bandEnd = bandStart + CAPTION_BAND_ROWS
+    return oth.rowStart < bandEnd && othEnd > bandStart
+  })
+}
 ---
 
 <SurfaceSection role="light">
@@ -70,6 +109,13 @@ const resolvedSlots = resolveMosaic(
             const slot = resolvedSlots[index]
             const {item} = entry
             const href = item.slug ? `/work/${item.slug}` : '#'
+            const paddedAnchor = anchoredAtEdge(index)
+            const captionClassList = [
+              'caption',
+              paddedAnchor && (slot.captionAnchor === 'left'
+                ? 'caption-edge-left'
+                : 'caption-edge-right'),
+            ].filter(Boolean)
             return (
               <a
                 class:list={['mosaic-item', `caption-${slot.captionAnchor}`]}
@@ -84,7 +130,7 @@ const resolvedSlots = resolveMosaic(
                 >
                   <TagList slot="overlay" tags={item.tags} />
                 </MediaFrame>
-                <div class="caption">
+                <div class:list={captionClassList}>
                   {item.title && <p class="headline type-h6 line-clamp-2">{item.title}</p>}
                   {item.summary && <p class="summary type-caption line-clamp-1">{item.summary}</p>}
                 </div>
@@ -153,19 +199,33 @@ const resolvedSlots = resolveMosaic(
     left: 0;
     max-width: var(--cap-max);
     padding-top: var(--space-xs-4);
-    padding-right: var(--page-gutter);
-    padding-left: var(--page-gutter);
+    /* Default: caption text aligns flush with the media's anchored edge.
+       The clear lane math (max-width) absorbs the gap to any neighbouring
+       media on the inner side, so the inner edge needs no gutter padding
+       when the anchored side is free of page and media boundaries. */
     display: flex;
     flex-direction: column;
     gap: var(--space-xs-4);
   }
 
-  /* Presets may anchor a caption to the slot's right edge when the clear lane
-     sits on that side; the gutter padding still keeps text off the screen
-     edge and neighbouring media. Inert on mobile, where captions go static. */
+  /* Right-anchored captions flip the box to right:0 and right-align the
+     text so the text terminus sits flush with the media's right edge.
+     Inert on mobile, where captions go static. */
   .mosaic-item.caption-right .caption {
     left: auto;
     right: 0;
+    text-align: right;
+  }
+
+  /* When the anchored side sits at the page edge or shares its column
+     line with another slot (same row, or in the caption band below),
+     retain gutter padding on that side so the text terminus doesn't
+     touch the page or the neighbouring media. */
+  .caption-edge-left {
+    padding-left: var(--page-gutter);
+  }
+  .caption-edge-right {
+    padding-right: var(--page-gutter);
   }
 
   .headline,

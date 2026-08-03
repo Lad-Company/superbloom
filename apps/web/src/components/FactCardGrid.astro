@@ -56,8 +56,10 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
 
   const cleanupAll = () => cleanups.splice(0).forEach((cleanup) => cleanup());
 
-  initGrids();
-  document.addEventListener('astro:page-load', initGrids);
+  // Deferred by Layout until after the hero reveal: the revealStats triggers
+  // are once:true, so arming them on settled layout + scroll position keeps
+  // the count-up from firing during load — it plays when the section enters.
+  document.addEventListener('sbh:motion-deferred', initGrids);
   document.addEventListener('astro:before-swap', cleanupAll);
 </script>
 
