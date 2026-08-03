@@ -101,6 +101,10 @@ const {issues} = Astro.props;
   }
 
   @media (--bp-small) {
+    .past-issues {
+      padding-block: var(--space-xs);
+    }
+
     a {
       grid-template-columns: 96px minmax(0, 1fr);
       padding: var(--space-3xs) 0;

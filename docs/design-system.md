@@ -36,7 +36,7 @@ The primary design file is
 - Display steps are **fluid** (`--type-*` in `tokens.css`, referenced by the Uno
   `type-*` shortcuts): one shared ramp, each step scaling linearly from its floor
   at a 360px viewport to its cap at 1440px, then plateauing — h1 64→200,
-  h2 48→140, h3 40→120, h4 40→80, h5 / section-heading 32→56. No component
+  h2 48→140, h3 80→120, h4 40→80, h5 / section-heading 32→56. No component
   hand-rolls a `vw` font-size; floors are QA-tunable in one place.
   (`docs/css-standardization-spec.md` §3.)
 - The marquee rides the same ramp shape via `--type-marquee` (cap 200, floor held
@@ -58,6 +58,10 @@ The primary design file is
   1440px on one shared curve (floor below 768, plateau past 1440). Everything 96
   and below stays fixed so component spacing and touch targets don't fight the
   viewport. (`docs/css-standardization-spec.md` §4.)
+- **Mobile section rhythm (≤767px) is a fixed 64px** between sections, built as
+  32 + 32: each section pads `--space-xs` on the side facing a neighbour, and a
+  section following a flush or media-hero hand-off owns the full `--space-m` 64
+  on top. The fluid `2xl/3xl/4xl` rhythm takes over from the compact range up.
 - Control-internal padding below the 8px floor uses the `--pad-*` sub-scale
   (4 / 6 / 10) rather than snapping compact controls up to the spacing scale.
 - Layout: `--page-gutter` 24px, `--page-inset` 32px.

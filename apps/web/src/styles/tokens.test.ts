@@ -27,7 +27,7 @@ describe('fluid type tokens (spec §3)', () => {
   it.each([
     ['--type-h1', 64, 200],
     ['--type-h2', 48, 140],
-    ['--type-h3', 40, 120],
+    ['--type-h3', 80, 120],
     ['--type-h4', 40, 80],
     ['--type-h5', 32, 56],
     ['--type-section-heading', 32, 56],

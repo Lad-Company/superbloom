@@ -36,7 +36,7 @@
      coefficient. Floors are QA-tunable against Figma. */
   --type-h1: clamp(64px, 18.67px + 12.59vw, 200px);
   --type-h2: clamp(48px, 17.33px + 8.52vw, 140px);
-  --type-h3: clamp(40px, 13.33px + 7.41vw, 120px);
+  --type-h3: clamp(80px, 66.67px + 3.7vw, 120px);
   --type-h4: clamp(40px, 26.67px + 3.7vw, 80px);
   --type-h5: clamp(32px, 24px + 2.22vw, 56px);
   --type-section-heading: clamp(32px, 24px + 2.22vw, 56px);

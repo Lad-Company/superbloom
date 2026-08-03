@@ -228,7 +228,17 @@ const overrideFor = (id?: string | null) =>
 
   @media (--bp-small) {
     .editor-letter {
-      padding-block: var(--space-xl);
+      padding-block: var(--space-xs);
+    }
+
+    .stories {
+      padding-block: var(--space-xs);
+    }
+
+    /* The section padding owns the top rhythm on mobile; the rail's desktop
+       96px margin would double it. */
+    :global(.article-rail) {
+      margin-top: 0;
     }
   }
 </style>

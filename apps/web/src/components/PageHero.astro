@@ -87,16 +87,13 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
   }
 
   @media (--bp-below-desktop) {
-    /* Mobile text hero anchors the heading at the bottom of the section so
-       the min-height empty band sits at the top instead of below the
-       heading — gives Work, Who We Are, Shop, and News Index a tight
-       hand-off into the page below and a deliberate hero moment above. */
+    /* Mobile text hero is top-anchored like the case hero: a fixed
+       nav + 3xl clearance above the heading on every page. (The old 60svh
+       bottom-anchored band made the void content-dependent, so /index read
+       taller than /work and /who-we-are.) Bottom 32 pairs with the next
+       section's 32 for the consistent 64px hand-off. */
     .hero-text {
-      display: flex;
-      min-height: 60svh;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: var(--space-xl) var(--space-3xs) var(--space-xs);
+      padding: calc(var(--nav-height) + var(--space-3xl)) var(--space-3xs) var(--space-xs);
     }
   }
 

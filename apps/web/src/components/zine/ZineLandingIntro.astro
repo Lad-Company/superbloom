@@ -76,8 +76,10 @@ const resolvedCtaLabel = ctaLabel ?? 'Explore the issue'
 
   @media (--bp-small) {
     .zine-landing-intro {
-      min-height: 580px;
-      padding: var(--space-2xl) var(--page-inset) var(--space-m);
+      /* Match the HomeParallax sibling: 420px min-height, 64 top (follows
+         the media hero), 32 bottom to pair with the next section's 32. */
+      min-height: 420px;
+      padding: var(--space-m) var(--page-inset) var(--space-xs);
     }
 
     h2 {
