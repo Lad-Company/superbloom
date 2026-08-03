@@ -163,7 +163,7 @@ const queryFor = (nextPage: number, nextSort = sort) => {
     margin: var(--space-xl) 0 0 var(--page-inset);
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     /* Mobile featured hand-off matches the consistent 32px + 32px = 64px gap
        used by Work, Who We Are, and the case-study lead media. */
     .featured {

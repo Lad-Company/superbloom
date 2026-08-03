@@ -93,7 +93,7 @@ const capabilityTitles = (caseStudy.capabilities ?? [])
   .lead-media :global(.media-frame) {
     border-radius: var(--radius-media);
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     /* Mobile lead media sits flush under the case hero — the hero's own
        32px padding-bottom plus this 32px top form the consistent 64px
        hand-off used across pages. */

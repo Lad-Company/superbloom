@@ -65,23 +65,26 @@ const resolvedCtaLabel = ctaLabel ?? 'Explore the issue'
     max-width: none;
     margin: 0;
     font-family: var(--font-display-tight);
-    font-size: clamp(52px, 8.5vw, 128px);
+    /* Mid-page statement rides the shared type-h3 ramp (spec §3.4: snapped
+       from a bespoke 128 cap to the canonical 120 step). */
+    font-size: var(--type-h3);
     font-weight: 750;
     line-height: 0.88;
     letter-spacing: 0;
     text-transform: uppercase;
   }
 
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .zine-landing-intro {
-      min-height: 580px;
-      padding: var(--space-2xl) var(--page-inset) var(--space-m);
+      /* Match the HomeParallax sibling: 420px min-height, 64 top (follows
+         the media hero), 32 bottom to pair with the next section's 32. */
+      min-height: 420px;
+      padding: var(--space-m) var(--page-inset) var(--space-xs);
     }
 
     h2 {
       width: 100%;
       max-width: none;
-      font-size: clamp(52px, 13vw, 80px);
     }
   }
 </style>

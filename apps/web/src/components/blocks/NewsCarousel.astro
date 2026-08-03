@@ -102,13 +102,21 @@ const halfItems = Array.from({length: copiesPerHalf}, () => items).flat()
     width: min(88vw, 1267px);
   }
 
-  @media (max-width: 959px) {
+  @media (--bp-small) {
+    .inner {
+      /* Follows the 100svh media hero, so the top owns the full 64px
+         hand-off; bottom 32 pairs with the next section's 32. */
+      padding-block: var(--space-m) var(--space-xs);
+    }
+  }
+
+  @media (--bp-960) {
     .inner :global(.marquee-set) > :global(.content-card[data-card-width]) {
       width: min(56vw, 360px);
     }
   }
 
-  @media (max-width: 599px) {
+  @media (--bp-600) {
     .inner {
       padding-inline: 12px;
     }

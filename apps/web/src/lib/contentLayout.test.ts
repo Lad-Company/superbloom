@@ -30,16 +30,16 @@ const resultsRendererSource = readFileSync(
 
 describe('contentLayoutSizes', () => {
   it('uses 100vw on mobile and full widths correctly', () => {
-    expect(contentLayoutSizes()).toBe('(max-width: 1023px) 100vw, 100vw')
-    expect(contentLayoutSizes('full')).toBe('(max-width: 1023px) 100vw, 100vw')
+    expect(contentLayoutSizes()).toBe('(max-width: 1023.98px) 100vw, 100vw')
+    expect(contentLayoutSizes('full')).toBe('(max-width: 1023.98px) 100vw, 100vw')
   });
 
   it('translates col-spans into matching viewport percentages', () => {
-    expect(contentLayoutSizes('1/4')).toBe('(max-width: 1023px) 100vw, 25vw')
-    expect(contentLayoutSizes('1/3')).toBe('(max-width: 1023px) 100vw, 33vw')
-    expect(contentLayoutSizes('1/2')).toBe('(max-width: 1023px) 100vw, 50vw')
-    expect(contentLayoutSizes('2/3')).toBe('(max-width: 1023px) 100vw, 67vw')
-    expect(contentLayoutSizes('3/4')).toBe('(max-width: 1023px) 100vw, 75vw')
+    expect(contentLayoutSizes('1/4')).toBe('(max-width: 1023.98px) 100vw, 25vw')
+    expect(contentLayoutSizes('1/3')).toBe('(max-width: 1023.98px) 100vw, 33vw')
+    expect(contentLayoutSizes('1/2')).toBe('(max-width: 1023.98px) 100vw, 50vw')
+    expect(contentLayoutSizes('2/3')).toBe('(max-width: 1023.98px) 100vw, 67vw')
+    expect(contentLayoutSizes('3/4')).toBe('(max-width: 1023.98px) 100vw, 75vw')
   });
 });
 
@@ -103,7 +103,7 @@ describe('Content Layout Row rendering contract', () => {
   });
 
   it('stacks in source order below 1024px and keeps links keyboard accessible', () => {
-    expect(componentSource).toContain('@media (max-width: 1023px)');
+    expect(componentSource).toContain('@media (--bp-below-desktop)');
     expect(componentSource).toContain('grid-template-columns: 1fr');
     expect(componentSource).not.toContain('order:');
     expect(componentSource).not.toContain('tabindex');

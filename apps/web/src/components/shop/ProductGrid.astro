@@ -168,13 +168,20 @@ const money = (value: Product['priceRange']['minVariantPrice']) =>
     display: block;
     width: fit-content;
     margin: var(--space-xl) auto 0;
-    padding: var(--space-3xs) 16px;
+    padding: var(--space-3xs) var(--space-16);
     background: var(--fg);
     color: var(--bg);
     text-decoration: none;
     border-radius: var(--radius-control);
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
+    /* 32 above/below pairs with the hero's 32 bottom and the footer's 32
+       top for the consistent 64px mobile hand-off; 12px sides match every
+       other mobile section (page-inset 32 read as double gutters). */
+    .shop-grid {
+      padding: var(--space-xs) var(--space-3xs);
+    }
+
     .products {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }

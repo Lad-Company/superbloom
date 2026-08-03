@@ -179,7 +179,7 @@ const error = Astro.url.searchParams.get('error')
     gap: var(--space-3xs);
   }
   .quantity button {
-    padding: 8px 12px;
+    padding: var(--space-xs-4) var(--space-3xs);
     border: 0;
     border-radius: var(--radius-control);
     background: var(--control-bg);
@@ -194,7 +194,7 @@ const error = Astro.url.searchParams.get('error')
     margin-top: var(--space-xl);
     padding-top: var(--space-2xs);
   }
-  @media (max-width: 600px) {
+  @media (--bp-600) {
     li {
       grid-template-columns: 7rem 1fr;
     }

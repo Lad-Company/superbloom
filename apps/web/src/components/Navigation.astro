@@ -136,7 +136,7 @@ const links = [
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    padding: 19px var(--page-gutter);
+    padding: var(--space-16) var(--page-gutter);
     width: 100%;
     color: var(--fg);
     --fg-12: color-mix(in srgb, var(--fg) 12%, transparent);
@@ -176,7 +176,7 @@ const links = [
     justify-self: end;
   }
   .btn {
-    padding: var(--space-3xs) 16px;
+    padding: var(--space-3xs) var(--space-16);
     border-radius: var(--radius-control);
     backdrop-filter: blur(var(--frosted-layer-blur));
     -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
@@ -202,7 +202,7 @@ const links = [
     display: none;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .navigation {
       display: flex;
       justify-content: space-between;
@@ -280,7 +280,9 @@ const links = [
     .compact-link {
       font-family: var(--font-display-tight);
       font-weight: 750;
-      font-size: clamp(48px, 13vw, 64px);
+      /* Mobile menu links ride the shared type-section-heading ramp (spec
+         §3.4: folded from a bespoke 64 cap to the canonical 56 step). */
+      font-size: var(--type-section-heading);
       line-height: 0.95;
       letter-spacing: 0;
       text-transform: uppercase;
@@ -295,7 +297,7 @@ const links = [
     .compact-actions .btn {
       display: block;
       text-align: center;
-      padding: var(--space-3xs) 16px;
+      padding: var(--space-3xs) var(--space-16);
     }
     .compact-btn-label {
       font-family: var(--font-interface);
@@ -320,7 +322,7 @@ const links = [
     }
   }
 
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .navigation {
       padding: var(--space-3xs);
     }

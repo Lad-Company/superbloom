@@ -82,7 +82,7 @@ const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-
   li :global(.value) {
     overflow-wrap: anywhere;
   }
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .results {
       margin-top: var(--space-3xl);
     }
@@ -90,11 +90,8 @@ const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-
       grid-template-columns: repeat(2, minmax(0, 1fr));
       row-gap: var(--space-xl);
     }
-    li :global(.value) {
-      font-size: clamp(72px, 13vw, 120px);
-    }
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .results {
       margin-top: var(--space-2xl);
       padding-block: var(--space-xl);

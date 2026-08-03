@@ -134,7 +134,7 @@ const { heading = 'FAQ', items } = Astro.props;
       height: auto !important;
     }
   }
-  @media (max-width: 768px) {
+  @media (--bp-small) {
     .faq {
       flex-direction: column;
       padding: var(--space-2xl) var(--space-3xs) var(--space-2xl);

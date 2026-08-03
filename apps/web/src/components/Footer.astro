@@ -203,7 +203,7 @@ const currentYear = new Date().getFullYear()
     background: transparent;
     border: 0;
     color: var(--fg);
-    padding: var(--space-3xs) 16px;
+    padding: var(--space-3xs) var(--space-16);
   }
   .nl-input::placeholder {
     color: var(--fg-60);
@@ -266,7 +266,7 @@ const currentYear = new Date().getFullYear()
     text-align: left;
     cursor: pointer;
   }
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .footer {
       padding: var(--space-3xl) var(--space-2xs) var(--space-2xs);
     }
@@ -280,9 +280,9 @@ const currentYear = new Date().getFullYear()
       row-gap: var(--space-xl);
     }
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .footer {
-      padding: var(--space-2xl) var(--space-3xs) var(--space-3xs);
+      padding: var(--space-xs) var(--space-3xs) var(--space-3xs);
     }
     .newsletter {
       padding-bottom: var(--space-xl);

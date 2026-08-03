@@ -29,7 +29,7 @@ const href = issue?.slug
     <MediaFrame
       media={promoMedia}
       ratio="4:5"
-      sizes="(max-width: 1023px) 100vw, 50vw"
+      sizes="(max-width: 1023.98px) 100vw, 50vw"
       title={promoHeadline}
       class="media"
     />
@@ -63,7 +63,7 @@ const href = issue?.slug
     margin: 0;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .home-zine {
       grid-template-columns: 1fr;
       padding: var(--space-2xl) var(--page-inset);
@@ -72,9 +72,13 @@ const href = issue?.slug
     .content {
       padding-inline: 0;
     }
+  }
 
-    h2 {
-      font-size: 48px;
+  @media (--bp-small) {
+    .home-zine {
+      /* 32 top/bottom pairs with the neighbouring sections' 32 for the
+         consistent 64px mobile hand-off. */
+      padding: var(--space-xs) var(--page-inset);
     }
   }
 </style>

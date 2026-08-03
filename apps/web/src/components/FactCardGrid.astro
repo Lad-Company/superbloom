@@ -104,10 +104,11 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
 
   :global(.fact-card .body .value) {
     display: block;
-    font-size: clamp(80px, 9.7vw, 140px);
+    /* Fact numbers ride the shared type-h2 ramp (140 cap, spec §3.4). */
+    font-size: var(--type-h2);
   }
 
-  @media (max-width: 768px) {
+  @media (--bp-small) {
     .fact-card-grid {
       grid-template-columns: 1fr;
     }

@@ -105,7 +105,7 @@ const faqs = page?.faqs ?? [];
      sections, so the 96px header→media hand-off must sit on the black header,
      not inside the colored media box. Desktop only; the mobile hero keeps its
      own bottom padding. */
-  @media (min-width: 1024px) {
+  @media (--bp-desktop) {
     .who-hero-pad {
       padding-bottom: var(--space-xl);
     }

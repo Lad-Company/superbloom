@@ -67,7 +67,7 @@ const { id, label, section, title } = Astro.props;
     line-height: 1.28;
     letter-spacing: -0.02em;
   }
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .narrative-section {
       gap: var(--space-2xl);
       padding-top: var(--space-3xl);
@@ -83,7 +83,7 @@ const { id, label, section, title } = Astro.props;
       padding-right: 0;
     }
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .narrative-section {
       padding-top: var(--space-2xl);
     }

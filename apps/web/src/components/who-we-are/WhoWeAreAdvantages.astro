@@ -31,7 +31,7 @@ const { headline, blocks } = Astro.props;
           <MediaFrame
             media={block.media ?? null}
             ratio="3:2"
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes="(max-width: 767.98px) 100vw, 50vw"
             title={block.heading ?? undefined}
           />
         </div>
@@ -100,16 +100,9 @@ const { headline, blocks } = Astro.props;
     border-radius: var(--radius-media);
   }
 
-  @media (max-width: 768px) {
+  @media (--bp-small) {
     .advantages-section {
       padding: var(--space-2xl) var(--space-3xs) 0;
-    }
-
-    /* Mobile size for the type-h3 section header — the shortcut is a fixed
-       120px desktop step. Curve from css-standardization-spec.md
-       (40px floor at a 360px viewport). */
-    .advantages-header p {
-      font-size: clamp(40px, 13.3px + 7.41vw, 120px);
     }
 
     /* Stacked items need more air than the desktop 24px, otherwise each
@@ -126,13 +119,6 @@ const { headline, blocks } = Astro.props;
          absolutely positioned and contribute no intrinsic size) collapse to
          zero. Stretch keeps media visible at full width. */
       align-items: stretch;
-    }
-
-    /* Mobile size for the type-h4 item headings (fixed 80px desktop step,
-       not covered by the fluid spec — mirror its curve shape with a 32px
-       floor at a 360px viewport). */
-    .item-heading {
-      font-size: clamp(32px, 16px + 4.44vw, 80px);
     }
 
     .item-text {

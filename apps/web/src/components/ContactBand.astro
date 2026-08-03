@@ -147,13 +147,9 @@ const {role} = Astro.props
   .contact-left {
     padding-right: var(--space-xl);
   }
+  /* Headline rides the shared fluid type-h5 ramp via the Uno class. */
   .type-h5 {
     margin: 0;
-    font-family: var(--font-display-tight);
-    font-size: 56px;
-    font-weight: 750;
-    line-height: 0.88;
-    text-transform: uppercase;
   }
   .contact-form,
   .fields {
@@ -199,20 +195,17 @@ const {role} = Astro.props
     white-space: nowrap;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .contact-band {
       padding-block: var(--space-3xl);
     }
     .contact-left {
       padding-right: var(--space-2xs);
     }
-    .type-h5 {
-      font-size: clamp(40px, 6vw, 56px);
-    }
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .contact-band {
-      padding-block: var(--space-2xl);
+      padding-block: var(--space-xs);
     }
     .contact-left {
       padding-right: 0;

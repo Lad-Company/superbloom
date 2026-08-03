@@ -11,7 +11,7 @@ const {media, title = '', class: className} = Astro.props
 const items = media.filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 4)
 // Each layered image is up to ~30vw wide; on mobile the cluster is hidden and
 // the parent section paints full-bleed, so hint 100vw below the lg breakpoint.
-const sizes = '(max-width: 767px) 100vw, 50vw'
+const sizes = '(max-width: 767.98px) 100vw, 50vw'
 ---
 
 {
@@ -307,7 +307,7 @@ const sizes = '(max-width: 767px) 100vw, 50vw'
 
   /* Mobile hides the cluster at the component level so every pointer-follow
      section (home, zine landing, who-we-are) paints full-bleed text only. */
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .pointer-follow {
       display: none;
     }

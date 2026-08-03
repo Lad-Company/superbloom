@@ -84,7 +84,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-3xs) 16px;
+  padding: var(--space-3xs) var(--space-16);
   border: 0;
   border-radius: var(--radius-control);
   background: var(--control-bg);

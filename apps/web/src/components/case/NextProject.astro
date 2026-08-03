@@ -44,7 +44,9 @@ const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground}
   }
   .next-project :global(.next-project-card .headline) {
     font-family: var(--font-display-tight);
-    font-size: 120px;
+    /* Card headline rides the shared type-h3 ramp (spec §3.4 — was a fixed
+       120px that snapped to a bespoke clamp below 1024). */
+    font-size: var(--type-h3);
     font-weight: 750;
     line-height: 0.88;
     text-transform: uppercase;
@@ -52,12 +54,7 @@ const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground}
   .next-project :global(.next-project-card .summary) {
     color: var(--fg);
   }
-  @media (max-width: 1023px) {
-    .next-project :global(.next-project-card .headline) {
-      font-size: clamp(64px, 10vw, 100px);
-    }
-  }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .next-project {
       padding-block: var(--space-2xl);
     }

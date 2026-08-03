@@ -44,7 +44,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
         <ol class="list" data-capes-list>
           {
             displayedCapabilities.map((cap, index) => (
-              <li class:list={['type-h4 md:type-h3', { 'is-active': index === 0 }]} data-cap data-index={index}>
+              <li class:list={['type-h3', { 'is-active': index === 0 }]} data-cap data-index={index}>
                 {cap.title}
               </li>
             ))
@@ -162,7 +162,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
   .list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-16);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -183,12 +183,14 @@ const displayedCapabilities = capabilities.slice(0, 8);
     opacity: 0;
   }
 
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .overlay {
       grid-template-columns: 1fr;
       /* Halve the gap between the subtitle copy and the capability list. */
       gap: calc(var(--space-xl) / 2);
-      padding: var(--space-2xl) var(--space-3xs);
+      /* Top 64 owns the gap above (the parallax section hands off flush);
+         bottom 32 pairs with the next section's 32 for the 64px rhythm. */
+      padding: var(--space-m) var(--space-3xs) var(--space-xs);
     }
 
     /* Reserve two lines for the subtitle instead of four so short copy
@@ -200,6 +202,13 @@ const displayedCapabilities = capabilities.slice(0, 8);
 
     .list {
       gap: var(--space-3xs);
+    }
+
+    /* One-off mobile size (~20% under the h3 floor): at 80px the longest
+       capability ("ENTERTAINMENT", 13 caps) overflows a 375px viewport;
+       64px keeps it inside the 12px gutters. */
+    .list li {
+      font-size: 64px;
     }
   }
 </style>

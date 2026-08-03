@@ -103,7 +103,7 @@ import { caseStudySections } from '../../lib/caseStudySections';
   }
   a {
     display: block;
-    padding: var(--space-2xs) 10px;
+    padding: var(--space-2xs) var(--pad-10);
     border-bottom: 2px solid transparent;
     color: var(--fg-60);
     text-align: center;
@@ -119,9 +119,9 @@ import { caseStudySections } from '../../lib/caseStudySections';
     outline: 2px solid var(--fg);
     outline-offset: -4px;
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     a {
-      padding: 18px var(--space-3xs);
+      padding: var(--space-16) var(--space-3xs);
     }
   }
 </style>

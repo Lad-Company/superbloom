@@ -47,7 +47,7 @@ const {heading, body, media, aspectRatio = '1:1'} = Astro.props
   .media-col :global(.media-frame) {
     width: 100%;
   }
-  @media (max-width: 768px) {
+  @media (--bp-small) {
     .text-media {
       flex-direction: column;
       padding: var(--space-2xl) var(--space-3xs) 0;

@@ -79,7 +79,7 @@ const resolvedSlots = resolveMosaic(
                 <MediaFrame
                   media={item.media}
                   ratio={slot.ratio as MediaRatio}
-                  sizes={`(max-width: 1023px) 100vw, ${slot.widthVw}vw`}
+                  sizes={`(max-width: 1023.98px) 100vw, ${slot.widthVw}vw`}
                   title={item.title}
                 >
                   <TagList slot="overlay" tags={item.tags} />
@@ -134,7 +134,7 @@ const resolvedSlots = resolveMosaic(
      their gutter padding. The cell (derived from the media's aspect ratio)
      defines the shape; the image fills it so neighbouring edges touch exactly.
      On mobile the media keeps its own aspect ratio and stacks. */
-  @media (min-width: 1024px) {
+  @media (--bp-desktop) {
     .work {
       padding-inline: 0;
     }
@@ -190,7 +190,7 @@ const resolvedSlots = resolveMosaic(
     outline-offset: 4px;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .work {
       padding: var(--space-3xl) var(--space-2xs);
     }
@@ -212,9 +212,9 @@ const resolvedSlots = resolveMosaic(
       padding-left: 0;
     }
   }
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     .work {
-      padding: var(--space-2xl) var(--space-3xs);
+      padding: var(--space-xs) var(--space-3xs);
     }
   }
 </style>

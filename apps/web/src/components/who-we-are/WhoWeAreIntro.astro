@@ -37,7 +37,7 @@ const { statement, media = [] } = Astro.props;
     z-index: 0;
   }
 
-  @media (max-width: 768px) {
+  @media (--bp-small) {
     .intro {
       padding: var(--space-2xl) var(--space-3xs);
     }

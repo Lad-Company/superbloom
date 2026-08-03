@@ -98,7 +98,7 @@ const heroHeading = workIndex?.heroHeading ?? 'Unexpected minds. Unignorable wor
     display: grid;
     padding: var(--space-xl) var(--page-inset) 0;
   }
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .featured-work {
       padding: var(--space-xs) var(--space-3xs) 0;
     }

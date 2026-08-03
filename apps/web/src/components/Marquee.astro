@@ -87,7 +87,9 @@ const hasSlot = Astro.slots.has('default');
     padding-right: 0.2em;
     font-family: var(--font-marquee);
     font-weight: 750;
-    font-size: clamp(80px, 13vw, 200px);
+    /* Shared type ramp with the floor held at 80 (spec §3.4 marquee
+       exception); the font stays the marquee face. */
+    font-size: var(--type-marquee);
     line-height: 0.78;
     text-transform: uppercase;
     color: var(--fg);
@@ -98,13 +100,13 @@ const hasSlot = Astro.slots.has('default');
       transform: translateX(-50%);
     }
   }
-  @media (max-width: 959px) {
+  @media (--bp-960) {
     .marquee-set {
-      gap: 16px;
-      padding-right: 16px;
+      gap: var(--space-16);
+      padding-right: var(--space-16);
     }
   }
-  @media (max-width: 599px) {
+  @media (--bp-600) {
     .marquee-set {
       gap: 12px;
       padding-right: 12px;

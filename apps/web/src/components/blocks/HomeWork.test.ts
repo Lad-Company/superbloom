@@ -22,7 +22,7 @@ describe('HomeWork mosaic', () => {
   })
 
   it('keeps the mobile stacking implementation unchanged', () => {
-    expect(source).toContain('@media (max-width: 1023px)')
+    expect(source).toContain('@media (--bp-below-desktop)')
     expect(source).toContain('grid-column: 1 / -1 !important;')
     expect(source).toContain('grid-row: auto !important;')
     expect(source).toContain('position: static;')
@@ -30,7 +30,7 @@ describe('HomeWork mosaic', () => {
   })
 
   it('keeps desktop media full-bleed with no page gutter', () => {
-    expect(source).toContain('@media (min-width: 1024px)')
+    expect(source).toContain('@media (--bp-desktop)')
     expect(source).toContain('padding-inline: 0;')
   })
 })

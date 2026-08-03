@@ -18,7 +18,7 @@ interface Props {
 const { heading, eyebrow, tags, subheading, media, headingSize = 'h1', mediaRatio = '3:2', id } =
   Astro.props;
 
-const headingClass = ['hero-heading', `type-${headingSize}`, headingSize !== 'h1' && 'hero-heading-compact'];
+const headingClass = ['hero-heading', `type-${headingSize}`];
 
 // Layout mode derives from props: media → media hero (home); eyebrow/tags →
 // case hero (work/[slug]); otherwise the plain text hero (work, who-we-are,
@@ -34,7 +34,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
         <div class="scrim"></div>
         <div class="overlay">
           <div class="heading-stack">
-            {eyebrow && <p class="hero-kicker">{eyebrow}</p>}
+            {eyebrow && <p class="type-section-heading hero-kicker">{eyebrow}</p>}
             <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-scroll="false">{heading}</h1>
           </div>
           {subheading && <p class="type-caption sub">{subheading}</p>}
@@ -61,11 +61,11 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
 }
 
 <style>
-  /* Shared H1 — desktop is the Figma 200px/78% type-h1 token; below 1024 it
-     scales with the viewport with no x-overflow. The type-h1 shortcut also
-     applies line-clamp-4 from Uno; we override it here so long hero titles
-     (e.g. "Superbloom House's 5th-Birthday Move? Open a Shop and Give the
-     Artists All The…") wrap to every line instead of truncation. */
+  /* Shared H1 — rides the fluid type-h1/type-h3 ramp tokens (one continuous
+     360→1440 curve, no 1024 snap). The shortcut also applies line-clamp-4
+     from Uno; we override it here so long hero titles (e.g. "Superbloom
+     House's 5th-Birthday Move? Open a Shop and Give the Artists All The…")
+     wrap to every line instead of truncation. */
   .hero-heading {
     margin: 0;
     max-width: 21ch;
@@ -73,14 +73,9 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     overflow: visible;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .hero-heading {
       max-width: none;
-      font-size: clamp(64px, 18vw, 160px);
-    }
-
-    .hero-heading-compact {
-      font-size: clamp(48px, 12vw, 120px);
     }
   }
 
@@ -91,17 +86,14 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     padding: calc(var(--nav-height) + var(--space-3xl)) var(--page-inset) 0;
   }
 
-  @media (max-width: 1023px) {
-    /* Mobile text hero anchors the heading at the bottom of the section so
-       the min-height empty band sits at the top instead of below the
-       heading — gives Work, Who We Are, Shop, and News Index a tight
-       hand-off into the page below and a deliberate hero moment above. */
+  @media (--bp-below-desktop) {
+    /* Mobile text hero is top-anchored like the case hero: a fixed
+       nav + 3xl clearance above the heading on every page. (The old 60svh
+       bottom-anchored band made the void content-dependent, so /index read
+       taller than /work and /who-we-are.) Bottom 32 pairs with the next
+       section's 32 for the consistent 64px hand-off. */
     .hero-text {
-      display: flex;
-      min-height: 60svh;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: var(--space-xl) var(--space-3xs) var(--space-xs);
+      padding: calc(var(--nav-height) + var(--space-3xl)) var(--space-3xs) var(--space-xs);
     }
   }
 
@@ -116,7 +108,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
   /* Ratio variants apply on desktop only: scoped to min-width so this 0,2,0
      rule can't outspecificity the single-class mobile reset below (which sets
      aspect-ratio: auto and lets min-height: 100svh drive the section). */
-  @media (min-width: 1024px) {
+  @media (--bp-desktop) {
     .hero-media.ratio-16-9 {
       aspect-ratio: 16 / 9;
       max-height: 90svh;
@@ -153,16 +145,10 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     gap: var(--space-2xs);
   }
 
-  /* Super-header kicker above the H1 (e.g. zine "Issue No. 5"). Scales with
-     the hero type ramp: 56px at the 1440 design width. */
+  /* Super-header kicker above the H1 (e.g. zine "Issue No. 5"). Rides the
+     shared type-section-heading ramp via the Uno class in the markup. */
   .hero-kicker {
     margin: 0;
-    font-family: var(--font-display-tight);
-    font-size: clamp(32px, 3.9vw, 56px);
-    font-weight: 750;
-    line-height: 0.88;
-    letter-spacing: 0;
-    text-transform: uppercase;
   }
 
   .sub {
@@ -171,7 +157,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     align-self: end;
   }
 
-  @media (max-width: 1023px) {
+  @media (--bp-below-desktop) {
     .hero-media {
       aspect-ratio: auto;
       min-height: 100svh;
@@ -221,7 +207,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     border-radius: var(--radius-control);
   }
 
-  @media (max-width: 767px) {
+  @media (--bp-small) {
     /* Mobile case hero (Figma 375 symbol): 96px top (below the nav), 12px
        sides, 32px eyebrow→heading, 64px heading→tags, tags flush to the bottom
        edge so the lead media's 32px top padding is the whole hand-off. */
@@ -231,7 +217,6 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
 
     .case-eyebrow {
       margin-bottom: var(--space-xs);
-      font-size: 32px;
     }
 
     .case-tags {

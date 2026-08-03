@@ -47,22 +47,22 @@ describe('cardImageSizes', () => {
 
   it('reports full viewport width below the 1024px breakpoint and card width above', () => {
     expect(cardImageSizes(settingsAt({cardWidth: '1/3'}))).toBe(
-      '(max-width: 1023px) 100vw, 33vw',
+      '(max-width: 1023.98px) 100vw, 33vw',
     );
     expect(cardImageSizes(settingsAt({cardWidth: '1/2'}))).toBe(
-      '(max-width: 1023px) 100vw, 50vw',
+      '(max-width: 1023.98px) 100vw, 50vw',
     );
     expect(cardImageSizes(settingsAt({cardWidth: 'full'}))).toBe(
-      '(max-width: 1023px) 100vw, 100vw',
+      '(max-width: 1023.98px) 100vw, 100vw',
     );
   });
 
   it('halves the picture width when info sits beside the picture', () => {
     expect(cardImageSizes(settingsAt({cardWidth: '1/2', infoPosition: 'right'}))).toBe(
-      '(max-width: 1023px) 100vw, 25vw',
+      '(max-width: 1023.98px) 100vw, 25vw',
     );
     expect(cardImageSizes(settingsAt({cardWidth: '1/2', infoPosition: 'left'}))).toBe(
-      '(max-width: 1023px) 100vw, 25vw',
+      '(max-width: 1023.98px) 100vw, 25vw',
     );
   });
 });

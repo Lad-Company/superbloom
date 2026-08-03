@@ -34,6 +34,19 @@ pnpm dev   # deps re-optimize fresh on first request
 **Prevention:** don't kill a dev server during its first page load (that is when
 deps optimize). If you must, clear `.vite` before the next start.
 
+Gotchas seen in practice:
+
+- **Killing the `pnpm dev` wrapper leaves the Astro child alive** and the port
+  held; the next server silently lands on a new port while the stale one keeps
+  serving old code. Kill by listener instead:
+  `kill $(lsof -nP -iTCP:<port> -sTCP:LISTEN -t)`.
+- **A partial poisoning can pass the mux+gsap probe.** A poisoned `lenis.js`
+  (504) strands the whole Layout module graph and the page hangs on the loading
+  veil forever, even with mux and gsap at 200. Probe the full dep set
+  (`gsap`, `gsap/ScrollTrigger`, `lenis`, `split-type`, `@mux/mux-player`), and
+  re-fetch the module URLs right before probing — hashes rotate when the
+  optimizer re-runs, so stale references 504 transiently during re-optimization.
+
 ## Worktree checklist for agents
 
 1. `git worktree add <path> -b <branch>`
