@@ -171,14 +171,9 @@ const gaMode =
 
       const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 
-      // Resolve once fonts and every above-the-fold media element are in: the
-      // eager / high-priority images (which include each video frame's poster)
-      // plus the priority video player itself. Gating on the player's first
-      // presentable frame moves the mux import, HLS attach, and buffer behind
-      // the veil, so the hero reveal never shares frames with player boot and
-      // the video never pops in late. The video gets its own tighter cap, and
-      // everything sits under the outer cap, so a slow asset can never strand
-      // the veil.
+      // Resolve once fonts and every above-the-fold media element (the eager /
+      // high-priority images, which include each video frame's poster) are in,
+      // capped so a slow asset can never strand the veil.
       const whenCriticalMediaReady = (timeoutMs: number) => {
         const imgs = Array.from(
           document.querySelectorAll<HTMLImageElement>('img[fetchpriority="high"], img[loading="eager"]'),
@@ -191,21 +186,7 @@ const gaMode =
             }),
         );
         const fontsReady = document.fonts?.ready ?? Promise.resolve();
-        const videos = Array.from(
-          document.querySelectorAll<HTMLVideoElement>('media-frame[data-critical-video] mux-player'),
-        );
-        const videoReady = videos.map((player) =>
-          // readyState 3 = HAVE_FUTURE_DATA; also covers the player having
-          // reached canplay before this listener attached.
-          player.readyState >= 3
-            ? Promise.resolve()
-            : new Promise<void>((resolve) => {
-                player.addEventListener('canplay', () => resolve(), { once: true });
-                player.addEventListener('error', () => resolve(), { once: true });
-              }),
-        );
-        const videoSettled = Promise.race([Promise.all(videoReady), wait(1500)]);
-        return Promise.race([Promise.all([...imgReady, fontsReady, videoSettled]), wait(timeoutMs)]);
+        return Promise.race([Promise.all([...imgReady, fontsReady]), wait(timeoutMs)]);
       };
 
       const runPageLoader = async (loader: HTMLElement) => {
@@ -240,31 +221,21 @@ const gaMode =
         }
       };
 
-      // Heavier scroll systems boot in two staggered beats so no single idle
-      // callback lands their layout work on the settling hero all at once.
-      // Beat 1 (sbh:motion-deferred) boots the light systems — pointer
-      // parallax, stat triggers. Beat 2 (sbh:motion-heavy) creates the Capes
-      // pin, then re-measures and re-settles once pin spacers have laid out.
+      // Heavier scroll systems (Capes pin, parallax rAF) listen for this and
+      // init only once the hero reveal has had the first frames to itself, so
+      // their pin-spacer/refresh reflow never competes with the reveal.
       const runDeferredMotion = () => {
         document.dispatchEvent(new CustomEvent('sbh:motion-deferred'));
-      };
-
-      const runHeavyMotion = () => {
-        document.dispatchEvent(new CustomEvent('sbh:motion-heavy'));
         // Re-assert after ScrollTrigger measures: pin spacers and splits shift
-        // layout, and Lenis must not drift back to a stale offset. The rAF
-        // lets the pin DOM from this beat lay out before ScrollTrigger reads.
-        requestAnimationFrame(() => {
-          ScrollTrigger.refresh();
-          settleScrollPosition();
-        });
+        // layout, and Lenis must not drift back to a stale offset.
+        ScrollTrigger.refresh();
+        settleScrollPosition();
       };
 
       const scheduleDeferredMotion = () => {
         // No reveal competes under reduced motion, so bring everything up now.
         if (prefersReducedMotion()) {
           runDeferredMotion();
-          runHeavyMotion();
           return;
         }
         const idle = (
@@ -272,18 +243,11 @@ const gaMode =
             requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
           }
         ).requestIdleCallback;
-        const schedule = (fn: () => void, timeout: number) => {
-          if (idle) {
-            idle(fn, { timeout });
-          } else {
-            window.setTimeout(fn, Math.min(timeout, 800));
-          }
-        };
-        // Beat 2 chains off beat 1 instead of racing it on the same idle.
-        schedule(() => {
-          runDeferredMotion();
-          schedule(runHeavyMotion, 2500);
-        }, 1200);
+        if (idle) {
+          idle(runDeferredMotion, { timeout: 1200 });
+        } else {
+          window.setTimeout(runDeferredMotion, 800);
+        }
       };
 
       const setup = async () => {

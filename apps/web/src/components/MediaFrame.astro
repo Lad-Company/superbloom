@@ -126,7 +126,6 @@ const imageRendering =
   ]}
   style={styleAttr}
   data-controls={controls}
-  data-critical-video={priority && isVideo ? 'true' : undefined}
 >
   {
     isVideo && videoPoster && (
@@ -323,10 +322,6 @@ const imageRendering =
     private handleScrubberKey = (event: KeyboardEvent) => this.onScrubberKey(event)
 
     async connectedCallback() {
-      // Priority video boots immediately: Layout holds the loading veil until
-      // the player can present a frame (see data-critical-video +
-      // whenCriticalMediaReady), so this import, HLS attach, and autoplay all
-      // happen behind the veil rather than during the hero reveal.
       const player = this.querySelector('mux-player') as HTMLVideoElement | null
       if (player) {
         // Image-only frames skip the mux chunk entirely.

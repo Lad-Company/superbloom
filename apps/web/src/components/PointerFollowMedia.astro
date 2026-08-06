@@ -66,12 +66,6 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
   let lastT = 0
   let visibilityObserver: IntersectionObserver | null = null
 
-  // Settle thresholds for sleeping the rAF loop: below these, the next frame
-  // would write a visually identical transform, so the loop parks until
-  // pointer, scroll, resize, or section re-entry wakes it.
-  const SETTLE_EPS_PX = 0.1
-  const SETTLE_EPS_VEL = 1
-
   // Each time the section enters the viewport, reset each layer to start a
   // few pixels below its resting Y so the existing per-frame easing eases
   // it back up into place rather than the cluster snapping in from outside.
@@ -113,15 +107,10 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
     const dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 0.016
     lastT = now
     const hasPointer = !Number.isNaN(pointerX)
-    let anyActive = false
 
     for (const group of groups) {
       const bounds = group.scope.getBoundingClientRect()
       const offscreen = bounds.bottom < 0 || bounds.top > window.innerHeight
-      // Offscreen groups can't be seen or interacted with, so their springs
-      // and transform writes are skipped entirely; the visibility observer
-      // re-settles and wakes them on re-entry.
-      if (offscreen) continue
       const rest = restingAnchor(bounds)
 
       // While the cursor is inside the section the anchor tracks it fully, so
@@ -131,7 +120,7 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
       // hard on/off flip at the boundary.
       let anchorX = rest.x
       let anchorY = rest.y
-      if (hasPointer) {
+      if (!offscreen && hasPointer) {
         const minDist = Math.min(
           pointerX - bounds.left,
           bounds.right - pointerX,
@@ -162,26 +151,11 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
         layer.velY += accelY * dt
         layer.curX += layer.velX * dt
         layer.curY += layer.velY * dt
-        if (
-          Math.abs(layer.velX) > SETTLE_EPS_VEL ||
-          Math.abs(layer.velY) > SETTLE_EPS_VEL ||
-          Math.abs(targetX - layer.curX) > SETTLE_EPS_PX ||
-          Math.abs(targetY - layer.curY) > SETTLE_EPS_PX
-        ) {
-          anyActive = true
-        }
         applyTransform(layer)
       }
     }
 
-    // Sleep once every visible layer has settled: with no motion the next
-    // frame would write identical transforms, so the loop parks until
-    // pointer, scroll, resize, or section re-entry wakes it via startLoop.
-    if (anyActive) {
-      rafId = requestAnimationFrame(tick)
-    } else {
-      rafId = null
-    }
+    rafId = requestAnimationFrame(tick)
   }
 
   const startLoop = () => {
@@ -198,14 +172,11 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
   const onPointerMove = (event: PointerEvent) => {
     pointerX = event.clientX
     pointerY = event.clientY
-    startLoop()
   }
 
   const clearPointer = () => {
     pointerX = Number.NaN
     pointerY = Number.NaN
-    // Wake so the anchor eases back to rest instead of freezing mid-damp.
-    startLoop()
   }
 
   const initPointerFollow = () => {
@@ -242,9 +213,6 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
           if (entry.isIntersecting) {
             root.dataset.followVisible = 'true'
             settleGroup(group)
-            // settleGroup drops layers below their rest so the springs ease
-            // them up — that entrance needs the loop running.
-            startLoop()
           } else {
             root.dataset.followVisible = 'false'
           }
@@ -274,10 +242,6 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
   window.addEventListener('pointermove', onPointerMove, {passive: true})
   window.addEventListener('blur', clearPointer)
   document.addEventListener('pointerleave', clearPointer)
-  // Scroll and resize shift section bounds under a stationary pointer, so
-  // they wake the loop the same way pointer movement does.
-  window.addEventListener('scroll', startLoop, {passive: true})
-  window.addEventListener('resize', startLoop)
   mm.addEventListener('change', () => (mm.matches ? stopLoop() : startLoop()))
 
   // Deferred by Layout until after the hero reveal so the parallax rAF loop
