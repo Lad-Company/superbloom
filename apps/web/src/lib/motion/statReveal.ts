@@ -26,7 +26,7 @@ export function revealStats(container: HTMLElement, itemSelector: string): () =>
     {y: 40},
     {
       y: 0,
-      duration: MOTION.quick,
+      duration: MOTION.instant,
       stagger: STAGGER.standard,
       ease: EASE.linear,
       scrollTrigger: {trigger: container, start: 'top 80%', once: true},
@@ -54,7 +54,7 @@ export function revealStats(container: HTMLElement, itemSelector: string): () =>
     counters.push(
       gsap.to(counter, {
         val: target,
-        duration: MOTION.chapter,
+        duration: MOTION.deliberate,
         ease: EASE.linear,
         onUpdate() {
           valueEl.textContent = `${counter.val.toFixed(decimals)}${suffix}`

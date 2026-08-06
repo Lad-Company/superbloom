@@ -340,15 +340,15 @@ never top/left/width/height/margin/padding. No whole-page generic fades. Motion
 never obscures readable type. Reuse a primitive before writing a page-local timeline.
 
 **Tokens** (`tokens.css` / `config.ts`):
-- Durations: instant 120ms (press/state), quick 240ms (hover + line/word
-  reveals), standard 480ms (char reveals + local UI), deliberate 800ms
-  (Route Transitions + chapter media crossfades), chapter 1200ms+
-  (Pinned Storytelling only).
+- Durations: instant 120ms (press/state + line/word reveals), quick 240ms
+  (hover + char reveals), standard 480ms (local UI), deliberate 800ms
+  (stat count-ups, Route Transitions, chapter media crossfades),
+  chapter 1200ms+ (Pinned Storytelling only).
 - Easing: `ease-out cubic-bezier(0.22,0.8,0.2,1)` for interaction feedback
   (hover/press/state); `ease-in-out cubic-bezier(0.65,0,0.35,1)` /
   `power3.inOut` for Route Transitions; linear (constant speed) for Type/Stat
   Reveals and Pinned Storytelling scrubs. No elastic/spring/bouncy.
-- Staggers: tight 24ms, standard 48ms.
+- Staggers: tight 12ms, standard 24ms.
 
 **Primitives.**
 1. **Text Link** — Underline Draw.

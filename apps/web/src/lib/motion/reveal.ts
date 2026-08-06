@@ -72,7 +72,7 @@ export async function revealText(
     scroll = false,
     start = 'top 80%',
     stagger = unit === 'chars' ? STAGGER.tight : STAGGER.standard,
-    duration = unit === 'chars' ? MOTION.standard : MOTION.quick,
+    duration = unit === 'chars' ? MOTION.quick : MOTION.instant,
     delay = 0,
     y = unit === 'chars' ? 18 : undefined,
   } = options

@@ -15,8 +15,8 @@ export const EASE = {
 } as const
 
 export const STAGGER = {
-  tight: 0.024,
-  standard: 0.048,
+  tight: 0.012,
+  standard: 0.024,
 } as const
 
 export const SCROLL = {
