@@ -273,8 +273,9 @@ const displayedCapabilities = capabilities.slice(0, 8);
 
   const cleanupAll = () => cleanups.splice(0).forEach((cleanup) => cleanup());
 
-  // Deferred by Layout until after the hero reveal so pin creation + refresh
-  // never reflow on the same frames as the Type Reveal.
-  document.addEventListener('sbh:motion-deferred', initCapes);
+  // Deferred by Layout to the second motion beat (sbh:motion-heavy) so pin
+  // creation + refresh never reflow on the same frames as the Type Reveal or
+  // the light first-beat systems.
+  document.addEventListener('sbh:motion-heavy', initCapes);
   document.addEventListener('astro:before-swap', cleanupAll);
 </script>

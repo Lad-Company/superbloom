@@ -377,12 +377,14 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    forms use normal scrolling.
 7. **Depth Layer** — max 3 planes; never parallax body text or controls.
 
-On load the hero reveal owns the first frames. Heavy scroll systems (Capes pin,
-parallax rAF, stat triggers) wait for Layout's idle-dispatched
-`sbh:motion-deferred`. Priority video takes the opposite side of the handshake:
-it boots immediately and the loading veil holds (capped) until the player can
-present a frame, so player boot happens behind the veil — never during the
-reveal — and the video is already running when the hero appears.
+On load the hero reveal owns the first frames. Heavy scroll systems boot in two
+idle beats after it: light systems (pointer parallax, stat triggers) on
+`sbh:motion-deferred`, then pin creation (Capes) plus the full ScrollTrigger
+re-measure on `sbh:motion-heavy`. The pointer parallax rAF loop sleeps whenever
+its layers are settled or offscreen. Priority video takes the opposite side of
+the handshake: it boots immediately and the loading veil holds (capped) until
+the player can present a frame, so player boot happens behind the veil — never
+during the reveal — and the video is already running when the hero appears.
 
 **Recipes** compose primitives for a surface: Navbar Route, Content Card, Home/Index
 Chapter, Case Study Chapter, Form/Shop. An **Art-Directed Hero** may add one-off
