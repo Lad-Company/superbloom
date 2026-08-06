@@ -13,7 +13,7 @@ export const EASE = {
   /** Constant speed — stat count-ups and scrub-driven motion. */
   linear: 'linear',
   /** Fast rise with a slight overshoot settle — the Type/Stat Reveal landing. */
-  snap: 'back.out(1.4)',
+  snap: 'back.out(1.2)',
 } as const
 
 export const STAGGER = {

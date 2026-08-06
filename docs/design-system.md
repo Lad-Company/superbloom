@@ -346,7 +346,7 @@ never obscures readable type. Reuse a primitive before writing a page-local time
   Storytelling only).
 - Easing: `ease-out cubic-bezier(0.22,0.8,0.2,1)` for interaction feedback
   (hover/press/state); `ease-in-out cubic-bezier(0.65,0,0.35,1)` /
-  `power3.inOut` for Route Transitions; `back.out(1.4)` (fast rise, slight
+  `power3.inOut` for Route Transitions; `back.out(1.2)` (fast rise, slight
   overshoot settle) for Type/Stat Reveals; linear (constant speed) for stat
   count-ups and Pinned Storytelling scrubs. No elastic or large-spring bounce
   beyond the reveal settle.
