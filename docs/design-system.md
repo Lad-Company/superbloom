@@ -379,8 +379,9 @@ never obscures readable type. Reuse a primitive before writing a page-local time
 
 On load the hero reveal owns the first frames: heavy scroll systems (Capes pin,
 parallax rAF, stat triggers) and priority video player boot all wait for Layout's
-idle-dispatched `sbh:motion-deferred`; the video's eager poster holds the hero
-frame until the player can present.
+idle-dispatched `sbh:motion-deferred`, and priority video holds a further fixed
+500ms beat so the reveal's tail is clear too; the video's eager poster holds the
+hero frame until the player can present.
 
 **Recipes** compose primitives for a surface: Navbar Route, Content Card, Home/Index
 Chapter, Case Study Chapter, Form/Shop. An **Art-Directed Hero** may add one-off

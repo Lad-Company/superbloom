@@ -268,6 +268,9 @@ const imageRendering =
   const SEEK_STEP_S = 5
   /** Time outside [0, duration] that we consider the player still settling. */
   const SCRUBBER_READY_EPSILON_S = 0.05
+  /** Extra beat after sbh:motion-deferred before a priority video boots its
+      player, so the hero reveal's tail never shares frames with the boot. */
+  const DEFERRED_BOOT_EXTRA_MS = 500
 
   class MediaFrameElement extends HTMLElement {
     static observedAttributes = ['active']
@@ -325,8 +328,9 @@ const imageRendering =
     async connectedCallback() {
       // Priority (above-the-fold) video holds player boot until Layout
       // dispatches sbh:motion-deferred — the same gate Capes, parallax, and
-      // stat triggers already use — so the mux chunk import, HLS attach, and
-      // autoplay never share frames with the hero Type Reveal. The eager
+      // stat triggers already use — plus a fixed beat afterwards, so the mux
+      // chunk import, HLS attach, and autoplay never share frames with any
+      // part of the hero Type Reveal (idle can fire mid-reveal). The eager
       // poster img keeps the frame painted meanwhile; the timeout guarantees
       // boot even if the event was missed (late upgrade, script error
       // elsewhere).
@@ -339,6 +343,7 @@ const imageRendering =
           const fallback = window.setTimeout(done, 2500)
           document.addEventListener('sbh:motion-deferred', done, {once: true})
         })
+        await new Promise<void>((resolve) => window.setTimeout(resolve, DEFERRED_BOOT_EXTRA_MS))
         if (!this.isConnected) return
       }
       const player = this.querySelector('mux-player') as HTMLVideoElement | null
