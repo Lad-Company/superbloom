@@ -5,10 +5,11 @@ import {EASE, MOTION, STAGGER, prefersReducedMotion} from './config'
 gsap.registerPlugin(ScrollTrigger)
 
 /**
- * Stat Reveal primitive. Items fade and rise with a standard stagger when the
- * container scrolls into view, and any numeric `.value` inside an item counts
- * up from zero (decimal precision and suffix preserved). Shared by the Who We
- * Are fact cards and the Case Study Results stats. Under reduced motion
+ * Stat Reveal primitive. Items rise into place fast with a slight overshoot
+ * settle — no opacity fade — when the container scrolls into view, and any
+ * numeric `.value` inside an item counts up from zero at a constant linear
+ * rate (decimal precision and suffix preserved). Shared by the Who We Are
+ * fact cards and the Case Study Results stats. Under reduced motion
  * nothing is hidden and no timeline runs.
  *
  * Returns a cleanup that kills the triggers/tweens; wire it to
@@ -22,13 +23,12 @@ export function revealStats(container: HTMLElement, itemSelector: string): () =>
 
   const entrance = gsap.fromTo(
     items,
-    {autoAlpha: 0, y: 40},
+    {y: 40},
     {
-      autoAlpha: 1,
       y: 0,
-      duration: MOTION.standard,
+      duration: MOTION.quick,
       stagger: STAGGER.standard,
-      ease: EASE.out,
+      ease: EASE.snap,
       scrollTrigger: {trigger: container, start: 'top 80%', once: true},
     },
   )
@@ -54,8 +54,8 @@ export function revealStats(container: HTMLElement, itemSelector: string): () =>
     counters.push(
       gsap.to(counter, {
         val: target,
-        duration: MOTION.chapter,
-        ease: EASE.out,
+        duration: MOTION.deliberate,
+        ease: EASE.linear,
         onUpdate() {
           valueEl.textContent = `${counter.val.toFixed(decimals)}${suffix}`
         },

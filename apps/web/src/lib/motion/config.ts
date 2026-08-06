@@ -10,11 +10,15 @@ export const EASE = {
   in: 'power3.in',
   out: 'power3.out',
   inOut: 'power3.inOut',
+  /** Constant speed — stat count-ups and scrub-driven motion. */
+  linear: 'linear',
+  /** Fast rise with a slight overshoot settle — the Type/Stat Reveal landing. */
+  snap: 'back.out(1.2)',
 } as const
 
 export const STAGGER = {
-  tight: 0.024,
-  standard: 0.048,
+  tight: 0.012,
+  standard: 0.024,
 } as const
 
 export const SCROLL = {
