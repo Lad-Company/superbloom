@@ -29,14 +29,13 @@ export const POINTER = {
   lagDeep: 0.9,
 } as const
 
-export const POINTER_FOLLOW = {
-  baseLag: 0.18,
-  lagStep: 0.14,
-  fanRadius: 90,
-  fanRadiusStep: 70,
-  restingSpread: 0.18,
-  edgeDampZone: 32,
-  springDampingRatio: 0.82,
+export const POINTER_TRAIL = {
+  maxAlive: 4,
+  spawnDistance: 150,
+  hold: 0.6,
+  exitDuration: 0.08,
+  enterScale: 0.5,
+  exitScale: 0.92,
 } as const
 
 export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
