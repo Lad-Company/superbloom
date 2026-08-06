@@ -87,6 +87,13 @@ const hasSlot = Astro.slots.has('default');
     padding-right: 0.2em;
     font-family: var(--font-marquee);
     font-weight: 750;
+    /* Width morph (docs/marquee-variable-font-morph-spec.md): rest = Condensed
+       (wdth 190), hover/focus = Wide (wdth 750); weight and slant are pinned
+       in the font file itself. font-variation-settings is transitioned
+       directly — driving it through a registered custom property
+       (@property + var()) never applies to the font in practice. */
+    font-variation-settings: 'wdth' 190;
+    transition: font-variation-settings var(--motion-standard) var(--motion-ease-out);
     /* Shared type ramp with the floor held at 80 (spec §3.4 marquee
        exception); the font stays the marquee face. */
     font-size: var(--type-marquee);
@@ -94,6 +101,10 @@ const hasSlot = Astro.slots.has('default');
     text-transform: uppercase;
     color: var(--fg);
     white-space: nowrap;
+  }
+  .marquee-track:hover .marquee-text,
+  .marquee-track:focus-within .marquee-text {
+    font-variation-settings: 'wdth' 750;
   }
   @keyframes marquee-scroll {
     to {
@@ -115,6 +126,14 @@ const hasSlot = Astro.slots.has('default');
   @media (prefers-reduced-motion: reduce) {
     .marquee-content {
       animation-play-state: paused;
+    }
+    /* Width morph frozen at Condensed, even on hover/focus. */
+    .marquee-text {
+      transition: none;
+    }
+    .marquee-track:hover .marquee-text,
+    .marquee-track:focus-within .marquee-text {
+      font-variation-settings: 'wdth' 190;
     }
     /* Items stay reachable: static, manually scrollable rail. */
     .marquee-track--items {

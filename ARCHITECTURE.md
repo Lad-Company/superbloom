@@ -169,6 +169,16 @@ another doc, that doc is authoritative.
   two curve formulas. Rejected: mobile-first cascade flip (too large a rewrite),
   fluid body/UI type (fights user zoom), fluidizing spacing ≤96.
   *(`docs/css-standardization-spec.md`; `docs/design-system.md` §1.)*
+- **0025 — Variable font for the marquee only.** The PP Neue Corp collection VF
+  powers only the Who We Are marquee, where the `wdth` axis genuinely animates
+  (Condensed 190 → Wide 750 on hover/focus, `--motion-standard` ease-out, frozen
+  under reduced-motion); weight/slant are pinned in the shipped file
+  (`PPNeueCorp-VariableUltrabold.woff2`, instanced at wght 750 / slnt 0). Static
+  Tight Ultrabold stays the site-wide face; the static Compact cut is retired.
+  Site-wide VF adoption rejected: fluid `clamp()` already delivers resize
+  smoothness with static fonts, and the VF is the heavier render-critical
+  payload for zero gain at the site's single instance.
+  *(`docs/marquee-variable-font-morph-spec.md`.)*
 
 **Superseded or amended (kept as guardrails):**
 

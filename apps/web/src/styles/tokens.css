@@ -111,7 +111,7 @@
 
   /* Fonts (real faces first, fallbacks until Lad supplies licensed files) */
   --font-display-tight: 'PP Neue Corp Tight', 'Arial Narrow', system-ui, sans-serif;
-  --font-marquee: 'PP Neue Corp Compact', 'Arial Narrow', system-ui, sans-serif;
+  --font-marquee: 'PP Neue Corp Variable', 'Arial Narrow', system-ui, sans-serif;
   --font-body: 'Graphik', 'Inter', system-ui, sans-serif;
   --font-interface: var(--font-display-tight);
 }

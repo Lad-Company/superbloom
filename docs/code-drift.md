@@ -31,6 +31,3 @@ When you fix one, delete its entry.
 - **Unused `tag.color`.** `packages/schemas/src/tag.ts` defines a `color` (hex)
   field that `apps/web/src/components/*TagList*` never renders. Remove the field or
   use it.
-- **Marquee font token.** `apps/web/src/styles/tokens.css` sets `--font-marquee` to
-  "PP Neue Corp Compact", while the design language says the Who We Are marquee uses
-  PP Neue Corp Condensed/Wide. Reconcile the token with the intended faces.
