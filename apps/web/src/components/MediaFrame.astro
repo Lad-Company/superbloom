@@ -126,6 +126,7 @@ const imageRendering =
   ]}
   style={styleAttr}
   data-controls={controls}
+  data-defer-boot={priority && isVideo ? 'true' : undefined}
 >
   {
     isVideo && videoPoster && (
@@ -322,6 +323,24 @@ const imageRendering =
     private handleScrubberKey = (event: KeyboardEvent) => this.onScrubberKey(event)
 
     async connectedCallback() {
+      // Priority (above-the-fold) video holds player boot until Layout
+      // dispatches sbh:motion-deferred — the same gate Capes, parallax, and
+      // stat triggers already use — so the mux chunk import, HLS attach, and
+      // autoplay never share frames with the hero Type Reveal. The eager
+      // poster img keeps the frame painted meanwhile; the timeout guarantees
+      // boot even if the event was missed (late upgrade, script error
+      // elsewhere).
+      if (this.dataset.deferBoot) {
+        await new Promise<void>((resolve) => {
+          const done = () => {
+            window.clearTimeout(fallback)
+            resolve()
+          }
+          const fallback = window.setTimeout(done, 2500)
+          document.addEventListener('sbh:motion-deferred', done, {once: true})
+        })
+        if (!this.isConnected) return
+      }
       const player = this.querySelector('mux-player') as HTMLVideoElement | null
       if (player) {
         // Image-only frames skip the mux chunk entirely.
