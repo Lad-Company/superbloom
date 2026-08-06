@@ -6,9 +6,12 @@
   font-style: normal;
   font-display: swap;
 }
+/* Marquee-only variable cut (docs/marquee-variable-font-morph-spec.md):
+   wdth axis 190 (Condensed) → 750 (Wide), weight/slant pinned in the file
+   (wght 750, slnt 0). Drives the hover width morph; not used site-wide. */
 @font-face {
-  font-family: 'PP Neue Corp Compact';
-  src: url('/fonts/PPNeueCorp-CompactUltrabold.woff2') format('woff2');
+  font-family: 'PP Neue Corp Variable';
+  src: url('/fonts/PPNeueCorp-VariableUltrabold.woff2') format('woff2');
   font-weight: 750;
   font-style: normal;
   font-display: swap;

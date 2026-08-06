@@ -40,14 +40,17 @@ The primary design file is
   hand-rolls a `vw` font-size; floors are QA-tunable in one place.
   (`docs/css-standardization-spec.md` §3.)
 - The marquee rides the same ramp shape via `--type-marquee` (cap 200, floor held
-  at 80) but keeps its own face.
+  at 80) but keeps its own face: the PP Neue Corp variable cut, morphing
+  Condensed → Wide on hover/focus (`docs/marquee-variable-font-morph-spec.md`).
 - Fixed steps (fluid type would fight user zoom): `editorial-title` — Graphik
   38 / 24. `h6` 24. `h7` 32. `body` 19. `caption` 17. `label`/`eyebrow` 17
   (PP Tight).
 - **PP Neue Corp Tight** is the sole compact interface/navigation face (buttons,
   tags, controls, nav). **Graphik** is reserved for editorial/reading copy.
 - The **Who We Are marquee** is the *only* place the alternate PP Neue Corp display
-  faces are used. TT Bluescreens is not part of the web system.
+  faces are used — a width-variable cut (rest Condensed, hover/focus Wide, weight
+  pinned at Ultrabold 750); the static Compact cut is retired. TT Bluescreens is
+  not part of the web system.
 
 ### Spacing and radius (tokens are source of truth — `tokens.css`)
 

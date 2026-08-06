@@ -25,4 +25,18 @@ describe('Marquee', () => {
     expect(source).toContain('.marquee-track--items')
     expect(source).toContain('overflow-x: auto')
   })
+
+  it('morphs the variable-font width on hover and focus-within', () => {
+    expect(source).toContain("font-variation-settings: 'wdth' 190")
+    expect(source).toContain('.marquee-track:hover .marquee-text,')
+    expect(source).toContain('.marquee-track:focus-within .marquee-text')
+    expect(source).toContain("font-variation-settings: 'wdth' 750")
+    expect(source).toContain('transition: font-variation-settings var(--motion-standard)')
+  })
+
+  it('freezes the width morph at Condensed under reduced motion', () => {
+    // Rest state plus the reduced-motion hover/focus freeze.
+    const occurrences = source.split("font-variation-settings: 'wdth' 190").length - 1
+    expect(occurrences).toBe(2)
+  })
 })

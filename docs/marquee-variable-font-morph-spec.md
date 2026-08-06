@@ -1,8 +1,24 @@
 # Marquee Variable-Font Width Morph
 
-Status: **Spec / not implemented, blocked on the font file.** Captures the design
-and decisions; implementation waits until the collection variable font is in hand
-(the axis coordinates must be read from the file, not guessed).
+Status: **Implemented.** Axis coordinates read from the shipped VF's fvar:
+`wdth` Condensed **190** → Wide **750** (the axis endpoints), `wght` range
+100–900, `slnt` 0–100. The shipped file
+(`apps/web/public/fonts/PPNeueCorp-VariableUltrabold.woff2`) is the collection
+VF instanced with fonttools at `wght=750, slnt=0` (663KB → 171KB), keeping the
+full `wdth` axis. Implementation notes: the morph transitions
+`font-variation-settings` **directly** — the `@property` + `var()` route
+drafted in §4 was tried first and does not apply to the font in browsers (see
+the caveat there). Separately, the foundry VF ships with **out-of-spec gvar /
+GDEF region coordinates** (intermediate regions starting at −1.2094 on `wdth`,
+i.e. variation data for a hidden Compressed master at wdth 100, below the fvar
+axis minimum of 190). OTS rejects the font for this, which is why **Firefox
+refused to load it at all** (Chrome/Safari tolerate it). Before instancing, the
+regions were rewritten into spec-legal form — each (−1.2094, −0.4651, 0) region
+becomes a clamped (−1, −0.4651, 0) region plus a (−1, −1, −0.4651) ramp region
+carrying 28.1% of the deltas, which reproduces the original tent function
+exactly over the legal axis range (verified: outlines identical within 1/2048
+unit at every width; `ots.sanitize` passes). Worth reporting to Pangram
+Pangram — the fix belongs in the foundry file.
 
 Related: `docs/css-standardization-spec.md` (owns the marquee's *size* behavior and
 the site-wide fluid type/spacing/breakpoint work — this spec owns only the *font*
@@ -86,30 +102,40 @@ animates (Condensed → Wide).
   **Condensed → Wide**, **Weight pinned 750**, **Slant 0**. Repoint `--font-marquee`
   to it (or add `--font-marquee-vf`); retire `PPNeueCorp-CompactUltrabold.woff2` and
   its `@font-face`.
-- Register the axis as an animatable custom property so the transition interpolates:
+- Transition `font-variation-settings` **directly** on `.marquee-text` so the
+  wdth axis interpolates:
 
   ```css
-  @property --marquee-wdth {
-    syntax: '<number>';
-    inherits: true;
-    initial-value: /* Condensed axis coordinate from the VF fvar */;
-  }
   .marquee-text {
     font-family: var(--font-marquee);
-    font-variation-settings: 'wdth' var(--marquee-wdth);
+    font-weight: 750;
+    font-variation-settings: 'wdth' 190; /* Condensed (fvar) */
+    transition: font-variation-settings var(--motion-standard) var(--motion-ease-out);
   }
-  .marquee-track:hover,
-  .marquee-track:focus-within {
-    --marquee-wdth: /* Wide axis coordinate */;
+  .marquee-track:hover .marquee-text,
+  .marquee-track:focus-within .marquee-text {
+    font-variation-settings: 'wdth' 750; /* Wide (fvar) */
   }
-  .marquee-track { transition: --marquee-wdth var(--motion-standard) var(--motion-ease-out); }
 
   @media (prefers-reduced-motion: reduce) {
-    .marquee-track { transition: none; }
-    .marquee-track:hover,
-    .marquee-track:focus-within { --marquee-wdth: /* Condensed */; } /* frozen */
+    .marquee-text { transition: none; }
+    .marquee-track:hover .marquee-text,
+    .marquee-track:focus-within .marquee-text {
+      font-variation-settings: 'wdth' 190; /* frozen at Condensed */
+    }
   }
   ```
+
+  > **Caveat (learned in implementation).** The originally-drafted route —
+  > register the axis as a custom property (`@property --marquee-wdth`) and
+  > consume it via `var()` inside `font-variation-settings` — was built first
+  > and **does not work**: the var()-driven value never applies to the font, so
+  > the marquee renders at the fvar default (wdth 620, "Normal") in both rest
+  > and hover with no visible difference. (A second dead end along the way:
+  > Astro drops `@property` rules from scoped component styles, so the
+  > registration had to live in a global stylesheet.) Keep both axis lists
+  > identical between rest and hover so the fvs transition interpolates instead
+  > of jumping.
 
 - The existing JS pointer hook keeps handling **only** the scroll-rate slow; the
   width morph is pure CSS and gets keyboard reachability free via `:focus-within`.
