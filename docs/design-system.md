@@ -340,14 +340,16 @@ never top/left/width/height/margin/padding. No whole-page generic fades. Motion
 never obscures readable type. Reuse a primitive before writing a page-local timeline.
 
 **Tokens** (`tokens.css` / `config.ts`):
-- Durations: instant 120ms (press/state + line/word reveals), quick 240ms
-  (hover + char reveals), standard 480ms (local UI), deliberate 800ms
-  (stat count-ups, Route Transitions, chapter media crossfades),
-  chapter 1200ms+ (Pinned Storytelling only).
+- Durations: instant 120ms (press/state), quick 240ms (hover + all reveals),
+  standard 480ms (local UI), deliberate 800ms (stat count-ups, Route
+  Transitions, chapter media crossfades), chapter 1200ms+ (Pinned
+  Storytelling only).
 - Easing: `ease-out cubic-bezier(0.22,0.8,0.2,1)` for interaction feedback
   (hover/press/state); `ease-in-out cubic-bezier(0.65,0,0.35,1)` /
-  `power3.inOut` for Route Transitions; linear (constant speed) for Type/Stat
-  Reveals and Pinned Storytelling scrubs. No elastic/spring/bouncy.
+  `power3.inOut` for Route Transitions; `back.out(1.4)` (fast rise, slight
+  overshoot settle) for Type/Stat Reveals; linear (constant speed) for stat
+  count-ups and Pinned Storytelling scrubs. No elastic or large-spring bounce
+  beyond the reveal settle.
 - Staggers: tight 12ms, standard 24ms.
 
 **Primitives.**
@@ -362,9 +364,9 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    in via the play button. Knob grow / track height grow mirror the same
    recipe inside the scrubber.
 3. **Type Reveal** — lines/words by default; chars reserved for hero/route
-   moments. Units rise under an overflow clip at constant linear speed with no
-   opacity fade, mirroring the Surface Wipe snap. Stat Reveal entrances and
-   count-ups follow the same linear, fade-free rule.
+   moments. Units rise under an overflow clip with no opacity fade and land on
+   a slight overshoot settle (`back.out`), springing rather than smacking to a
+   stop. Stat Reveal entrances follow the same rule; count-ups stay linear.
 4. **Three-Phase Loading** — skeleton → single progress cue → content release;
    only for waits >400ms; never spinner + skeleton together.
 5. **Route Transition** — full-viewport, reserved exclusively for navbar

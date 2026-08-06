@@ -5,11 +5,11 @@ import {EASE, MOTION, STAGGER, prefersReducedMotion} from './config'
 gsap.registerPlugin(ScrollTrigger)
 
 /**
- * Stat Reveal primitive. Items rise into place at a constant linear speed with
- * a standard stagger — no opacity fade — when the container scrolls into view,
- * and any numeric `.value` inside an item counts up from zero at the same
- * constant rate (decimal precision and suffix preserved). Shared by the Who We
- * Are fact cards and the Case Study Results stats. Under reduced motion
+ * Stat Reveal primitive. Items rise into place fast with a slight overshoot
+ * settle — no opacity fade — when the container scrolls into view, and any
+ * numeric `.value` inside an item counts up from zero at a constant linear
+ * rate (decimal precision and suffix preserved). Shared by the Who We Are
+ * fact cards and the Case Study Results stats. Under reduced motion
  * nothing is hidden and no timeline runs.
  *
  * Returns a cleanup that kills the triggers/tweens; wire it to
@@ -26,9 +26,9 @@ export function revealStats(container: HTMLElement, itemSelector: string): () =>
     {y: 40},
     {
       y: 0,
-      duration: MOTION.instant,
+      duration: MOTION.quick,
       stagger: STAGGER.standard,
-      ease: EASE.linear,
+      ease: EASE.snap,
       scrollTrigger: {trigger: container, start: 'top 80%', once: true},
     },
   )

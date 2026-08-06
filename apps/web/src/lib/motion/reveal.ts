@@ -58,10 +58,10 @@ export function shouldPlayPageEntryReveal(): boolean {
 }
 
 /**
- * Type Reveal primitive. Clips animated units upward into place at a constant
- * linear speed — no opacity fade, no eased float — so entrances read with the
- * same snap as the Surface Wipe control hover. Under reduced motion the
- * element is left in its final visible state.
+ * Type Reveal primitive. Clips animated units upward into place fast and lands
+ * them on a slight overshoot settle — no opacity fade — so entrances spring
+ * into place like the Surface Wipe control hover rather than smacking to a
+ * stop. Under reduced motion the element is left in its final visible state.
  */
 export async function revealText(
   el: HTMLElement,
@@ -72,7 +72,7 @@ export async function revealText(
     scroll = false,
     start = 'top 80%',
     stagger = unit === 'chars' ? STAGGER.tight : STAGGER.standard,
-    duration = unit === 'chars' ? MOTION.quick : MOTION.instant,
+    duration = MOTION.quick,
     delay = 0,
     y = unit === 'chars' ? 18 : undefined,
   } = options
@@ -98,9 +98,13 @@ export async function revealText(
   }
 
   // Wrap line hosts so animated units can translate under an overflow clip.
+  // The padding/margin pair lifts the clip edge 0.1em above the line box
+  // without shifting layout, so the overshoot settle never clips ascenders.
   for (const line of split.targets('lines')) {
     line.style.overflow = 'clip'
     line.style.display = 'block'
+    line.style.paddingTop = '0.1em'
+    line.style.marginTop = '-0.1em'
   }
 
   let tween: gsap.core.Tween | null = null
@@ -136,7 +140,7 @@ export async function revealText(
       y: 0,
       duration,
       delay,
-      ease: EASE.linear,
+      ease: EASE.snap,
       stagger,
       paused: true,
       onComplete: () => {
