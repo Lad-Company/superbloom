@@ -280,9 +280,9 @@ const links = [
     .compact-link {
       font-family: var(--font-display-tight);
       font-weight: 750;
-      /* Mobile menu links ride the shared type-section-heading ramp (spec
-         §3.4: folded from a bespoke 64 cap to the canonical 56 step). */
-      font-size: var(--type-section-heading);
+      /* Mobile menu links ride the shared type-h3 ramp, matching the zine
+         landing intro statement (spec §3.4). */
+      font-size: var(--type-h3);
       line-height: 0.95;
       letter-spacing: 0;
       text-transform: uppercase;
@@ -319,6 +319,15 @@ const links = [
     .navigation:has(.compact-menu[open]) .logo {
       position: relative;
       z-index: 60;
+    }
+  }
+
+  /* Small phones (below the 390px standard-iPhone baseline) step the menu
+     links down one shared ramp to type-h4 so the longest link stays on one
+     line; bigger phones keep the type-h3 match with the zine statement. */
+  @media (--bp-390) {
+    .compact-link {
+      font-size: var(--type-h4);
     }
   }
 

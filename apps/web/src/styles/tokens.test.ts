@@ -76,5 +76,6 @@ describe('canonical breakpoints (spec §5)', () => {
     expect(source).toContain('@custom-media --bp-desktop (min-width: 1024px);')
     expect(source).toContain('@custom-media --bp-600 (max-width: 599.98px);')
     expect(source).toContain('@custom-media --bp-960 (max-width: 959.98px);')
+    expect(source).toContain('@custom-media --bp-390 (max-width: 389.98px);')
   })
 })

@@ -10,6 +10,8 @@
 @custom-media --bp-desktop (min-width: 1024px);
 @custom-media --bp-600 (max-width: 599.98px);
 @custom-media --bp-960 (max-width: 959.98px);
+/* Small phones (320/360/375) sit below the 390px standard-iPhone baseline. */
+@custom-media --bp-390 (max-width: 389.98px);
 
 :root {
   /* Color */
