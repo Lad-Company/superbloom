@@ -23,8 +23,8 @@ const gsapModule = await import('gsap')
 // Regression test for the bug: the home header text disappears on window
 // resize. The Type Reveal animation re-creates its paused fromTo tween when
 // splitText re-splits on resize, and the paused tween immediately renders the
-// "from" state (autoAlpha 0, yPercent 100) on the new split units,
-// hiding them permanently.
+// "from" state (yPercent 100, clipped out of view by the line wrapper) on the
+// new split units, hiding them permanently.
 //
 // GSAP's internal ticker doesn't reliably advance under vi.useFakeTimers, so
 // we fast-forward the global timeline to simulate "the reveal already played".
@@ -69,7 +69,8 @@ describe('revealText on window resize', () => {
 
     // After resize, the new split targets must still be visible. The bug is
     // that gsap.fromTo renders the from-state immediately even when paused,
-    // so the freshly-split targets end up autoAlpha: 0 again.
+    // so the freshly-split targets end up stuck at yPercent: 100 (clipped out
+    // of view) again.
     const postResizeChars = collectDeepestSpans(h1)
     expect(postResizeChars.length).toBeGreaterThan(0)
     for (const ch of postResizeChars) {

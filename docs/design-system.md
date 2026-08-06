@@ -327,8 +327,8 @@ first-class `/shop` route, not a settings link.
 
 ## 5. Motion — Controlled Anticipation
 
-The sitewide motion system: responsive interaction feedback paired with deliberate,
-cinematic reveals, expressed only through reusable primitives (never page-specific
+The sitewide motion system: responsive interaction feedback paired with snappy,
+linear reveals, expressed only through reusable primitives (never page-specific
 animation). Motion is **built and active** (`apps/web/src/lib/motion/`), not
 deferred.
 
@@ -340,12 +340,14 @@ never top/left/width/height/margin/padding. No whole-page generic fades. Motion
 never obscures readable type. Reuse a primitive before writing a page-local timeline.
 
 **Tokens** (`tokens.css` / `config.ts`):
-- Durations: instant 120ms (press/state), quick 240ms (hover), standard 480ms
-  (local reveals), deliberate 800ms (type + Route Transitions), chapter 1200ms+
+- Durations: instant 120ms (press/state), quick 240ms (hover + line/word
+  reveals), standard 480ms (char reveals + local UI), deliberate 800ms
+  (Route Transitions + chapter media crossfades), chapter 1200ms+
   (Pinned Storytelling only).
-- Easing: `ease-out cubic-bezier(0.22,0.8,0.2,1)` for entrances/feedback;
-  `ease-in-out cubic-bezier(0.65,0,0.35,1)` / `power3.inOut` for Route Transitions;
-  linear scrub only for Pinned Storytelling. No elastic/spring/bouncy.
+- Easing: `ease-out cubic-bezier(0.22,0.8,0.2,1)` for interaction feedback
+  (hover/press/state); `ease-in-out cubic-bezier(0.65,0,0.35,1)` /
+  `power3.inOut` for Route Transitions; linear (constant speed) for Type/Stat
+  Reveals and Pinned Storytelling scrubs. No elastic/spring/bouncy.
 - Staggers: tight 24ms, standard 48ms.
 
 **Primitives.**
@@ -359,7 +361,10 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    Always show while paused; show under reduced-motion so the user can opt
    in via the play button. Knob grow / track height grow mirror the same
    recipe inside the scrubber.
-3. **Type Reveal** — lines/words by default; chars reserved for hero/route moments.
+3. **Type Reveal** — lines/words by default; chars reserved for hero/route
+   moments. Units rise under an overflow clip at constant linear speed with no
+   opacity fade, mirroring the Surface Wipe snap. Stat Reveal entrances and
+   count-ups follow the same linear, fade-free rule.
 4. **Three-Phase Loading** — skeleton → single progress cue → content release;
    only for waits >400ms; never spinner + skeleton together.
 5. **Route Transition** — full-viewport, reserved exclusively for navbar

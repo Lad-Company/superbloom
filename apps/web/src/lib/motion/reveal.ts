@@ -46,7 +46,7 @@ export function pageEntryRevealAllowed(state: {
   return !state.routeEntering
 }
 
-/** Returns true when the initial page-entry fade-up should play. */
+/** Returns true when the initial page-entry reveal should play. */
 export function shouldPlayPageEntryReveal(): boolean {
   return pageEntryRevealAllowed({
     reducedMotion: prefersReducedMotion(),
@@ -58,8 +58,10 @@ export function shouldPlayPageEntryReveal(): boolean {
 }
 
 /**
- * Type Reveal primitive. Clips animated units upward into place with a decisive
- * ease-out. Under reduced motion the element is left in its final visible state.
+ * Type Reveal primitive. Clips animated units upward into place at a constant
+ * linear speed — no opacity fade, no eased float — so entrances read with the
+ * same snap as the Surface Wipe control hover. Under reduced motion the
+ * element is left in its final visible state.
  */
 export async function revealText(
   el: HTMLElement,
@@ -70,7 +72,7 @@ export async function revealText(
     scroll = false,
     start = 'top 80%',
     stagger = unit === 'chars' ? STAGGER.tight : STAGGER.standard,
-    duration = unit === 'chars' ? MOTION.deliberate : MOTION.standard,
+    duration = unit === 'chars' ? MOTION.standard : MOTION.quick,
     delay = 0,
     y = unit === 'chars' ? 18 : undefined,
   } = options
@@ -120,24 +122,21 @@ export async function revealText(
       gsap.set(targets, {
         yPercent: 0,
         y: 0,
-        autoAlpha: 1,
       })
       tween = null
       return
     }
-    for (const target of targets) target.style.willChange = 'transform, opacity'
+    for (const target of targets) target.style.willChange = 'transform'
     const fromVars: gsap.TweenVars = {
       yPercent: unit === 'lines' ? 110 : 100,
-      autoAlpha: 0,
     }
     if (y !== undefined) fromVars.y = y
     tween = gsap.fromTo(targets, fromVars, {
       yPercent: 0,
       y: 0,
-      autoAlpha: 1,
       duration,
       delay,
-      ease: EASE.out,
+      ease: EASE.linear,
       stagger,
       paused: true,
       onComplete: () => {

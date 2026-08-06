@@ -10,6 +10,8 @@ export const EASE = {
   in: 'power3.in',
   out: 'power3.out',
   inOut: 'power3.inOut',
+  /** Constant speed — the Type/Stat Reveal signature, mirroring the Surface Wipe hover snap. */
+  linear: 'linear',
 } as const
 
 export const STAGGER = {
