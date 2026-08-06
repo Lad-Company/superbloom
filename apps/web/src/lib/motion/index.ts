@@ -1,4 +1,4 @@
-export { MOTION, EASE, STAGGER, SCROLL, POINTER, POINTER_FOLLOW, REDUCED_MOTION_QUERY, reducedMotionQuery, prefersReducedMotion } from './config';
+export { MOTION, EASE, STAGGER, SCROLL, POINTER, POINTER_TRAIL, REDUCED_MOTION_QUERY, reducedMotionQuery, prefersReducedMotion } from './config';
 export { splitText, type SplitHandle, type SplitUnit } from './splitText';
 export { revealText, type RevealOptions, type RevealHandle } from './reveal';
 export { revealStats } from './statReveal';

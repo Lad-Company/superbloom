@@ -9,7 +9,7 @@ interface Props {
 
 const {media, title = '', class: className} = Astro.props
 const items = media.filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 4)
-// Each layered image is up to ~30vw wide; on mobile the cluster is hidden and
+// Each tracer image is up to ~30vw wide; on mobile the tracer is hidden and
 // the parent section paints full-bleed, so hint 100vw below the lg breakpoint.
 const sizes = '(max-width: 767.98px) 100vw, 50vw'
 ---
@@ -27,159 +27,127 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
 }
 
 <script>
-  import {POINTER_FOLLOW, REDUCED_MOTION_QUERY} from '../lib/motion'
+  import {MOTION, POINTER_TRAIL, REDUCED_MOTION_QUERY} from '../lib/motion'
 
-  // Resting offsets per layer index, in pixels relative to the section anchor.
-  // Item 0 sits at the anchor (upper-right), item 1 stacks diagonally below
-  // and to the left, and items 2 and 3 spread further into distinct corners
-  // so the cluster never visually overlaps given the CSS-defined image sizes.
-  const RESTING_OFFSETS: ReadonlyArray<readonly [number, number]> = [
-    [0, 0],
-    [-360, 400],
-    [190, -260],
-    [-540, 480],
-  ]
+  // Pointer-follow image tracer: as the cursor travels through a
+  // data-pointer-scope section, images pop up along its path — one per
+  // POINTER_TRAIL.spawnDistance px of travel — hold briefly, and cut out.
+  // Spawning is distance-driven, never time-driven; planted images never
+  // move. See docs/pointer-follow-tracer-spec.md.
 
   const mm = window.matchMedia(REDUCED_MOTION_QUERY)
+  // Mirrors the CSS gates below: the tracer stays inert on coarse pointers
+  // and below --bp-small, where sections paint text-only.
+  const coarsePointer = window.matchMedia('(pointer: coarse)')
+  const smallScreen = window.matchMedia('(max-width: 767.98px)')
 
-  interface Layer {
+  interface Slot {
     el: HTMLElement
-    offsetX: number
-    offsetY: number
-    tau: number
-    curX: number
-    curY: number
-    velX: number
-    velY: number
+    timer: ReturnType<typeof setTimeout> | null
   }
 
   interface Group {
     scope: HTMLElement
     root: HTMLElement
-    layers: Layer[]
+    slots: Slot[]
+    nextIndex: number
+    zCounter: number
+    hasLastSpawn: boolean
+    lastSpawnX: number
+    lastSpawnY: number
   }
 
   const groups: Group[] = []
-  let pointerX = Number.NaN
-  let pointerY = Number.NaN
-  let rafId: number | null = null
-  let lastT = 0
   let visibilityObserver: IntersectionObserver | null = null
 
-  // Each time the section enters the viewport, reset each layer to start a
-  // few pixels below its resting Y so the existing per-frame easing eases
-  // it back up into place rather than the cluster snapping in from outside.
-  const settleGroup = (group: Group) => {
-    const bounds = group.scope.getBoundingClientRect()
-    const rest = restingAnchor(bounds)
-    group.layers.forEach((layer, index) => {
-      layer.curX = rest.x + layer.offsetX
-      layer.curY = rest.y + layer.offsetY + 40 + index * 14
-      applyTransform(layer)
-    })
+  const inert = () => mm.matches || coarsePointer.matches || smallScreen.matches
+
+  const clearSlot = (slot: Slot) => {
+    if (slot.timer !== null) clearTimeout(slot.timer)
+    slot.timer = null
+    // Back to the resting state (opacity 0, enter scale, no transition), so
+    // a later recycle snaps here invisibly in a single frame.
+    delete slot.el.dataset.state
   }
 
-  const restingAnchor = (bounds: DOMRect) => ({
-    x: bounds.width * (0.5 + POINTER_FOLLOW.restingSpread),
-    y: bounds.height * 0.5,
-  })
-
-  const applyTransform = (layer: Layer) => {
-    layer.el.style.transform = `translate3d(${layer.curX}px, ${layer.curY}px, 0) translate(-50%, -50%)`
+  const clearGroup = (group: Group) => {
+    group.slots.forEach(clearSlot)
+    group.hasLastSpawn = false
   }
 
-  const buildLayers = (items: HTMLElement[]): Layer[] =>
-    items.map((el, index) => {
-      const [offsetX, offsetY] = RESTING_OFFSETS[index] ?? RESTING_OFFSETS[0]
-      return {
-        el,
-        offsetX,
-        offsetY,
-        tau: POINTER_FOLLOW.baseLag + index * POINTER_FOLLOW.lagStep,
-        curX: 0,
-        curY: 0,
-        velX: 0,
-        velY: 0,
-      }
-    })
+  const spawn = (group: Group, x: number, y: number) => {
+    // Slot i is bound to pool image i, so the sequential cycle simply walks
+    // the slots. When every slot is alive, the next slot in cycle is the
+    // oldest living one, and this recycles it: its exit is cut short and the
+    // enter restarts at the new position. Effective concurrency is therefore
+    // min(POINTER_TRAIL.maxAlive, pool size).
+    const slot = group.slots[group.nextIndex]
+    group.nextIndex = (group.nextIndex + 1) % group.slots.length
 
-  const tick = (now: number) => {
-    const dt = lastT ? Math.min(0.05, (now - lastT) / 1000) : 0.016
-    lastT = now
-    const hasPointer = !Number.isNaN(pointerX)
+    if (slot.timer !== null) clearTimeout(slot.timer)
+    delete slot.el.dataset.state
 
-    for (const group of groups) {
-      const bounds = group.scope.getBoundingClientRect()
-      const offscreen = bounds.bottom < 0 || bounds.top > window.innerHeight
-      const rest = restingAnchor(bounds)
+    // Planted centered on the cursor position at spawn time; static
+    // thereafter. left/top are never transitioned, so the plant itself
+    // does not animate. Newest spawn stacks on top within the tracer layer.
+    slot.el.style.left = `${x}px`
+    slot.el.style.top = `${y}px`
+    slot.el.style.zIndex = String(++group.zCounter)
 
-      // While the cursor is inside the section the anchor tracks it fully, so
-      // layers may follow right up to the section edge (overflow clipping
-      // crops whatever bleeds past). Only once the cursor leaves the section
-      // does the anchor ease back to rest over `edgeDampZone`, which avoids a
-      // hard on/off flip at the boundary.
-      let anchorX = rest.x
-      let anchorY = rest.y
-      if (!offscreen && hasPointer) {
-        const minDist = Math.min(
-          pointerX - bounds.left,
-          bounds.right - pointerX,
-          pointerY - bounds.top,
-          bounds.bottom - pointerY,
-        )
-        const raw = Math.max(0, Math.min(1, 1 + minDist / POINTER_FOLLOW.edgeDampZone))
-        const damp = raw * raw * (3 - 2 * raw) // smoothstep
-        anchorX = rest.x + (pointerX - bounds.left - rest.x) * damp
-        anchorY = rest.y + (pointerY - bounds.top - rest.y) * damp
-      }
+    // Force a style flush so the enter transition restarts from the enter
+    // scale even when recycling a slot that was mid-lifecycle.
+    void slot.el.offsetWidth
 
-      for (const layer of group.layers) {
-        const targetX = anchorX + layer.offsetX
-        const targetY = anchorY + layer.offsetY
+    slot.el.dataset.state = 'living'
 
-        // Critically-tunable spring per layer. `tau` defines the natural
-        // frequency and POINTER_FOLLOW.springDampingRatio (zeta < 1) keeps
-        // a slight overshoot so the cluster feels springy rather than snappy
-        // when the cursor moves abruptly — particularly at the section edge.
-        const omega = 1 / layer.tau
-        const k = omega * omega
-        const c = 2 * POINTER_FOLLOW.springDampingRatio * omega
-
-        const accelX = k * (targetX - layer.curX) - c * layer.velX
-        const accelY = k * (targetY - layer.curY) - c * layer.velY
-        layer.velX += accelX * dt
-        layer.velY += accelY * dt
-        layer.curX += layer.velX * dt
-        layer.curY += layer.velY * dt
-        applyTransform(layer)
-      }
-    }
-
-    rafId = requestAnimationFrame(tick)
-  }
-
-  const startLoop = () => {
-    if (rafId !== null || mm.matches || !groups.length) return
-    lastT = 0
-    rafId = requestAnimationFrame(tick)
-  }
-
-  const stopLoop = () => {
-    if (rafId !== null) cancelAnimationFrame(rafId)
-    rafId = null
+    // Fixed lifecycle — enter (MOTION.quick) → hold (POINTER_TRAIL.hold) →
+    // exit (POINTER_TRAIL.exitDuration) → free. Never extended by continued
+    // movement.
+    slot.timer = setTimeout(() => {
+      slot.el.dataset.state = 'exiting'
+      slot.timer = setTimeout(() => clearSlot(slot), POINTER_TRAIL.exitDuration * 1000)
+    }, (MOTION.quick + POINTER_TRAIL.hold) * 1000)
   }
 
   const onPointerMove = (event: PointerEvent) => {
-    pointerX = event.clientX
-    pointerY = event.clientY
+    if (inert()) return
+    for (const group of groups) {
+      // The section rect is read fresh on every move — never cached across
+      // scroll — so spawning tracks the section's actual on-screen bounds.
+      const rect = group.scope.getBoundingClientRect()
+      const inside =
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom
+      if (!inside) {
+        // Leaving the section resets the spawn point, so re-entry always
+        // requires a fresh spawnDistance of travel before the first spawn.
+        group.hasLastSpawn = false
+        continue
+      }
+      if (!group.hasLastSpawn) {
+        group.lastSpawnX = event.clientX
+        group.lastSpawnY = event.clientY
+        group.hasLastSpawn = true
+        continue
+      }
+      const distance = Math.hypot(event.clientX - group.lastSpawnX, event.clientY - group.lastSpawnY)
+      if (distance >= POINTER_TRAIL.spawnDistance) {
+        group.lastSpawnX = event.clientX
+        group.lastSpawnY = event.clientY
+        spawn(group, event.clientX - rect.left, event.clientY - rect.top)
+      }
+    }
   }
 
-  const clearPointer = () => {
-    pointerX = Number.NaN
-    pointerY = Number.NaN
+  const clearSpawnPoints = () => {
+    // Living images simply finish their lifecycle and clear; only the
+    // distance baseline resets.
+    for (const group of groups) group.hasLastSpawn = false
   }
 
-  const initPointerFollow = () => {
+  const initPointerTrail = () => {
     document.querySelectorAll<HTMLElement>('[data-pointer-follow]').forEach((group) => {
       if (group.dataset.pointerFollowInitialized) return
       const items = Array.from(group.querySelectorAll<HTMLElement>('[data-follow-item]'))
@@ -187,66 +155,61 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
       group.dataset.pointerFollowInitialized = 'true'
 
       const scope = group.closest<HTMLElement>('[data-pointer-scope]') ?? group
-      const layers = buildLayers(items)
-      const rest = restingAnchor(scope.getBoundingClientRect())
-      layers.forEach((layer) => {
-        layer.curX = rest.x + layer.offsetX
-        layer.curY = rest.y + layer.offsetY
-        applyTransform(layer)
-      })
+      // Publish the configured scale stops so the CSS transitions below and
+      // the JS motion config can't drift apart.
+      group.style.setProperty('--trail-enter-scale', String(POINTER_TRAIL.enterScale))
+      group.style.setProperty('--trail-exit-scale', String(POINTER_TRAIL.exitScale))
+      group.style.setProperty('--trail-exit-duration', `${POINTER_TRAIL.exitDuration * 1000}ms`)
 
-      if (mm.matches) {
-        group.dataset.followVisible = 'true'
-        return
-      }
-      groups.push({scope, root: group, layers})
-      settleGroup(groups[groups.length - 1])
+      groups.push({
+        scope,
+        root: group,
+        slots: items.slice(0, POINTER_TRAIL.maxAlive).map((el) => ({el, timer: null})),
+        nextIndex: 0,
+        zCounter: 0,
+        hasLastSpawn: false,
+        lastSpawnX: 0,
+        lastSpawnY: 0,
+      })
     })
 
+    // Offscreen sections run no timers: living images are cleared as the
+    // section leaves the viewport, and the bounds check in onPointerMove
+    // already prevents spawns while it is outside.
     visibilityObserver?.disconnect()
     visibilityObserver = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          const root = entry.target as HTMLElement
-          const group = groups.find((g) => g.root === root)
-          if (!group) continue
-          if (entry.isIntersecting) {
-            root.dataset.followVisible = 'true'
-            settleGroup(group)
-          } else {
-            root.dataset.followVisible = 'false'
-          }
+          if (entry.isIntersecting) continue
+          const group = groups.find((g) => g.root === entry.target)
+          if (group) clearGroup(group)
         }
       },
-      {threshold: 0, rootMargin: '0px 0px -8% 0px'},
+      {threshold: 0},
     )
     for (const group of groups) visibilityObserver.observe(group.root)
   }
 
   const teardown = () => {
-    stopLoop()
     visibilityObserver?.disconnect()
     visibilityObserver = null
+    groups.forEach(clearGroup)
     groups.splice(0)
     document.querySelectorAll<HTMLElement>('[data-pointer-follow]').forEach((group) => {
       delete group.dataset.pointerFollowInitialized
-      delete group.dataset.followVisible
     })
   }
 
-  const boot = () => {
-    initPointerFollow()
-    startLoop()
-  }
-
   window.addEventListener('pointermove', onPointerMove, {passive: true})
-  window.addEventListener('blur', clearPointer)
-  document.addEventListener('pointerleave', clearPointer)
-  mm.addEventListener('change', () => (mm.matches ? stopLoop() : startLoop()))
+  window.addEventListener('blur', clearSpawnPoints)
+  document.addEventListener('pointerleave', clearSpawnPoints)
+  mm.addEventListener('change', () => {
+    if (mm.matches) groups.forEach(clearGroup)
+  })
 
-  // Deferred by Layout until after the hero reveal so the parallax rAF loop
-  // doesn't share frames with the Type Reveal.
-  document.addEventListener('sbh:motion-deferred', boot)
+  // Deferred by Layout until after the hero reveal (same boot contract as
+  // the retired cluster); torn down before each View Transition swap.
+  document.addEventListener('sbh:motion-deferred', initPointerTrail)
   document.addEventListener('astro:before-swap', teardown)
 </script>
 
@@ -266,6 +229,10 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
     aspect-ratio: 4 / 5;
     will-change: transform, opacity;
     opacity: 0;
+    transform: translate(-50%, -50%) scale(var(--trail-enter-scale, 0.5));
+    /* No transition at rest: a recycled slot snaps back here invisibly in
+       one frame before its enter transition restarts. */
+    transition: none;
   }
 
   .follow-item:nth-child(2) {
@@ -289,25 +256,43 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
     border-radius: var(--radius-media);
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .follow-item {
-      transition: opacity var(--motion-standard) var(--motion-ease-out);
-    }
+  /* Enter: opacity pops in a single frame (deliberately not transitioned
+     here) while scale settles over --motion-quick — the same speed as a
+     Surface Wipe / Underline Draw hover. */
+  .follow-item[data-state='living'] {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    transition: transform var(--motion-quick) var(--motion-ease-out);
   }
 
-  [data-pointer-follow][data-follow-visible='true'] .follow-item {
-    opacity: 1;
+  /* Exit: a quick cut — 80ms, faster than a press state — with a token
+     shrink, so it reads as a pop-out rather than a hard removal or a slow
+     fade. */
+  .follow-item[data-state='exiting'] {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(var(--trail-exit-scale, 0.92));
+    transition:
+      transform var(--trail-exit-duration, 80ms) var(--motion-ease-out),
+      opacity var(--trail-exit-duration, 80ms) var(--motion-ease-out);
   }
 
   @media (prefers-reduced-motion: reduce) {
     .follow-item {
       will-change: auto;
+      transition: none;
     }
   }
 
-  /* Mobile hides the cluster at the component level so every pointer-follow
-     section (home, zine landing, who-we-are) paints full-bleed text only. */
+  /* Mobile and coarse pointers hide the tracer at the component level so
+     every pointer-follow section (home, zine landing, who-we-are) paints
+     full-bleed text only. */
   @media (--bp-small) {
+    .pointer-follow {
+      display: none;
+    }
+  }
+
+  @media (pointer: coarse) {
     .pointer-follow {
       display: none;
     }
