@@ -133,7 +133,7 @@ Snap-and-fold: each of these drops its bespoke clamp and rides the shared ramp.
 |---|---|---|---|---|
 | `ZineLandingIntro` | mid-page statement `<h2>` | 128 | **`type-h3` (120)** | not the hero; separate mobile clamp removed |
 | `HomeParallax` | statement `<h2>` | 104 | **`type-h3` (120)** | sibling of the Zine statement — same size |
-| `Navigation` | mobile menu links `.compact-link` | 64 | **`type-section-heading` (56)** | folded in, not an exception |
+| `Navigation` | mobile menu links `.compact-link` | 64 | **`type-h3` (120)** | later bumped from section-heading to match the zine landing intro statement |
 | `FactCardGrid` | fact value/number | 140 | **`type-h2` (140)** | no desktop size change |
 | `case/Results` | stat numbers | 120 | **`type-h3` (120)** | no desktop size change |
 | `case/NextProject` | card headline | 120 (fixed) | **`type-h3` (120)** | already 120 desktop; removes 1024 snap |
@@ -195,6 +195,9 @@ Curve math (floor @768 → cap @1440): `B(vw) = (cap − floor) / 6.72`,
 - **Primary:** `768` and `1024` (matching `design-system.md`: Small `<768`,
   Compact `768–1023`, Desktop `≥1024`).
 - **Carousel secondaries:** `600` and `960`. Snap `599 → 600`, `959 → 960`.
+- **Small-phone secondary:** `390` — splits small phones (320/360/375) from the
+  standard-iPhone baseline; added so the mobile menu links step one ramp down
+  (`type-h3` → `type-h4`) only below it, keeping long links on one line.
 - **Fix the 767-vs-768 bug:** standardize every boundary on **`max-width` with
   `.98`** (`767.98`, `1023.98`), preserving the codebase's desktop-first cascade
   (do *not* flip to mobile-first — too large a rewrite for solo QA). Existing

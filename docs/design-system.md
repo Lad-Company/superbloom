@@ -75,9 +75,10 @@ The primary design file is
 - Three ranges: **Desktop** ≥1024, **Compact** 768–1023, **Small** <768.
   Breakpoints are canonical and defined once in `tokens.css` as custom media —
   scoped CSS writes `@media (--bp-small)`, `(--bp-below-desktop)`,
-  `(--bp-desktop)` (carousel secondaries `(--bp-600)` / `(--bp-960)`), resolved by
-  postcss-custom-media. The cascade is desktop-first: every max-width boundary
-  uses `.98` (767.98 / 1023.98) so ranges can't overlap or gap at the exact px.
+  `(--bp-desktop)` (secondaries `(--bp-390)` small-phone, `(--bp-600)` /
+  `(--bp-960)` carousel), resolved by postcss-custom-media. The cascade is
+  desktop-first: every max-width boundary uses `.98` (767.98 / 1023.98) so
+  ranges can't overlap or gap at the exact px.
   (`docs/css-standardization-spec.md` §5.)
 - Below 1024px: ordinary Content Cards go full-width, Info below; two-block detail
   rows stack in authored order; explicit carousels remain narrow.
