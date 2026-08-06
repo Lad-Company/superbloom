@@ -46,10 +46,12 @@ const tagList = (tags ?? []).slice(0, maxTags)
     border: var(--border-subtle);
     border-radius: var(--radius-control);
     background: var(--frosted-layer);
-    color: var(--bg);
+    /* Tags always overlay media, so the palette is fixed and independent of
+       the surrounding surface role: white ink on the frosted layer at rest… */
+    color: #ffffff;
     backdrop-filter: blur(var(--frosted-layer-blur));
     -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
-    /* Surface Wipe fill: solid white fill with full-opacity black ink */
+    /* …and a Surface Wipe fill on hover: solid white fill, black ink. */
     --wipe-surface: #ffffff;
     --wipe-ink: #000000;
   }

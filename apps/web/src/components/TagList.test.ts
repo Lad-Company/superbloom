@@ -15,6 +15,13 @@ describe('TagList hover fill', () => {
     expect(source).toContain('backdrop-filter: blur(var(--frosted-layer-blur))')
   })
 
+  it('rests with fixed white ink on every surface role', () => {
+    // Tags always overlay media, so the resting ink must not follow the
+    // surface's --bg (dark surfaces would render it black).
+    expect(source).toContain('color: #ffffff')
+    expect(source).not.toContain('color: var(--bg)')
+  })
+
   it('reveals the wipe from card hover and focus on every card host', () => {
     for (const card of ['.editorial-card', '.mosaic-item', '.product a']) {
       expect(source).toContain(`:global(${card}:hover) .tag`)
