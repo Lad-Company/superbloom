@@ -171,9 +171,14 @@ const gaMode =
 
       const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 
-      // Resolve once fonts and every above-the-fold media element (the eager /
-      // high-priority images, which include each video frame's poster) are in,
-      // capped so a slow asset can never strand the veil.
+      // Resolve once fonts and every above-the-fold media element are in: the
+      // eager / high-priority images (which include each video frame's poster)
+      // plus the priority video player itself. Gating on the player's first
+      // presentable frame moves the mux import, HLS attach, and buffer behind
+      // the veil, so the hero reveal never shares frames with player boot and
+      // the video never pops in late. The video gets its own tighter cap, and
+      // everything sits under the outer cap, so a slow asset can never strand
+      // the veil.
       const whenCriticalMediaReady = (timeoutMs: number) => {
         const imgs = Array.from(
           document.querySelectorAll<HTMLImageElement>('img[fetchpriority="high"], img[loading="eager"]'),
@@ -186,7 +191,21 @@ const gaMode =
             }),
         );
         const fontsReady = document.fonts?.ready ?? Promise.resolve();
-        return Promise.race([Promise.all([...imgReady, fontsReady]), wait(timeoutMs)]);
+        const videos = Array.from(
+          document.querySelectorAll<HTMLVideoElement>('media-frame[data-critical-video] mux-player'),
+        );
+        const videoReady = videos.map((player) =>
+          // readyState 3 = HAVE_FUTURE_DATA; also covers the player having
+          // reached canplay before this listener attached.
+          player.readyState >= 3
+            ? Promise.resolve()
+            : new Promise<void>((resolve) => {
+                player.addEventListener('canplay', () => resolve(), { once: true });
+                player.addEventListener('error', () => resolve(), { once: true });
+              }),
+        );
+        const videoSettled = Promise.race([Promise.all(videoReady), wait(1500)]);
+        return Promise.race([Promise.all([...imgReady, fontsReady, videoSettled]), wait(timeoutMs)]);
       };
 
       const runPageLoader = async (loader: HTMLElement) => {
