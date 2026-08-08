@@ -68,11 +68,20 @@ const displayedCapabilities = capabilities.slice(0, 8);
   .pin {
     position: relative;
     height: 100vh;
+    /* Clip the depth-drifting media stack to the section edge: without this
+       the scrub exposes the section's white background as a band along the
+       top edge while entering (and the bottom edge late in the pin), which
+       eats the pointer-follow layers bleeding under this section. */
+    overflow: clip;
   }
 
   .media-stack {
     position: absolute;
-    inset: 0;
+    /* Oversized vertically so the data-depth scrub never pulls media past an
+       edge: travel is ±depth*48% of stack height (±12.7% at depth 0.2 with
+       this height), inside the 16% bleed on each edge. Same bleed-and-clip
+       pattern as the blur scale below. */
+    inset: -16% 0;
     /* Stacking context so the JS-set frame z-indexes stay below the overlay. */
     z-index: 0;
     overflow: clip;
