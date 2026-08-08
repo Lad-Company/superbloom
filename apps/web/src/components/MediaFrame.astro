@@ -711,6 +711,9 @@ const imageRendering =
     position: relative;
     overflow: hidden;
     border-radius: var(--radius-media);
+    /* Placeholder gradient's dimmer step, derived locally (nav/cart precedent)
+       so the frame resolves in any surface context, not just SurfaceSection. */
+    --fg-8: color-mix(in srgb, var(--fg) 8%, transparent);
     background: var(--fg-12);
   }
 
