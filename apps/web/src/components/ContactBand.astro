@@ -18,7 +18,7 @@ const {role} = Astro.props
     <PageGrid class="contact-grid">
       <div class="page-grid-item contact-left">
         <h2 id="contact-heading" class="type-h5">
-          Got a challenge that's too interesting for a normal agency?<br /><br />Let's talk.
+          Ready?<br /><br />We are.
         </h2>
       </div>
       <div class="page-grid-item contact-right">
@@ -32,9 +32,10 @@ const {role} = Astro.props
               filled
               options={[
                 {value: 'agency-partner', label: 'I am a brand looking for an agency partner'},
-                {value: 'creator', label: 'I am a Creator'},
-                {value: 'press', label: 'I am press / media'},
-                {value: 'other', label: 'Other'},
+                {value: 'production-partner', label: 'I am looking for a production partner'},
+                {value: 'media-partner', label: 'I am looking for a media partner'},
+                {value: 'creative-partner', label: 'I am looking for a creative partner'},
+                {value: 'collective', label: 'I want to join the Creative Collective'},
               ]}
             />
             <label class="sr-only" for="contact-name">Name</label>

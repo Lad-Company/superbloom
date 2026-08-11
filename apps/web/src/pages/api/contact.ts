@@ -2,7 +2,13 @@ import type { APIRoute } from 'astro';
 import { createClient } from '@sanity/client';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const inquiryTypes = new Set(['agency-partner', 'creator', 'press', 'other']);
+const inquiryTypes = new Set([
+  'agency-partner',
+  'production-partner',
+  'media-partner',
+  'creative-partner',
+  'collective',
+]);
 const hearAboutUsOptions = new Set(['referral', 'instagram', 'linkedin', 'google', 'event', 'other']);
 const minimumFillTimeMs = 750;
 const maximumFillTimeMs = 86_400_000;
