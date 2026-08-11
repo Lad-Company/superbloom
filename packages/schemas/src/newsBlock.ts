@@ -28,6 +28,8 @@ export const newsBlock = defineType({
       name: 'listDefaults',
       title: 'List Defaults',
       type: 'object',
+      description:
+        'Applies to every News card on the homepage rail. To change one card, add an Item Override below — the article’s own card settings do not apply on this rail.',
       fields: [
         cardWidthField({required: true}),
         mediaAspectRatioField({required: true}),
@@ -39,9 +41,12 @@ export const newsBlock = defineType({
       name: 'itemOverrides',
       title: 'Item Overrides',
       type: 'array',
+      description:
+        'Per-card overrides of the List Defaults. Set only the fields that differ; unset fields keep the list default.',
       of: [
         {
           type: 'object',
+          name: 'newsItemOverride',
           fields: [
             defineField({
               name: 'article',
@@ -54,6 +59,9 @@ export const newsBlock = defineType({
             mediaAspectRatioField({partial: true}),
             infoPositionField({partial: true}),
           ],
+          preview: {
+            select: {title: 'article.title'},
+          },
           validation: (rule) => rule.custom(validateResolvedCardOverride),
         },
       ],

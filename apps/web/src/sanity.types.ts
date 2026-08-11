@@ -540,6 +540,7 @@ export type NewsBlock = {
     cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
     mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
     infoPosition?: 'below' | 'left' | 'right'
+    _type: 'newsItemOverride'
     _key: string
   }>
 }

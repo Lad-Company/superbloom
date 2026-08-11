@@ -27,4 +27,9 @@ describe('News Carousel', () => {
     expect(source).toContain('margin-inline: calc(-1 * var(--page-inset))')
     expect(source).toContain('margin-inline: -12px')
   })
+
+  it('applies CMS item overrides to cards by article id', () => {
+    expect(source).toContain('itemOverrides?.map((override) => [override.articleId, override])')
+    expect(source).toContain('settings={overrides.get(item._id)}')
+  })
 })
