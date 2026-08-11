@@ -1,6 +1,7 @@
 import {describe, expect, it, vi} from 'vitest'
 import {
   validateArticleBody,
+  validateCardCtaLabel,
   validateRelatedItems,
   validateScopedSlugUniqueness,
 } from './articleContract'
@@ -28,6 +29,13 @@ describe('Article contract validators', () => {
         {document: {articleType: 'zine'}},
       ),
     ).toBe(true)
+  })
+
+  it('only requires a card CTA label for Zine articles', () => {
+    expect(validateCardCtaLabel(undefined, {document: {articleType: 'news'}})).toBe(true)
+    expect(validateCardCtaLabel(undefined, {document: {articleType: 'editorial'}})).toBe(true)
+    expect(validateCardCtaLabel(undefined, {document: {articleType: 'zine'}})).toContain('required')
+    expect(validateCardCtaLabel('Read more', {document: {articleType: 'zine'}})).toBe(true)
   })
 
   it('requires related items to be empty or exactly three unique items', () => {

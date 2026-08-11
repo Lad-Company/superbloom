@@ -1,6 +1,7 @@
 import {defineField, defineType} from 'sanity'
 import {
   validateArticleBody,
+  validateCardCtaLabel,
   validatePortableTextNonEmpty,
   validateRelatedItems,
   validateScopedSlugUniqueness,
@@ -63,7 +64,12 @@ export const article = defineType({
       title: 'Card CTA Label',
       type: 'string',
       initialValue: 'Read more',
-      validation: (rule) => rule.required(),
+      validation: (rule) =>
+        rule.custom((value, context) =>
+          validateCardCtaLabel(value, {
+            document: {articleType: articleTypeOf(context)},
+          }),
+        ),
       hidden: ({document}) => document?.articleType !== 'zine',
     }),
     cardWidthField({required: true}),

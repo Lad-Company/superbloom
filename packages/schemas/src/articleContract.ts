@@ -23,6 +23,11 @@ export const validateArticleBody = (body: unknown, context: ValidationContext): 
 export const validatePortableTextNonEmpty = (value: unknown): true | string =>
   hasPortableTextContent(value) || 'This field is required.'
 
+export const validateCardCtaLabel = (value: unknown, context: ValidationContext): true | string => {
+  if (context.document?.articleType !== 'zine') return true
+  return value ? true : 'Card CTA label is required.'
+}
+
 export const validateRelatedItems = (
   items: unknown,
   context?: ValidationContext,
