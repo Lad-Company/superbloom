@@ -179,6 +179,21 @@ another doc, that doc is authoritative.
   smoothness with static fonts, and the VF is the heavier render-critical
   payload for zero gain at the site's single instance.
   *(`docs/marquee-variable-font-morph-spec.md`.)*
+- **0026 — Draft preview via Presentation + cookie-gated draft mode on the
+  production URL.** Editors preview unpublished drafts rendered by the real
+  site: the Studio Presentation pane and shareable links both run through
+  `/api/preview/enable|disable`, which validate the dataset-stored
+  `sanity.previewUrlSecret` and set an `sb_preview` session cookie
+  (`SameSite=None; Secure`, required inside the Studio's cross-origin iframe).
+  Preview requests swap the Sanity client (`perspective: 'drafts'`,
+  `useCdn: false`, viewer-scoped `SANITY_API_READ_TOKEN`) and send
+  `Cache-Control: no-store` — the edge cache keys by URL, not cookie, and
+  would otherwise serve drafts publicly. Preview quiets motion via the
+  existing reduced-motion path (`data-preview` on `<html>`) and forces GA
+  off. There is no shared env secret: rotation is toggling Share access in
+  the Presentation tool. Rejected: staging dataset/hostname, Visual Editing
+  overlays (needs a stega audit across `lib/` first).
+  *(`docs/content-preview-spec.md`.)*
 
 **Superseded or amended (kept as guardrails):**
 

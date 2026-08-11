@@ -3,22 +3,25 @@ import Layout from '../../layouts/Layout.astro'
 import ContactBand from '../../components/ContactBand.astro'
 import Footer from '../../components/Footer.astro'
 import CaseStudyComposition from '../../components/case/CaseStudyComposition.astro'
-import {sanityClient} from '../../lib/sanity'
-import {setPublicCache} from '../../lib/cacheHeaders'
+import {getSanityClient} from '../../lib/sanity'
+import {isPreviewRequest} from '../../lib/preview'
+import {setContentCache} from '../../lib/cacheHeaders'
 import {caseBrandVars} from '../../lib/caseBrandVars'
 import {caseStudyBySlugQuery} from '../../lib/queries'
 import {seoDescription, seoImage} from '../../lib/seo'
 import type {CaseStudyBySlugQueryResult} from '../../sanity.types'
 
 const {slug} = Astro.params
-const caseStudy: CaseStudyBySlugQueryResult = await sanityClient.fetch(caseStudyBySlugQuery, {slug})
+const preview = isPreviewRequest(Astro.cookies)
+const client = getSanityClient(preview)
+const caseStudy: CaseStudyBySlugQueryResult = await client.fetch(caseStudyBySlugQuery, {slug})
 
 if (!caseStudy) {
   Astro.response.status = 404
   return Astro.rewrite('/404')
 }
 
-setPublicCache(Astro.response)
+setContentCache(Astro.response, preview)
 ---
 
 <Layout

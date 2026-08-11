@@ -18,6 +18,7 @@
     "@mux/mux-player": "^3.13.0",
     "@sanity/client": "^7.22.1",
     "@sanity/image-url": "^2.1.1",
+    "@sanity/preview-url-secret": "^3.0.0",
     "@unocss/astro": "^66.7.2",
     "astro": "^6.4.6",
     "astro-portabletext": "^0.13.0",

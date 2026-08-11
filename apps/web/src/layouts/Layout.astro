@@ -10,6 +10,7 @@ import CartDrawer from '../components/cart/CartDrawer.astro';
 import CookieConsent from '../components/CookieConsent.astro';
 import PageLoader from '../components/PageLoader.astro';
 import { type SurfaceRole } from '../lib/surfaceRole';
+import { isPreviewRequest } from '../lib/preview';
 
 interface Props {
   title?: string;
@@ -31,9 +32,14 @@ const {
 
 const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
 
+// Draft preview: stamp the flag motion reads and keep editor/share-link
+// preview traffic out of prod analytics.
+const preview = isPreviewRequest(Astro.cookies);
+
 const host = Astro.url.hostname;
-const gaMode =
-  host === 'superbloomhouse.com'
+const gaMode = preview
+  ? 'off'
+  : host === 'superbloomhouse.com'
     ? 'prod'
     : host === 'superbloom-theta.vercel.app'
       ? 'staging'
@@ -41,7 +47,7 @@ const gaMode =
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-preview={preview || undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -283,6 +289,12 @@ const gaMode =
         // visible-then-hidden.
         const newDocument = (event as unknown as { newDocument?: Document }).newDocument;
         newDocument?.documentElement.classList.add('js');
+        // The preview flag rides the SSR'd <html>, but a prerendered surface
+        // can't vary by cookie — propagate it so quiet motion and GA-off
+        // survive every View Transition navigation of the preview session.
+        if (document.documentElement.hasAttribute('data-preview')) {
+          newDocument?.documentElement.setAttribute('data-preview', '');
+        }
         // The route swipe owns navigations, so the incoming page's veil starts
         // already dismissed and never flashes over a client-side transition.
         newDocument?.querySelector('[data-page-loader]')?.setAttribute('data-loader-done', '');

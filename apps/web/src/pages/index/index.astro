@@ -11,8 +11,9 @@ import TypeFilter from '../../components/TypeFilter.astro'
 import SurfaceSection from '../../components/SurfaceSection.astro'
 import {parseArticleTypeFilter} from '../../lib/articleTypes'
 import {indexPageQuery, indexViewAllNewestQuery, indexViewAllOldestQuery} from '../../lib/queries'
-import {sanityClient} from '../../lib/sanity'
-import {setPublicCache} from '../../lib/cacheHeaders'
+import {getSanityClient} from '../../lib/sanity'
+import {isPreviewRequest} from '../../lib/preview'
+import {setContentCache} from '../../lib/cacheHeaders'
 import type {
   IndexPageQueryResult,
   IndexViewAllNewestQueryResult,
@@ -20,7 +21,9 @@ import type {
 } from '../../sanity.types'
 import type {PartialContentCardSettings} from '../../lib/contentCard'
 
-setPublicCache(Astro.response)
+const preview = isPreviewRequest(Astro.cookies)
+const client = getSanityClient(preview)
+setContentCache(Astro.response, preview)
 
 const BATCH_SIZE = 12
 const sort = Astro.url.searchParams.get('sort') === 'oldest' ? 'oldest' : 'newest'
@@ -29,14 +32,14 @@ const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1',
 const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
 const recordLimit = page * BATCH_SIZE
 
-const indexPage = await sanityClient.fetch<IndexPageQueryResult>(indexPageQuery)
-const pageHeader = indexPage?.header ?? 'What they\'ve been saying'
+const indexPage = await client.fetch<IndexPageQueryResult>(indexPageQuery)
+const pageHeader = indexPage?.header ?? "What they've been saying"
 const featured = indexPage?.featured?.filter((entry) => entry?.item) ?? []
 const featuredIds = featured
   .map((entry) => entry.item?._id)
   .filter((id): id is string => Boolean(id))
 const viewAllQuery = sort === 'oldest' ? indexViewAllOldestQuery : indexViewAllNewestQuery
-const fetchedItems = await sanityClient.fetch<
+const fetchedItems = await client.fetch<
   IndexViewAllNewestQueryResult | IndexViewAllOldestQueryResult
 >(viewAllQuery, {
   featuredIds,

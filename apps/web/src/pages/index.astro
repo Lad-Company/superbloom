@@ -2,14 +2,17 @@
 import Layout from '../layouts/Layout.astro'
 import Footer from '../components/Footer.astro'
 import HomepageComposition from '../components/home/HomepageComposition.astro'
-import {sanityClient} from '../lib/sanity'
-import {setPublicCache} from '../lib/cacheHeaders'
+import {getSanityClient} from '../lib/sanity'
+import {isPreviewRequest} from '../lib/preview'
+import {setContentCache} from '../lib/cacheHeaders'
 import {homepageQuery} from '../lib/queries'
 import type {HomepageQueryResult} from '../sanity.types'
 
-setPublicCache(Astro.response)
+const preview = isPreviewRequest(Astro.cookies)
+const client = getSanityClient(preview)
+setContentCache(Astro.response, preview)
 
-const homepage: HomepageQueryResult = await sanityClient.fetch(homepageQuery)
+const homepage: HomepageQueryResult = await client.fetch(homepageQuery)
 ---
 
 <Layout navRole="dark">

@@ -3,28 +3,31 @@ import Layout from '../../../layouts/Layout.astro'
 import Footer from '../../../components/Footer.astro'
 import ContactBand from '../../../components/ContactBand.astro'
 import IssueDetail from '../../../components/zine/IssueDetail.astro'
-import {sanityClient} from '../../../lib/sanity'
-import {setPublicCache} from '../../../lib/cacheHeaders'
+import {getSanityClient} from '../../../lib/sanity'
+import {isPreviewRequest} from '../../../lib/preview'
+import {setContentCache} from '../../../lib/cacheHeaders'
 import {issueArchiveQuery, issueBySlugQuery, zineLandingQuery} from '../../../lib/queries'
 import {seoDescription, seoImage} from '../../../lib/seo'
 
 const issueSlug = Astro.params.issueSlug
-const issue = await sanityClient.fetch(issueBySlugQuery, {slug: issueSlug})
+const preview = isPreviewRequest(Astro.cookies)
+const client = getSanityClient(preview)
+const issue = await client.fetch(issueBySlugQuery, {slug: issueSlug})
 
 if (!issue) {
   Astro.response.status = 404
   return Astro.rewrite('/404')
 }
 
-const zineLanding = await sanityClient.fetch(zineLandingQuery)
+const zineLanding = await client.fetch(zineLandingQuery)
 
 if (issue && zineLanding?.currentIssue?.slug === issue.slug) {
   return Astro.redirect('/zine', 302)
 }
 
-setPublicCache(Astro.response)
+setContentCache(Astro.response, preview)
 
-const pastIssues = await sanityClient.fetch(issueArchiveQuery, {slug: issue.slug})
+const pastIssues = await client.fetch(issueArchiveQuery, {slug: issue.slug})
 ---
 
 <Layout

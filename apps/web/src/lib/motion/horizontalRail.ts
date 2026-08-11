@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { getLenis } from './smoothScroll';
-import { SCROLL } from './config';
+import { isPreviewMode, SCROLL } from './config';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -34,6 +34,15 @@ export function initScrollDrivenTrack({
   start = 'top bottom',
   end = 'bottom top',
 }: ScrollDrivenTrackOptions): ScrollDrivenTrackHandle {
+  // Preview mode: no scroll-driven motion; the track holds its natural position.
+  if (isPreviewMode()) {
+    return {
+      getProgress: () => 0,
+      scrollToProgress: () => {},
+      destroy: () => {},
+    };
+  }
+
   let trigger: ScrollTrigger | null = null;
   const mm = gsap.matchMedia();
 
@@ -75,6 +84,11 @@ export function initScrollDrivenTrack({
 }
 
 export function initHorizontalRail(section: HTMLElement, rail: HTMLElement, track: HTMLElement): HorizontalRailHandle {
+  // Preview mode: no scroll-jacking or rail motion.
+  if (isPreviewMode()) {
+    return { previous: () => {}, next: () => {}, destroy: () => {} };
+  }
+
   const mm = gsap.matchMedia();
   const scrollDrivenTrack = initScrollDrivenTrack({
     trigger: section,
