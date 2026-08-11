@@ -4,14 +4,33 @@ import {defineLocations, presentationTool} from 'sanity/presentation'
 // share links both run through the site's /api/preview/enable route, which
 // validates the dataset-stored secret (sanity.previewUrlSecret documents,
 // created by the Studio) and sets the sb_preview cookie. There is no shared
-// env secret — rotating means toggling Share access off/on in the tool.
-const previewOrigin =
+// env secret * rotating means toggling Share access off/on in the tool.
+
+// Multi-environment: the pane can preview local dev, staging, or prod. The
+// allow list and the initial origin are env-overridable at Studio build time;
+// editors switch origins at runtime via the Studio URL's `?preview=` param.
+const previewOrigins = (
+  process.env.SANITY_STUDIO_PREVIEW_ORIGINS ??
+  'http://localhost:*,https://superbloom-theta.vercel.app,https://superbloomhouse.com'
+)
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+
+// Pre-launch, superbloomhouse.com still serves the legacy Netlify site, so
+// the deployed Studio defaults to the Vercel staging URL * flip the default
+// to the prod hostname at launch. Local `sanity dev` defaults to the local
+// web server.
+const initialOrigin =
   process.env.SANITY_STUDIO_PREVIEW_ORIGIN ??
-  (process.env.NODE_ENV === 'development' ? 'http://localhost:4321' : 'https://superbloomhouse.com')
+  (process.env.NODE_ENV === 'development'
+    ? 'http://localhost:4321'
+    : 'https://superbloom-theta.vercel.app')
 
 export const presentation = presentationTool({
+  allowOrigins: previewOrigins,
   previewUrl: {
-    initial: previewOrigin,
+    initial: initialOrigin,
     previewMode: {
       enable: '/api/preview/enable',
       // The Share button copies a signed preview link for people without a

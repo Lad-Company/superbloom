@@ -190,10 +190,13 @@ another doc, that doc is authoritative.
   `Cache-Control: no-store` — the edge cache keys by URL, not cookie, and
   would otherwise serve drafts publicly. Preview quiets motion via the
   existing reduced-motion path (`data-preview` on `<html>`) and forces GA
-  off. There is no shared env secret: rotation is toggling Share access in
-  the Presentation tool. Rejected: staging dataset/hostname, Visual Editing
-  overlays (needs a stega audit across `lib/` first).
-  *(`docs/content-preview-spec.md`.)*
+  off. The Studio's preview origin is env-driven across dev, staging, and
+  prod (`SANITY_STUDIO_PREVIEW_ORIGIN(S)`); pre-launch the deployed Studio
+  defaults to the Vercel staging hostname because superbloomhouse.com still
+  serves the legacy Netlify site. There is no shared env secret: rotation is
+  toggling Share access in the Presentation tool. Rejected: staging
+  dataset/hostname, Visual Editing overlays (needs a stega audit across
+  `lib/` first). *(`docs/content-preview-spec.md`.)*
 
 **Superseded or amended (kept as guardrails):**
 

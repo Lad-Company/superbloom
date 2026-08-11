@@ -269,4 +269,15 @@ Recorded at implementation time against the installed `sanity@4.22` +
 - **`previewUrl.origin` is deprecated** in this release; the Studio config
   uses `previewUrl.initial` with the same env-driven value
   (`SANITY_STUDIO_PREVIEW_ORIGIN`, defaulting to `http://localhost:4321` under
-  `sanity dev` and `https://superbloomhouse.com` otherwise).
+  `sanity dev` and `https://superbloom-theta.vercel.app` when deployed).
+- **Multi-environment preview.** The pane previews dev, staging, or prod:
+  `SANITY_STUDIO_PREVIEW_ORIGINS` (comma-separated allow list, default
+  `http://localhost:*,https://superbloom-theta.vercel.app,https://superbloomhouse.com`)
+  and `SANITY_STUDIO_PREVIEW_ORIGIN` (initial origin) are read at Studio
+  build time; editors switch origins at runtime via the Studio URL's
+  `?preview=` param. Pre-launch wrinkle: `superbloomhouse.com` still serves
+  the legacy Netlify site, so the deployed Studio defaults to the Vercel
+  staging URL until the DNS flip. `SANITY_API_READ_TOKEN` covers every
+  environment: `.env.local` for dev, and the single Vercel project's
+  Production scope serves both theta today and the prod hostname after
+  launch.
