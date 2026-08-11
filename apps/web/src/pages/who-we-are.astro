@@ -12,15 +12,18 @@ import PageHero from '../components/PageHero.astro';
 import WhoWeAreFeaturedMedia from '../components/who-we-are/WhoWeAreFeaturedMedia.astro';
 import WhoWeAreIntro from '../components/who-we-are/WhoWeAreIntro.astro';
 import WhoWeAreAdvantages from '../components/who-we-are/WhoWeAreAdvantages.astro';
-import { sanityClient } from '../lib/sanity';
-import { setPublicCache } from '../lib/cacheHeaders';
+import { getSanityClient } from '../lib/sanity';
+import { isPreviewRequest } from '../lib/preview';
+import { setContentCache } from '../lib/cacheHeaders';
 import { whoWeAreQuery } from '../lib/queries';
 import { seoImage } from '../lib/seo';
 import type { WhoWeAreQueryResult } from '../sanity.types';
 
-setPublicCache(Astro.response);
+const preview = isPreviewRequest(Astro.cookies);
+const client = getSanityClient(preview);
+setContentCache(Astro.response, preview);
 
-const page = await sanityClient.fetch<WhoWeAreQueryResult>(whoWeAreQuery);
+const page = await client.fetch<WhoWeAreQueryResult>(whoWeAreQuery);
 
 const heroHeading = page?.heroHeading ?? 'Audiences move fast. We help you move faster.';
 const introStatement =

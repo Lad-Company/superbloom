@@ -7,6 +7,7 @@ import {schemaTypes} from '@superbloom/schemas'
 import {muxSchemaCompatibility} from './muxSchemaCompatibility'
 import {articlePublishAction} from './articlePublishAction'
 import {legacyColorInput} from './legacyColorInput'
+import {presentation} from './presentation'
 
 export default defineConfig({
   name: 'superbloom',
@@ -96,6 +97,7 @@ export default defineConfig({
     muxInput(),
     muxSchemaCompatibility(),
     colorInput(),
+    presentation,
   ],
   schema: {
     types: schemaTypes,

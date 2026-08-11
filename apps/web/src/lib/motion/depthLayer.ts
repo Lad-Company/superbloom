@@ -1,11 +1,14 @@
 import gsap from 'gsap'
 import {ScrollTrigger} from 'gsap/ScrollTrigger'
+import {isPreviewMode} from './config'
 
 gsap.registerPlugin(ScrollTrigger)
 
 export function initDepthLayer(scope: HTMLElement): () => void {
   const layers = Array.from(scope.querySelectorAll<HTMLElement>('[data-depth]')).slice(0, 3)
   if (!layers.length) return () => {}
+  // Preview mode renders layers in their final, natural position.
+  if (isPreviewMode()) return () => {}
 
   const mm = gsap.matchMedia()
   mm.add('(prefers-reduced-motion: no-preference)', () => {

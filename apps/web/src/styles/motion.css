@@ -133,3 +133,14 @@ html.js [data-motion-text] {
     transform: none;
   }
 }
+
+/* Preview mode (draft preview) reuses the reduced-motion path: no press
+   feedback, and Type Reveal targets render in their final state even though
+   JS still stamps `html.js`. */
+html[data-preview] .surface-wipe.is-pressed {
+  transform: none;
+}
+html.js[data-preview] [data-motion-text] {
+  opacity: 1;
+  animation: none;
+}

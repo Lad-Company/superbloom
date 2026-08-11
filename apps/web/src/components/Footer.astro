@@ -1,7 +1,8 @@
 ---
 import SurfaceSection from './SurfaceSection.astro'
 import Button from './Button.astro'
-import {sanityClient} from '../lib/sanity'
+import {getSanityClient} from '../lib/sanity'
+import {isPreviewRequest} from '../lib/preview'
 import {siteSettingsQuery} from '../lib/queries'
 import type {SiteSettingsQueryResult} from '../sanity.types'
 
@@ -13,7 +14,9 @@ const nav = [
   {label: 'Shop', href: '/shop'},
   {label: 'Edit', href: 'https://superbloom-cms.sanity.studio', external: true},
 ]
-const siteSettings = await sanityClient.fetch<SiteSettingsQueryResult>(siteSettingsQuery)
+const siteSettings = await getSanityClient(
+  isPreviewRequest(Astro.cookies),
+).fetch<SiteSettingsQueryResult>(siteSettingsQuery)
 const social = [
   {label: 'Instagram', href: siteSettings?.instagramUrl},
   {label: 'LinkedIn', href: siteSettings?.linkedInUrl},

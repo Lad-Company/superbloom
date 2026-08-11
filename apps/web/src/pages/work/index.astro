@@ -7,24 +7,27 @@ import ContactBand from '../../components/ContactBand.astro'
 import ContentCardList from '../../components/ContentCardList.astro'
 import WorkCard from '../../components/WorkCard.astro'
 import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro'
-import {sanityClient} from '../../lib/sanity'
-import {setPublicCache} from '../../lib/cacheHeaders'
+import {getSanityClient} from '../../lib/sanity'
+import {isPreviewRequest} from '../../lib/preview'
+import {setContentCache} from '../../lib/cacheHeaders'
 import {workIndexQuery, caseStudiesNewestQuery} from '../../lib/queries'
 import type {CaseStudiesNewestQueryResult, WorkIndexQueryResult} from '../../sanity.types'
 import type {PartialContentCardSettings} from '../../lib/contentCard'
 
-setPublicCache(Astro.response)
+const preview = isPreviewRequest(Astro.cookies)
+const client = getSanityClient(preview)
+setContentCache(Astro.response, preview)
 
 const BATCH_SIZE = 12
 const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10)
 const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
 const recordLimit = page * BATCH_SIZE
-const workIndex = await sanityClient.fetch<WorkIndexQueryResult>(workIndexQuery)
+const workIndex = await client.fetch<WorkIndexQueryResult>(workIndexQuery)
 const featured = workIndex?.featured?.filter((entry) => entry?.item) ?? []
 const featuredIds = featured
   .map((entry) => entry.item?._id)
   .filter((id): id is string => Boolean(id))
-const fetchedCaseStudies = await sanityClient.fetch<CaseStudiesNewestQueryResult>(
+const fetchedCaseStudies = await client.fetch<CaseStudiesNewestQueryResult>(
   caseStudiesNewestQuery,
   {featuredIds, offset: 0, end: recordLimit + 1},
 )
