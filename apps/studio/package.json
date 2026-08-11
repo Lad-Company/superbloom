@@ -25,6 +25,8 @@
     "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts",
     "backup:text-block-headings": "sanity exec migrations/backup-text-block-headings.ts --with-user-token",
     "migrate:text-block-headings": "pnpm run backup:text-block-headings && sanity exec migrations/remove-text-block-headings.ts --with-user-token",
+    "backup:capability-contextual-copy": "sanity exec migrations/backup-capability-contextual-copy.ts --with-user-token",
+    "migrate:capability-contextual-copy": "pnpm run backup:capability-contextual-copy && sanity exec migrations/remove-capability-contextual-copy.ts --with-user-token",
     "seed:capabilities": "sanity dataset import seed-capabilities.ndjson production --replace",
     "seed:tyson": "sanity exec migrations/seed-tyson.ts"
   },
