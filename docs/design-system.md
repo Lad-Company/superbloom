@@ -263,6 +263,10 @@ overrides. CSS scroll-snap and keyboard focus first; arrow controls are an
 enhancement. The explicit responsive exception: cards stay narrow on mobile with
 Info always below.
 
+On the homepage News rail the list default is required, so it always wins over
+the article's own card settings — per-card width/ratio/Info changes are authored
+as Item Overrides on the homepage News block, not on the article.
+
 ---
 
 ## 4. Page and module contracts
