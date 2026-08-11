@@ -3,17 +3,17 @@ import MediaFrame, {type Media} from '../MediaFrame.astro';
 
 interface Capability {
   title: string | null;
-  contextualCopy?: string | null;
   slug: string | null;
   media?: Media | null;
 }
 
 interface Props {
   headline?: string | null;
+  contextualCopy?: string | null;
   capabilities: Capability[];
 }
 
-const { capabilities } = Astro.props;
+const { contextualCopy, capabilities } = Astro.props;
 const displayedCapabilities = capabilities.slice(0, 8);
 ---
 
@@ -32,13 +32,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
     </div>
     <div class="overlay">
       <div class="context">
-        <div class="contextual-copy type-h6" aria-live="polite">
-          {displayedCapabilities.map((cap, index) => (
-            <p class:list={['copy', { 'is-active': index === 0 }]} data-context-copy data-index={index}>
-              {cap.contextualCopy}
-            </p>
-          ))}
-        </div>
+        {contextualCopy && <p class="contextual-copy type-h6">{contextualCopy}</p>}
       </div>
       <div class="list-clip">
         <ol class="list" data-capes-list>
@@ -143,25 +137,8 @@ const displayedCapabilities = capabilities.slice(0, 8);
   }
 
   .contextual-copy {
-    position: relative;
-    min-height: 4.8em;
-    max-width: 24ch;
-  }
-
-  .copy {
-    position: absolute;
-    inset: 0;
     margin: 0;
-    opacity: 0;
-    transform: translateY(12px);
-    transition:
-      opacity var(--motion-standard) var(--motion-ease-out),
-      transform var(--motion-standard) var(--motion-ease-out);
-  }
-
-  .copy.is-active {
-    opacity: 1;
-    transform: translateY(0);
+    max-width: 24ch;
   }
 
   .list-clip {
@@ -195,18 +172,11 @@ const displayedCapabilities = capabilities.slice(0, 8);
   @media (--bp-small) {
     .overlay {
       grid-template-columns: 1fr;
-      /* Halve the gap between the subtitle copy and the capability list. */
+      /* Halve the gap between the contextual copy and the capability list. */
       gap: calc(var(--space-xl) / 2);
       /* Top 64 owns the gap above (the parallax section hands off flush);
          bottom 32 pairs with the next section's 32 for the 64px rhythm. */
       padding: var(--space-m) var(--space-3xs) var(--space-xs);
-    }
-
-    /* Reserve two lines for the subtitle instead of four so short copy
-       doesn't leave a void above the list; longer copy overflows into the
-       halved grid gap without shifting layout. */
-    .contextual-copy {
-      min-height: 2.4em;
     }
 
     .list {
@@ -232,7 +202,6 @@ const displayedCapabilities = capabilities.slice(0, 8);
     if (section.dataset.capesInitialized) return;
     const frames = section.querySelectorAll<HTMLElement>('[data-capes-frame]');
     const listItems = section.querySelectorAll<HTMLElement>('[data-cap]');
-    const contextualCopy = section.querySelectorAll<HTMLElement>('[data-context-copy]');
     const list = section.querySelector<HTMLElement>('[data-capes-list]');
     const pin = section.querySelector<HTMLElement>('[data-pin]');
     const count = frames.length;
@@ -254,7 +223,6 @@ const displayedCapabilities = capabilities.slice(0, 8);
         item.classList.toggle('is-active', idx === i);
         item.classList.toggle('is-past', idx < i);
       });
-      contextualCopy.forEach((copy, idx) => copy.classList.toggle('is-active', idx === i));
 
       if (scrollListY && list) {
         const activeItem = listItems[i] as HTMLElement | undefined;

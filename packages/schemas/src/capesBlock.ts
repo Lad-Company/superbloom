@@ -10,6 +10,13 @@ export const capesBlock = defineType({
       type: 'string',
     }),
     defineField({
+      name: 'contextualCopy',
+      title: 'Contextual Copy',
+      description: 'Shown in the sticky left panel. One global copy for the whole section.',
+      type: 'text',
+      rows: 3,
+    }),
+    defineField({
       name: 'capabilities',
       title: 'Capabilities',
       type: 'array',

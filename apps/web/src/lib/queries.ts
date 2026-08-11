@@ -67,9 +67,9 @@ export const homepageQuery = defineQuery(`
     },
     capabilities{
       headline,
+      contextualCopy,
       capabilities[]->{
         title,
-        "contextualCopy": coalesce(contextualCopy, subtitle),
         "slug": slug.current,
         "media": media${mediaProjection}
       }
