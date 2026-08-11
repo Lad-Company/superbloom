@@ -70,12 +70,13 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
   }
 
   :global(.fact-card) {
-    display: grid;
-    /* Pin the value/list at a fixed offset from the card top so stat items
-       stay aligned across cards regardless of how many lines the description
-       below them runs. 323px comes from the Figma R3 card (536px inner height
-       minus the standard 213px value+description block). */
-    grid-template-rows: 323px 1fr;
+    display: flex;
+    flex-direction: column;
+    /* Anchor the value/list block to the card bottom so stat items stay
+       bottom-aligned across cards regardless of how many lines each block
+       runs (the clients list is far taller than the value+description
+       blocks). */
+    justify-content: space-between;
     min-width: 0;
     min-height: 600px;
     padding: var(--space-xs);
@@ -93,7 +94,7 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
   }
 
   :global(.fact-card .description) {
-    max-width: 24ch;
+    max-width: 32ch;
   }
 
   :global(.fact-card .items) {
@@ -117,9 +118,6 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
 
     /* Stacked full-width cards keep the bottom-anchored value. */
     :global(.fact-card) {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
       min-height: 320px;
       padding: var(--space-3xs);
     }

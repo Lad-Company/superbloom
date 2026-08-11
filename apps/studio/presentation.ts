@@ -1,4 +1,8 @@
+import {getPublishedId} from 'sanity'
 import {defineLocations, presentationTool} from 'sanity/presentation'
+import type {DocumentLocationResolver, DocumentLocationResolverObject} from 'sanity/presentation'
+import {catchError, map, of} from 'rxjs'
+import {ARTICLE_LOCATIONS_QUERY, resolveArticleLocations} from './articleLocations'
 
 // Draft preview (docs/content-preview-spec.md): the Presentation pane and
 // share links both run through the site's /api/preview/enable route, which
@@ -27,6 +31,26 @@ const initialOrigin =
     ? 'http://localhost:4321'
     : 'https://superbloom-theta.vercel.app')
 
+// Articles use the function resolver form: their zine reverse lookup is a
+// GROQ subquery, which the object form's `select` cannot express (select
+// values are field paths, not GROQ — see articleLocations.ts). Errors
+// surface as a caution banner instead of an endless "Resolving
+// locations..." spinner.
+const articleLocationResolver: DocumentLocationResolver = (params, {documentStore}) =>
+  documentStore
+    .listenQuery(
+      ARTICLE_LOCATIONS_QUERY,
+      {id: getPublishedId(params.id)},
+      {perspective: params.perspectiveStack, tag: 'presentation.article-locations'},
+    )
+    .pipe(
+      map(resolveArticleLocations),
+      catchError((error) => {
+        console.error('[article-locations] failed to resolve', error)
+        return of({message: 'Unable to resolve locations', tone: 'caution' as const})
+      }),
+    )
+
 export const presentation = presentationTool({
   allowOrigins: previewOrigins,
   previewUrl: {
@@ -54,42 +78,9 @@ export const presentation = presentationTool({
             : [],
         }),
       }),
-      article: defineLocations({
-        select: {
-          title: 'title',
-          slug: 'slug.current',
-          articleType: 'articleType',
-          // Zine Articles are referenced from their Issue, so the issue slug
-          // is a reverse lookup. References always point at published IDs, so
-          // normalize away the `drafts.` prefix before matching.
-          issueSlug: `*[_type == "zineIssue" && string::split(^._id, "drafts.")[-1] in articles[]._ref][0].slug.current`,
-        },
-        resolve: (doc) => {
-          if (!doc) return {locations: []}
-          // News is a card-only surface (ADR-0022) — no detail page.
-          if (doc.articleType === 'news') {
-            return {locations: [{title: doc.title ?? 'News', href: '/index'}]}
-          }
-          if (doc.articleType === 'zine') {
-            return {
-              locations:
-                doc.issueSlug && doc.slug
-                  ? [
-                      {
-                        title: doc.title ?? 'Zine Article',
-                        href: `/zine/issues/${doc.issueSlug}/${doc.slug}`,
-                      },
-                    ]
-                  : [],
-            }
-          }
-          return {
-            locations: doc.slug
-              ? [{title: doc.title ?? 'Article', href: `/articles/${doc.slug}`}]
-              : [],
-          }
-        },
-      }),
+      // The per-type function form is runtime-supported by
+      // sanity/presentation but missing from its type union, hence the cast.
+      article: articleLocationResolver as unknown as DocumentLocationResolverObject,
       zineIssue: defineLocations({
         select: {title: 'title', slug: 'slug.current'},
         resolve: (doc) => ({

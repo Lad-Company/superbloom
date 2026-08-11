@@ -4,13 +4,15 @@ interface Tag {
 }
 
 interface Props {
-  tags?: Tag[] | null
+  // GROQ `tags[]->{...}` yields null for dangling references (tag deleted or
+  // unpublished while still referenced), so entries can be null.
+  tags?: (Tag | null)[] | null
   typeLabel?: string
   maxTags?: number
 }
 
 const {tags = [], typeLabel, maxTags = 2} = Astro.props
-const tagList = (tags ?? []).slice(0, maxTags)
+const tagList = (tags ?? []).filter((tag) => tag != null).slice(0, maxTags)
 ---
 
 {

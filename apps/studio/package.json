@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "typegen": "sanity schema extract --path schema.json && sanity typegen generate",
     "audit:zine": "sanity exec migrations/audit-zine-membership.ts",
+    "audit:article-locations": "sanity exec migrations/audit-article-locations.ts",
     "backup:zine": "sanity exec migrations/backup-zine-data.ts",
     "backup:index": "sanity exec migrations/backup-index-page-data.ts",
     "migrate:index": "pnpm run backup:index && sanity exec migrations/migrate-index-page.ts",
@@ -36,6 +37,7 @@
     "@superbloom/schemas": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "rxjs": "^7.8.2",
     "sanity": "^4.0.0",
     "sanity-plugin-mux-input": "^3.0.5",
     "styled-components": "^6.1.15"
