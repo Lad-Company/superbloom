@@ -54,7 +54,9 @@ const uniqueScopedSlug = async (
 export const articlePublishAction: DocumentActionComponent = (props) => {
   const {patch, publish} = useDocumentOperation(props.id, props.type)
   const client = useClient({apiVersion: API_VERSION}).withConfig({perspective: 'raw'})
-  const validationStatus = useValidationStatus(props.id, props.type)
+  // `requirePublishedReferences: true` matches the default publish action:
+  // publishing is blocked when the article references unpublished documents.
+  const validationStatus = useValidationStatus(props.id, props.type, true)
   const [publishing, setPublishing] = useState(false)
   const [showErrors, setShowErrors] = useState(false)
 

@@ -48,8 +48,8 @@ describe('Case Study Spine Schema', () => {
     })
 
     it('removes body field entirely from Case Study', () => {
-      const bodyField = caseStudy.fields?.find((f) => f.name === 'body')
-      expect(bodyField).toBeUndefined()
+      const fieldNames = caseStudy.fields?.map((f) => f.name) ?? []
+      expect(fieldNames).not.toContain('body')
     })
 
     it('does not include removed legacy fields', () => {

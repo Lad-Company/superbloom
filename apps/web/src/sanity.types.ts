@@ -12,7 +12,15 @@
  * ---------------------------------------------------------------------------------
  */
 
+export declare const internalGroqTypeReferenceTo: unique symbol
+
 // Source: schema.json
+export type ListDefaults = {
+  cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
+  mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
+  infoPosition?: 'below' | 'left' | 'right'
+}
+
 export type ContentLayoutRow = {
   _type: 'contentLayoutRow'
   blocks?: Array<
@@ -82,6 +90,20 @@ export type SiteSettings = {
   }
 }
 
+export type ArticleReference = {
+  _ref: string
+  _type: 'reference'
+  _weak?: boolean
+  [internalGroqTypeReferenceTo]?: 'article'
+}
+
+export type TagReference = {
+  _ref: string
+  _type: 'reference'
+  _weak?: boolean
+  [internalGroqTypeReferenceTo]?: 'tag'
+}
+
 export type IndexPage = {
   _id: string
   _type: 'indexPage'
@@ -90,12 +112,7 @@ export type IndexPage = {
   _rev: string
   header?: string
   featured?: Array<{
-    article?: {
-      _ref: string
-      _type: 'reference'
-      _weak?: boolean
-      [internalGroqTypeReferenceTo]?: 'article'
-    }
+    article?: ArticleReference
     cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
     mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
     infoPosition?: 'below' | 'left' | 'right'
@@ -109,23 +126,13 @@ export type IndexPage = {
       infoPosition?: 'below' | 'left' | 'right'
     }
     itemOverrides?: Array<{
-      article?: {
-        _ref: string
-        _type: 'reference'
-        _weak?: boolean
-        [internalGroqTypeReferenceTo]?: 'article'
-      }
+      article?: ArticleReference
       cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
       mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
       infoPosition?: 'below' | 'left' | 'right'
       _key: string
     }>
-    tagFilter?: {
-      _ref: string
-      _type: 'reference'
-      _weak?: boolean
-      [internalGroqTypeReferenceTo]?: 'tag'
-    }
+    tagFilter?: TagReference
   }
 }
 
@@ -161,32 +168,36 @@ export type HomeWhyBlock = {
   media?: MediaBox
 }
 
+export type CaseStudyReference = {
+  _ref: string
+  _type: 'reference'
+  _weak?: boolean
+  [internalGroqTypeReferenceTo]?: 'caseStudy'
+}
+
 export type HomeWorkBlock = {
   _type: 'homeWorkBlock'
   headline?: string
   ctaLabel?: string
   layoutPreset?: 'stagger-right' | 'stagger-left' | 'split-stagger'
   items?: Array<{
-    caseStudy?: {
-      _ref: string
-      _type: 'reference'
-      _weak?: boolean
-      [internalGroqTypeReferenceTo]?: 'caseStudy'
-    }
+    caseStudy?: CaseStudyReference
     mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
     _type: 'homeCaseStudy'
     _key: string
   }>
 }
 
+export type ZineIssueReference = {
+  _ref: string
+  _type: 'reference'
+  _weak?: boolean
+  [internalGroqTypeReferenceTo]?: 'zineIssue'
+}
+
 export type HomeZine = {
   _type: 'homeZine'
-  issue?: {
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    [internalGroqTypeReferenceTo]?: 'zineIssue'
-  }
+  issue?: ZineIssueReference
   promoHeadline?: string
   promoIntro?: Array<{
     children?: Array<{
@@ -216,12 +227,7 @@ export type ZineLanding = {
   _createdAt: string
   _updatedAt: string
   _rev: string
-  currentIssue?: {
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    [internalGroqTypeReferenceTo]?: 'zineIssue'
-  }
+  currentIssue?: ZineIssueReference
   intro?: {
     heading?: string
     imageLayers?: Array<
@@ -231,6 +237,13 @@ export type ZineLanding = {
     >
     ctaLabel?: string
   }
+}
+
+export type SanityFileAssetReference = {
+  _ref: string
+  _type: 'reference'
+  _weak?: boolean
+  [internalGroqTypeReferenceTo]?: 'sanity.fileAsset'
 }
 
 export type ZineIssue = {
@@ -269,25 +282,18 @@ export type ZineIssue = {
     }>
     ctaLabel?: string
   }
-  articles?: Array<{
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    _key: string
-    [internalGroqTypeReferenceTo]?: 'article'
-  }>
+  articles?: Array<
+    {
+      _key: string
+    } & ArticleReference
+  >
   listDefaults?: {
     cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
     mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
     infoPosition?: 'below' | 'left' | 'right'
   }
   articleOverrides?: Array<{
-    article?: {
-      _ref: string
-      _type: 'reference'
-      _weak?: boolean
-      [internalGroqTypeReferenceTo]?: 'article'
-    }
+    article?: ArticleReference
     cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
     mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
     infoPosition?: 'below' | 'left' | 'right'
@@ -295,15 +301,17 @@ export type ZineIssue = {
   }>
   issuuUrl?: string
   pdfAsset?: {
-    asset?: {
-      _ref: string
-      _type: 'reference'
-      _weak?: boolean
-      [internalGroqTypeReferenceTo]?: 'sanity.fileAsset'
-    }
+    asset?: SanityFileAssetReference
     media?: unknown
     _type: 'file'
   }
+}
+
+export type SanityImageAssetReference = {
+  _ref: string
+  _type: 'reference'
+  _weak?: boolean
+  [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
 }
 
 export type MediaBox = {
@@ -313,12 +321,7 @@ export type MediaBox = {
         _key: string
       } & MuxVideo)
     | {
-        asset?: {
-          _ref: string
-          _type: 'reference'
-          _weak?: boolean
-          [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-        }
+        asset?: SanityImageAssetReference
         media?: unknown
         hotspot?: SanityImageHotspot
         crop?: SanityImageCrop
@@ -465,12 +468,7 @@ export type WorkIndex = {
   _rev: string
   heroHeading?: string
   featured?: Array<{
-    caseStudy?: {
-      _ref: string
-      _type: 'reference'
-      _weak?: boolean
-      [internalGroqTypeReferenceTo]?: 'caseStudy'
-    }
+    caseStudy?: CaseStudyReference
     cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
     mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
     infoPosition?: 'below' | 'left' | 'right'
@@ -485,12 +483,7 @@ export type WorkIndex = {
       infoPosition?: 'below' | 'left' | 'right'
     }
     itemOverrides?: Array<{
-      caseStudy?: {
-        _ref: string
-        _type: 'reference'
-        _weak?: boolean
-        [internalGroqTypeReferenceTo]?: 'caseStudy'
-      }
+      caseStudy?: CaseStudyReference
       cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
       mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
       infoPosition?: 'below' | 'left' | 'right'
@@ -515,41 +508,35 @@ export type Homepage = {
   contact?: ContactBlock
 }
 
+export type CapabilityReference = {
+  _ref: string
+  _type: 'reference'
+  _weak?: boolean
+  [internalGroqTypeReferenceTo]?: 'capability'
+}
+
 export type CapesBlock = {
   _type: 'capesBlock'
   headline?: string
   contextualCopy?: string
-  capabilities?: Array<{
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    _key: string
-    [internalGroqTypeReferenceTo]?: 'capability'
-  }>
+  capabilities?: Array<
+    {
+      _key: string
+    } & CapabilityReference
+  >
 }
 
 export type NewsBlock = {
   _type: 'newsBlock'
   headline?: string
-  items?: Array<{
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    _key: string
-    [internalGroqTypeReferenceTo]?: 'article'
-  }>
-  listDefaults?: {
-    cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
-    mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
-    infoPosition?: 'below' | 'left' | 'right'
-  }
+  items?: Array<
+    {
+      _key: string
+    } & ArticleReference
+  >
+  listDefaults?: ListDefaults
   itemOverrides?: Array<{
-    article?: {
-      _ref: string
-      _type: 'reference'
-      _weak?: boolean
-      [internalGroqTypeReferenceTo]?: 'article'
-    }
+    article?: ArticleReference
     cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
     mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
     infoPosition?: 'below' | 'left' | 'right'
@@ -573,13 +560,11 @@ export type Article = {
   title?: string
   slug?: Slug
   articleType?: 'news' | 'editorial' | 'zine'
-  tags?: Array<{
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    _key: string
-    [internalGroqTypeReferenceTo]?: 'tag'
-  }>
+  tags?: Array<
+    {
+      _key: string
+    } & TagReference
+  >
   cardMedia?: MediaBox
   cardCtaLabel?: string
   cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
@@ -612,13 +597,11 @@ export type Article = {
   >
   destination?: string
   source?: string
-  relatedItems?: Array<{
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    _key: string
-    [internalGroqTypeReferenceTo]?: 'article'
-  }>
+  relatedItems?: Array<
+    {
+      _key: string
+    } & ArticleReference
+  >
 }
 
 export type Tag = {
@@ -644,25 +627,21 @@ export type CaseStudy = {
   slug?: Slug
   client?: string
   summary?: string
-  capabilities?: Array<{
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    _key: string
-    [internalGroqTypeReferenceTo]?: 'capability'
-  }>
+  capabilities?: Array<
+    {
+      _key: string
+    } & CapabilityReference
+  >
   publicationDate?: string
   cardMedia?: MediaBox
   cardWidth?: '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | 'full'
   mediaAspectRatio?: 'intrinsic' | '1:1' | '4:5' | '9:16' | '3:2' | '16:9' | '2:1'
   infoPosition?: 'below' | 'left' | 'right'
-  tags?: Array<{
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    _key: string
-    [internalGroqTypeReferenceTo]?: 'tag'
-  }>
+  tags?: Array<
+    {
+      _key: string
+    } & TagReference
+  >
   primaryColor?: Color
   secondaryColor?: Color
   leadMedia?: MediaBox
@@ -671,19 +650,12 @@ export type CaseStudy = {
   unexpectedInsight?: CaseStudyNarrativeSection
   bigIdea?: CaseStudyNarrativeSection
   results?: CaseStudyResults
-  press?: Array<{
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    _key: string
-    [internalGroqTypeReferenceTo]?: 'article'
-  }>
-  nextProject?: {
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    [internalGroqTypeReferenceTo]?: 'caseStudy'
-  }
+  press?: Array<
+    {
+      _key: string
+    } & ArticleReference
+  >
+  nextProject?: CaseStudyReference
 }
 
 export type Color = {
@@ -757,14 +729,16 @@ export type MuxProgress = {
   state?: string
 }
 
+export type MuxVideoAssetReference = {
+  _ref: string
+  _type: 'reference'
+  _weak?: boolean
+  [internalGroqTypeReferenceTo]?: 'mux.videoAsset'
+}
+
 export type MuxVideo = {
   _type: 'mux.video'
-  asset?: {
-    _ref: string
-    _type: 'reference'
-    _weak?: boolean
-    [internalGroqTypeReferenceTo]?: 'mux.videoAsset'
-  }
+  asset?: MuxVideoAssetReference
 }
 
 export type MuxVideoAsset = {
@@ -809,9 +783,16 @@ export type MuxAssetData = {
     } & MuxPlaybackId
   >
   static_renditions?: MuxStaticRenditions
+  master?: MuxMasterFile
   ingest_type?: string
   non_standard_input_reasons?: MuxNonStandardInputReasons
   progress?: MuxProgress
+}
+
+export type MuxMasterFile = {
+  _type: 'mux.masterFile'
+  status?: string
+  url?: string
 }
 
 export type MuxStaticRenditions = {
@@ -894,6 +875,7 @@ export type SanityImageMetadata = {
   palette?: SanityImagePalette
   lqip?: string
   blurHash?: string
+  thumbHash?: string
   hasAlpha?: boolean
   isOpaque?: boolean
 }
@@ -958,19 +940,26 @@ export type Geopoint = {
 }
 
 export type AllSanitySchemaTypes =
+  | ListDefaults
   | ContentLayoutRow
   | ContentLayoutSpacer
   | ContentLayoutText
   | ContentLayoutMedia
   | SiteSettings
+  | ArticleReference
+  | TagReference
   | IndexPage
   | HomeTestimonialsBlock
   | HomeParallaxBlock
   | HomeWhyBlock
+  | CaseStudyReference
   | HomeWorkBlock
+  | ZineIssueReference
   | HomeZine
   | ZineLanding
+  | SanityFileAssetReference
   | ZineIssue
+  | SanityImageAssetReference
   | MediaBox
   | Slug
   | CaseStudyResults
@@ -980,6 +969,7 @@ export type AllSanitySchemaTypes =
   | WhoWeAre
   | WorkIndex
   | Homepage
+  | CapabilityReference
   | CapesBlock
   | NewsBlock
   | HeroBlock
@@ -995,9 +985,11 @@ export type AllSanitySchemaTypes =
   | HslaColor
   | MuxNonStandardInputReasons
   | MuxProgress
+  | MuxVideoAssetReference
   | MuxVideo
   | MuxVideoAsset
   | MuxAssetData
+  | MuxMasterFile
   | MuxStaticRenditions
   | MuxStaticRenditionFile
   | MuxPlaybackId
@@ -1010,7 +1002,7 @@ export type AllSanitySchemaTypes =
   | SanityAssetSourceData
   | SanityImageAsset
   | Geopoint
-export declare const internalGroqTypeReferenceTo: unique symbol
+
 // Source: ../web/src/lib/queries.ts
 // Variable: homepageQuery
 // Query: *[_type == "homepage"][0]{    hero{      heading,      subheading,      "heroMedia": heroMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    capabilities{      headline,      contextualCopy,      capabilities[]->{        title,        "slug": slug.current,        "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    news{      headline,      listDefaults,      itemOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },      "items": items[]->{          _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  cardCtaLabel,  publicationDate,  destination,  source,  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    parallax{      headline,      "images": images[]{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    work{      headline,      ctaLabel,      layoutPreset,      "items": items[0...4]{        mediaAspectRatio,        "item": caseStudy->{          _id,          title,          "slug": slug.current,          summary,          tags[]->{ title, color },          "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}        }      }    },    why{      headline,      body,      ctaLabel,      ctaHref,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    "fallbackCreativeMedia": *[_type == "whoWeAre"][0].featuredMedia.media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},    zine{      "issue": issue->{ "slug": slug.current },      "currentIssueSlug": *[_type == "zineLanding"][0].currentIssue->slug.current,      promoHeadline,      promoIntro,      "promoMedia": promoMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      ctaLabel    },    contact{ _type },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
@@ -1022,12 +1014,7 @@ export type HomepageQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -1054,12 +1041,7 @@ export type HomepageQueryResult = {
         asset:
           | {
               _type: 'image'
-              asset: {
-                _ref: string
-                _type: 'reference'
-                _weak?: boolean
-                [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-              } | null
+              asset: SanityImageAssetReference | null
               crop: SanityImageCrop | null
               hotspot: SanityImageHotspot | null
               width: number | null
@@ -1079,11 +1061,7 @@ export type HomepageQueryResult = {
   } | null
   news: {
     headline: string | null
-    listDefaults: {
-      cardWidth?: '1/2' | '1/3' | '1/4' | '2/3' | '3/4' | 'full'
-      mediaAspectRatio?: '1:1' | '16:9' | '2:1' | '3:2' | '4:5' | '9:16' | 'intrinsic'
-      infoPosition?: 'below' | 'left' | 'right'
-    } | null
+    listDefaults: ListDefaults | null
     itemOverrides: Array<{
       articleId: string | null
       cardWidth: '1/2' | '1/3' | '1/4' | '2/3' | '3/4' | 'full' | null
@@ -1130,12 +1108,7 @@ export type HomepageQueryResult = {
         asset:
           | {
               _type: 'image'
-              asset: {
-                _ref: string
-                _type: 'reference'
-                _weak?: boolean
-                [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-              } | null
+              asset: SanityImageAssetReference | null
               crop: SanityImageCrop | null
               hotspot: SanityImageHotspot | null
               width: number | null
@@ -1159,12 +1132,7 @@ export type HomepageQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -1200,12 +1168,7 @@ export type HomepageQueryResult = {
           asset:
             | {
                 _type: 'image'
-                asset: {
-                  _ref: string
-                  _type: 'reference'
-                  _weak?: boolean
-                  [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-                } | null
+                asset: SanityImageAssetReference | null
                 crop: SanityImageCrop | null
                 hotspot: SanityImageHotspot | null
                 width: number | null
@@ -1233,12 +1196,7 @@ export type HomepageQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -1259,12 +1217,7 @@ export type HomepageQueryResult = {
     asset:
       | {
           _type: 'image'
-          asset: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-          } | null
+          asset: SanityImageAssetReference | null
           crop: SanityImageCrop | null
           hotspot: SanityImageHotspot | null
           width: number | null
@@ -1308,12 +1261,7 @@ export type HomepageQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -1340,6 +1288,8 @@ export type HomepageQueryResult = {
     infoPosition?: 'below' | 'left' | 'right'
   } | null
 } | null
+
+// Source: ../web/src/lib/queries.ts
 // Variable: whoWeAreQuery
 // Query: *[_type == "whoWeAre"][0]{    heroHeading,    featuredMedia{      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    marquee{ text },    introStatement,    "introMedia": introMedia[]{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},    statCards[]{      _key,      label,      value,      description,      items    },    advantageHeadline,    advantageBlocks[]{      _key,      heading,      body,      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    disciplines[]{      _key,      title,      description    },    ctas[]{      _key,      heading,      label,      href,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    faqs[]{      _key,      question,      answer    }  }
 export type WhoWeAreQueryResult = {
@@ -1350,12 +1300,7 @@ export type WhoWeAreQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -1380,12 +1325,7 @@ export type WhoWeAreQueryResult = {
     asset:
       | {
           _type: 'image'
-          asset: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-          } | null
+          asset: SanityImageAssetReference | null
           crop: SanityImageCrop | null
           hotspot: SanityImageHotspot | null
           width: number | null
@@ -1418,12 +1358,7 @@ export type WhoWeAreQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -1454,12 +1389,7 @@ export type WhoWeAreQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -1482,6 +1412,8 @@ export type WhoWeAreQueryResult = {
     answer: string | null
   }> | null
 } | null
+
+// Source: ../web/src/lib/queries.ts
 // Variable: workIndexQuery
 // Query: *[_type == "workIndex"][0]{    heroHeading,    allWorkHeading,    featured[]{      _key,      cardWidth,      mediaAspectRatio,      infoPosition,      "item": caseStudy->{        _id,        title,        "slug": slug.current,        summary,        publicationDate,        cardWidth,        mediaAspectRatio,        infoPosition,        tags[]->{ title, color },        "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    allSection{      listDefaults,      itemOverrides[]{ "itemId": caseStudy._ref, cardWidth, mediaAspectRatio, infoPosition }    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
 export type WorkIndexQueryResult = {
@@ -1509,12 +1441,7 @@ export type WorkIndexQueryResult = {
         asset:
           | {
               _type: 'image'
-              asset: {
-                _ref: string
-                _type: 'reference'
-                _weak?: boolean
-                [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-              } | null
+              asset: SanityImageAssetReference | null
               crop: SanityImageCrop | null
               hotspot: SanityImageHotspot | null
               width: number | null
@@ -1551,6 +1478,8 @@ export type WorkIndexQueryResult = {
     infoPosition?: 'below' | 'left' | 'right'
   } | null
 } | null
+
+// Source: ../web/src/lib/queries.ts
 // Variable: caseStudiesNewestQuery
 // Query: *[_type == "caseStudy" && !(_id in $featuredIds)]    | order(publicationDate desc)[$offset...$end] {    _id,    title,    "slug": slug.current,    summary,    publicationDate,    cardWidth,    mediaAspectRatio,    infoPosition,    tags[]->{ title, color },    "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
 export type CaseStudiesNewestQueryResult = Array<{
@@ -1570,12 +1499,7 @@ export type CaseStudiesNewestQueryResult = Array<{
     asset:
       | {
           _type: 'image'
-          asset: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-          } | null
+          asset: SanityImageAssetReference | null
           crop: SanityImageCrop | null
           hotspot: SanityImageHotspot | null
           width: number | null
@@ -1592,6 +1516,8 @@ export type CaseStudiesNewestQueryResult = Array<{
     decorative: boolean | null
   } | null
 }>
+
+// Source: ../web/src/lib/queries.ts
 // Variable: caseStudiesOldestQuery
 // Query: *[_type == "caseStudy" && !(_id in $featuredIds)]    | order(publicationDate asc)[$offset...$end] {    _id,    title,    "slug": slug.current,    summary,    publicationDate,    cardWidth,    mediaAspectRatio,    infoPosition,    tags[]->{ title, color },    "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
 export type CaseStudiesOldestQueryResult = Array<{
@@ -1611,12 +1537,7 @@ export type CaseStudiesOldestQueryResult = Array<{
     asset:
       | {
           _type: 'image'
-          asset: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-          } | null
+          asset: SanityImageAssetReference | null
           crop: SanityImageCrop | null
           hotspot: SanityImageHotspot | null
           width: number | null
@@ -1633,6 +1554,8 @@ export type CaseStudiesOldestQueryResult = Array<{
     decorative: boolean | null
   } | null
 }>
+
+// Source: ../web/src/lib/queries.ts
 // Variable: caseStudyBySlugQuery
 // Query: *[_type == "caseStudy" && slug.current == $slug][0] {    title,    "slug": slug.current,    summary,    client,    capabilities[]->{ title },    "primaryColor": primaryColor.hex,    "secondaryColor": secondaryColor.hex,    "leadMedia": leadMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},    highlights{      summary,        mediaLayouts[]{      _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      text    }  }  }    },    challenge{      summary,        mediaLayouts[]{      _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      text    }  }  }    },    unexpectedInsight{      summary,        mediaLayouts[]{      _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      text    }  }  }    },    bigIdea{      summary,        mediaLayouts[]{      _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      text    }  }  }    },    results{      backgroundColor,      stats[]{ _key, value, label },      supportingRows[]{          _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      text    }  }      }    },    "press": press[0...3][@->articleType == "news"]->{      title,      "slug": slug.current,      overview,      publicationDate,      articleType,      destination,      source,      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    nextProject->{      title,      "slug": slug.current,      summary,      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "media": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      "primaryColor": primaryColor.hex    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
 export type CaseStudyBySlugQueryResult = {
@@ -1649,12 +1572,7 @@ export type CaseStudyBySlugQueryResult = {
     asset:
       | {
           _type: 'image'
-          asset: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-          } | null
+          asset: SanityImageAssetReference | null
           crop: SanityImageCrop | null
           hotspot: SanityImageHotspot | null
           width: number | null
@@ -1704,12 +1622,7 @@ export type CaseStudyBySlugQueryResult = {
               asset:
                 | {
                     _type: 'image'
-                    asset: {
-                      _ref: string
-                      _type: 'reference'
-                      _weak?: boolean
-                      [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-                    } | null
+                    asset: SanityImageAssetReference | null
                     crop: SanityImageCrop | null
                     hotspot: SanityImageHotspot | null
                     width: number | null
@@ -1791,12 +1704,7 @@ export type CaseStudyBySlugQueryResult = {
               asset:
                 | {
                     _type: 'image'
-                    asset: {
-                      _ref: string
-                      _type: 'reference'
-                      _weak?: boolean
-                      [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-                    } | null
+                    asset: SanityImageAssetReference | null
                     crop: SanityImageCrop | null
                     hotspot: SanityImageHotspot | null
                     width: number | null
@@ -1878,12 +1786,7 @@ export type CaseStudyBySlugQueryResult = {
               asset:
                 | {
                     _type: 'image'
-                    asset: {
-                      _ref: string
-                      _type: 'reference'
-                      _weak?: boolean
-                      [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-                    } | null
+                    asset: SanityImageAssetReference | null
                     crop: SanityImageCrop | null
                     hotspot: SanityImageHotspot | null
                     width: number | null
@@ -1965,12 +1868,7 @@ export type CaseStudyBySlugQueryResult = {
               asset:
                 | {
                     _type: 'image'
-                    asset: {
-                      _ref: string
-                      _type: 'reference'
-                      _weak?: boolean
-                      [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-                    } | null
+                    asset: SanityImageAssetReference | null
                     crop: SanityImageCrop | null
                     hotspot: SanityImageHotspot | null
                     width: number | null
@@ -2040,12 +1938,7 @@ export type CaseStudyBySlugQueryResult = {
               asset:
                 | {
                     _type: 'image'
-                    asset: {
-                      _ref: string
-                      _type: 'reference'
-                      _weak?: boolean
-                      [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-                    } | null
+                    asset: SanityImageAssetReference | null
                     crop: SanityImageCrop | null
                     hotspot: SanityImageHotspot | null
                     width: number | null
@@ -2129,12 +2022,7 @@ export type CaseStudyBySlugQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -2166,12 +2054,7 @@ export type CaseStudyBySlugQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -2195,6 +2078,8 @@ export type CaseStudyBySlugQueryResult = {
     infoPosition?: 'below' | 'left' | 'right'
   } | null
 } | null
+
+// Source: ../web/src/lib/queries.ts
 // Variable: editorialArticleBySlugQuery
 // Query: *[_type == "article" && articleType == "editorial" && slug.current == $slug][0] {        _type,    articleType,    title,    "slug": slug.current,    publicationDate,    overview,    destination,    source,    tags[]->{ title, color },    "leadMedia": leadMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      body[]{    _type,    _key,    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      text    }  }    }  },    relatedItems[]->{      _id,      _type,      articleType,      title,      "slug": slug.current,      publicationDate,      "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,      overview,      destination,      source,      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
 export type EditorialArticleBySlugQueryResult = {
@@ -2231,12 +2116,7 @@ export type EditorialArticleBySlugQueryResult = {
     asset:
       | {
           _type: 'image'
-          asset: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-          } | null
+          asset: SanityImageAssetReference | null
           crop: SanityImageCrop | null
           hotspot: SanityImageHotspot | null
           width: number | null
@@ -2267,12 +2147,7 @@ export type EditorialArticleBySlugQueryResult = {
             asset:
               | {
                   _type: 'image'
-                  asset: {
-                    _ref: string
-                    _type: 'reference'
-                    _weak?: boolean
-                    [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-                  } | null
+                  asset: SanityImageAssetReference | null
                   crop: SanityImageCrop | null
                   hotspot: SanityImageHotspot | null
                   width: number | null
@@ -2358,12 +2233,7 @@ export type EditorialArticleBySlugQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -2386,6 +2256,8 @@ export type EditorialArticleBySlugQueryResult = {
     infoPosition?: 'below' | 'left' | 'right'
   } | null
 } | null
+
+// Source: ../web/src/lib/queries.ts
 // Variable: zineLandingQuery
 // Query: *[_type == "zineLanding"][0]{    "currentIssue": currentIssue->{        title,  "slug": slug.current,  eyebrow,  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},  "heroMedia": heroMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},  editorLetter{    labels,    heading,    body,    "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},    ctaLabel  },  articles[]->{      _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  publicationDate,  cardWidth,  mediaAspectRatio,  infoPosition,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  },  listDefaults,  articleOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },  issuuUrl,  "pdfUrl": pdfAsset.asset->url,  "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults    },    "pastIssues": *[_type == "zineIssue" && _id != ^.currentIssue._ref] | order(orderRank) {      title,      "slug": slug.current,      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    intro{      heading,      "imageLayers": imageLayers[]{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      ctaLabel    }  }
 export type ZineLandingQueryResult = {
@@ -2397,12 +2269,7 @@ export type ZineLandingQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -2422,12 +2289,7 @@ export type ZineLandingQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -2468,12 +2330,7 @@ export type ZineLandingQueryResult = {
         asset:
           | {
               _type: 'image'
-              asset: {
-                _ref: string
-                _type: 'reference'
-                _weak?: boolean
-                [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-              } | null
+              asset: SanityImageAssetReference | null
               crop: SanityImageCrop | null
               hotspot: SanityImageHotspot | null
               width: number | null
@@ -2527,12 +2384,7 @@ export type ZineLandingQueryResult = {
         asset:
           | {
               _type: 'image'
-              asset: {
-                _ref: string
-                _type: 'reference'
-                _weak?: boolean
-                [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-              } | null
+              asset: SanityImageAssetReference | null
               crop: SanityImageCrop | null
               hotspot: SanityImageHotspot | null
               width: number | null
@@ -2575,12 +2427,7 @@ export type ZineLandingQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -2603,12 +2450,7 @@ export type ZineLandingQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -2627,6 +2469,8 @@ export type ZineLandingQueryResult = {
     ctaLabel: string | null
   } | null
 } | null
+
+// Source: ../web/src/lib/queries.ts
 // Variable: issueBySlugQuery
 // Query: *[_type == "zineIssue" && slug.current == $slug][0]{      title,  "slug": slug.current,  eyebrow,  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},  "heroMedia": heroMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},  editorLetter{    labels,    heading,    body,    "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},    ctaLabel  },  articles[]->{      _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  publicationDate,  cardWidth,  mediaAspectRatio,  infoPosition,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  },  listDefaults,  articleOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },  issuuUrl,  "pdfUrl": pdfAsset.asset->url,  "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
 export type IssueBySlugQueryResult = {
@@ -2637,12 +2481,7 @@ export type IssueBySlugQueryResult = {
     asset:
       | {
           _type: 'image'
-          asset: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-          } | null
+          asset: SanityImageAssetReference | null
           crop: SanityImageCrop | null
           hotspot: SanityImageHotspot | null
           width: number | null
@@ -2662,12 +2501,7 @@ export type IssueBySlugQueryResult = {
     asset:
       | {
           _type: 'image'
-          asset: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-          } | null
+          asset: SanityImageAssetReference | null
           crop: SanityImageCrop | null
           hotspot: SanityImageHotspot | null
           width: number | null
@@ -2708,12 +2542,7 @@ export type IssueBySlugQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -2767,12 +2596,7 @@ export type IssueBySlugQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -2808,6 +2632,8 @@ export type IssueBySlugQueryResult = {
     infoPosition?: 'below' | 'left' | 'right'
   } | null
 } | null
+
+// Source: ../web/src/lib/queries.ts
 // Variable: issueArchiveQuery
 // Query: *[_type == "zineIssue" && slug.current != $slug] | order(orderRank) {    title,    "slug": slug.current,    "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
 export type IssueArchiveQueryResult = Array<{
@@ -2817,12 +2643,7 @@ export type IssueArchiveQueryResult = Array<{
     asset:
       | {
           _type: 'image'
-          asset: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-          } | null
+          asset: SanityImageAssetReference | null
           crop: SanityImageCrop | null
           hotspot: SanityImageHotspot | null
           width: number | null
@@ -2839,6 +2660,8 @@ export type IssueArchiveQueryResult = Array<{
     decorative: boolean | null
   } | null
 }>
+
+// Source: ../web/src/lib/queries.ts
 // Variable: zineArticleBySlugQuery
 // Query: *[_type == "zineIssue" && slug.current == $issueSlug][0]{    title,    "issueSlug": slug.current,    "article": *[      _type == "article" &&      articleType == "zine" &&      slug.current == $articleSlug &&      _id in ^.articles[]._ref    ][0]{          _type,    articleType,    title,    "slug": slug.current,    publicationDate,    overview,    destination,    source,    tags[]->{ title, color },    "leadMedia": leadMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative},      body[]{    _type,    _key,    _type == "contentLayoutRow" => {        _type,  _key,  alignment,  fullBleed,  blocks[]{    _type,    _key,    width,    _type == "contentLayoutMedia" => {      aspectRatio,      "media": media{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    _type == "contentLayoutText" => {      text    }  }    }  },    relatedItems[]->{      _id,      _type,      articleType,      title,      "slug": slug.current,      publicationDate,      "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,      overview,      destination,      source,      cardWidth,      mediaAspectRatio,      infoPosition,      tags[]->{ title, color },      "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults    }  }
 export type ZineArticleBySlugQueryResult = {
@@ -2878,12 +2701,7 @@ export type ZineArticleBySlugQueryResult = {
       asset:
         | {
             _type: 'image'
-            asset: {
-              _ref: string
-              _type: 'reference'
-              _weak?: boolean
-              [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-            } | null
+            asset: SanityImageAssetReference | null
             crop: SanityImageCrop | null
             hotspot: SanityImageHotspot | null
             width: number | null
@@ -2914,12 +2732,7 @@ export type ZineArticleBySlugQueryResult = {
               asset:
                 | {
                     _type: 'image'
-                    asset: {
-                      _ref: string
-                      _type: 'reference'
-                      _weak?: boolean
-                      [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-                    } | null
+                    asset: SanityImageAssetReference | null
                     crop: SanityImageCrop | null
                     hotspot: SanityImageHotspot | null
                     width: number | null
@@ -3005,12 +2818,7 @@ export type ZineArticleBySlugQueryResult = {
         asset:
           | {
               _type: 'image'
-              asset: {
-                _ref: string
-                _type: 'reference'
-                _weak?: boolean
-                [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-              } | null
+              asset: SanityImageAssetReference | null
               crop: SanityImageCrop | null
               hotspot: SanityImageHotspot | null
               width: number | null
@@ -3034,6 +2842,8 @@ export type ZineArticleBySlugQueryResult = {
     } | null
   } | null
 } | null
+
+// Source: ../web/src/lib/queries.ts
 // Variable: indexPageQuery
 // Query: *[_id == "indexPage"][0]{    header,    featured[]{      _key,      cardWidth,      mediaAspectRatio,      infoPosition,      "item": article->{          _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  cardCtaLabel,  publicationDate,  destination,  source,  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}      }    },    allSection{      listDefaults,      "tagId": tagFilter._ref,      itemOverrides[]{ "itemId": article._ref, cardWidth, mediaAspectRatio, infoPosition }    },    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults  }
 export type IndexPageQueryResult =
@@ -3123,12 +2933,7 @@ export type IndexPageQueryResult =
             asset:
               | {
                   _type: 'image'
-                  asset: {
-                    _ref: string
-                    _type: 'reference'
-                    _weak?: boolean
-                    [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-                  } | null
+                  asset: SanityImageAssetReference | null
                   crop: SanityImageCrop | null
                   hotspot: SanityImageHotspot | null
                   width: number | null
@@ -3167,6 +2972,8 @@ export type IndexPageQueryResult =
       } | null
     }
   | null
+
+// Source: ../web/src/lib/queries.ts
 // Variable: indexViewAllNewestQuery
 // Query: *[    _type == "article" &&    articleType in ["news", "editorial", "zine"] &&    (!defined($typeFilter) || articleType == $typeFilter) &&    !(_id in $featuredIds) &&    (!defined($tagId) || $tagId in tags[]._ref)  ] | order(publicationDate desc)[$offset...$end]{      _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  cardCtaLabel,  publicationDate,  destination,  source,  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
 export type IndexViewAllNewestQueryResult = Array<{
@@ -3209,12 +3016,7 @@ export type IndexViewAllNewestQueryResult = Array<{
     asset:
       | {
           _type: 'image'
-          asset: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-          } | null
+          asset: SanityImageAssetReference | null
           crop: SanityImageCrop | null
           hotspot: SanityImageHotspot | null
           width: number | null
@@ -3231,6 +3033,8 @@ export type IndexViewAllNewestQueryResult = Array<{
     decorative: boolean | null
   } | null
 }>
+
+// Source: ../web/src/lib/queries.ts
 // Variable: indexViewAllOldestQuery
 // Query: *[    _type == "article" &&    articleType in ["news", "editorial", "zine"] &&    (!defined($typeFilter) || articleType == $typeFilter) &&    !(_id in $featuredIds) &&    (!defined($tagId) || $tagId in tags[]._ref)  ] | order(publicationDate asc)[$offset...$end]{      _id,  _type,  articleType,  title,  "slug": slug.current,  overview,  cardCtaLabel,  publicationDate,  destination,  source,  cardWidth,  mediaAspectRatio,  infoPosition,  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,  tags[]->{ title, color },  "cardMedia": cardMedia{  "asset": asset[0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  altText,  decorative}  }
 export type IndexViewAllOldestQueryResult = Array<{
@@ -3273,12 +3077,7 @@ export type IndexViewAllOldestQueryResult = Array<{
     asset:
       | {
           _type: 'image'
-          asset: {
-            _ref: string
-            _type: 'reference'
-            _weak?: boolean
-            [internalGroqTypeReferenceTo]?: 'sanity.imageAsset'
-          } | null
+          asset: SanityImageAssetReference | null
           crop: SanityImageCrop | null
           hotspot: SanityImageHotspot | null
           width: number | null
@@ -3295,6 +3094,8 @@ export type IndexViewAllOldestQueryResult = Array<{
     decorative: boolean | null
   } | null
 }>
+
+// Source: ../web/src/lib/queries.ts
 // Variable: siteSettingsQuery
 // Query: *[_type == "siteSettings"][0]{    instagramUrl,    linkedInUrl,    vimeoUrl,    youTubeUrl,    cardDefaults  }
 export type SiteSettingsQueryResult = {
@@ -3308,6 +3109,8 @@ export type SiteSettingsQueryResult = {
     infoPosition?: 'below' | 'left' | 'right'
   } | null
 } | null
+
+// Source: ../web/src/lib/queries.ts
 // Variable: sitemapQuery
 // Query: {    "caseStudies": *[_type == "caseStudy" && defined(slug.current)]{      "path": "/work/" + slug.current,      "updatedAt": _updatedAt    },    "articles": *[_type == "article" && articleType == "editorial" && defined(slug.current)]{      "path": "/articles/" + slug.current,      "updatedAt": _updatedAt    },    "pastIssues": *[      _type == "zineIssue" &&      defined(slug.current) &&      _id != *[_type == "zineLanding"][0].currentIssue._ref    ]{      "path": "/zine/issues/" + slug.current,      "updatedAt": _updatedAt    },    "zineArticles": *[_type == "zineIssue" && defined(slug.current)]{      "issueSlug": slug.current,      "updatedAt": _updatedAt,      "articles": articles[]->{ "slug": slug.current, "updatedAt": _updatedAt }    }  }
 export type SitemapQueryResult = {
