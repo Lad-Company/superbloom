@@ -4,9 +4,50 @@ import {
   useDocumentOperation,
   useValidationStatus,
   type DocumentActionComponent,
+  type Path,
 } from 'sanity'
+import {useDocumentPane} from 'sanity/structure'
 
 const API_VERSION = '2026-07-22'
+
+/**
+ * Resolve a validation marker path to human-readable field titles by walking
+ * the schema (e.g. ["tags"] -> ["Tags"], ["body", 0, "blocks"] -> ["Body", ...]).
+ */
+const fieldTitlesForPath = (
+  schemaType: {fields?: Array<{name: string; type?: unknown}>},
+  path: Path,
+  value: unknown,
+): string[] => {
+  const titles: string[] = []
+  let currentType: any = schemaType
+  let currentValue: any = value
+  for (const segment of path) {
+    if (typeof segment === 'string') {
+      const field = currentType?.fields?.find((f: {name: string}) => f.name === segment)
+      if (!field) break
+      titles.push(field.type?.title || field.name)
+      currentType = field.type
+      currentValue = currentValue?.[segment]
+    } else {
+      const items: any[] = Array.isArray(currentValue) ? currentValue : []
+      const index =
+        typeof segment === 'number'
+          ? segment
+          : '_key' in segment
+            ? items.findIndex((item) => item?._key === segment._key)
+            : -1
+      const item = index >= 0 ? items[index] : undefined
+      const itemType =
+        currentType?.of?.find((t: any) => t.name === item?._type) ?? currentType?.of?.[0]
+      if (!itemType) break
+      titles.push(itemType?.title || itemType?.name || `Item ${index + 1}`)
+      currentType = itemType
+      currentValue = item
+    }
+  }
+  return titles
+}
 
 type ArticleDraft = {
   title?: string
@@ -57,6 +98,7 @@ export const articlePublishAction: DocumentActionComponent = (props) => {
   // `requirePublishedReferences: true` matches the default publish action:
   // publishing is blocked when the article references unpublished documents.
   const validationStatus = useValidationStatus(props.id, props.type, true)
+  const {onFocus, onPathOpen, schemaType, value} = useDocumentPane()
   const [publishing, setPublishing] = useState(false)
   const [showErrors, setShowErrors] = useState(false)
 
@@ -65,6 +107,15 @@ export const articlePublishAction: DocumentActionComponent = (props) => {
   const blockingErrors = validationStatus.validation.filter(
     (marker) =>
       marker.level === 'error' && !(willGenerateSlug && marker.path[0] === 'slug'),
+  )
+
+  const revealField = useCallback(
+    (path: Path) => {
+      onPathOpen(path)
+      onFocus(path)
+      setShowErrors(false)
+    },
+    [onFocus, onPathOpen],
   )
 
   const onHandle = useCallback(async () => {
@@ -106,11 +157,39 @@ export const articlePublishAction: DocumentActionComponent = (props) => {
       type: 'dialog',
       header: 'Fix validation errors before publishing',
       content: (
-        <ul>
-          {blockingErrors.map((marker, index) => (
-            <li key={index}>{marker.message}</li>
-          ))}
-        </ul>
+        <div>
+          <p style={{marginTop: 0, color: 'var(--card-muted-fg-color)'}}>
+            Select an error to jump to its field.
+          </p>
+          <ul style={{display: 'grid', gap: 12, listStyle: 'none', margin: 0, padding: 0}}>
+            {blockingErrors.map((marker, index) => {
+              const titles = fieldTitlesForPath(schemaType, marker.path, value)
+              const label =
+                titles.length > 0 ? `${titles.join(' › ')}: ${marker.message}` : marker.message
+              if (marker.path.length === 0) return <li key={index}>{label}</li>
+              return (
+                <li key={index}>
+                  <button
+                    type="button"
+                    onClick={() => revealField(marker.path)}
+                    style={{
+                      background: 'none',
+                      border: 0,
+                      color: 'inherit',
+                      cursor: 'pointer',
+                      font: 'inherit',
+                      padding: 0,
+                      textAlign: 'left',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    {label}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
       ),
       onClose: () => setShowErrors(false),
     },
