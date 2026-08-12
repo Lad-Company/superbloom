@@ -143,6 +143,15 @@ const anchoredAtEdge = (index: number): boolean => {
   </div>
 </SurfaceSection>
 
+<script>
+  import {initPosterReveal} from '../../lib/posterReveal'
+
+  // The mosaic renders MediaFrame inside its own links (not EditorialCard),
+  // so it binds the same Card Poster Reveal wiring itself; posterReveal
+  // dedupes per card when both run on one page.
+  document.addEventListener('astro:page-load', () => initPosterReveal())
+</script>
+
 <style>
   .work {
     padding: var(--space-4xl) var(--page-inset);

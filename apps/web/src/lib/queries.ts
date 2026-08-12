@@ -16,6 +16,15 @@ const mediaProjection = `{
       "aspectRatio": asset->data.aspect_ratio
     }
   },
+  "poster": poster{
+    _type,
+    asset,
+    crop,
+    hotspot,
+    "width": asset->metadata.dimensions.width,
+    "height": asset->metadata.dimensions.height,
+    "mimeType": asset->mimeType
+  },
   altText,
   decorative
 }`
