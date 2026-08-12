@@ -73,9 +73,10 @@ content, and experiential campaigns for brand clients.
 - **Publication Date** — the date used to sort Articles and Case Studies.
   Auto-stamped at an Article's first publish, then frozen; Article cards display
   it, Case Study cards do not. _Avoid_: manual rank.
-- **Tag** — a reusable optional editorial label on Articles and Case Studies; at
-  most one on Articles (the Article Type chip is automatic), two on Case Studies.
-  Distinct from Capability and Deliverables. _Avoid_: category, keyword.
+- **Tag** — a reusable optional editorial label on Articles and Case Studies.
+  Optional and uncapped on Articles (the Article Type chip is automatic); capped
+  at two on Case Studies. Cards render a capped subset regardless of how many are
+  set. Distinct from Capability and Deliverables. _Avoid_: category, keyword.
 - **Brand Colors (Primary / Secondary)** — a client brand's two accent colors,
   chosen per Case Study, stored as hex; used to theme that Case Study's colored
   sections. Not a fixed Superbloom palette. _Avoid_: theme color, swatch.
