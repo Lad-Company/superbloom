@@ -28,6 +28,11 @@ export type ProjectedAsset = ImageProjection | VideoProjection
 
 export interface Media {
   asset?: ProjectedAsset | null
+  /** Curated still for a video asset (card-poster-reveal-spec §2). When set
+   *  on a `mux.video` asset the frame becomes Gated Ambient: dormant until
+   *  the visitor reveals it (hover/focus/tap), at which point the poster
+   *  slides away. When unset the video keeps today's Ambient autoplay. */
+  poster?: ImageProjection | null
   altText?: string | null
   decorative?: boolean | null
 }
@@ -101,6 +106,24 @@ const videoPoster =
 const isVideo = asset?._type === 'mux.video' && Boolean(asset.playbackId)
 const showControls = isVideo && controls !== 'none'
 const isFullControls = isVideo && controls === 'full'
+// Gated Ambient (card-poster-reveal-spec §3): a curated poster on a video
+// asset turns the frame dormant until the card link toggles `revealed`.
+const poster = media?.poster
+const posterRendering =
+  isVideo && poster?.asset?._ref
+    ? buildImageRendering({
+        source: {
+          asset: poster.asset,
+          crop: poster.crop ?? undefined,
+          hotspot: poster.hotspot ?? undefined,
+        },
+        mimeType: poster.mimeType,
+        nativeWidth: poster.width,
+        nativeHeight: poster.height,
+        ratio: mediaRatio,
+      })
+    : null
+const isGated = Boolean(isVideo && posterRendering?.src)
 const imageRendering =
   asset?._type === 'image' && asset.asset?._ref
     ? buildImageRendering({
@@ -119,6 +142,7 @@ const imageRendering =
 
 <media-frame
   active={active ? true : undefined}
+  gated={isGated ? true : undefined}
   class:list={[
     'media-frame',
     className,
@@ -151,6 +175,26 @@ const imageRendering =
         loop
         default-hidden-captions
         preload={priority ? 'auto' : 'none'}
+      />
+    )
+  }
+  {
+    /* Curated poster (Gated Ambient) — paints above the player and the Mux
+       thumbnail, below the overlay slot (DOM order alone, no z-index, so
+       TagList overlays stay on top). Slides up off the frame on `revealed`;
+       the video's ready-fade composes underneath. */
+    isGated && posterRendering?.src && (
+      <img
+        class="media-frame__curated-poster"
+        src={posterRendering.src}
+        srcset={posterRendering.srcset}
+        sizes={sizes ?? undefined}
+        alt={isDecorative ? '' : (altText ?? '')}
+        width={posterRendering.width || undefined}
+        height={posterRendering.height || undefined}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchpriority={priority ? 'high' : 'auto'}
+        decoding="async"
       />
     )
   }
@@ -269,10 +313,11 @@ const imageRendering =
   const SCRUBBER_READY_EPSILON_S = 0.05
 
   class MediaFrameElement extends HTMLElement {
-    static observedAttributes = ['active']
+    static observedAttributes = ['active', 'revealed']
 
     private observer: IntersectionObserver | null = null
     private player: HTMLVideoElement | null = null
+    private curatedPoster: HTMLImageElement | null = null
     private control: HTMLButtonElement | null = null
     private motionPreference: MediaQueryList | null = null
     private isVisible = false
@@ -329,6 +374,12 @@ const imageRendering =
         if (!this.isConnected) return
       }
       this.player = player
+      this.curatedPoster = this.querySelector(
+        '.media-frame__curated-poster',
+      ) as HTMLImageElement | null
+      // Sync with a `revealed` attribute set before this element connected
+      // (attributeChangedCallback fires before curatedPoster is queried).
+      this.curatedPoster?.setAttribute('aria-hidden', String(this.hasAttribute('revealed')))
       this.control = this.querySelector('[data-media-control]') as HTMLButtonElement | null
       this.isFullControls = this.dataset.controls === 'full'
       this.controlsBar = this.querySelector('[data-media-controls]') as HTMLElement | null
@@ -400,8 +451,26 @@ const imageRendering =
       this.refreshScrubber()
     }
 
-    attributeChangedCallback() {
+    attributeChangedCallback(name: string) {
+      if (name === 'revealed') {
+        // The poster conveys the same content as the video it covers, so it
+        // leaves the accessibility tree while revealed (card-poster-reveal
+        // §6). The slide itself is attribute-driven CSS.
+        this.curatedPoster?.setAttribute(
+          'aria-hidden',
+          String(this.hasAttribute('revealed')),
+        )
+      }
       this.updatePlayback()
+    }
+
+    /** Card-link hook (EditorialCard / HomeWork): a touch tap that reveals a
+     *  gated poster is explicit play intent, honored even under
+     *  reduced-motion — same rule as the Presented play button
+     *  (card-poster-reveal §6). */
+    public revealWithIntent() {
+      this.userIntent = 'playing'
+      this.setAttribute('revealed', '')
     }
 
     disconnectedCallback() {
@@ -447,14 +516,20 @@ const imageRendering =
       const isDocVisible = document.visibilityState === 'visible'
       const prefersReducedMotion = this.motionPreference?.matches ?? false
       const isPaused = this.player.paused ?? true
+      // Gated Ambient (card-poster-reveal §3): a poster card is dormant until
+      // the card link toggles `revealed`; with preload="none" and no play()
+      // call, Mux fetches no segments before the first reveal.
+      const isGated = this.hasAttribute('gated')
+      const isRevealed = !isGated || this.hasAttribute('revealed')
 
-      let shouldPlay = isActive && this.isVisible && isDocVisible && !prefersReducedMotion
+      let shouldPlay =
+        isRevealed && isActive && this.isVisible && isDocVisible && !prefersReducedMotion
 
-      if (this.control) {
+      if (this.control || isGated) {
         if (this.userIntent === 'paused') {
           shouldPlay = false
         } else if (this.userIntent === 'playing') {
-          shouldPlay = isActive && this.isVisible && isDocVisible
+          shouldPlay = isRevealed && isActive && this.isVisible && isDocVisible
         }
       }
 
@@ -709,7 +784,9 @@ const imageRendering =
   .media-frame {
     display: block;
     position: relative;
-    overflow: hidden;
+    /* Clip (not hidden) so the traveling curated poster never paints outside
+       the card during the Poster Slide (card-poster-reveal §5). */
+    overflow: clip;
     border-radius: var(--radius-media);
     /* Placeholder gradient's dimmer step, derived locally (nav/cart precedent)
        so the frame resolves in any surface context, not just SurfaceSection. */
@@ -749,6 +826,24 @@ const imageRendering =
 
   .media-frame[data-video-ready] .media-frame__poster {
     opacity: 0;
+  }
+
+  /* Poster Slide (design-system §5, Content Card family): transform-only,
+     --motion-quick / --motion-ease-out in both directions, no fade, no
+     stagger. The reveal lands on the Mux thumbnail layer underneath, so the
+     frame never shows a gray box. */
+  .media-frame__curated-poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    transition: transform var(--motion-quick) var(--motion-ease-out);
+  }
+
+  .media-frame[revealed] .media-frame__curated-poster {
+    transform: translateY(-100%);
   }
 
   .media-placeholder {
@@ -994,6 +1089,9 @@ const imageRendering =
   }
 
   @media (prefers-reduced-motion: reduce) {
+    /* Poster Slide off; the reveal/conceal state change survives as an
+       instant swap (design-system §5 reduced-motion rule). */
+    .media-frame__curated-poster,
     .media-controls,
     .media-controls__icon svg,
     .media-controls__btn,

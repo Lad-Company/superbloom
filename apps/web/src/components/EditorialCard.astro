@@ -96,6 +96,16 @@ const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDa
   </div>
 </a>
 
+<script>
+  import {initPosterReveal} from '../lib/posterReveal'
+
+  // Card Poster Reveal (docs/card-poster-reveal-spec.md §4): wires hover /
+  // focus / tap reveal onto card links hosting a gated media-frame. Runs on
+  // every page-load so ClientRouter navigations re-bind; posterReveal
+  // dedupes per card.
+  document.addEventListener('astro:page-load', () => initPosterReveal())
+</script>
+
 <style>
   .editorial-card {
     display: flex;

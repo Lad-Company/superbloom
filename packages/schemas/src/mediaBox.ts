@@ -29,6 +29,33 @@ export const mediaBox = defineType({
       validation: (rule) => rule.required().length(1),
     }),
     defineField({
+      name: 'poster',
+      title: 'Poster Image',
+      type: 'image',
+      description:
+        'Optional still shown over the video until a visitor hovers or taps the card, where it slides away to reveal the video. Leave empty to autoplay the video whenever the card is on screen.',
+      hidden: ({parent}) =>
+        (parent as {asset?: Array<{_type: string}>} | undefined)?.asset?.[0]?._type !==
+        'mux.video',
+      options: {
+        hotspot: {
+          previews: [
+            {title: 'Portrait 9:16', aspectRatio: 9 / 16},
+            {title: 'Square 1:1', aspectRatio: 1},
+            {title: 'Wide 2:1', aspectRatio: 2 / 1},
+          ],
+        },
+      },
+      validation: (rule) =>
+        rule.custom((poster, context) => {
+          const parent = context.parent as {asset?: Array<{_type: string}>} | undefined
+          if (poster && parent?.asset?.[0]?._type === 'image') {
+            return 'A Poster Image can only be set on a video asset'
+          }
+          return true
+        }),
+    }),
+    defineField({
       name: 'altText',
       title: 'Alt Text',
       type: 'string',

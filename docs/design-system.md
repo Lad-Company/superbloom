@@ -391,6 +391,19 @@ Chapter, Case Study Chapter, Form/Shop. An **Art-Directed Hero** may add one-off
 choreography on top when a documented brief requires it, still inheriting the shared
 accessibility, loading, hover, and cleanup rules.
 
+Named Content Card recipes:
+
+- **Poster Slide** — a video card with a curated Poster Image (`mediaBox.poster`)
+  rests dormant; on hover/focus/tap the poster slides up and away,
+  `translateY(0)` → `translateY(-100%)`, and slides back on leave/blur.
+  Transform only, `--motion-quick` (240ms) + `--motion-ease-out` in both
+  directions, no opacity fade, no stagger, no delay; the frame clips the
+  traveling poster (`overflow: clip`). Upward reads as lifting a curtain and
+  rhymes with the Type Reveal's rise — direction is systemic, never per-card.
+  The video's own ready-fade (`--motion-standard`) composes underneath.
+  Reduced motion removes the slide; the state change survives as an instant
+  swap. Playback contract: `docs/card-poster-reveal-spec.md`.
+
 **Reduced motion** preserves state changes, color changes, and link underlines while
 removing pinning, scrubbing, parallax, blur, and delayed/staggered reveals.
 

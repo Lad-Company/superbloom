@@ -29,7 +29,8 @@ frame on the site:
   (`--controls: none`); we render our own.
 - Audio design. Videos remain `muted loop` (autoplay policy + current schema);
   a mute toggle is called out as an explicit open question, not a requirement.
-- Poster art direction / focal point (owned by the hotspot work; see `HANDOFF.md`).
+- Poster art direction for content cards (curated poster + reveal gating) —
+  owned by `docs/card-poster-reveal-spec.md`; see the Gated Ambient row in §2.
 
 ---
 
@@ -75,7 +76,12 @@ Every `MediaFrame` video resolves to exactly one profile. This is the unificatio
 | Profile | Who | Controls | Autoplay | Poster load |
 |---|---|---|---|---|
 | **Ambient** | Cards, grids, background/decor media (default) | none | muted loop, visibility-gated | lazy (eager if `priority`) |
+| **Gated Ambient** | Video cards with a curated Poster Image (`mediaBox.poster`) | none | muted loop, visibility-gated **and reveal-gated** — dormant until hover/focus/tap slides the poster away | curated poster lazy (eager if `priority`); Mux still beneath |
 | **Presented** | Hero + full-viewport / featured media | play/pause **+ scrubber** | muted loop, visibility-gated | eager (`priority`) |
+
+Gated Ambient is not a new `controls` value — no control DOM is involved. It
+is Ambient plus a playback gate (`revealed`) driven by the card link, owned by
+`docs/card-poster-reveal-spec.md`.
 
 Proposed API: replace the `controls` boolean with a `controls` enum on
 `MediaFrame` (keep the boolean coercion for one release so existing callers don't

@@ -32,6 +32,10 @@ content, and experiential campaigns for brand clients.
 
 - **Media Asset** — a reusable image or Mux video from a Media field. _Avoid_:
   attachment, file (except a Zine PDF).
+- **Poster Image** — an optional curated still paired with a Media field's
+  video asset (`mediaBox.poster`). When set, a content card is dormant until
+  hover/focus/tap slides the poster away to reveal the video; when unset, the
+  video autoplays ambiently as before. _Avoid_: thumbnail, cover image.
 - **Work** — the portfolio section (`/work`), composed of Case Studies. _Avoid_:
   Projects, Portfolio.
 - **Case Study** — a documented work engagement; belongs to one or more
