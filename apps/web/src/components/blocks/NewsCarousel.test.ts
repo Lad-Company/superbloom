@@ -32,4 +32,8 @@ describe('News Carousel', () => {
     expect(source).toContain('itemOverrides?.map((override) => [override.articleId, override])')
     expect(source).toContain('settings={overrides.get(item._id)}')
   })
+
+  it('sizes cards through the shared Content Card rail contract', () => {
+    expect(source).toContain("import '../../styles/contentCardRail.css'")
+  })
 })

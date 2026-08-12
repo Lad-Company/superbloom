@@ -1,5 +1,6 @@
 ---
 import type {HTMLAttributes} from 'astro/types'
+import '../styles/contentCardRail.css'
 
 type ButtonProps = HTMLAttributes<'button'> & Record<string, unknown>
 
@@ -202,42 +203,15 @@ const mergedNextProps = {
     scroll-snap-type: none;
   }
 
+  /* Widths come from styles/contentCardRail.css (shared with the News
+     marquee): cardWidth is a literal fraction of the viewport (1/2 = 50vw). */
   .track > :global(.content-card) {
-    flex: 0 0 auto;
     scroll-snap-align: start;
-  }
-
-  .track > :global(.content-card[data-card-width='1/4']) {
-    width: min(23.3vw, 335px);
-  }
-
-  .track > :global(.content-card[data-card-width='1/3']) {
-    width: min(30.75vw, 443px);
-  }
-
-  .track > :global(.content-card[data-card-width='1/2']) {
-    width: min(44vw, 634px);
-  }
-
-  .track > :global(.content-card[data-card-width='2/3']) {
-    width: min(58vw, 835px);
-  }
-
-  .track > :global(.content-card[data-card-width='3/4']) {
-    width: min(70vw, 1008px);
-  }
-
-  .track > :global(.content-card[data-card-width='full']) {
-    width: min(88vw, 1267px);
   }
 
   @media (--bp-960) {
     .track {
       gap: var(--space-16);
-    }
-
-    .track > :global(.content-card[data-card-width]) {
-      width: min(56vw, 360px);
     }
   }
 
@@ -249,10 +223,6 @@ const mergedNextProps = {
     .track {
       gap: 12px;
       padding-right: 12px;
-    }
-
-    .track > :global(.content-card[data-card-width]) {
-      width: min(76vw, 280px);
     }
   }
 </style>

@@ -2,6 +2,7 @@ import {readFileSync} from 'node:fs'
 import {describe, expect, it} from 'vitest'
 
 const source = readFileSync(new URL('./CardCarousel.astro', import.meta.url), 'utf8')
+const railCss = readFileSync(new URL('../styles/contentCardRail.css', import.meta.url), 'utf8')
 
 describe('Card Carousel', () => {
   it('uses native horizontal browsing with progressive arrow controls', () => {
@@ -32,13 +33,18 @@ describe('Card Carousel', () => {
     expect(source).toContain('nextButtonProps')
   })
 
-  it('sizes cards through the shared Content Card contract', () => {
-    expect(source).toContain("data-card-width='1/3'")
+  it('sizes cards through the shared Content Card rail contract', () => {
+    expect(source).toContain("import '../styles/contentCardRail.css'")
+    expect(railCss).toContain("data-card-width='1/3'")
+    // Rail widths are literal viewport fractions: 1/3 of the viewport = 33.33vw.
+    expect(railCss).toContain('width: 33.33vw')
+    expect(railCss).toContain('width: 50vw')
     expect(source).not.toContain('.featured')
     expect(source).not.toContain('.standard')
   })
 
   it('keeps cards narrow on mobile', () => {
-    expect(source).toContain('width: min(76vw, 280px)')
+    expect(railCss).toContain('width: min(56vw, 360px)')
+    expect(railCss).toContain('width: min(76vw, 280px)')
   })
 })

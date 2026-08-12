@@ -1,0 +1,58 @@
+/* Content Card sizing on horizontal rails — the homepage News marquee and the
+   Card Carousel ("More stories" rails). Single source of truth so the two
+   rails cannot drift.
+
+   Card Width is a literal fraction of the viewport width: 1/2 = half the
+   viewport, full = the whole viewport. This mirrors cardImageSizes() in
+   lib/contentCard.ts, which builds the img `sizes` attribute from the same
+   fractions. Below 960px every card collapses to one narrow width (the
+   explicit responsive exception — Info stays below too). */
+
+.marquee-set > .content-card,
+card-carousel .track > .content-card {
+  flex: 0 0 auto;
+}
+
+.marquee-set > .content-card[data-card-width='1/4'],
+card-carousel .track > .content-card[data-card-width='1/4'] {
+  width: 25vw;
+}
+
+.marquee-set > .content-card[data-card-width='1/3'],
+card-carousel .track > .content-card[data-card-width='1/3'] {
+  width: 33.33vw;
+}
+
+.marquee-set > .content-card[data-card-width='1/2'],
+card-carousel .track > .content-card[data-card-width='1/2'] {
+  width: 50vw;
+}
+
+.marquee-set > .content-card[data-card-width='2/3'],
+card-carousel .track > .content-card[data-card-width='2/3'] {
+  width: 66.67vw;
+}
+
+.marquee-set > .content-card[data-card-width='3/4'],
+card-carousel .track > .content-card[data-card-width='3/4'] {
+  width: 75vw;
+}
+
+.marquee-set > .content-card[data-card-width='full'],
+card-carousel .track > .content-card[data-card-width='full'] {
+  width: 100vw;
+}
+
+@media (--bp-960) {
+  .marquee-set > .content-card[data-card-width],
+  card-carousel .track > .content-card[data-card-width] {
+    width: min(56vw, 360px);
+  }
+}
+
+@media (--bp-600) {
+  .marquee-set > .content-card[data-card-width],
+  card-carousel .track > .content-card[data-card-width] {
+    width: min(76vw, 280px);
+  }
+}
