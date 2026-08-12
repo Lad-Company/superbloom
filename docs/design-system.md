@@ -247,8 +247,9 @@ eyebrows, nav labels, and order stay in lockstep.
 ### Tag
 
 Small pill, optional editorial taxonomy, distinct from Capability, Deliverables,
-and the Type badge. 0–2 per Article/Case Study. Rendered top-left of the Media
-Frame, inheriting page color mode.
+and the Type badge. Uncapped on Articles (the Type badge is automatic), capped at
+2 on Case Studies; cards always render a capped subset per the Badges rules.
+Rendered top-left of the Media Frame, inheriting page color mode.
 
 ### FAQ
 

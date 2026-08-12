@@ -50,8 +50,8 @@ export const article = defineType({
       name: 'tags',
       type: 'array',
       of: [{type: 'reference', to: [{type: 'tag'}]}],
-      validation: (rule) => rule.max(1),
-      description: 'Max 1 tag; the article type chip is added automatically.',
+      description:
+        'Optional editorial tags, uncapped. The article type chip is added automatically; cards render a capped subset.',
     }),
 
     defineField({
