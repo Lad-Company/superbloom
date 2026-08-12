@@ -162,10 +162,16 @@ Listing/browse composition = a `MediaFrame` + a fixed Info block from a
 content-specific adapter (News, Editorial Article, Zine Article, Case Study).
 Three settings:
 
-- **Card Width** — fraction of the container the whole card occupies:
-  `1/4, 1/3, 1/2, 2/3, 3/4, full`. Full width below 1024px except in explicit
-  carousels.
-- **Media Aspect Ratio** — `intrinsic, 1:1, 4:5, 9:16, 3:2, 16:9, 2:1`.
+- **Card Width** — fraction the whole card occupies: `1/4, 1/3, 1/2, 2/3, 3/4,
+  full`. In grid lists, a fraction of the 12-column container (span 3/4/6/8/9/12).
+  On horizontal rails (News marquee, Card Carousel), a literal fraction of the
+  viewport width — 1/2 = 50vw, full = 100vw — from one shared table
+  (`styles/contentCardRail.css`), mirrored by `cardImageSizes()`. Grid lists go
+  full width below 1024px; rails instead collapse every card to one narrow
+  width below 960px.
+- **Media Aspect Ratio** — `intrinsic, 1:1, 4:5, 9:16, 3:2, 16:9, 2:1`. Card
+  media is capped at 60svh on every surface; taller ratios crop via
+  `object-fit: cover` instead of towering over the row.
 - **Info Position** — `below, left, right`. Left/right require Card Width ≥ `1/2`
   and revert to `below` on mobile.
 

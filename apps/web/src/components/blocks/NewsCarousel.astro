@@ -2,6 +2,7 @@
 import Marquee from '../Marquee.astro'
 import NewsCard from '../NewsCard.astro'
 import SurfaceSection from '../SurfaceSection.astro'
+import '../../styles/contentCardRail.css'
 import type {HomepageQueryResult} from '../../sanity.types'
 import type {ContentCardSettingsInput, PartialContentCardSettings} from '../../lib/contentCard'
 
@@ -74,45 +75,14 @@ const halfItems = Array.from({length: copiesPerHalf}, () => items).flat()
     margin-inline: calc(-1 * var(--page-inset));
   }
 
-  .inner :global(.marquee-set) > :global(.content-card) {
-    flex: 0 0 auto;
-  }
-
-  .inner :global(.marquee-set) > :global(.content-card[data-card-width='1/4']) {
-    width: min(23.3vw, 335px);
-  }
-
-  .inner :global(.marquee-set) > :global(.content-card[data-card-width='1/3']) {
-    width: min(30.75vw, 443px);
-  }
-
-  .inner :global(.marquee-set) > :global(.content-card[data-card-width='1/2']) {
-    width: min(44vw, 634px);
-  }
-
-  .inner :global(.marquee-set) > :global(.content-card[data-card-width='2/3']) {
-    width: min(58vw, 835px);
-  }
-
-  .inner :global(.marquee-set) > :global(.content-card[data-card-width='3/4']) {
-    width: min(70vw, 1008px);
-  }
-
-  .inner :global(.marquee-set) > :global(.content-card[data-card-width='full']) {
-    width: min(88vw, 1267px);
-  }
+  /* Card widths live in styles/contentCardRail.css (shared with CardCarousel):
+     cardWidth is a literal fraction of the viewport (1/2 = 50vw, full = 100vw). */
 
   @media (--bp-small) {
     .inner {
       /* Follows the 100svh media hero, so the top owns the full 64px
          hand-off; bottom 32 pairs with the next section's 32. */
       padding-block: var(--space-m) var(--space-xs);
-    }
-  }
-
-  @media (--bp-960) {
-    .inner :global(.marquee-set) > :global(.content-card[data-card-width]) {
-      width: min(56vw, 360px);
     }
   }
 
@@ -123,10 +93,6 @@ const halfItems = Array.from({length: copiesPerHalf}, () => items).flat()
 
     .inner :global(.marquee-track--items) {
       margin-inline: -12px;
-    }
-
-    .inner :global(.marquee-set) > :global(.content-card[data-card-width]) {
-      width: min(76vw, 280px);
     }
   }
 </style>
