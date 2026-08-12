@@ -281,3 +281,17 @@ Recorded at implementation time against the installed `sanity@4.22` +
   environment: `.env.local` for dev, and the single Vercel project's
   Production scope serves both theta today and the prod hostname after
   launch.
+- **The Presentation connection requires `@sanity/visual-editing` in the
+  preview response** (added 2026-08-12 after the deployed pane failed with
+  "Unable to connect" and an empty "Documents on this page"). The §2.4 "No
+  Visual Editing" decision was implemented as omitting the package entirely,
+  but in sanity v4 the tool establishes its iframe channel — URL reporting,
+  location resolution, and mutation refreshes — over the comlink endpoint
+  that package provides, regardless of overlays. `Layout.astro` now loads
+  `lib/visualEditing.ts` only when the preview cookie is present: it wires a
+  ClientRouter `history` adapter and a `refresh` handler that reloads the
+  page (SSR has no client loaders to patch in place). The §2.4 decision
+  stands functionally: content is not stega-encoded, so the overlay scan
+  finds no targets and no click-to-edit UI appears. Cost: the overlay
+  runtime (~1 MB unminified in dev, lazy-loaded) ships with preview
+  responses only — regular visitors never download it.

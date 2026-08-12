@@ -304,6 +304,17 @@ const gaMode = preview
         if (type) navigationType = type;
       });
     </script>
+    {/* The Presentation tool's connection endpoint. Preview-only: regular
+       visitors never pay for it. Runs once per session (bundled scripts are
+       deduped across View Transitions), which is what the comlink channel
+       wants. */}
+    {preview && (
+      <script>
+        import { initVisualEditing } from '../lib/visualEditing';
+
+        initVisualEditing();
+      </script>
+    )}
     <style is:global>
       *,
       *::before,
