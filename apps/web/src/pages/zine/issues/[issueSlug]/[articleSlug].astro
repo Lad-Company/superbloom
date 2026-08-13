@@ -3,6 +3,7 @@ import Layout from '../../../../layouts/Layout.astro'
 import Footer from '../../../../components/Footer.astro'
 import ContactBand from '../../../../components/ContactBand.astro'
 import ArticleDetail from '../../../../components/editorial/ArticleDetail.astro'
+import ZineStoriesRail from '../../../../components/zine/ZineStoriesRail.astro'
 import {getSanityClient} from '../../../../lib/sanity'
 import {isPreviewRequest} from '../../../../lib/preview'
 import {setContentCache} from '../../../../lib/cacheHeaders'
@@ -23,6 +24,7 @@ if (!result?.article || !result.issueSlug) {
 setContentCache(Astro.response, preview)
 
 const article = result.article
+const moreArticles = (result.articles ?? []).filter((item) => item.slug !== article.slug)
 ---
 
 <Layout
@@ -33,6 +35,13 @@ const article = result.article
   navRole="light"
 >
   <ArticleDetail article={article} />
+  <ZineStoriesRail
+    issueSlug={result.issueSlug}
+    articles={moreArticles}
+    listDefaults={result.listDefaults}
+    articleOverrides={result.articleOverrides}
+    globalCardDefaults={result.globalCardDefaults}
+  />
   <ContactBand role="brand-deep" />
   <Footer />
 </Layout>

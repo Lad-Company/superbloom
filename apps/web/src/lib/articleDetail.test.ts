@@ -9,6 +9,14 @@ const source = readFileSync(
   new URL('../components/editorial/ArticleDetail.astro', import.meta.url),
   'utf8',
 )
+const issueDetailSource = readFileSync(
+  new URL('../components/zine/IssueDetail.astro', import.meta.url),
+  'utf8',
+)
+const zineArticlePageSource = readFileSync(
+  new URL('../pages/zine/issues/[issueSlug]/[articleSlug].astro', import.meta.url),
+  'utf8',
+)
 const newsCardSource = readFileSync(
   new URL('../components/NewsCard.astro', import.meta.url),
   'utf8',
@@ -40,7 +48,23 @@ describe('Article Detail contract', () => {
       expect(query).toContain('publicationDate')
       expect(query).toContain('leadMedia')
       expect(query).toContain('contentLayoutRow')
-      expect(query).toContain('relatedItems')
+    }
+  })
+
+  it('only projects authored related items for editorial articles', () => {
+    expect(editorialArticleBySlugQuery).toContain('relatedItems')
+    expect(zineArticleBySlugQuery).not.toContain('relatedItems')
+  })
+
+  it('projects the issue article rail for zine article pages', () => {
+    expect(zineArticleBySlugQuery).toContain('articles[]->')
+    expect(zineArticleBySlugQuery).toContain('listDefaults')
+    expect(zineArticleBySlugQuery).toContain('articleOverrides')
+  })
+
+  it('renders the same zine More Stories rail on issue and article pages', () => {
+    for (const page of [issueDetailSource, zineArticlePageSource]) {
+      expect(page).toContain('ZineStoriesRail')
     }
   })
 

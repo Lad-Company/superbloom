@@ -17,6 +17,10 @@ const { project, globalSettings } = Astro.props;
 const background = project.primaryColor ?? '#ffffff';
 const foreground = fgForHex(background);
 const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground};`;
+// Fixed Composition: the template art-directs this section, so the card layout
+// is pinned (full-width 50/50, info right, 1:1 media) and the case study's own
+// browse-card settings cannot leak in.
+const cardSettings = {cardWidth: 'full', infoPosition: 'right', mediaAspectRatio: '1:1'} as const;
 ---
 
 {project.slug && (
@@ -25,7 +29,12 @@ const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground}
       <section class="next-project" aria-labelledby="next-project-heading">
         <h2 id="next-project-heading" class="type-eyebrow">Next Project</h2>
         <ContentCardList>
-          <WorkCard item={project} class="next-project-card" globalSettings={globalSettings} />
+          <WorkCard
+            item={project}
+            class="next-project-card"
+            settings={cardSettings}
+            globalSettings={globalSettings}
+          />
         </ContentCardList>
       </section>
     </SurfaceSection>
@@ -37,7 +46,7 @@ const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground}
     padding: var(--space-3xl) var(--page-inset);
   }
   h2 {
-    margin: 0 0 var(--space-xl);
+    margin: 0 0 var(--space-m);
   }
   .next-project :global(.next-project-card .content) {
     gap: var(--space-3xs);
@@ -53,6 +62,21 @@ const vars = `--case-primary-bg: ${background}; --case-primary-fg: ${foreground}
   }
   .next-project :global(.next-project-card .summary) {
     color: var(--fg);
+  }
+  /* Figma measures a 64px channel between media and info, not the shared
+     24px page gutter EditorialCard uses for left/right cards. Desktop only —
+     below 1024 the card stacks and keeps its compact gap. */
+  @media (--bp-desktop) {
+    .next-project :global(.next-project-card[data-info-position='right']) {
+      gap: var(--space-m);
+    }
+  }
+  /* Keep the frame filling its half of the row: with an aspect-ratio box the
+     60svh cap would otherwise shrink-wrap the width (justify-self: auto ->
+     fit-content), leaving dead space in the column. With a definite width the
+     cap crops via object-fit instead, per the card media rule. */
+  .next-project :global(.next-project-card .media-frame) {
+    width: 100%;
   }
   @media (--bp-small) {
     .next-project {

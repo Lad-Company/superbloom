@@ -328,7 +328,12 @@ const articleProjection = `
     source,
     tags[]->{ title, color },
     "leadMedia": leadMedia${mediaProjection},
-    ${articleBodyProjection},
+    ${articleBodyProjection}
+`
+
+// Authored related items power the editorial More Stories rail. Zine article
+// pages instead rail the issue's article list (see zineArticleBySlugQuery).
+const relatedItemsProjection = `
     relatedItems[]->{
       _id,
       _type,
@@ -351,7 +356,8 @@ const articleProjection = `
 
 export const editorialArticleBySlugQuery = defineQuery(`
   *[_type == "article" && articleType == "editorial" && slug.current == $slug][0] {
-    ${articleProjection}
+    ${articleProjection},
+    ${relatedItemsProjection}
   }
 `)
 
@@ -429,6 +435,12 @@ export const zineArticleBySlugQuery = defineQuery(`
   *[_type == "zineIssue" && slug.current == $issueSlug][0]{
     title,
     "issueSlug": slug.current,
+    articles[]->{
+      ${zineArticleCardProjection}
+    },
+    listDefaults,
+    articleOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },
+    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults,
     "article": *[
       _type == "article" &&
       articleType == "zine" &&

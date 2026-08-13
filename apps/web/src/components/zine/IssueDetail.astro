@@ -2,12 +2,10 @@
 import MediaFrame, {type Media} from '../MediaFrame.astro'
 import Button from '../Button.astro'
 import PageHero from '../PageHero.astro'
-import SurfaceSection from '../SurfaceSection.astro'
-import CardCarousel from '../CardCarousel.astro'
 import PortableText from '../PortableText.astro'
 import TagList from '../TagList.astro'
 import ZineLandingIntro from './ZineLandingIntro.astro'
-import ZineArticleCard from './ZineArticleCard.astro'
+import ZineStoriesRail from './ZineStoriesRail.astro'
 import PastIssues from './PastIssues.astro'
 import type {TypedObject} from 'astro-portabletext/types'
 import type {
@@ -69,11 +67,8 @@ interface Props {
 }
 
 const {issue, pastIssues = [], landingIntro} = Astro.props
-const articles = issue.articles ?? []
 const editorLetterLabels = issue.editorLetter?.labels?.map((title) => ({title}))
 const readZineHref = issue.pdfUrl ?? issue.issuuUrl ?? null
-const overrideFor = (id?: string | null) =>
-  issue.articleOverrides?.find((override) => override.articleId === id)
 ---
 
 <article class="issue-detail">
@@ -119,23 +114,17 @@ const overrideFor = (id?: string | null) =>
     )
   }
 
-  <SurfaceSection role="dark" class="stories" aria-labelledby="stories-heading">
-    {
-      issue.slug && (
-        <CardCarousel class="article-rail" label="More stories" heading="More stories" scrollJack={false}>
-          {articles.map((article) => (
-            <ZineArticleCard
-              article={article}
-              issueSlug={issue.slug!}
-              settings={overrideFor((article as {_id?: string})._id)}
-              listSettings={issue.listDefaults}
-              globalSettings={issue.globalCardDefaults}
-            />
-          ))}
-        </CardCarousel>
-      )
-    }
-  </SurfaceSection>
+  {
+    issue.slug && (
+      <ZineStoriesRail
+        issueSlug={issue.slug}
+        articles={issue.articles}
+        listDefaults={issue.listDefaults}
+        articleOverrides={issue.articleOverrides}
+        globalCardDefaults={issue.globalCardDefaults}
+      />
+    )
+  }
 
   <PastIssues issues={pastIssues} />
 </article>
@@ -188,27 +177,6 @@ const overrideFor = (id?: string | null) =>
     margin-bottom: 0;
   }
 
-  .stories {
-    padding: var(--space-4xl) var(--page-inset);
-  }
-
-  :global(.article-rail) {
-    margin-top: var(--space-xl);
-  }
-
-  :global(.article-rail .rail) {
-    margin-right: calc(-1 * var(--page-inset));
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-  }
-
   @media (--bp-below-desktop) {
     .editor-letter {
       grid-template-columns: 1fr;
@@ -223,16 +191,6 @@ const overrideFor = (id?: string | null) =>
   @media (--bp-small) {
     .editor-letter {
       padding-block: var(--space-xs);
-    }
-
-    .stories {
-      padding-block: var(--space-xs);
-    }
-
-    /* The section padding owns the top rhythm on mobile; the rail's desktop
-       96px margin would double it. */
-    :global(.article-rail) {
-      margin-top: 0;
     }
   }
 </style>

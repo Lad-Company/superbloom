@@ -56,7 +56,9 @@ const resolvedSlots = resolveMosaic(
 
 // Mirror of workMosaic's CAPTION_BAND_ROWS: caption text lives in the rows
 // immediately below the slot's media, so adjacent media inside that band
-// must keep text off themselves with gutter padding.
+// must keep text off themselves with gutter padding. The band fits the
+// worst-case caption (8px pad + 2×28.8px headline + 8px gap + 2×22.1px
+// summary = 117.8px) at the 1024px desktop floor, where 12cqw = 122.9px.
 const CAPTION_BAND_ROWS = 12
 
 // The caption's anchored side (left for caption-left, right for
@@ -132,7 +134,7 @@ const anchoredAtEdge = (index: number): boolean => {
                 </MediaFrame>
                 <div class:list={captionClassList}>
                   {item.title && <p class="headline type-h6 line-clamp-2">{item.title}</p>}
-                  {item.summary && <p class="summary type-caption line-clamp-1">{item.summary}</p>}
+                  {item.summary && <p class="summary type-caption line-clamp-2">{item.summary}</p>}
                 </div>
               </a>
             )

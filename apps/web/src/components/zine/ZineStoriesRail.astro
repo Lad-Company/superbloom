@@ -1,0 +1,91 @@
+---
+import SurfaceSection from '../SurfaceSection.astro'
+import CardCarousel from '../CardCarousel.astro'
+import ZineArticleCard from './ZineArticleCard.astro'
+import type {Media} from '../MediaFrame.astro'
+import type {TypedObject} from 'astro-portabletext/types'
+import type {
+  CardWidth,
+  ContentCardSettingsInput,
+  InfoPosition,
+  MediaAspectRatio,
+  PartialContentCardSettings,
+} from '../../lib/contentCard'
+
+type Tag = {title?: string | null; color?: string | null}
+type OverviewBlock = TypedObject & {children?: Array<{text?: string | null}>}
+type Article = {
+  _id?: string | null
+  title?: string | null
+  slug?: string | null
+  overview?: OverviewBlock[] | null
+  publicationDate?: string | null
+  cardWidth?: CardWidth | null
+  mediaAspectRatio?: MediaAspectRatio | null
+  infoPosition?: InfoPosition | null
+  cardMedia?: Media | null
+  tags?: Tag[] | null
+}
+
+interface Props {
+  issueSlug: string
+  articles?: Article[] | null
+  listDefaults?: PartialContentCardSettings
+  articleOverrides?: Array<{articleId?: string | null} & ContentCardSettingsInput> | null
+  globalCardDefaults?: PartialContentCardSettings
+}
+
+const {issueSlug, listDefaults, articleOverrides, globalCardDefaults} = Astro.props
+const articles = Astro.props.articles ?? []
+const overrideFor = (id?: string | null) =>
+  articleOverrides?.find((override) => override.articleId === id)
+---
+
+{
+  articles.length > 0 && (
+    <SurfaceSection role="dark" class="stories">
+      <CardCarousel
+        class="article-rail"
+        label="More stories"
+        heading="More stories"
+        scrollJack={false}
+      >
+        {articles.map((article) => (
+          <ZineArticleCard
+            article={article}
+            issueSlug={issueSlug}
+            settings={overrideFor(article._id)}
+            listSettings={listDefaults}
+            globalSettings={globalCardDefaults}
+          />
+        ))}
+      </CardCarousel>
+    </SurfaceSection>
+  )
+}
+
+<style>
+  .stories {
+    padding: var(--space-4xl) var(--page-inset);
+  }
+
+  :global(.article-rail) {
+    margin-top: var(--space-xl);
+  }
+
+  :global(.article-rail .rail) {
+    margin-right: calc(-1 * var(--page-inset));
+  }
+
+  @media (--bp-small) {
+    .stories {
+      padding-block: var(--space-xs);
+    }
+
+    /* The section padding owns the top rhythm on mobile; the rail's desktop
+       96px margin would double it. */
+    :global(.article-rail) {
+      margin-top: 0;
+    }
+  }
+</style>
