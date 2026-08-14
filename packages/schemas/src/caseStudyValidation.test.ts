@@ -4,60 +4,12 @@
  * schema. Marker paths are what the Studio validation panel uses to deep-link
  * an error to its field, so these tests assert paths — not just messages.
  *
- * Regression: the qualitative-stats secondary-color rule used to return a bare
- * string from the document-level rule, which Studio attaches to the document
- * root (path: []) — the publish banner gave editors no direction to the
- * Secondary Brand Color field.
+ * Regression: cross-field rules used to return bare strings from the
+ * document-level rule, which Studio attaches to the document root
+ * (path: []) — the publish banner gave editors no direction to the field.
  */
 import {describe, expect, it} from 'vitest'
-import {createSchema, validateDocument} from 'sanity'
-import {schemaTypes} from './index'
-
-// Stubs for plugin-registered types (color input, mux) so the schema compiles
-// outside Studio. Their internals don't affect case study validation.
-const pluginStubs = [
-  {
-    name: 'color',
-    title: 'Color',
-    type: 'object',
-    fields: [
-      {name: 'hex', type: 'string'},
-      {name: 'alpha', type: 'number'},
-    ],
-  },
-  {
-    name: 'mux.video',
-    title: 'Video',
-    type: 'object',
-    fields: [{name: 'asset', type: 'reference', to: [{type: 'mux.videoAsset'}]}],
-  },
-  {
-    name: 'mux.videoAsset',
-    title: 'Mux Video Asset',
-    type: 'document',
-    fields: [{name: 'assetId', type: 'string'}],
-  },
-]
-
-const schema = createSchema({name: 'test', types: [...schemaTypes, ...pluginStubs]})
-
-// Minimal client stub: fetch resolves empty, chained config calls return self
-// (the slug uniqueness validator calls withConfig during validation).
-const fakeClient: any = {fetch: async () => []}
-fakeClient.withConfig = () => fakeClient
-fakeClient.withOptions = () => fakeClient
-fakeClient.clone = () => fakeClient
-fakeClient.config = () => ({})
-
-const workspace = {name: 'test', schema, client: fakeClient} as any
-
-const textBlock = (text: string) => ({
-  _type: 'block',
-  _key: 'b1',
-  style: 'normal',
-  markDefs: [],
-  children: [{_type: 'span', _key: 'c1', text, marks: []}],
-})
+import {errorMarkers, mediaBoxImage, textBlock} from './validationHarness'
 
 const narrativeSection = () => ({
   _type: 'caseStudyNarrativeSection',
@@ -73,17 +25,7 @@ function baseCaseStudy(overrides: Record<string, unknown> = {}) {
     client: 'Test Client',
     capabilities: [{_type: 'reference', _ref: 'capability-1', _key: 'cap1'}],
     publicationDate: '2026-01-01T00:00:00.000Z',
-    cardMedia: {
-      _type: 'mediaBox',
-      asset: [
-        {
-          _type: 'image',
-          _key: 'img1',
-          asset: {_type: 'reference', _ref: 'image-abc123-1000x1000-jpg'},
-        },
-      ],
-      altText: 'Alt text',
-    },
+    cardMedia: mediaBoxImage(),
     cardWidth: '1/2',
     mediaAspectRatio: '16:9',
     infoPosition: 'below',
@@ -100,18 +42,6 @@ function baseCaseStudy(overrides: Record<string, unknown> = {}) {
     },
     ...overrides,
   } as any
-}
-
-async function errorMarkers(doc: ReturnType<typeof baseCaseStudy>) {
-  const markers = await validateDocument({
-    document: doc,
-    workspace,
-    getClient: () => fakeClient as any,
-    getDocumentExists: async () => true,
-  } as any)
-  return markers
-    .filter((m: any) => m.level === 'error')
-    .map((m: any) => ({path: m.path, message: m.message ?? m.item?.message}))
 }
 
 const qualitativeResults = {
@@ -158,5 +88,18 @@ describe('case study document validation', () => {
         message: expect.stringContaining('Secondary Brand Color'),
       },
     ])
+  })
+
+  it('points the info-position/card-width error at both card settings fields', async () => {
+    const markers = await errorMarkers(
+      baseCaseStudy({cardWidth: '1/4', infoPosition: 'left'}),
+    )
+    expect(markers).toHaveLength(2)
+    expect(markers).toEqual(
+      expect.arrayContaining([
+        {path: ['infoPosition'], message: expect.stringContaining('Info position')},
+        {path: ['cardWidth'], message: expect.stringContaining('Info position')},
+      ]),
+    )
   })
 })

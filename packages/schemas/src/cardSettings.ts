@@ -99,10 +99,16 @@ export const cardSettingsFieldGroup = (options?: {title?: string; collapsed?: bo
       rule.custom((value, _context) => {
         if (!value) return true
         // Validate info position with card width at object level
-        return validateInfoPositionWithWidth({parent: {
+        const result = validateInfoPositionWithWidth({parent: {
           infoPosition: (value as Record<string, unknown>)?.infoPosition as string,
           cardWidth: (value as Record<string, unknown>)?.cardWidth as string,
         }})
+        if (result !== true) {
+          // Point at the nested fields (either is a valid fix); a bare string
+          // lands on the object root and gives editors no direction.
+          return {message: result, paths: [['infoPosition'], ['cardWidth']]}
+        }
+        return true
       }),
   }),
 ]

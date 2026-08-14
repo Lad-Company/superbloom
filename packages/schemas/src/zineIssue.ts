@@ -157,7 +157,13 @@ export const zineIssue = defineType({
   validation: (rule) =>
     rule.custom((document) => {
       const doc = document as {issuuUrl?: string; pdfAsset?: unknown}
-      return validateIssuuOrPdfRequired(doc)
+      const result = validateIssuuOrPdfRequired(doc)
+      if (result !== true) {
+        // The editor can satisfy this at either field, so mark both; a bare
+        // string lands on the document root and gives no direction.
+        return {message: result, paths: [['issuuUrl'], ['pdfAsset']]}
+      }
+      return true
     }),
   preview: {
     select: {title: 'title'},

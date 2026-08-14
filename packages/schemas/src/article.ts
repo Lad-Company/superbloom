@@ -147,7 +147,11 @@ export const article = defineType({
         infoPosition?: string
       }
       const settingsResult = validateInfoPositionWithWidth({parent: doc})
-      if (settingsResult !== true) return settingsResult
+      if (settingsResult !== true) {
+        // Either field is a valid fix, so mark both; a bare string lands on
+        // the document root and gives editors no direction.
+        return {message: settingsResult, paths: [['infoPosition'], ['cardWidth']]}
+      }
       return validateZineArticleIssueMembership(doc, {
         document: doc,
         getClient: (options) => context.getClient(options),

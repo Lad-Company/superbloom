@@ -169,6 +169,13 @@ export const caseStudy = defineType({
         return {message: secondaryColorValidation, path: ['secondaryColor']}
       }
 
-      return validateInfoPositionWithWidth({parent: doc})
+      const cardSettingsValidation = validateInfoPositionWithWidth({parent: doc})
+      if (cardSettingsValidation !== true) {
+        // Either field is a valid fix, so mark both; a bare string lands on
+        // the document root and gives editors no direction.
+        return {message: cardSettingsValidation, paths: [['infoPosition'], ['cardWidth']]}
+      }
+
+      return true
     }),
 })
