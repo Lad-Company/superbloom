@@ -8,12 +8,19 @@ describe('Case Study Results variants', () => {
     expect(source).toContain("results.variant === 'qualitative'")
   })
 
-  it('stacks qualitative stats as full-bleed bands alternating case surfaces', () => {
+  it('stacks qualitative stats as full-bleed bands on the primary surface only', () => {
     expect(source).toContain('class="bands"')
-    expect(source).toContain('data-surface-role={bandRole(index)}')
-    expect(source).toContain('style={surfaceVars[bandRole(index)]}')
-    expect(source).toContain("index % 2 === 0 ? role : alternateRole")
-    expect(source).toContain("results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-primary'")
+    // No per-band surface alternation — bands inherit the section's primary surface.
+    const qualitativeBranch = source.slice(source.indexOf('qualitative ?'), source.indexOf(') : ('))
+    expect(qualitativeBranch).toContain('class="band"')
+    expect(qualitativeBranch).not.toContain('data-surface-role')
+    expect(qualitativeBranch).not.toContain('surfaceVars')
+    // The Background Color choice applies only to the quantitative grid.
+    expect(source).toContain("!qualitative && results.backgroundColor === 'secondary'")
+  })
+
+  it('separates qualitative bands with the contact-footer hairline', () => {
+    expect(source).toContain('border-top: 1px solid var(--fg-12)')
   })
 
   it('renders qualitative statements with display type and a caption, no count-up hook', () => {
