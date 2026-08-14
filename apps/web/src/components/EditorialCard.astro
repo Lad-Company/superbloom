@@ -14,9 +14,6 @@ interface Props {
   summary?: string | null
   publicationDate?: string | null
   class?: string
-  target?: string
-  rel?: string
-  externalLabel?: string
   ctaLabel?: string | null
   cardId?: string | null
   contentSettings?: PartialContentCardSettings
@@ -32,9 +29,6 @@ const {
   summary,
   publicationDate,
   class: className,
-  target,
-  rel,
-  externalLabel,
   ctaLabel,
   cardId,
   contentSettings,
@@ -55,8 +49,6 @@ const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDa
 <a
   class:list={['editorial-card', 'content-card', className]}
   href={href}
-  target={target}
-  rel={rel}
   data-card-width={resolved.cardWidth}
   data-info-position={resolved.infoPosition}
   data-content-card-id={cardId}
@@ -77,13 +69,6 @@ const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDa
         <time class="publication-date type-caption" datetime={formattedDate.dateTime}>
           {formattedDate.label}
         </time>
-      )
-    }
-    {
-      externalLabel && (
-        <p class="external-label type-caption">
-          {externalLabel} <span aria-hidden="true">↗</span>
-        </p>
       )
     }
     {
@@ -164,10 +149,6 @@ const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDa
 
   .summary {
     color: var(--fg-60);
-  }
-
-  .external-label {
-    margin: 0;
   }
 
   .cta {

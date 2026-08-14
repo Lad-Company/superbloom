@@ -26,10 +26,6 @@ export type ArticleLocationDoc = {
 
 export function resolveArticleLocations(doc: ArticleLocationDoc | null) {
   if (!doc) return {locations: []}
-  // News is a card-only surface (ADR-0022) — no detail page.
-  if (doc.articleType === 'news') {
-    return {locations: [{title: doc.title ?? 'News', href: '/index'}]}
-  }
   if (doc.articleType === 'zine') {
     return {
       locations:

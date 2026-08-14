@@ -14,7 +14,7 @@ Let editors attach a curated **Poster Image** to a video card. A poster card is
 mouse-leave/blur the poster slides back and the video pauses.
 
 Applies to **every content card surface site-wide** (work grid, `HomeWork`,
-`NewsCard`, `MixedArticleCard`, `ZineArticleCard`, `EditorialArticleCard`,
+`ArticleCard`, `MixedArticleCard`, `ZineArticleCard`,
 carousels/rails — anything rendering `EditorialCard` → `MediaFrame`), built once
 in `MediaFrame` + `EditorialCard` so all surfaces inherit it.
 
@@ -61,7 +61,7 @@ in `MediaFrame` + `EditorialCard` so all surfaces inherit it.
   control interaction sets a sticky `userIntent` that survives reduced-motion.
   Cards are Ambient: muted loop, `preload="none"`, no controls, not focusable.
 - **Cards** — `EditorialCard` is a single `<a>` wrapping `MediaFrame` plus text
-  content; the whole card is the link. `WorkCard`, `NewsCard`, etc. compose it.
+  content; the whole card is the link. `WorkCard`, `ArticleCard`, etc. compose it.
 
 **Gap:** a video card always autoplays on visibility, and its only still is the
 un-curated Mux `time=0` frame. Editors cannot art-direct what a video card

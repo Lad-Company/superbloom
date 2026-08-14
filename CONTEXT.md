@@ -60,18 +60,20 @@ content, and experiential campaigns for brand clients.
   `eyebrow` field, e.g. "Issue No. 5"). _Avoid_: announcement bar, masthead.
 - **Zine Article** — a long-form story belonging to exactly one Zine Issue.
   _Avoid_: Editorial Article, News.
-- **News** — press, announcements, and coverage of Superbloom; a lightweight
-  outbound-link card with a required Destination and optional Source, no detail
-  page or body. _Avoid_: blog, posts.
-- **Destination** — the required outbound URL a News card links to.
-- **Source** — the optional outlet label shown on a News card (e.g. "Vogue").
+- **News** — press, announcements, and coverage of Superbloom; a full Article
+  Detail page like Editorial, plus a required Destination powering a footer CTA
+  and an optional Source naming the outlet. _Avoid_: blog, posts.
+- **Destination** — the required outbound URL a News article's footer CTA links
+  to.
+- **Source** — the optional outlet name on a News article (e.g. "Vogue"); the
+  footer CTA reads "Read on {Source}".
 - **Editorial Article** — a standalone long-form, non-Zine editorial identity.
   _Avoid_: Zine Article, News.
 - **Article** — the shared CMS document storing News, Editorial Articles, and Zine
   Articles, discriminated by a required, editor-visible `articleType` select.
   _Avoid_: a fourth visitor-facing type, universal content model.
-- **Article Detail** — the reusable long-form presentation shared by Editorial
-  Articles and Zine Articles (News has no detail page). _Avoid_: universal adapter.
+- **Article Detail** — the reusable long-form presentation shared by News,
+  Editorial Articles, and Zine Articles. _Avoid_: universal adapter.
 - **Index Page** — the mixed Article browse at `/index` (News + Editorial + Zine;
   excludes Case Studies). _Avoid_: All Work, Blog.
 - **Publication Date** — the date used to sort Articles and Case Studies.

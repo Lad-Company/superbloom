@@ -6,13 +6,13 @@ import ArticleDetail from '../../components/editorial/ArticleDetail.astro'
 import {getSanityClient} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {setContentCache} from '../../lib/cacheHeaders'
-import {editorialArticleBySlugQuery} from '../../lib/queries'
+import {articleBySlugQuery} from '../../lib/queries'
 import {seoDescription, seoImage} from '../../lib/seo'
 
 const {slug} = Astro.params
 const preview = isPreviewRequest(Astro.cookies)
 const client = getSanityClient(preview)
-const article = await client.fetch(editorialArticleBySlugQuery, {slug})
+const article = await client.fetch(articleBySlugQuery, {slug})
 
 if (!article) {
   Astro.response.status = 404

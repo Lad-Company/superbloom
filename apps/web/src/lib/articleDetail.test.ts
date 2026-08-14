@@ -1,12 +1,13 @@
 import {readFileSync} from 'node:fs'
 import {describe, expect, it} from 'vitest'
-import {
-  editorialArticleBySlugQuery,
-  zineArticleBySlugQuery,
-} from './queries'
+import {articleBySlugQuery, zineArticleBySlugQuery} from './queries'
 
 const source = readFileSync(
   new URL('../components/editorial/ArticleDetail.astro', import.meta.url),
+  'utf8',
+)
+const articleCardSource = readFileSync(
+  new URL('../components/ArticleCard.astro', import.meta.url),
   'utf8',
 )
 const issueDetailSource = readFileSync(
@@ -15,10 +16,6 @@ const issueDetailSource = readFileSync(
 )
 const zineArticlePageSource = readFileSync(
   new URL('../pages/zine/issues/[issueSlug]/[articleSlug].astro', import.meta.url),
-  'utf8',
-)
-const newsCardSource = readFileSync(
-  new URL('../components/NewsCard.astro', import.meta.url),
   'utf8',
 )
 const homepageNewsSource = readFileSync(
@@ -36,23 +33,36 @@ describe('Article Detail contract', () => {
     expect(source).toContain('class="editorial-title"')
   })
 
-  it('links News cards out to their destination in a new tab', () => {
-    expect(newsCardSource).toContain('item.destination')
-    expect(newsCardSource).toContain('target="_blank"')
-    expect(newsCardSource).toContain('noopener noreferrer')
-    expect(newsCardSource).not.toContain('/news/')
+  it('links News and Editorial cards to their /articles/ detail page', () => {
+    expect(articleCardSource).toContain('`/articles/${item.slug}`')
+    expect(articleCardSource).not.toContain('target="_blank"')
+    expect(articleCardSource).not.toContain('item.destination')
+  })
+
+  it('serves News and Editorial articles from the /articles/ route', () => {
+    expect(articleBySlugQuery).toContain('articleType in ["news", "editorial"]')
+  })
+
+  it('renders a News footer CTA linking out to the destination', () => {
+    expect(articleBySlugQuery).toContain('destination')
+    expect(articleBySlugQuery).toContain('source')
+    expect(source).toContain('article.destination')
+    expect(source).toContain('`Read on ${article.source}`')
+    expect(source).toContain('Read the full story')
+    expect(source).toContain('target="_blank"')
+    expect(source).toContain('noopener noreferrer')
   })
 
   it('projects the shared detail fields from every identity route', () => {
-    for (const query of [editorialArticleBySlugQuery, zineArticleBySlugQuery]) {
+    for (const query of [articleBySlugQuery, zineArticleBySlugQuery]) {
       expect(query).toContain('publicationDate')
       expect(query).toContain('leadMedia')
       expect(query).toContain('contentLayoutRow')
     }
   })
 
-  it('only projects authored related items for editorial articles', () => {
-    expect(editorialArticleBySlugQuery).toContain('relatedItems')
+  it('only projects authored related items for news/editorial articles', () => {
+    expect(articleBySlugQuery).toContain('relatedItems')
     expect(zineArticleBySlugQuery).not.toContain('relatedItems')
   })
 

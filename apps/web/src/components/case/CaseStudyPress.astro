@@ -1,5 +1,5 @@
 ---
-import NewsCard from '../NewsCard.astro';
+import ArticleCard from '../ArticleCard.astro';
 import ContentCardList from '../ContentCardList.astro';
 import SurfaceSection from '../SurfaceSection.astro';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
@@ -13,15 +13,14 @@ interface Props {
 }
 
 const { items, globalSettings } = Astro.props;
-const visibleItems = items.filter((item) => item?.destination).slice(0, 3);
 ---
 
-{visibleItems.length > 0 && (
+{items.length > 0 && (
   <SurfaceSection role="light">
     <section class="press" aria-labelledby="case-study-press-heading">
       <h2 id="case-study-press-heading" class="type-h3">Press</h2>
       <ContentCardList class="grid">
-        {visibleItems.map((item) => <NewsCard item={item} globalSettings={globalSettings} showCopy />)}
+        {items.map((item) => <ArticleCard item={item} globalSettings={globalSettings} showCopy />)}
       </ContentCardList>
     </section>
   </SurfaceSection>

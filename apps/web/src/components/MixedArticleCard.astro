@@ -1,6 +1,5 @@
 ---
-import NewsCard from './NewsCard.astro'
-import EditorialArticleCard from './EditorialArticleCard.astro'
+import ArticleCard from './ArticleCard.astro'
 import ZineArticleCard from './zine/ZineArticleCard.astro'
 import type {Media} from './MediaFrame.astro'
 import type {TypedObject} from 'astro-portabletext/types'
@@ -19,8 +18,6 @@ interface Item {
   issueSlug?: string | null
   overview?: Array<TypedObject & {children?: Array<{text?: string | null}>}> | null
   publicationDate?: string | null
-  destination?: string | null
-  source?: string | null
   cardWidth?: CardWidth | null
   mediaAspectRatio?: MediaAspectRatio | null
   infoPosition?: InfoPosition | null
@@ -48,15 +45,7 @@ const {
 ---
 
 {
-  item.articleType === 'news' ? (
-    <NewsCard
-      item={item}
-      settings={settings}
-      listSettings={listSettings}
-      globalSettings={globalSettings}
-      showCopy={showCopy}
-    />
-  ) : item.articleType === 'zine' ? (
+  item.articleType === 'zine' ? (
     item.issueSlug && (
       <ZineArticleCard
         article={item}
@@ -67,8 +56,8 @@ const {
         minimal={minimal}
       />
     )
-  ) : item.articleType === 'editorial' ? (
-    <EditorialArticleCard
+  ) : item.articleType === 'news' || item.articleType === 'editorial' ? (
+    <ArticleCard
       item={item}
       settings={settings}
       listSettings={listSettings}

@@ -11,14 +11,8 @@ const hasPortableTextContent = (value: unknown) =>
     block.children?.some((child) => Boolean(child.text?.trim())),
   )
 
-export const validateArticleBody = (body: unknown, context: ValidationContext): true | string => {
-  if (Array.isArray(body) && body.length > 0) return true
-
-  const type = context.document?.articleType ?? context.document?._type
-  if (type === 'news') return true
-
-  return 'An article body is required.'
-}
+export const validateArticleBody = (body: unknown): true | string =>
+  Array.isArray(body) && body.length > 0 ? true : 'An article body is required.'
 
 export const validatePortableTextNonEmpty = (value: unknown): true | string =>
   hasPortableTextContent(value) || 'This field is required.'
@@ -52,7 +46,7 @@ export const validateScopedSlugUniqueness = async (
   slug: {current?: string} | undefined,
   context: {
     getClient: (arg: {apiVersion: string}) => {
-      fetch: (query: string, params: Record<string, string>) => Promise<number>
+      fetch: (query: string, params: Record<string, string | string[]>) => Promise<number>
     }
     document?: {_id?: string; articleType?: string}
   },
@@ -65,18 +59,26 @@ export const validateScopedSlugUniqueness = async (
 
   if (!articleType || !publishedId) return true
 
+  // News and Editorial share the /articles/[slug] route, so their slugs must
+  // be unique across both types; Zine articles live under
+  // /zine/issues/[issue]/[article] and scope to zine only.
+  const scopeTypes = articleType === 'zine' ? ['zine'] : ['news', 'editorial']
+
   const query = `count(*[
     _type == "article" &&
-    articleType == $articleType &&
+    articleType in $scopeTypes &&
     slug.current == $slugValue &&
     !(_id in [$publishedId, $draftId])
   ])`
 
   const result = await client.fetch(query, {
-    articleType,
+    scopeTypes,
     slugValue: slug.current,
     publishedId,
     draftId: `drafts.${publishedId}`,
   })
-  return result === 0 || `Slug already exists for article type "${articleType}".`
+  if (result === 0) return true
+  return articleType === 'zine'
+    ? 'Slug already exists for article type "zine".'
+    : 'Slug already exists on a News or Editorial article.'
 }
