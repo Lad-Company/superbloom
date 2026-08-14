@@ -246,7 +246,12 @@ eyebrows, nav labels, and order stay in lockstep.
 - Each narrative section holds ordered Content Layout Rows (`mediaLayouts`).
 - **Results** additionally keeps required stats (1–4, each value + label) plus
   supporting rows (`supportingRows`); its surface is set by `backgroundColor`
-  (`primary` / `secondary`, default `primary`).
+  (`primary` / `secondary`, default `primary`). A `variant` choice switches the
+  stats between **Quantitative** (default: numeric grid with the count-up
+  animation) and **Qualitative** (full-width statement bands stacked in a
+  column, alternating the primary/secondary brand surfaces starting from
+  `backgroundColor`; no count-up). Qualitative requires a Secondary Brand
+  Color so the alternation has two colors to work with.
 - **Press:** 0–3 unique News items, rendered only if at least one resolves.
 - **Next Project:** 0–1 non-self Case Study.
 

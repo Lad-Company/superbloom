@@ -80,6 +80,38 @@ describe('Case Study Contract Validators', () => {
       }
       expect(validateSecondaryColorWithResults(context)).toBe(true)
     })
+
+    it('requires secondary color for qualitative stats even on the primary background', () => {
+      const context = {
+        parent: {
+          secondaryColor: undefined,
+          results: {backgroundColor: 'primary', variant: 'qualitative'},
+        },
+      }
+      const result = validateSecondaryColorWithResults(context)
+      expect(typeof result).toBe('string')
+      expect(result).toContain('required')
+    })
+
+    it('accepts a valid secondary color for qualitative stats', () => {
+      const context = {
+        parent: {
+          secondaryColor: '#3f2293',
+          results: {backgroundColor: 'primary', variant: 'qualitative'},
+        },
+      }
+      expect(validateSecondaryColorWithResults(context)).toBe(true)
+    })
+
+    it('allows missing secondary color for quantitative stats on the primary background', () => {
+      const context = {
+        parent: {
+          secondaryColor: undefined,
+          results: {backgroundColor: 'primary', variant: 'quantitative'},
+        },
+      }
+      expect(validateSecondaryColorWithResults(context)).toBe(true)
+    })
   })
 
   describe('validateCapabilitiesUnique', () => {

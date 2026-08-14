@@ -275,6 +275,7 @@ export const caseStudyBySlugQuery = defineQuery(`
       ${caseStudyMediaLayoutsProjection}
     },
     results{
+      variant,
       backgroundColor,
       stats[]{ _key, value, label },
       supportingRows[]{

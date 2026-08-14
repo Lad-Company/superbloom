@@ -26,10 +26,17 @@ export function validateColorRequired(color: unknown): true | string {
 }
 
 export function validateSecondaryColorWithResults(
-  context: {parent?: {secondaryColor?: unknown; results?: {backgroundColor?: string}}}
+  context: {
+    parent?: {secondaryColor?: unknown; results?: {backgroundColor?: string; variant?: string}}
+  }
 ): true | string {
   const secondaryColor = context.parent?.secondaryColor
   const backgroundColor = context.parent?.results?.backgroundColor
+  const variant = context.parent?.results?.variant
+
+  if (variant === 'qualitative' && !isValidHexColor(secondaryColor)) {
+    return 'Secondary Brand Color is required when Results uses qualitative stats (bands alternate primary/secondary)'
+  }
 
   if (backgroundColor === 'secondary' && !isValidHexColor(secondaryColor)) {
     return 'Secondary Brand Color is required when Results uses the secondary background'
