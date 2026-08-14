@@ -2,7 +2,7 @@
 import type {TypedObject} from 'astro-portabletext/types'
 import MediaFrame, {type Media, type MediaPlaybackProfile, type MediaRatio} from './MediaFrame.astro'
 import PortableText from './PortableText.astro'
-import VideoCarousel from './VideoCarousel.astro'
+import VideoCarousel, {type CarouselLayout} from './VideoCarousel.astro'
 import {
   contentLayoutSizes,
   getContentLayoutRowClassNames,
@@ -37,6 +37,8 @@ type SpacerBlock = {
 type CarouselBlock = {
   _type: 'contentLayoutCarousel'
   _key?: string | null
+  layout?: CarouselLayout | null
+  text?: TypedObject[] | null
   videos?: Array<Media | null> | null
 }
 
@@ -70,9 +72,14 @@ const fullBleed = isContentLayoutFullBleed({
   alignment: row.alignment,
   fullBleed: row.fullBleed,
 })
-// Carousels have no width control because they always render edge-to-edge:
-// a lone carousel block escapes the content gutter at every breakpoint.
-const carouselBleed = blocks.length === 1 && blocks[0]?._type === 'contentLayoutCarousel'
+// Full-width carousels render edge-to-edge: a lone full-layout carousel
+// block escapes the content gutter at every breakpoint. Split layouts
+// (textRight/textLeft) keep the row inset — the carousel overflows only the
+// edge farthest from its text box, handled inside VideoCarousel.
+const carouselBleed =
+  blocks.length === 1 &&
+  blocks[0]?._type === 'contentLayoutCarousel' &&
+  (blocks[0].layout ?? 'full') === 'full'
 // Full-bleed rows escape the content gutter and span the full viewport, so hint
 // the browser at 100vw there for accurate srcset selection.
 const sizesFor = (width?: ContentLayoutWidth | null) =>
@@ -102,7 +109,12 @@ const sizesFor = (width?: ContentLayoutWidth | null) =>
             </div>
           )}
           {block._type === 'contentLayoutCarousel' && (
-            <VideoCarousel videos={block.videos} label={mediaTitle} />
+            <VideoCarousel
+              videos={block.videos}
+              label={mediaTitle}
+              layout={block.layout}
+              text={block.text}
+            />
           )}
         </div>
       ))}

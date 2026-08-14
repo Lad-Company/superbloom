@@ -1,13 +1,29 @@
 ---
 import MediaFrame, {type Media} from './MediaFrame.astro'
+import PortableText from './PortableText.astro'
+import type {TypedObject} from 'astro-portabletext/types'
+
+export type CarouselLayout = 'full' | 'textRight' | 'textLeft'
 
 interface Props {
   videos?: Array<Media | null> | null
   /** Accessible name for the carousel region; defaults to "Video carousel". */
   label?: string | null
+  /** Display variant: 'full' bleeds edge-to-edge with the controls centered
+   *  below; 'textRight'/'textLeft' give the carousel 3/4 of the row with a
+   *  descriptive 1/4 text box beside it and the controls at the carousel's
+   *  bottom inner corner. Documents saved before the layout field existed
+   *  render as 'full'. */
+  layout?: CarouselLayout | null
+  /** Descriptive text box content for the split layouts. */
+  text?: TypedObject[] | null
 }
 
-const {videos, label} = Astro.props
+const {videos, label, text} = Astro.props
+const layout: CarouselLayout =
+  Astro.props.layout === 'textRight' || Astro.props.layout === 'textLeft'
+    ? Astro.props.layout
+    : 'full'
 
 // Defensive: schema validation already requires video assets, but stale or
 // in-flight content could still hold an image — the carousel only plays video.
@@ -18,7 +34,8 @@ const playable = (videos ?? []).filter(
 
 /** Mux stores aspect_ratio as "W:H" ("16:9", "640:360", ...). The ratio sizes
  *  each slide so the video keeps its intrinsic shape while a height cap
- *  narrows tall videos instead of letting them overflow the viewport. */
+ *  narrows tall videos instead of letting them stand taller than a 16:9
+ *  slide. */
 const intrinsicRatio = (video: Media): number => {
   const value = video.asset?._type === 'mux.video' ? video.asset.aspectRatio : null
   const match = value?.match(/^(\d+):(\d+)$/)
@@ -28,63 +45,87 @@ const intrinsicRatio = (video: Media): number => {
   return w > 0 && h > 0 ? w / h : 16 / 9
 }
 
-const ratios = playable.map(intrinsicRatio)
+// Split layouts anchor the active slide to the track edge beside the text and
+// trail upcoming videos past the opposite page gutter — the sequence flows
+// away from the text. textRight reverses the track so the first video sits at
+// the right edge with the rest flowing left; textLeft keeps authored order.
+const ordered = layout === 'textRight' ? [...playable].reverse() : playable
+const ratios = ordered.map(intrinsicRatio)
 const ariaLabel = label?.trim() ? `${label} video carousel` : 'Video carousel'
 const multiple = playable.length > 1
-// The second video is the default active slide so it sits flanked by its
-// neighbours on both sides (the schema requires at least three videos).
-const initialIndex = playable.length > 1 ? 1 : 0
+// The full-width layout opens on the second video so the active slide is
+// flanked by neighbours on both sides; split layouts open on the first video,
+// anchored to the edge beside the text (the schema requires ≥ three videos).
+const initialIndex =
+  layout === 'full' ? (playable.length > 1 ? 1 : 0) : layout === 'textRight' ? ordered.length - 1 : 0
+// Slide numbering follows the authored video order, not the DOM order (the
+// textRight track renders reversed).
+const slideNumber = (index: number) =>
+  layout === 'textRight' ? ordered.length - index : index + 1
 ---
 
 {
   playable.length > 0 && (
     <video-carousel
       class="video-carousel"
+      data-layout={layout}
       aria-label={ariaLabel}
       style={`--ratio-first: ${ratios[0]}; --ratio-last: ${ratios[ratios.length - 1]};`}
     >
-      {multiple && (
-        <div class="header">
-          <button
-            type="button"
-            class="control previous surface-wipe"
-            data-motion-control
-            aria-label="Previous video"
-          >
-            <span class="control__icon" aria-hidden="true">←</span>
-          </button>
-          <button
-            type="button"
-            class="control next surface-wipe"
-            data-motion-control
-            aria-label="Next video"
-          >
-            <span class="control__icon" aria-hidden="true">→</span>
-          </button>
+      {layout === 'textLeft' && (
+        <div class="aside">
+          <PortableText value={text ?? []} />
         </div>
       )}
-      <div class="track" role="region" tabindex="0" aria-label={ariaLabel}>
-        {playable.map((video, index) => (
-          <div
-            class="slide"
-            data-slide
-            data-active={index === initialIndex ? '' : undefined}
-            role="group"
-            aria-roledescription="slide"
-            aria-label={`${index + 1} of ${playable.length}`}
-            style={`--ratio: ${ratios[index]};`}
-          >
-            <MediaFrame
-              media={video}
-              ratio="intrinsic"
-              controls="full"
-              active={index === initialIndex}
-              priority={index === initialIndex}
-              title={video.altText}
-            />
+      <div class="stage">
+        <div class="track" role="region" tabindex="0" aria-label={ariaLabel}>
+          {ordered.map((video, index) => (
+            <div
+              class="slide"
+              data-slide
+              data-active={index === initialIndex ? '' : undefined}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${slideNumber(index)} of ${ordered.length}`}
+              style={`--ratio: ${ratios[index]};`}
+            >
+              <MediaFrame
+                media={video}
+                ratio="intrinsic"
+                controls="full"
+                active={index === initialIndex}
+                priority={index === initialIndex}
+                title={video.altText}
+              />
+            </div>
+          ))}
+        </div>
+        {multiple && (
+          <div class="controls" aria-label={`${ariaLabel} controls`}>
+            <button
+              type="button"
+              class="control previous surface-wipe"
+              data-motion-control
+              aria-label="Previous video"
+            >
+              <span class="control__icon" aria-hidden="true">←</span>
+            </button>
+            <button
+              type="button"
+              class="control next surface-wipe"
+              data-motion-control
+              aria-label="Next video"
+            >
+              <span class="control__icon" aria-hidden="true">→</span>
+            </button>
           </div>
-        ))}
+        )}
       </div>
+      {layout === 'textRight' && (
+        <div class="aside">
+          <PortableText value={text ?? []} />
+        </div>
+      )}
     </video-carousel>
   )
 }
@@ -96,10 +137,26 @@ const initialIndex = playable.length > 1 ? 1 : 0
     private prev: HTMLButtonElement | null = null
     private next: HTMLButtonElement | null = null
     private slideHandlers: Array<{slide: HTMLElement; handler: () => void}> = []
+    private layout: string = 'full'
     private activeIndex = 0
     private scrollFrame = 0
     private targetIndex: number | null = null
     private targetTimer: ReturnType<typeof setTimeout> | null = null
+    // Matches --bp-below-desktop: split layouts stack there and behave like
+    // the full-width layout (centered slides, second-video start).
+    private belowDesktop = window.matchMedia('(max-width: 1023.98px)')
+
+    /** Split layouts anchor the active slide to the track edge beside the
+     *  text on desktop; everywhere else slides center. */
+    private get anchored() {
+      return this.layout !== 'full' && !this.belowDesktop.matches
+    }
+
+    /** Logical navigation direction in DOM order: the textRight track renders
+     *  reversed, so the next video is the previous DOM sibling. */
+    private get navDir() {
+      return this.layout === 'textRight' ? -1 : 1
+    }
 
     private handleScroll = () => {
       if (this.scrollFrame) return
@@ -115,15 +172,21 @@ const initialIndex = playable.length > 1 ? 1 : 0
       if ((event.target as HTMLElement | null)?.closest('media-frame')) return
       if (event.key === 'ArrowLeft') {
         event.preventDefault()
-        this.goTo(this.activeIndex - 1)
+        this.goTo(this.activeIndex - this.navDir)
       } else if (event.key === 'ArrowRight') {
         event.preventDefault()
-        this.goTo(this.activeIndex + 1)
+        this.goTo(this.activeIndex + this.navDir)
       }
     }
 
-    private handlePrevClick = () => this.goTo(this.activeIndex - 1)
-    private handleNextClick = () => this.goTo(this.activeIndex + 1)
+    private handlePrevClick = () => this.goTo(this.activeIndex - this.navDir)
+    private handleNextClick = () => this.goTo(this.activeIndex + this.navDir)
+
+    private handleBreakpoint = () => {
+      // The anchoring mode flipped with the breakpoint; re-align the active
+      // slide instantly.
+      this.scrollToSlide(this.activeIndex, 'auto')
+    }
 
     connectedCallback() {
       this.track = this.querySelector('.track')
@@ -131,12 +194,14 @@ const initialIndex = playable.length > 1 ? 1 : 0
       this.prev = this.querySelector('.previous')
       this.next = this.querySelector('.next')
       if (!this.track || this.slides.length === 0) return
+      this.layout = this.dataset.layout ?? 'full'
       this.dataset.enhanced = 'true'
 
       this.track.addEventListener('scroll', this.handleScroll, {passive: true})
       this.track.addEventListener('keydown', this.handleKeydown)
       this.prev?.addEventListener('click', this.handlePrevClick)
       this.next?.addEventListener('click', this.handleNextClick)
+      this.belowDesktop.addEventListener('change', this.handleBreakpoint)
       this.slides.forEach((slide, index) => {
         const handler = () => {
           if (index !== this.activeIndex) this.goTo(index)
@@ -145,9 +210,14 @@ const initialIndex = playable.length > 1 ? 1 : 0
         slide.addEventListener('click', handler)
       })
 
-      // Open on the second video so the active slide is flanked on both
-      // sides; the jump is instant, before the first paint.
-      const initialIndex = Math.min(1, this.slides.length - 1)
+      // Open on the authored first video in split layouts (anchored to the
+      // text-side edge), otherwise on the second video so the active slide is
+      // flanked on both sides; the jump is instant, before the first paint.
+      const initialIndex = this.anchored
+        ? this.layout === 'textRight'
+          ? this.slides.length - 1
+          : 0
+        : Math.min(1, this.slides.length - 1)
       this.scrollToSlide(initialIndex, 'auto')
       this.setActive(initialIndex)
     }
@@ -163,13 +233,15 @@ const initialIndex = playable.length > 1 ? 1 : 0
       this.track?.removeEventListener('keydown', this.handleKeydown)
       this.prev?.removeEventListener('click', this.handlePrevClick)
       this.next?.removeEventListener('click', this.handleNextClick)
+      this.belowDesktop.removeEventListener('change', this.handleBreakpoint)
       for (const {slide, handler} of this.slideHandlers) {
         slide.removeEventListener('click', handler)
       }
       this.slideHandlers = []
     }
 
-    /** The active slide is whichever sits closest to the track's center. */
+    /** The active slide is whichever sits at the anchor: closest to the
+     *  text-side track edge in split layouts, or to the center otherwise. */
     private nearestIndex(): number {
       if (!this.track) return 0
       const trackRect = this.track.getBoundingClientRect()
@@ -178,7 +250,11 @@ const initialIndex = playable.length > 1 ? 1 : 0
       let bestDistance = Infinity
       this.slides.forEach((slide, index) => {
         const rect = slide.getBoundingClientRect()
-        const distance = Math.abs(rect.left + rect.width / 2 - center)
+        const distance = this.anchored
+          ? this.layout === 'textRight'
+            ? Math.abs(rect.right - trackRect.right)
+            : Math.abs(rect.left - trackRect.left)
+          : Math.abs(rect.left + rect.width / 2 - center)
         if (distance < bestDistance) {
           bestDistance = distance
           best = index
@@ -208,7 +284,7 @@ const initialIndex = playable.length > 1 ? 1 : 0
         const isActive = i === index
         slide.toggleAttribute('data-active', isActive)
         // Media Frame gates playback on its `active` attribute: only the
-        // centered video can play; neighbours pause as they recede.
+        // anchored video can play; neighbours pause as they recede.
         slide.querySelector('media-frame')?.toggleAttribute('active', isActive)
       })
       this.updateNav()
@@ -216,18 +292,28 @@ const initialIndex = playable.length > 1 ? 1 : 0
 
     private updateNav() {
       if (!this.prev || !this.next) return
-      this.prev.disabled = this.activeIndex <= 0
-      this.next.disabled = this.activeIndex >= this.slides.length - 1
+      const last = this.slides.length - 1
+      // The textRight track renders reversed, so the authored first/last
+      // videos sit at the opposite DOM ends and the disabled ends swap.
+      this.prev.disabled =
+        this.layout === 'textRight' ? this.activeIndex >= last : this.activeIndex <= 0
+      this.next.disabled =
+        this.layout === 'textRight' ? this.activeIndex <= 0 : this.activeIndex >= last
     }
 
-    /** Scrolls so the given slide's center lands on the track's center. */
+    /** Scrolls so the given slide lands on the anchor: the text-side track
+     *  edge in split layouts, or the track's center otherwise. */
     private scrollToSlide(index: number, behavior: ScrollBehavior) {
       if (!this.track) return
       const slide = this.slides[index]
       if (!slide) return
       const trackRect = this.track.getBoundingClientRect()
       const slideRect = slide.getBoundingClientRect()
-      const delta = slideRect.left + slideRect.width / 2 - (trackRect.left + trackRect.width / 2)
+      const delta = this.anchored
+        ? this.layout === 'textRight'
+          ? slideRect.right - trackRect.right
+          : slideRect.left - trackRect.left
+        : slideRect.left + slideRect.width / 2 - (trackRect.left + trackRect.width / 2)
       this.track.scrollTo({left: this.track.scrollLeft + delta, behavior})
     }
 
@@ -255,15 +341,64 @@ const initialIndex = playable.length > 1 ? 1 : 0
 
 <style>
   .video-carousel {
-    container-type: inline-size;
     display: block;
     position: relative;
+  }
+
+  /* Split layouts: the carousel block always spans the row's full width, so
+     this inner 12-column grid (same gutter) aligns with the page grid — the
+     stage takes 3/4, the text box 1/4, top-aligned. */
+  .video-carousel[data-layout='textRight'],
+  .video-carousel[data-layout='textLeft'] {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--page-gutter);
+    align-items: start;
+  }
+
+  /* The stage is the carousel's visible region and the container-query
+     context for every slide measurement. In split layouts it overflows only
+     the edge farthest from the text, flowing past the page gutter to the
+     viewport edge; the text side stays flush with the grid. */
+  .stage {
+    container-type: inline-size;
+    position: relative;
+    min-width: 0;
     /* Slide width: the smaller of the carousel share and the height cap
        expressed through the video's own ratio, so every video renders at its
-       intrinsic aspect ratio and tall (portrait) videos narrow instead of
-       overflowing the viewport. */
+       intrinsic aspect ratio. The cap is the height a 16:9 video has at full
+       slide width — no video ever stands taller than that, whatever its
+       ratio. */
     --slide-w: 76cqw;
-    --cap-h: 80svh;
+    --cap-h: calc(var(--slide-w) * 9 / 16);
+  }
+
+  .video-carousel[data-layout='textRight'] .stage {
+    grid-column: 1 / 10;
+    margin-left: calc(-1 * var(--page-inset));
+  }
+
+  .video-carousel[data-layout='textRight'] .aside {
+    grid-column: 10 / -1;
+  }
+
+  .video-carousel[data-layout='textLeft'] .stage {
+    grid-column: 4 / -1;
+    margin-right: calc(-1 * var(--page-inset));
+  }
+
+  .video-carousel[data-layout='textLeft'] .aside {
+    grid-column: 1 / 4;
+  }
+
+  .aside {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .aside :global(a:focus-visible) {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
   }
 
   .track {
@@ -284,12 +419,35 @@ const initialIndex = playable.length > 1 ? 1 : 0
     display: none;
   }
 
+  /* Split layouts (desktop): the active slide anchors to the text-side track
+     edge, so the padding moves to the far edge — that is what lets the last
+     upcoming video reach the anchor while the rest trail past the gutter.
+     textRight anchors right (its track renders reversed); textLeft anchors
+     left. */
+  @media (--bp-desktop) {
+    .video-carousel[data-layout='textRight'] .track {
+      padding-inline: calc(100cqw - min(var(--slide-w), calc(var(--cap-h) * var(--ratio-first)))) 0;
+    }
+
+    .video-carousel[data-layout='textLeft'] .track {
+      padding-inline: 0 calc(100cqw - min(var(--slide-w), calc(var(--cap-h) * var(--ratio-last))));
+    }
+
+    .video-carousel[data-layout='textRight'] .slide {
+      scroll-snap-align: end;
+    }
+
+    .video-carousel[data-layout='textLeft'] .slide {
+      scroll-snap-align: start;
+    }
+  }
+
   .slide {
     flex: 0 0 auto;
     width: min(var(--slide-w), calc(var(--cap-h) * var(--ratio)));
     scroll-snap-align: center;
     position: relative;
-    /* Receded state: neighbours shrink and dim so the centered video sits
+    /* Receded state: neighbours shrink and dim so the anchored video sits
        slightly forward in space. */
     transform: scale(0.92);
     opacity: 0.55;
@@ -304,8 +462,8 @@ const initialIndex = playable.length > 1 ? 1 : 0
     z-index: 2;
   }
 
-  /* Only the centered video shows its Media Control Bar and receives
-     pointer input; side slides are click-to-center surfaces. */
+  /* Only the anchored video shows its Media Control Bar and receives
+     pointer input; trailing slides are click-to-anchor surfaces. */
   .slide:not([data-active]) {
     cursor: pointer;
   }
@@ -318,19 +476,31 @@ const initialIndex = playable.length > 1 ? 1 : 0
     display: none;
   }
 
-  /* Controls match the Card Carousel style (40px bordered squares) but
-     spread to opposite sides of the page. The header keeps the page inset so
-     the buttons align with the page grid while the track bleeds
-     edge-to-edge. */
-  .header {
+  /* Controls match the Card Carousel style (40px bordered squares), grouped
+     at the Card Carousel's spacing and placed per layout: centered below the
+     full-width track, or at the carousel's bottom inner corner in the split
+     layouts (bottom right beside right-hand text, bottom left beside
+     left-hand text). */
+  .controls {
     display: flex;
-    align-items: end;
-    justify-content: space-between;
-    margin-bottom: var(--space-xs);
-    padding-inline: var(--page-inset);
+    align-items: center;
+    gap: var(--space-3xs);
+    margin-top: var(--space-xs);
   }
 
-  video-carousel:not([data-enhanced]) .header {
+  .video-carousel[data-layout='full'] .controls {
+    justify-content: center;
+  }
+
+  .video-carousel[data-layout='textRight'] .controls {
+    justify-content: flex-end;
+  }
+
+  .video-carousel[data-layout='textLeft'] .controls {
+    justify-content: flex-start;
+  }
+
+  video-carousel:not([data-enhanced]) .controls {
     display: none;
   }
 
@@ -369,9 +539,32 @@ const initialIndex = playable.length > 1 ? 1 : 0
   }
 
   @media (--bp-below-desktop) {
-    .video-carousel {
+    .stage {
       --slide-w: 84cqw;
-      --cap-h: 64svh;
+    }
+
+    /* Split layouts stack in authored order (left-hand text above the
+       carousel, right-hand text below it); the track then bleeds both edges
+       and the controls center, matching the full-width layout. */
+    .video-carousel[data-layout='textRight'],
+    .video-carousel[data-layout='textLeft'] {
+      grid-template-columns: 1fr;
+    }
+
+    .video-carousel[data-layout='textRight'] .stage,
+    .video-carousel[data-layout='textLeft'] .stage {
+      grid-column: 1 / -1;
+      margin-inline: calc(-1 * var(--page-inset));
+    }
+
+    .video-carousel[data-layout='textRight'] .aside,
+    .video-carousel[data-layout='textLeft'] .aside {
+      grid-column: 1 / -1;
+    }
+
+    .video-carousel[data-layout='textRight'] .controls,
+    .video-carousel[data-layout='textLeft'] .controls {
+      justify-content: center;
     }
   }
 
