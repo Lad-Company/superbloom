@@ -116,8 +116,10 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
     bar is the user-override surface, not an alternative to the ambient gating.
     Auto-hides after 2.5s of pointer/focus idle while playing; reappears on any
     pointer movement, focus, or pause; always visible under reduced-motion user
-    intent and when the user is paused. Today: WhoWeAre featured media + Case
-    Study lead media (full-bleed video only).
+    intent and when the user is paused. Today: WhoWeAre featured media and
+    every Case Study video — lead media, narrative/results row media
+    (`ContentLayoutRow mediaControls="full"`), and the video carousel.
+    Editorial article body rows keep the Ambient default.
 
     > Surface assignment deviation from the spec: `docs/media-playback-spec.md`
     > §2 lists the **Home hero (3:2)** and the **Zine hero (16:9)** as

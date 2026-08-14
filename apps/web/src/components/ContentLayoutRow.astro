@@ -1,6 +1,6 @@
 ---
 import type {TypedObject} from 'astro-portabletext/types'
-import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro'
+import MediaFrame, {type Media, type MediaPlaybackProfile, type MediaRatio} from './MediaFrame.astro'
 import PortableText from './PortableText.astro'
 import VideoCarousel from './VideoCarousel.astro'
 import {
@@ -51,9 +51,14 @@ export interface ContentLayoutRowValue {
 interface Props {
   row: ContentLayoutRowValue
   mediaTitle?: string | null
+  /** Playback profile for the row's video blocks. Case Study sections pass
+   *  'full' (the Presented Media Control Bar, same as the case lead media);
+   *  editorial articles keep the Ambient default. Images are unaffected —
+   *  MediaFrame only renders controls for mux.video assets. */
+  mediaControls?: MediaPlaybackProfile
 }
 
-const {row, mediaTitle} = Astro.props
+const {row, mediaTitle, mediaControls = 'none'} = Astro.props
 const blocks = row.blocks ?? []
 const classes = getContentLayoutRowClassNames({
   blocks,
@@ -88,6 +93,7 @@ const sizesFor = (width?: ContentLayoutWidth | null) =>
               ratio={block.aspectRatio ?? '16:9'}
               sizes={sizesFor(block.width ?? undefined)}
               title={mediaTitle}
+              controls={block.media?.asset?._type === 'mux.video' ? mediaControls : 'none'}
             />
           )}
           {block._type === 'contentLayoutText' && (

@@ -124,4 +124,14 @@ describe('Content Layout Row rendering contract', () => {
     expect(componentSource).toContain('sizes={sizesFor(block.width ?? undefined)}')
     expect(componentSource).toContain("'100vw'")
   });
+
+  it('gives Case Study row videos the Presented control bar while articles stay Ambient', () => {
+    expect(componentSource).toContain('mediaControls?: MediaPlaybackProfile');
+    expect(componentSource).toContain(
+      "controls={block.media?.asset?._type === 'mux.video' ? mediaControls : 'none'}",
+    );
+    expect(caseStudyRendererSource).toContain('mediaControls="full"');
+    expect(resultsRendererSource).toContain('mediaControls="full"');
+    expect(articleRendererSource).not.toContain('mediaControls');
+  });
 });

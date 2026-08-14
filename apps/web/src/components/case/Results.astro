@@ -42,7 +42,7 @@ const supportingRows = results.supportingRows ?? [];
       {supportingRows.length > 0 && (
         <div class="supporting">
           {supportingRows.map((row) => (
-            <ContentLayoutRow row={row} />
+            <ContentLayoutRow row={row} mediaControls="full" />
           ))}
         </div>
       )}
@@ -60,7 +60,7 @@ const supportingRows = results.supportingRows ?? [];
         ))}
       </ul>
       {supportingRows.map((row) => (
-        <ContentLayoutRow row={row} />
+        <ContentLayoutRow row={row} mediaControls="full" />
       ))}
     </div>
   </SurfaceSection>

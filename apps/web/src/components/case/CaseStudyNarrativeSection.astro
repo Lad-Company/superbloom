@@ -26,7 +26,7 @@ const { id, label, section, title } = Astro.props;
       </div>
     </div>
     {(section.mediaLayouts ?? []).map((row) => (
-      <ContentLayoutRow row={row} mediaTitle={title} />
+      <ContentLayoutRow row={row} mediaTitle={title} mediaControls="full" />
     ))}
   </div>
 </SurfaceSection>
