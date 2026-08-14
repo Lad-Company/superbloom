@@ -40,6 +40,28 @@ const multiple = playable.length > 1
       aria-label={ariaLabel}
       style={`--ratio-first: ${ratios[0]}; --ratio-last: ${ratios[ratios.length - 1]};`}
     >
+      {multiple && (
+        <div class="header">
+          <div class="controls" aria-label={`${ariaLabel} controls`}>
+            <button
+              type="button"
+              class="control previous surface-wipe"
+              data-motion-control
+              aria-label="Previous video"
+            >
+              <span class="control__icon" aria-hidden="true">←</span>
+            </button>
+            <button
+              type="button"
+              class="control next surface-wipe"
+              data-motion-control
+              aria-label="Next video"
+            >
+              <span class="control__icon" aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+      )}
       <div class="track" role="region" tabindex="0" aria-label={ariaLabel}>
         {playable.map((video, index) => (
           <div
@@ -62,26 +84,6 @@ const multiple = playable.length > 1
           </div>
         ))}
       </div>
-      {multiple && (
-        <button
-          type="button"
-          class="nav-btn prev surface-wipe"
-          data-motion-control
-          aria-label="Previous video"
-        >
-          <span class="nav-icon" aria-hidden="true">←</span>
-        </button>
-      )}
-      {multiple && (
-        <button
-          type="button"
-          class="nav-btn next surface-wipe"
-          data-motion-control
-          aria-label="Next video"
-        >
-          <span class="nav-icon" aria-hidden="true">→</span>
-        </button>
-      )}
     </video-carousel>
   )
 }
@@ -125,7 +127,7 @@ const multiple = playable.length > 1
     connectedCallback() {
       this.track = this.querySelector('.track')
       this.slides = Array.from(this.querySelectorAll('[data-slide]'))
-      this.prev = this.querySelector('.prev')
+      this.prev = this.querySelector('.previous')
       this.next = this.querySelector('.next')
       if (!this.track || this.slides.length === 0) return
       this.dataset.enhanced = 'true'
@@ -308,57 +310,58 @@ const multiple = playable.length > 1
     display: none;
   }
 
-  .nav-btn {
-    position: absolute;
-    top: calc(50% - 20px);
-    z-index: 3;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  /* Controls match the Card Carousel: a header row above the track with
+     40px bordered prev/next buttons. The header keeps the page inset so the
+     buttons align with the page grid while the track bleeds edge-to-edge. */
+  .header {
+    display: flex;
+    align-items: end;
+    justify-content: flex-end;
+    margin-bottom: var(--space-xs);
+    padding-inline: var(--page-inset);
+  }
+
+  .controls {
+    display: flex;
+    gap: var(--space-3xs);
+  }
+
+  video-carousel:not([data-enhanced]) .controls {
+    display: none;
+  }
+
+  .control {
     width: 40px;
     height: 40px;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: var(--control-bg);
-    color: var(--control-fg);
+    border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: inherit;
     cursor: pointer;
-    --wipe-surface: var(--control-fg);
-    --wipe-ink: var(--control-bg);
+    --wipe-surface: var(--fg);
+    --wipe-ink: var(--bg);
   }
 
-  .prev {
-    left: var(--space-2xs);
-  }
-
-  .next {
-    right: var(--space-2xs);
-  }
-
-  .nav-btn:disabled {
+  .control:disabled {
     cursor: default;
     opacity: 0.5;
   }
 
-  .nav-btn:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 3px;
-  }
-
-  .nav-icon {
+  .control__icon {
     position: relative;
     z-index: 2;
   }
 
+  .control:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
   /* Without the carousel enhancement, native scroll + snap still browse the
-     videos; show every slide plainly and drop the inert buttons. */
+     videos; show every slide plainly. */
   video-carousel:not([data-enhanced]) .slide {
     transform: none;
     opacity: 1;
-  }
-
-  video-carousel:not([data-enhanced]) .nav-btn {
-    display: none;
   }
 
   @media (--bp-below-desktop) {

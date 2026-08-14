@@ -37,6 +37,22 @@ describe('Video Carousel', () => {
     expect(source).toContain("closest('media-frame')")
   })
 
+  it('styles and positions prev/next controls like the Card Carousel header', () => {
+    expect(source).toContain('class="control previous surface-wipe"')
+    expect(source).toContain('class="control next surface-wipe"')
+    expect(source).toContain('border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent)')
+    expect(source).toContain('border-radius: var(--radius-control)')
+    expect(source).toContain('justify-content: flex-end')
+    // The header keeps the page inset so buttons align with the page grid
+    // while the track bleeds edge-to-edge.
+    expect(source).toContain('padding-inline: var(--page-inset)')
+  })
+
+  it('bleeds edge-to-edge with no gutters at every breakpoint', () => {
+    expect(rowSource).toContain("'carousel-bleed': carouselBleed")
+    expect(rowSource).toContain('.content-layout-row.carousel-bleed')
+  })
+
   it('renders video assets only, matching the schema contract', () => {
     expect(source).toContain("video?.asset?._type === 'mux.video'")
   })
