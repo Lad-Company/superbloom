@@ -4,6 +4,7 @@ import {
   validateContentLayoutRow,
   validateTwoBlockRowWidths,
 } from './contentLayoutContract'
+import {contentLayoutCarousel} from './contentLayoutCarousel'
 import {contentLayoutMedia} from './contentLayoutMedia'
 import {contentLayoutRow} from './contentLayoutRow'
 import {contentLayoutText} from './contentLayoutText'
@@ -104,7 +105,7 @@ describe('Content Layout Row contract', () => {
     })).toBe(true)
   })
 
-  it('registers Media, Text, and Spacer blocks and removes legacy layout types', () => {
+  it('registers Media, Text, Spacer, and Video Carousel blocks and removes legacy layout types', () => {
     const blocks = contentLayoutRow.fields.find((field) => field.name === 'blocks')
     expect(blocks?.type).toBe('array')
     const ofType = (blocks as {of?: Array<{type: string}>} | undefined)?.of
@@ -112,6 +113,7 @@ describe('Content Layout Row contract', () => {
       'contentLayoutMedia',
       'contentLayoutText',
       'contentLayoutSpacer',
+      'contentLayoutCarousel',
     ])
 
     const registeredTypes = schemaTypes.map((type) => type.name)
@@ -120,6 +122,7 @@ describe('Content Layout Row contract', () => {
       'contentLayoutMedia',
       'contentLayoutText',
       'contentLayoutSpacer',
+      'contentLayoutCarousel',
     ]))
     for (const legacyType of [
       'articleTextSection',
@@ -146,6 +149,34 @@ describe('Content Layout Row contract', () => {
     expect(bodyOf?.map((member) => member.type)).toEqual(['contentLayoutRow'])
     expect(narrativeOf?.map((member) => member.type)).toEqual(['contentLayoutRow'])
     expect(resultsOf?.map((member) => member.type)).toEqual(['contentLayoutRow'])
+  })
+
+  it('allows a lone Video Carousel block with no width', () => {
+    expect(validateContentLayoutRow({
+      blocks: [{_type: 'contentLayoutCarousel'}],
+    })).toBe(true)
+  })
+
+  it('rejects a Video Carousel sharing its row, from either validator', () => {
+    const row = {
+      blocks: [
+        {_type: 'contentLayoutCarousel'},
+        {_type: 'contentLayoutText', width: '1/2'},
+      ],
+    }
+    expect(validateContentLayoutRow(row)).toContain('spans the full row')
+    // The blocks-array validator defers to the row validator's message.
+    expect(validateTwoBlockRowWidths(row.blocks)).toBe(true)
+  })
+
+  it('gives the Video Carousel Block videos and no width control', () => {
+    const fieldNames = contentLayoutCarousel.fields.map((field) => field.name)
+    expect(fieldNames).not.toContain('width')
+    const videos = contentLayoutCarousel.fields.find((field) => field.name === 'videos')
+    expect(videos?.type).toBe('array')
+    expect((videos as {of?: Array<{type: string}>} | undefined)?.of?.map((member) => member.type))
+      .toEqual(['mediaBox'])
+    expect(videos?.validation).toBeTypeOf('function')
   })
 
   it('reuses mediaBox and the global Media Frame aspect ratios', () => {

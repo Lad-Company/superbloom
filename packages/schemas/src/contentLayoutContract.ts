@@ -22,10 +22,16 @@ const WIDTH_VALUES: Record<string, number> = {
   full: 1,
 }
 
+const isCarouselBlock = (block: ContentLayoutBlock) =>
+  block?._type === 'contentLayoutCarousel'
+
 export const validateTwoBlockRowWidths = (blocks: unknown): true | string => {
   if (!Array.isArray(blocks) || blocks.length !== 2) return true
 
   const [first, second] = blocks as ContentLayoutBlock[]
+  // Carousel rows are rejected by validateContentLayoutRow with a clearer
+  // message; don't pile on a width error here.
+  if (isCarouselBlock(first) || isCarouselBlock(second)) return true
   if (!first.width || !second.width) return 'Every Content Layout block requires a width.'
 
   return WIDTH_VALUES[first.width] + WIDTH_VALUES[second.width] === 1 ||
@@ -45,6 +51,15 @@ export const validateContentLayoutRow = (value: unknown): true | string => {
   if (!Array.isArray(blocks) || blocks.length < 1 || blocks.length > 3) {
     return 'A Content Layout Row must contain one, two, or three blocks.'
   }
+
+  // Carousels have no width control: they always take the full row, so a
+  // carousel can never share a row with other blocks.
+  if (blocks.some(isCarouselBlock)) {
+    return blocks.length === 1
+      ? true
+      : 'A Video Carousel Block always spans the full row. Remove the other blocks from this row.'
+  }
+
   if (blocks.some((block) => !block.width)) {
     return 'Every Content Layout block requires a width.'
   }
