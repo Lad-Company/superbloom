@@ -25,6 +25,7 @@ import {siteSettings} from './siteSettings'
 import {contentLayoutMedia} from './contentLayoutMedia'
 import {contentLayoutText} from './contentLayoutText'
 import {contentLayoutSpacer} from './contentLayoutSpacer'
+import {contentLayoutCarousel} from './contentLayoutCarousel'
 import {contentLayoutRow} from './contentLayoutRow'
 
 export {migrateLegacyCaseStudyBlock} from './caseStudyMigration'
@@ -65,5 +66,6 @@ export const schemaTypes = [
   contentLayoutMedia,
   contentLayoutText,
   contentLayoutSpacer,
+  contentLayoutCarousel,
   contentLayoutRow,
 ]

@@ -1,0 +1,376 @@
+---
+import MediaFrame, {type Media} from './MediaFrame.astro'
+
+interface Props {
+  videos?: Array<Media | null> | null
+  /** Accessible name for the carousel region; defaults to "Video carousel". */
+  label?: string | null
+}
+
+const {videos, label} = Astro.props
+
+// Defensive: schema validation already requires video assets, but stale or
+// in-flight content could still hold an image — the carousel only plays video.
+const playable = (videos ?? []).filter(
+  (video): video is Media =>
+    video?.asset?._type === 'mux.video' && Boolean(video.asset.playbackId),
+)
+
+/** Mux stores aspect_ratio as "W:H" ("16:9", "640:360", ...). The ratio sizes
+ *  each slide so the video keeps its intrinsic shape while a height cap
+ *  narrows tall videos instead of letting them overflow the viewport. */
+const intrinsicRatio = (video: Media): number => {
+  const value = video.asset?._type === 'mux.video' ? video.asset.aspectRatio : null
+  const match = value?.match(/^(\d+):(\d+)$/)
+  if (!match) return 16 / 9
+  const w = Number(match[1])
+  const h = Number(match[2])
+  return w > 0 && h > 0 ? w / h : 16 / 9
+}
+
+const ratios = playable.map(intrinsicRatio)
+const ariaLabel = label?.trim() ? `${label} video carousel` : 'Video carousel'
+const multiple = playable.length > 1
+---
+
+{
+  playable.length > 0 && (
+    <video-carousel
+      class="video-carousel"
+      aria-label={ariaLabel}
+      style={`--ratio-first: ${ratios[0]}; --ratio-last: ${ratios[ratios.length - 1]};`}
+    >
+      <div class="track" role="region" tabindex="0" aria-label={ariaLabel}>
+        {playable.map((video, index) => (
+          <div
+            class="slide"
+            data-slide
+            data-active={index === 0 ? '' : undefined}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${index + 1} of ${playable.length}`}
+            style={`--ratio: ${ratios[index]};`}
+          >
+            <MediaFrame
+              media={video}
+              ratio="intrinsic"
+              controls="full"
+              active={index === 0}
+              priority={index === 0}
+              title={video.altText}
+            />
+          </div>
+        ))}
+      </div>
+      {multiple && (
+        <button
+          type="button"
+          class="nav-btn prev surface-wipe"
+          data-motion-control
+          aria-label="Previous video"
+        >
+          <span class="nav-icon" aria-hidden="true">←</span>
+        </button>
+      )}
+      {multiple && (
+        <button
+          type="button"
+          class="nav-btn next surface-wipe"
+          data-motion-control
+          aria-label="Next video"
+        >
+          <span class="nav-icon" aria-hidden="true">→</span>
+        </button>
+      )}
+    </video-carousel>
+  )
+}
+
+<script>
+  class VideoCarouselElement extends HTMLElement {
+    private track: HTMLElement | null = null
+    private slides: HTMLElement[] = []
+    private prev: HTMLButtonElement | null = null
+    private next: HTMLButtonElement | null = null
+    private slideHandlers: Array<{slide: HTMLElement; handler: () => void}> = []
+    private activeIndex = 0
+    private scrollFrame = 0
+    private targetIndex: number | null = null
+    private targetTimer: ReturnType<typeof setTimeout> | null = null
+
+    private handleScroll = () => {
+      if (this.scrollFrame) return
+      this.scrollFrame = requestAnimationFrame(() => {
+        this.scrollFrame = 0
+        this.syncActiveFromScroll()
+      })
+    }
+
+    private handleKeydown = (event: KeyboardEvent) => {
+      // Arrow keys belong to the Media Frame scrubber when focus is inside a
+      // video's controls; the carousel only steers from the region itself.
+      if ((event.target as HTMLElement | null)?.closest('media-frame')) return
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        this.goTo(this.activeIndex - 1)
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        this.goTo(this.activeIndex + 1)
+      }
+    }
+
+    private handlePrevClick = () => this.goTo(this.activeIndex - 1)
+    private handleNextClick = () => this.goTo(this.activeIndex + 1)
+
+    connectedCallback() {
+      this.track = this.querySelector('.track')
+      this.slides = Array.from(this.querySelectorAll('[data-slide]'))
+      this.prev = this.querySelector('.prev')
+      this.next = this.querySelector('.next')
+      if (!this.track || this.slides.length === 0) return
+      this.dataset.enhanced = 'true'
+
+      this.track.addEventListener('scroll', this.handleScroll, {passive: true})
+      this.track.addEventListener('keydown', this.handleKeydown)
+      this.prev?.addEventListener('click', this.handlePrevClick)
+      this.next?.addEventListener('click', this.handleNextClick)
+      this.slides.forEach((slide, index) => {
+        const handler = () => {
+          if (index !== this.activeIndex) this.goTo(index)
+        }
+        this.slideHandlers.push({slide, handler})
+        slide.addEventListener('click', handler)
+      })
+
+      this.syncActiveFromScroll()
+    }
+
+    disconnectedCallback() {
+      cancelAnimationFrame(this.scrollFrame)
+      this.scrollFrame = 0
+      if (this.targetTimer !== null) {
+        clearTimeout(this.targetTimer)
+        this.targetTimer = null
+      }
+      this.track?.removeEventListener('scroll', this.handleScroll)
+      this.track?.removeEventListener('keydown', this.handleKeydown)
+      this.prev?.removeEventListener('click', this.handlePrevClick)
+      this.next?.removeEventListener('click', this.handleNextClick)
+      for (const {slide, handler} of this.slideHandlers) {
+        slide.removeEventListener('click', handler)
+      }
+      this.slideHandlers = []
+    }
+
+    /** The active slide is whichever sits closest to the track's center. */
+    private nearestIndex(): number {
+      if (!this.track) return 0
+      const trackRect = this.track.getBoundingClientRect()
+      const center = trackRect.left + trackRect.width / 2
+      let best = 0
+      let bestDistance = Infinity
+      this.slides.forEach((slide, index) => {
+        const rect = slide.getBoundingClientRect()
+        const distance = Math.abs(rect.left + rect.width / 2 - center)
+        if (distance < bestDistance) {
+          bestDistance = distance
+          best = index
+        }
+      })
+      return best
+    }
+
+    private syncActiveFromScroll() {
+      const nearest = this.nearestIndex()
+      // While a button/click/keyboard navigation is animating toward a
+      // target, don't let intermediate positions steal the active state.
+      if (this.targetIndex !== null) {
+        if (nearest !== this.targetIndex) return
+        this.targetIndex = null
+        if (this.targetTimer !== null) {
+          clearTimeout(this.targetTimer)
+          this.targetTimer = null
+        }
+      }
+      this.setActive(nearest)
+    }
+
+    private setActive(index: number) {
+      this.activeIndex = index
+      this.slides.forEach((slide, i) => {
+        const isActive = i === index
+        slide.toggleAttribute('data-active', isActive)
+        // Media Frame gates playback on its `active` attribute: only the
+        // centered video can play; neighbours pause as they recede.
+        slide.querySelector('media-frame')?.toggleAttribute('active', isActive)
+      })
+      this.updateNav()
+    }
+
+    private updateNav() {
+      if (!this.prev || !this.next) return
+      this.prev.disabled = this.activeIndex <= 0
+      this.next.disabled = this.activeIndex >= this.slides.length - 1
+    }
+
+    private goTo(index: number) {
+      if (!this.track || this.slides.length === 0) return
+      const clamped = Math.min(Math.max(index, 0), this.slides.length - 1)
+      const slide = this.slides[clamped]
+      if (!slide) return
+      const trackRect = this.track.getBoundingClientRect()
+      const slideRect = slide.getBoundingClientRect()
+      const delta = slideRect.left + slideRect.width / 2 - (trackRect.left + trackRect.width / 2)
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      this.targetIndex = clamped
+      if (this.targetTimer !== null) clearTimeout(this.targetTimer)
+      this.targetTimer = setTimeout(() => {
+        this.targetIndex = null
+        this.targetTimer = null
+      }, 800)
+      this.track.scrollTo({
+        left: this.track.scrollLeft + delta,
+        behavior: reduced ? 'auto' : 'smooth',
+      })
+      // Reflect the destination immediately (starts the video); the scroll
+      // listener stays authoritative if the gesture is interrupted.
+      this.setActive(clamped)
+    }
+  }
+
+  if (!customElements.get('video-carousel')) {
+    customElements.define('video-carousel', VideoCarouselElement)
+  }
+</script>
+
+<style>
+  .video-carousel {
+    container-type: inline-size;
+    display: block;
+    position: relative;
+    /* Slide width: the smaller of the carousel share and the height cap
+       expressed through the video's own ratio, so every video renders at its
+       intrinsic aspect ratio and tall (portrait) videos narrow instead of
+       overflowing the viewport. */
+    --slide-w: 76cqw;
+    --cap-h: 80svh;
+  }
+
+  .track {
+    display: flex;
+    align-items: center;
+    gap: var(--page-gutter);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    /* End padding lets the first and last slides reach the center; each side
+       is derived from its end slide's width via --ratio-first/--ratio-last. */
+    padding-inline:
+      calc((100cqw - min(var(--slide-w), calc(var(--cap-h) * var(--ratio-first)))) / 2)
+      calc((100cqw - min(var(--slide-w), calc(var(--cap-h) * var(--ratio-last)))) / 2);
+  }
+
+  .track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slide {
+    flex: 0 0 auto;
+    width: min(var(--slide-w), calc(var(--cap-h) * var(--ratio)));
+    scroll-snap-align: center;
+    position: relative;
+    /* Receded state: neighbours shrink and dim so the centered video sits
+       slightly forward in space. */
+    transform: scale(0.92);
+    opacity: 0.55;
+    transition:
+      transform var(--motion-standard) var(--motion-ease-out),
+      opacity var(--motion-standard) var(--motion-ease-out);
+  }
+
+  .slide[data-active] {
+    transform: scale(1);
+    opacity: 1;
+    z-index: 2;
+  }
+
+  /* Only the centered video shows its Media Control Bar and receives
+     pointer input; side slides are click-to-center surfaces. */
+  .slide:not([data-active]) {
+    cursor: pointer;
+  }
+
+  .slide:not([data-active]) :global(.media-frame) {
+    pointer-events: none;
+  }
+
+  .slide:not([data-active]) :global(.media-controls) {
+    display: none;
+  }
+
+  .nav-btn {
+    position: absolute;
+    top: calc(50% - 20px);
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--control-bg);
+    color: var(--control-fg);
+    cursor: pointer;
+    --wipe-surface: var(--control-fg);
+    --wipe-ink: var(--control-bg);
+  }
+
+  .prev {
+    left: var(--space-2xs);
+  }
+
+  .next {
+    right: var(--space-2xs);
+  }
+
+  .nav-btn:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  .nav-btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
+  .nav-icon {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Without the carousel enhancement, native scroll + snap still browse the
+     videos; show every slide plainly and drop the inert buttons. */
+  video-carousel:not([data-enhanced]) .slide {
+    transform: none;
+    opacity: 1;
+  }
+
+  video-carousel:not([data-enhanced]) .nav-btn {
+    display: none;
+  }
+
+  @media (--bp-below-desktop) {
+    .video-carousel {
+      --slide-w: 84cqw;
+      --cap-h: 64svh;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide {
+      transition: none;
+    }
+  }
+</style>

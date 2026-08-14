@@ -89,7 +89,7 @@ Authoritative shape lives in `packages/schemas/src`; the intent is in
   `formSubmission`.
 - **Shared objects:** card settings (`cardSettings`), content composition
   (`contentLayoutRow` + `contentLayoutMedia`/`contentLayoutText`/
-  `contentLayoutSpacer`), `mediaBox`, homepage blocks.
+  `contentLayoutSpacer`/`contentLayoutCarousel`), `mediaBox`, homepage blocks.
 - Each content type ships a `*Contract` validator and, where relevant, a
   `*Migration` module, with co-located tests.
 

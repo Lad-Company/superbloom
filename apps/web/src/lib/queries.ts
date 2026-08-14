@@ -44,6 +44,9 @@ export const contentLayoutRowsProjection = `
     },
     _type == "contentLayoutText" => {
       text
+    },
+    _type == "contentLayoutCarousel" => {
+      "videos": videos[]${mediaProjection}
     }
   }
 `

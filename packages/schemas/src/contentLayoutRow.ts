@@ -9,8 +9,13 @@ type RowParent = {
   blocks?: Array<{_type?: string; width?: string}>
 }
 
+// A lone Carousel always spans the full row and has no width, so the
+// alignment control (and full-bleed toggle, via isFullBleedEligible) stays
+// hidden for it.
 const isSingleNarrow = (parent: RowParent | undefined) =>
-  parent?.blocks?.length === 1 && parent.blocks[0]?.width !== 'full'
+  parent?.blocks?.length === 1 &&
+  parent.blocks[0]?.width !== 'full' &&
+  parent.blocks[0]?._type !== 'contentLayoutCarousel'
 
 export const contentLayoutRow = defineType({
   name: 'contentLayoutRow',
@@ -25,6 +30,7 @@ export const contentLayoutRow = defineType({
         {type: 'contentLayoutMedia'},
         {type: 'contentLayoutText'},
         {type: 'contentLayoutSpacer'},
+        {type: 'contentLayoutCarousel'},
       ],
       validation: (rule) =>
         rule.required().min(1).max(3).custom(validateTwoBlockRowWidths),

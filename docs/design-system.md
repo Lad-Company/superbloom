@@ -192,6 +192,15 @@ Text, or Spacer blocks with authored fractional widths; two content blocks total
 `full`; a single narrow block aligns left/center/right; rows may be full-bleed
 eligible. Distinct from Content Card — it does not use card width/ratio/info
 controls.
+
+A fourth block, **Video Carousel** (`contentLayoutCarousel`), holds 1–5 videos
+(`mediaBox`, video assets only). Carousels have no width control — they always
+take the full row, so a carousel must be its row's only block. The centered
+video renders at its intrinsic aspect ratio (height-capped, so portrait videos
+narrow rather than overflow) with the full Media Control Bar; previous/next
+videos peek at the edges, dimmed and scaled down so the current video sits
+slightly forward. Scroll-snap browsing with overlaid prev/next buttons,
+click-to-center on side videos, and arrow-key steering from the region.
 > Drift note: schema (`contentLayoutRow.ts`) allows 1–3 blocks and includes a
 > `contentLayoutSpacer` type; confirm the spacer + max-3 was intended (earlier docs
 > said 1–2 Media/Text only).
