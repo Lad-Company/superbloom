@@ -66,14 +66,16 @@ describe('case study document validation', () => {
     expect(markers).toEqual([])
   })
 
-  it('points the qualitative secondary-color error at the secondaryColor field', async () => {
+  it('accepts qualitative results without a secondary color', async () => {
     const markers = await errorMarkers(baseCaseStudy({results: qualitativeResults}))
-    expect(markers).toEqual([
-      {
-        path: ['secondaryColor'],
-        message: expect.stringContaining('Secondary Brand Color'),
-      },
-    ])
+    expect(markers).toEqual([])
+  })
+
+  it('accepts qualitative results with a stale secondary background and no secondary color', async () => {
+    const markers = await errorMarkers(
+      baseCaseStudy({results: {...qualitativeResults, backgroundColor: 'secondary'}}),
+    )
+    expect(markers).toEqual([])
   })
 
   it('points the secondary-background error at the secondaryColor field', async () => {

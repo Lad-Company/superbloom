@@ -211,6 +211,25 @@ describe('Content Layout Row contract', () => {
     expect(videos?.validation).toBeTypeOf('function')
   })
 
+  it('offers the three carousel layouts with a split-only rich text box', () => {
+    const layout = contentLayoutCarousel.fields.find((field) => field.name === 'layout')
+    expect(layout?.type).toBe('string')
+    const list = (layout?.options as {list?: Array<{value: string}>} | undefined)?.list
+    expect(list?.map((option) => option.value)).toEqual(['full', 'textRight', 'textLeft'])
+    expect(layout?.initialValue).toBe('full')
+
+    const text = contentLayoutCarousel.fields.find((field) => field.name === 'text')
+    expect(text?.type).toBe('array')
+    expect(text?.hidden).toBeTypeOf('function')
+    expect(text?.validation).toBeTypeOf('function')
+    // Hidden in the full-width layout, visible for both split layouts.
+    const hidden = text?.hidden as (args: {parent?: {layout?: string}}) => boolean
+    expect(hidden({parent: {layout: 'full'}})).toBe(true)
+    expect(hidden({parent: {}})).toBe(true)
+    expect(hidden({parent: {layout: 'textRight'}})).toBe(false)
+    expect(hidden({parent: {layout: 'textLeft'}})).toBe(false)
+  })
+
   it('reuses mediaBox and the global Media Frame aspect ratios', () => {
     expect(contentLayoutMedia.fields.find((field) => field.name === 'media')?.type).toBe('mediaBox')
     const aspectRatio = contentLayoutMedia.fields.find((field) => field.name === 'aspectRatio')

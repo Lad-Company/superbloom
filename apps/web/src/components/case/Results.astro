@@ -2,7 +2,7 @@
 import Metric from '../Metric.astro';
 import SurfaceSection from '../SurfaceSection.astro';
 import ContentLayoutRow from '../ContentLayoutRow.astro';
-import {vars as surfaceVars, type SurfaceRole} from '../../lib/surfaceRole';
+import type {SurfaceRole} from '../../lib/surfaceRole';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
 
 type ResultsData = NonNullable<NonNullable<CaseStudyBySlugQueryResult>['results']>;
@@ -17,12 +17,10 @@ const { id, label, results } = Astro.props;
 // Variant is new schema; documents saved before it existed default to the
 // original quantitative grid.
 const qualitative = results.variant === 'qualitative';
-const role: SurfaceRole = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-primary';
-const alternateRole: SurfaceRole = role === 'case-primary' ? 'case-secondary' : 'case-primary';
-// Qualitative bands alternate the case brand colors, starting from the
-// section's Background Color choice. Each band's foreground is the surface
-// role's contrast-checked ink (black/white by luminance — see caseBrandVars).
-const bandRole = (index: number): SurfaceRole => (index % 2 === 0 ? role : alternateRole);
+// Qualitative bands always ride the primary brand surface; the Background
+// Color choice applies only to the quantitative grid.
+const role: SurfaceRole =
+  !qualitative && results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-primary';
 const stats = results.stats ?? [];
 const supportingRows = results.supportingRows ?? [];
 ---
@@ -32,8 +30,8 @@ const supportingRows = results.supportingRows ?? [];
     <div class="results results--qualitative">
       <h2 class="sr-only">{label}</h2>
       <ul class="bands">
-        {stats.map((stat, index) => (
-          <li class="band" data-surface-role={bandRole(index)} style={surfaceVars[bandRole(index)]}>
+        {stats.map((stat) => (
+          <li class="band">
             {stat.value && <p class="band-value type-h4">{stat.value}</p>}
             {stat.label && <p class="band-label type-caption">{stat.label}</p>}
           </li>
@@ -121,10 +119,12 @@ const supportingRows = results.supportingRows ?? [];
     overflow-wrap: anywhere;
   }
 
-  /* Qualitative: full-bleed statement bands stacked flush, alternating the
-     case primary/secondary surfaces. The section heading stays available to
-     assistive tech (and the spine-nav anchor) but is not shown — the bands
-     carry the section on their own. */
+  /* Qualitative: full-bleed statement bands stacked flush on the primary
+     brand surface, separated by the same faint ink hairline as the contact
+     footer divider (--fg-12) — one above the first band and one between
+     each band. The section heading stays available to assistive tech (and
+     the spine-nav anchor) but is not shown — the bands carry the section
+     on their own. */
   .results--qualitative {
     gap: 0;
     padding: 0;
@@ -139,8 +139,7 @@ const supportingRows = results.supportingRows ?? [];
     flex-direction: column;
     gap: var(--space-16);
     padding: var(--space-m) var(--page-inset);
-    background: var(--bg);
-    color: var(--fg);
+    border-top: 1px solid var(--fg-12);
   }
   .band-value,
   .band-label {

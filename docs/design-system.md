@@ -197,16 +197,24 @@ Media 1/3 + Media 1/3, aligning media under the section copy). A single narrow
 block aligns left/center/right; rows may be full-bleed eligible. Distinct from
 Content Card — it does not use card width/ratio/info controls.
 
-A fourth block, **Video Carousel** (`contentLayoutCarousel`), holds 3–5 videos
-(`mediaBox`, video assets only). Carousels have no width control — they always
-bleed edge-to-edge with no gutters at every breakpoint, so a carousel must be
-its row's only block. The carousel opens on the second video so the active
-slide is flanked on both sides. The centered video renders at its intrinsic
-aspect ratio (height-capped, so portrait videos narrow rather than overflow)
-with the full Media Control Bar; previous/next videos peek at the edges,
-dimmed and scaled down so the current video sits slightly forward. Scroll-snap
-browsing with Card Carousel-styled prev/next controls spread to opposite sides
-of the page (page-inset so they align to the grid), click-to-center on side
+A fourth block, **Video Carousel** (`contentLayoutCarousel`), holds 3–10
+videos (`mediaBox`, video assets only) in one of three layouts: **full width**
+(the track bleeds edge-to-edge with no gutters at every breakpoint, controls
+centered below), **text right**, or **text left** (the carousel takes 3/4 of
+the row with a descriptive rich-text box in the remaining 1/4, top-aligned;
+controls sit at the carousel's bottom inner corner). Carousels have no width
+control, so a carousel must be its row's only block. The full-width layout
+opens on the second video so the active slide is flanked on both sides, with
+neighbours peeking at both edges. Split layouts open on the first video,
+anchored to the track edge beside the text; upcoming videos trail in the
+direction opposite the text and overflow only that far edge, flowing past the
+page gutter to the viewport edge (the textRight track renders reversed so the
+sequence flows left). Below desktop, split layouts stack and behave like the
+full-width layout. The active video renders at its intrinsic aspect ratio
+(height-capped at the 16:9 slide height, so portrait videos narrow rather than
+stand taller) with the full Media Control Bar; trailing videos are dimmed and
+scaled down so the current video sits slightly forward. Scroll-snap browsing
+with Card Carousel-styled prev/next controls, click-to-anchor on trailing
 videos, and arrow-key steering from the region.
 
 ### Article (unified editorial model)
@@ -247,13 +255,13 @@ eyebrows, nav labels, and order stay in lockstep.
   Year/Industry/Deliverables meta row.) Background = `primary` Surface Role.
 - Each narrative section holds ordered Content Layout Rows (`mediaLayouts`).
 - **Results** additionally keeps required stats (1–4, each value + label) plus
-  supporting rows (`supportingRows`); its surface is set by `backgroundColor`
-  (`primary` / `secondary`, default `primary`). A `variant` choice switches the
-  stats between **Quantitative** (default: numeric grid with the count-up
-  animation) and **Qualitative** (full-width statement bands stacked in a
-  column, alternating the primary/secondary brand surfaces starting from
-  `backgroundColor`; no count-up). Qualitative requires a Secondary Brand
-  Color so the alternation has two colors to work with.
+  supporting rows (`supportingRows`). A `variant` choice switches the stats
+  between **Quantitative** (default: numeric grid with the count-up animation;
+  surface set by `backgroundColor`, `primary` / `secondary`, default
+  `primary`) and **Qualitative** (full-width statement bands stacked in a
+  column on the primary brand surface, separated by the same `--fg-12`
+  hairline as the contact footer divider; no count-up, `backgroundColor`
+  does not apply).
 - **Press:** 0–3 unique News items, rendered only if at least one resolves.
 - **Next Project:** 0–1 non-self Case Study.
 
