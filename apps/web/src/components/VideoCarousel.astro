@@ -31,6 +31,9 @@ const intrinsicRatio = (video: Media): number => {
 const ratios = playable.map(intrinsicRatio)
 const ariaLabel = label?.trim() ? `${label} video carousel` : 'Video carousel'
 const multiple = playable.length > 1
+// The second video is the default active slide so it sits flanked by its
+// neighbours on both sides (the schema requires at least three videos).
+const initialIndex = playable.length > 1 ? 1 : 0
 ---
 
 {
@@ -42,24 +45,22 @@ const multiple = playable.length > 1
     >
       {multiple && (
         <div class="header">
-          <div class="controls" aria-label={`${ariaLabel} controls`}>
-            <button
-              type="button"
-              class="control previous surface-wipe"
-              data-motion-control
-              aria-label="Previous video"
-            >
-              <span class="control__icon" aria-hidden="true">←</span>
-            </button>
-            <button
-              type="button"
-              class="control next surface-wipe"
-              data-motion-control
-              aria-label="Next video"
-            >
-              <span class="control__icon" aria-hidden="true">→</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            class="control previous surface-wipe"
+            data-motion-control
+            aria-label="Previous video"
+          >
+            <span class="control__icon" aria-hidden="true">←</span>
+          </button>
+          <button
+            type="button"
+            class="control next surface-wipe"
+            data-motion-control
+            aria-label="Next video"
+          >
+            <span class="control__icon" aria-hidden="true">→</span>
+          </button>
         </div>
       )}
       <div class="track" role="region" tabindex="0" aria-label={ariaLabel}>
@@ -67,7 +68,7 @@ const multiple = playable.length > 1
           <div
             class="slide"
             data-slide
-            data-active={index === 0 ? '' : undefined}
+            data-active={index === initialIndex ? '' : undefined}
             role="group"
             aria-roledescription="slide"
             aria-label={`${index + 1} of ${playable.length}`}
@@ -77,8 +78,8 @@ const multiple = playable.length > 1
               media={video}
               ratio="intrinsic"
               controls="full"
-              active={index === 0}
-              priority={index === 0}
+              active={index === initialIndex}
+              priority={index === initialIndex}
               title={video.altText}
             />
           </div>
@@ -144,7 +145,11 @@ const multiple = playable.length > 1
         slide.addEventListener('click', handler)
       })
 
-      this.syncActiveFromScroll()
+      // Open on the second video so the active slide is flanked on both
+      // sides; the jump is instant, before the first paint.
+      const initialIndex = Math.min(1, this.slides.length - 1)
+      this.scrollToSlide(initialIndex, 'auto')
+      this.setActive(initialIndex)
     }
 
     disconnectedCallback() {
@@ -215,14 +220,20 @@ const multiple = playable.length > 1
       this.next.disabled = this.activeIndex >= this.slides.length - 1
     }
 
-    private goTo(index: number) {
-      if (!this.track || this.slides.length === 0) return
-      const clamped = Math.min(Math.max(index, 0), this.slides.length - 1)
-      const slide = this.slides[clamped]
+    /** Scrolls so the given slide's center lands on the track's center. */
+    private scrollToSlide(index: number, behavior: ScrollBehavior) {
+      if (!this.track) return
+      const slide = this.slides[index]
       if (!slide) return
       const trackRect = this.track.getBoundingClientRect()
       const slideRect = slide.getBoundingClientRect()
       const delta = slideRect.left + slideRect.width / 2 - (trackRect.left + trackRect.width / 2)
+      this.track.scrollTo({left: this.track.scrollLeft + delta, behavior})
+    }
+
+    private goTo(index: number) {
+      if (!this.track || this.slides.length === 0) return
+      const clamped = Math.min(Math.max(index, 0), this.slides.length - 1)
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       this.targetIndex = clamped
       if (this.targetTimer !== null) clearTimeout(this.targetTimer)
@@ -230,10 +241,7 @@ const multiple = playable.length > 1
         this.targetIndex = null
         this.targetTimer = null
       }, 800)
-      this.track.scrollTo({
-        left: this.track.scrollLeft + delta,
-        behavior: reduced ? 'auto' : 'smooth',
-      })
+      this.scrollToSlide(clamped, reduced ? 'auto' : 'smooth')
       // Reflect the destination immediately (starts the video); the scroll
       // listener stays authoritative if the gesture is interrupted.
       this.setActive(clamped)
@@ -310,23 +318,19 @@ const multiple = playable.length > 1
     display: none;
   }
 
-  /* Controls match the Card Carousel: a header row above the track with
-     40px bordered prev/next buttons. The header keeps the page inset so the
-     buttons align with the page grid while the track bleeds edge-to-edge. */
+  /* Controls match the Card Carousel style (40px bordered squares) but
+     spread to opposite sides of the page. The header keeps the page inset so
+     the buttons align with the page grid while the track bleeds
+     edge-to-edge. */
   .header {
     display: flex;
     align-items: end;
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-bottom: var(--space-xs);
     padding-inline: var(--page-inset);
   }
 
-  .controls {
-    display: flex;
-    gap: var(--space-3xs);
-  }
-
-  video-carousel:not([data-enhanced]) .controls {
+  video-carousel:not([data-enhanced]) .header {
     display: none;
   }
 

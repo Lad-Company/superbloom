@@ -12,8 +12,14 @@ describe('Video Carousel', () => {
   })
 
   it('plays only the centered video, keeping neighbours paused until active', () => {
-    expect(source).toContain('active={index === 0}')
+    expect(source).toContain('active={index === initialIndex}')
     expect(source).toContain("toggleAttribute('active', isActive)")
+  })
+
+  it('opens on the second video so the active slide is flanked on both sides', () => {
+    expect(source).toContain('const initialIndex = playable.length > 1 ? 1 : 0')
+    expect(source).toContain('data-active={index === initialIndex')
+    expect(source).toContain("this.scrollToSlide(initialIndex, 'auto')")
   })
 
   it('snaps slides to center with neighbours peeking past the track padding', () => {
@@ -37,12 +43,12 @@ describe('Video Carousel', () => {
     expect(source).toContain("closest('media-frame')")
   })
 
-  it('styles and positions prev/next controls like the Card Carousel header', () => {
+  it('styles prev/next like the Card Carousel, spread to opposite page sides', () => {
     expect(source).toContain('class="control previous surface-wipe"')
     expect(source).toContain('class="control next surface-wipe"')
     expect(source).toContain('border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent)')
     expect(source).toContain('border-radius: var(--radius-control)')
-    expect(source).toContain('justify-content: flex-end')
+    expect(source).toContain('justify-content: space-between')
     // The header keeps the page inset so buttons align with the page grid
     // while the track bleeds edge-to-edge.
     expect(source).toContain('padding-inline: var(--page-inset)')
