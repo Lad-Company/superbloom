@@ -6,9 +6,9 @@ import {
   isContentLayoutFullBleed,
 } from './contentLayout';
 import {
+  articleBySlugQuery,
   caseStudyBySlugQuery,
   contentLayoutRowsProjection,
-  editorialArticleBySlugQuery,
 } from './queries';
 
 const componentSource = readFileSync(
@@ -95,7 +95,7 @@ describe('Content Layout Row rendering contract', () => {
       expect(contentLayoutRowsProjection).toContain(field);
     }
     expect(contentLayoutRowsProjection).not.toContain('heading');
-    expect(editorialArticleBySlugQuery).toContain('contentLayoutRow');
+    expect(articleBySlugQuery).toContain('contentLayoutRow');
     expect(caseStudyBySlugQuery).toContain('mediaLayouts');
     expect(caseStudyBySlugQuery).toContain('blocks[]');
     expect(caseStudyBySlugQuery).toContain('supportingRows');

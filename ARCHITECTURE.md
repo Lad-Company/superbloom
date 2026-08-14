@@ -72,7 +72,7 @@ API glue (`apps/web/src/pages/api/*`).
 - `/index` — mixed Article browse (News + Editorial + Zine)
 - `/work`, `/work/[slug]` — Case Study browse + detail
 - `/who-we-are` — Fixed art-directed page (`whoWeAre` singleton)
-- `/news/[slug]`, `/articles/[slug]` — News / Editorial Article detail
+- `/articles/[slug]` — News / Editorial Article detail
 - `/zine`, `/zine/issues/[slug]`, `/zine/issues/[slug]/[article]`
 - `/shop`, `/shop/products/[handle]`, `/cart`
 - `robots.txt`, `sitemap.xml`, `404`
@@ -141,7 +141,7 @@ another doc, that doc is authoritative.
   `cardDestination`); slug and publicationDate are hidden, auto-generated/stamped
   at first publish and frozen thereafter; the `/news/[slug]` detail route is
   removed. Amends 0020's hidden-`articleType` clause and 0011's composite-News
-  clause.
+  clause; its card-only-News clause is amended by 0027.
 - **0021 — Adopt Lenis smooth scroll.** Lenis global, synced to `gsap.ticker` +
   `ScrollTrigger.update`, `lerp 0.1`, disabled for reduced-motion / no-JS.
   Supersedes the no-Lenis clause of 0007. *(`docs/design-system.md` §5.)*
@@ -197,6 +197,15 @@ another doc, that doc is authoritative.
   toggling Share access in the Presentation tool. Rejected: staging
   dataset/hostname, Visual Editing overlays (needs a stega audit across
   `lib/` first). *(`docs/content-preview-spec.md`.)*
+- **0027 — News as a full article with an outbound footer CTA.** News articles
+  are full detail pages at `/articles/[slug]` like Editorial (required
+  leadMedia + body, relatedItems available, one shared `ArticleCard` adapter
+  linking cards internally; `NewsCard` deleted). The required `destination`
+  URL becomes a footer CTA on the article page — "Read on {source}", falling
+  back to "Read the full story", opening in a new tab — instead of the card
+  link, and `source` leaves the card. Slug uniqueness spans News + Editorial
+  (shared `/articles/` route); Zine stays scoped per type. Amends 0022's
+  card-only-News clause.
 
 **Superseded or amended (kept as guardrails):**
 

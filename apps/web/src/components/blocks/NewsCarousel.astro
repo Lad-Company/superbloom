@@ -1,6 +1,6 @@
 ---
 import Marquee from '../Marquee.astro'
-import NewsCard from '../NewsCard.astro'
+import ArticleCard from '../ArticleCard.astro'
 import SurfaceSection from '../SurfaceSection.astro'
 import '../../styles/contentCardRail.css'
 import type {HomepageQueryResult} from '../../sanity.types'
@@ -42,7 +42,7 @@ const halfItems = Array.from({length: copiesPerHalf}, () => items).flat()
         {showHeadline && <h2 class="headline type-h3">{headline ?? 'News'}</h2>}
         <Marquee>
           {halfItems.map((item) => (
-            <NewsCard
+            <ArticleCard
               item={item}
               settings={overrides.get(item._id)}
               listSettings={listSettings}

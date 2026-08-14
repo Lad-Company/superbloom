@@ -62,8 +62,6 @@ const editorialCardProjection = `
   overview,
   cardCtaLabel,
   publicationDate,
-  destination,
-  source,
   cardWidth,
   mediaAspectRatio,
   infoPosition,
@@ -285,18 +283,7 @@ export const caseStudyBySlugQuery = defineQuery(`
       }
     },
     "press": press[0...3][@->articleType == "news"]->{
-      title,
-      "slug": slug.current,
-      overview,
-      publicationDate,
-      articleType,
-      destination,
-      source,
-      cardWidth,
-      mediaAspectRatio,
-      infoPosition,
-      tags[]->{ title, color },
-      "cardMedia": cardMedia${mediaProjection}
+      ${editorialCardProjection}
     },
     nextProject->{
       title,
@@ -337,8 +324,9 @@ const articleProjection = `
     ${articleBodyProjection}
 `
 
-// Authored related items power the editorial More Stories rail. Zine article
-// pages instead rail the issue's article list (see zineArticleBySlugQuery).
+// Authored related items power the News/Editorial More Stories rail. Zine
+// article pages instead rail the issue's article list (see
+// zineArticleBySlugQuery).
 const relatedItemsProjection = `
     relatedItems[]->{
       _id,
@@ -349,8 +337,6 @@ const relatedItemsProjection = `
       publicationDate,
       "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,
       overview,
-      destination,
-      source,
       cardWidth,
       mediaAspectRatio,
       infoPosition,
@@ -360,8 +346,10 @@ const relatedItemsProjection = `
     "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
 `
 
-export const editorialArticleBySlugQuery = defineQuery(`
-  *[_type == "article" && articleType == "editorial" && slug.current == $slug][0] {
+// News and Editorial articles share the /articles/[slug] route; slugs are
+// unique across both types (see validateScopedSlugUniqueness).
+export const articleBySlugQuery = defineQuery(`
+  *[_type == "article" && articleType in ["news", "editorial"] && slug.current == $slug][0] {
     ${articleProjection},
     ${relatedItemsProjection}
   }
@@ -519,7 +507,7 @@ export const sitemapQuery = defineQuery(`
       "path": "/work/" + slug.current,
       "updatedAt": _updatedAt
     },
-    "articles": *[_type == "article" && articleType == "editorial" && defined(slug.current)]{
+    "articles": *[_type == "article" && articleType in ["news", "editorial"] && defined(slug.current)]{
       "path": "/articles/" + slug.current,
       "updatedAt": _updatedAt
     },

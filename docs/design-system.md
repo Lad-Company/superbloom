@@ -140,7 +140,7 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
 
 **Composition boundaries.** Compose `SurfaceSection` + `PageGrid` + a named module.
 No configurable mega-section. Never duplicate shell modules per page. Content
-adapters (e.g. `NewsCard` → `EditorialCard`) own content translation and route
+adapters (e.g. `ArticleCard` → `EditorialCard`) own content translation and route
 construction; `MediaFrame` stays presentation-only. Resolve Surface Roles in page
 compositions, not inside reusable modules.
 
@@ -220,11 +220,12 @@ videos, and arrow-key steering from the region.
 ### Article (unified editorial model)
 
 One `article` document stores **News**, **Editorial Articles**, and **Zine
-Articles**, discriminated by a hidden `articleType`. The discriminator selects the
-Studio view, create action, route, and content adapter:
+Articles**, discriminated by a visible, required `articleType` select. The
+discriminator selects the Studio field set, route, and content adapter:
 
-- News → `/news/[slug]` (may link to an internal detail or a validated external
-  primary-coverage URL, opening in a new tab).
+- News → `/articles/[slug]` — a full Article Detail page whose footer CTA links
+  to the required external Destination URL ("Read on {Source}", opening in a
+  new tab).
 - Editorial → `/articles/[slug]`.
 - Zine → `/zine/issues/[issue-slug]/[article-slug]` (resolved only through issue
   membership).

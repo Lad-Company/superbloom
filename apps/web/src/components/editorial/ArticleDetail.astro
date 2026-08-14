@@ -5,6 +5,7 @@ import ArticleBodyRenderer from './ArticleBodyRenderer.astro'
 import MixedArticleCard from '../MixedArticleCard.astro'
 import CardCarousel from '../CardCarousel.astro'
 import PageHero from '../PageHero.astro'
+import Button from '../Button.astro'
 import type {ContentLayoutRowValue} from '../ContentLayoutRow.astro'
 import type {TypedObject} from 'astro-portabletext/types'
 import type {
@@ -24,8 +25,6 @@ type RelatedItem = {
   issueSlug?: string | null
   overview?: PortableBlock[] | null
   publicationDate?: string | null
-  destination?: string | null
-  source?: string | null
   cardWidth?: CardWidth | null
   mediaAspectRatio?: MediaAspectRatio | null
   infoPosition?: InfoPosition | null
@@ -43,6 +42,8 @@ interface Props {
     overview?: PortableBlock[] | null
     leadMedia?: Media | null
     body?: BodyBlock[] | null
+    destination?: string | null
+    source?: string | null
     tags?: Tag[] | null
     relatedItems?: RelatedItem[] | null
     globalCardDefaults?: PartialContentCardSettings
@@ -52,6 +53,11 @@ interface Props {
 const {article} = Astro.props
 const body = article.body ?? []
 const relatedItems = article.relatedItems ?? []
+// News-only footer CTA: destination/source are News-only CMS fields, so this
+// never renders for Editorial or Zine articles.
+const destinationCtaLabel = article.source
+  ? `Read on ${article.source}`
+  : 'Read the full story'
 ---
 
 <article class="article-detail">
@@ -90,6 +96,19 @@ const relatedItems = article.relatedItems ?? []
   {body.map((block) => <ArticleBodyRenderer block={block} />)}
 
   {
+    article.destination && (
+      <section class="destination-cta">
+        <Button
+          href={article.destination}
+          label={destinationCtaLabel}
+          target="_blank"
+          rel="noopener noreferrer"
+        />
+      </section>
+    )
+  }
+
+  {
     relatedItems.length === 3 && (
       <nav class="related-items" aria-label="More stories">
         <CardCarousel label="More stories" heading="More stories">
@@ -126,6 +145,12 @@ const relatedItems = article.relatedItems ?? []
 
   .overview-eyebrow {
     margin: 0 0 var(--space-xs);
+  }
+
+  .destination-cta {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-2xl) var(--page-inset);
   }
 
   .related-items {

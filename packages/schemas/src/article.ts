@@ -33,7 +33,7 @@ export const article = defineType({
       options: {source: 'title'},
       hidden: true,
       description:
-        'Auto-generated from the title at first publish (unique per article type) and frozen from then on.',
+        'Auto-generated from the title at first publish (unique across News and Editorial, or within Zine) and frozen from then on.',
       validation: (rule) => rule.required().custom(validateScopedSlugUniqueness),
     }),
     defineField({
@@ -43,7 +43,7 @@ export const article = defineType({
       options: {list: ['news', 'editorial', 'zine'], layout: 'radio'},
       validation: (rule) => rule.required(),
       description:
-        'Determines the field set and where the article appears. news = outbound link card, editorial = /articles/ page, zine = article within an issue.',
+        'Determines the field set and where the article appears. news = /articles/ page with an outbound footer CTA, editorial = /articles/ page, zine = article within an issue.',
     }),
     defineField({
       name: 'tags',
@@ -79,12 +79,7 @@ export const article = defineType({
     defineField({
       name: 'leadMedia',
       type: 'mediaBox',
-      hidden: ({document}) => document?.articleType === 'news',
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          if (articleTypeOf(context) === 'news') return true
-          return value ? true : 'Lead media is required.'
-        }),
+      validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'overview',
@@ -100,19 +95,13 @@ export const article = defineType({
       name: 'body',
       type: 'array',
       of: [{type: 'contentLayoutRow'}],
-      hidden: ({document}) => document?.articleType === 'news',
-      validation: (rule) =>
-        rule.custom((value, context) =>
-          validateArticleBody(value, {
-            document: {articleType: articleTypeOf(context)},
-          }),
-        ),
+      validation: (rule) => rule.custom(validateArticleBody),
     }),
     defineField({
       name: 'destination',
       title: 'Destination',
       type: 'url',
-      description: 'News only. The URL this story links out to.',
+      description: "News only. The outbound URL the article's footer CTA links to.",
       hidden: ({document}) => document?.articleType !== 'news',
       validation: (rule) =>
         rule.custom((value, context) => {
@@ -126,14 +115,14 @@ export const article = defineType({
       name: 'source',
       title: 'Source',
       type: 'string',
-      description: 'News only. Optional outlet label shown on the card (e.g. "Vogue").',
+      description:
+        'News only. Optional outlet name (e.g. "Vogue"); the footer CTA reads "Read on {source}".',
       hidden: ({document}) => document?.articleType !== 'news',
     }),
     defineField({
       name: 'relatedItems',
       type: 'array',
       of: [{type: 'reference', to: [{type: 'article'}]}],
-      hidden: ({document}) => document?.articleType === 'news',
       validation: (rule) => rule.custom(validateRelatedItems),
       description: 'Related articles. Must be empty or contain exactly three unique items.',
     }),

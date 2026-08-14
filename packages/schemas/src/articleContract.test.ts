@@ -6,26 +6,11 @@ import {
 } from './articleContract'
 
 describe('Article contract validators', () => {
-  it('requires editorial bodies to contain content', () => {
-    expect(validateArticleBody([], {document: {articleType: 'editorial'}})).toContain('required')
+  it('requires a body for every article type', () => {
+    expect(validateArticleBody([])).toContain('required')
     expect(
-      validateArticleBody(
-        [{_type: 'contentLayoutRow', blocks: [{_type: 'contentLayoutText', width: 'full'}]}],
-        {document: {articleType: 'editorial'}},
-      ),
-    ).toBe(true)
-  })
-
-  it('does not require News articles to have a body', () => {
-    expect(validateArticleBody([], {document: {articleType: 'news'}})).toBe(true)
-  })
-
-  it('allows Zine bodies to be required', () => {
-    expect(validateArticleBody([], {document: {articleType: 'zine'}})).toContain('required')
-    expect(
-      validateArticleBody(
-        [{_type: 'contentLayoutRow', blocks: [{_type: 'contentLayoutText', width: 'full'}]}],
-        {document: {articleType: 'zine'}},
+      validateArticleBody([
+        {_type: 'contentLayoutRow', blocks: [{_type: 'contentLayoutText', width: 'full'}]}],
       ),
     ).toBe(true)
   })
@@ -51,7 +36,7 @@ describe('Article contract validators', () => {
     ).toContain('cannot be related to itself')
   })
 
-  it('checks slug uniqueness within the current Article identity', async () => {
+  it('scopes slug uniqueness across the shared News/Editorial route', async () => {
     const fetch = vi.fn().mockResolvedValueOnce(0).mockResolvedValueOnce(1)
     const context = {
       getClient: () => ({fetch}),
@@ -62,14 +47,27 @@ describe('Article contract validators', () => {
     expect(await validateScopedSlugUniqueness({current: 'launch'}, context)).toContain(
       'already exists',
     )
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('articleType == $articleType'),
-      {
-        articleType: 'news',
-        slugValue: 'launch',
-        publishedId: 'article-1',
-        draftId: 'drafts.article-1',
-      },
-    )
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('articleType in $scopeTypes'), {
+      scopeTypes: ['news', 'editorial'],
+      slugValue: 'launch',
+      publishedId: 'article-1',
+      draftId: 'drafts.article-1',
+    })
+  })
+
+  it('scopes Zine slug uniqueness to zine articles only', async () => {
+    const fetch = vi.fn().mockResolvedValue(0)
+    const context = {
+      getClient: () => ({fetch}),
+      document: {_id: 'drafts.article-2', articleType: 'zine'},
+    }
+
+    expect(await validateScopedSlugUniqueness({current: 'launch'}, context)).toBe(true)
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('articleType in $scopeTypes'), {
+      scopeTypes: ['zine'],
+      slugValue: 'launch',
+      publishedId: 'article-2',
+      draftId: 'drafts.article-2',
+    })
   })
 })
