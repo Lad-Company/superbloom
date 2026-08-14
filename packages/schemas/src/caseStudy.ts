@@ -162,7 +162,12 @@ export const caseStudy = defineType({
           results: doc.results,
         },
       })
-      if (secondaryColorValidation !== true) return secondaryColorValidation
+      if (secondaryColorValidation !== true) {
+        // Attach the error to the Secondary Brand Color field so the Studio
+        // validation panel deep-links to it; a bare string lands on the
+        // document root and gives editors no direction to the field.
+        return {message: secondaryColorValidation, path: ['secondaryColor']}
+      }
 
       return validateInfoPositionWithWidth({parent: doc})
     }),
