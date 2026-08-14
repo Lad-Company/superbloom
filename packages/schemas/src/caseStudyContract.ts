@@ -34,11 +34,13 @@ export function validateSecondaryColorWithResults(
   const backgroundColor = context.parent?.results?.backgroundColor
   const variant = context.parent?.results?.variant
 
-  if (variant === 'qualitative' && !isValidHexColor(secondaryColor)) {
-    return 'Secondary Brand Color is required when Results uses qualitative stats (bands alternate primary/secondary)'
-  }
-
-  if (backgroundColor === 'secondary' && !isValidHexColor(secondaryColor)) {
+  // Qualitative results always render on the primary brand color, so the
+  // secondary background applies only to the quantitative variant.
+  if (
+    variant !== 'qualitative' &&
+    backgroundColor === 'secondary' &&
+    !isValidHexColor(secondaryColor)
+  ) {
     return 'Secondary Brand Color is required when Results uses the secondary background'
   }
 
