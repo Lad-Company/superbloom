@@ -5,7 +5,7 @@ import {
   validateContentDefaultsCompleteness,
   validateResolvedCardSettings,
 } from './cardSettingsContract'
-import {validateTwoBlockRowWidths} from './contentLayoutContract'
+import {validateRowBlockWidths} from './contentLayoutContract'
 
 describe('Card Settings Contract Validators', () => {
   describe('validateCardSettingsInfoPosition', () => {
@@ -148,24 +148,24 @@ describe('Card Settings Contract Validators', () => {
     })
   })
 
-  describe('validateTwoBlockRowWidths', () => {
+  describe('validateRowBlockWidths', () => {
     it('allows valid width pairs totaling full', () => {
       expect(
-        validateTwoBlockRowWidths([
+        validateRowBlockWidths([
           {width: '1/3'},
           {width: '2/3'},
         ]),
       ).toBe(true)
 
       expect(
-        validateTwoBlockRowWidths([
+        validateRowBlockWidths([
           {width: '1/2'},
           {width: '1/2'},
         ]),
       ).toBe(true)
 
       expect(
-        validateTwoBlockRowWidths([
+        validateRowBlockWidths([
           {width: '3/4'},
           {width: '1/4'},
         ]),
@@ -174,39 +174,66 @@ describe('Card Settings Contract Validators', () => {
 
     it('allows valid pairs in either order', () => {
       expect(
-        validateTwoBlockRowWidths([
+        validateRowBlockWidths([
           {width: '2/3'},
           {width: '1/3'},
         ]),
       ).toBe(true)
 
       expect(
-        validateTwoBlockRowWidths([
+        validateRowBlockWidths([
           {width: '1/4'},
           {width: '3/4'},
         ]),
       ).toBe(true)
     })
 
-    it('rejects invalid width pairs', () => {
+    it('allows three- and four-block grids totaling full', () => {
       expect(
-        validateTwoBlockRowWidths([
+        validateRowBlockWidths([
+          {width: '1/3'},
+          {width: '1/3'},
+          {width: '1/3'},
+        ]),
+      ).toBe(true)
+
+      expect(
+        validateRowBlockWidths([
+          {width: '1/4'},
+          {width: '1/4'},
+          {width: '1/4'},
+          {width: '1/4'},
+        ]),
+      ).toBe(true)
+    })
+
+    it('rejects invalid width combinations', () => {
+      expect(
+        validateRowBlockWidths([
           {width: '1/3'},
           {width: '1/3'},
         ]),
       ).toContain('must total full width')
 
       expect(
-        validateTwoBlockRowWidths([
+        validateRowBlockWidths([
           {width: '1/4'},
           {width: '1/2'},
         ]),
       ).toContain('must total full width')
+
+      expect(
+        validateRowBlockWidths([
+          {width: '1/4'},
+          {width: '1/4'},
+          {width: '1/4'},
+        ]),
+      ).toContain('must total full width')
     })
 
-    it('ignores non-two-block rows', () => {
-      expect(validateTwoBlockRowWidths([{width: 'full'}])).toBe(true)
-      expect(validateTwoBlockRowWidths([])).toBe(true)
+    it('ignores single-block and empty rows', () => {
+      expect(validateRowBlockWidths([{width: 'full'}])).toBe(true)
+      expect(validateRowBlockWidths([])).toBe(true)
     })
   })
 })

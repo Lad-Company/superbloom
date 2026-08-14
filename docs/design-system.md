@@ -189,11 +189,13 @@ Case Study cards show up to 2 Tags and no Type badge.
 
 ### Content Layout Row (detail-page composition)
 
-Shared by Article bodies and all five Case Study Spine sections. A row holds Media,
-Text, or Spacer blocks with authored fractional widths; two content blocks total
-`full`; a single narrow block aligns left/center/right; rows may be full-bleed
-eligible. Distinct from Content Card — it does not use card width/ratio/info
-controls.
+Shared by Article bodies and all five Case Study Spine sections. A row holds 1–4
+Media, Text, or Spacer blocks with authored fractional widths; multi-block rows
+must total `full` — complementary pairs (1/3 + 2/3, 1/2 + 1/2, …), three-up media
+grids (3× 1/3), four-up media grids (4× 1/4), and spacer-led rows (Spacer 1/3 +
+Media 1/3 + Media 1/3, aligning media under the section copy). A single narrow
+block aligns left/center/right; rows may be full-bleed eligible. Distinct from
+Content Card — it does not use card width/ratio/info controls.
 
 A fourth block, **Video Carousel** (`contentLayoutCarousel`), holds 3–5 videos
 (`mediaBox`, video assets only). Carousels have no width control — they always
@@ -206,9 +208,6 @@ dimmed and scaled down so the current video sits slightly forward. Scroll-snap
 browsing with Card Carousel-styled prev/next controls spread to opposite sides
 of the page (page-inset so they align to the grid), click-to-center on side
 videos, and arrow-key steering from the region.
-> Drift note: schema (`contentLayoutRow.ts`) allows 1–3 blocks and includes a
-> `contentLayoutSpacer` type; confirm the spacer + max-3 was intended (earlier docs
-> said 1–2 Media/Text only).
 
 ### Article (unified editorial model)
 

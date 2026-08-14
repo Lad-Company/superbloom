@@ -1,8 +1,9 @@
 import {defineField, defineType} from 'sanity'
 import {
   isFullBleedEligible,
+  MAX_ROW_BLOCKS,
   validateContentLayoutRow,
-  validateTwoBlockRowWidths,
+  validateRowBlockWidths,
 } from './contentLayoutContract'
 
 type RowParent = {
@@ -33,7 +34,7 @@ export const contentLayoutRow = defineType({
         {type: 'contentLayoutCarousel'},
       ],
       validation: (rule) =>
-        rule.required().min(1).max(3).custom(validateTwoBlockRowWidths),
+        rule.required().min(1).max(MAX_ROW_BLOCKS).custom(validateRowBlockWidths),
     }),
     defineField({
       name: 'alignment',

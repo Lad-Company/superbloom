@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest'
 import {
   isFullBleedEligible,
   validateContentLayoutRow,
-  validateTwoBlockRowWidths,
+  validateRowBlockWidths,
 } from './contentLayoutContract'
 import {contentLayoutCarousel} from './contentLayoutCarousel'
 import {contentLayoutMedia} from './contentLayoutMedia'
@@ -21,7 +21,7 @@ describe('Content Layout Row contract', () => {
     ['2/3', '1/3'],
     ['1/2', '1/2'],
   ])('accepts the complementary pair %s + %s', (first, second) => {
-    expect(validateTwoBlockRowWidths([{width: first}, {width: second}])).toBe(true)
+    expect(validateRowBlockWidths([{width: first}, {width: second}])).toBe(true)
   })
 
   it.each([
@@ -29,24 +29,27 @@ describe('Content Layout Row contract', () => {
     ['1/3', '1/3'],
     ['full', 'full'],
   ])('rejects the invalid pair %s + %s', (first, second) => {
-    expect(validateTwoBlockRowWidths([{width: first}, {width: second}])).toContain(
+    expect(validateRowBlockWidths([{width: first}, {width: second}])).toContain(
       'must total full width',
     )
   })
 
-  it('requires between one and three blocks', () => {
-    expect(validateContentLayoutRow({blocks: []})).toContain('one, two, or three')
+  it('requires between one and four blocks', () => {
+    expect(validateContentLayoutRow({blocks: []})).toContain('between one and four')
     expect(validateContentLayoutRow({
       blocks: [
         {width: '1/4'},
         {width: '1/4'},
         {width: '1/4'},
         {width: '1/4'},
+        {width: '1/4'},
       ],
-    })).toContain('one, two, or three')
+    })).toContain('between one and four')
   })
 
-  it('allows a three-block row only with one Spacer Block and full width coverage', () => {
+  it('accepts multi-block rows whose widths total full width', () => {
+    // Spacer-led row: pushes the media pair right so it aligns under the
+    // narrative section copy (columns 5-12).
     expect(validateContentLayoutRow({
       blocks: [
         {_type: 'contentLayoutSpacer', width: '1/3'},
@@ -54,20 +57,49 @@ describe('Content Layout Row contract', () => {
         {_type: 'contentLayoutMedia', width: '1/3'},
       ],
     })).toBe(true)
+    // Three-column media grid.
+    expect(validateContentLayoutRow({
+      blocks: [
+        {_type: 'contentLayoutMedia', width: '1/3'},
+        {_type: 'contentLayoutMedia', width: '1/3'},
+        {_type: 'contentLayoutMedia', width: '1/3'},
+      ],
+    })).toBe(true)
+    // Four-column media grid.
+    expect(validateContentLayoutRow({
+      blocks: [
+        {_type: 'contentLayoutMedia', width: '1/4'},
+        {_type: 'contentLayoutMedia', width: '1/4'},
+        {_type: 'contentLayoutMedia', width: '1/4'},
+        {_type: 'contentLayoutMedia', width: '1/4'},
+      ],
+    })).toBe(true)
+    // Mixed text + media triples are fine too.
     expect(validateContentLayoutRow({
       blocks: [
         {_type: 'contentLayoutText', width: '1/3'},
         {_type: 'contentLayoutMedia', width: '1/3'},
         {_type: 'contentLayoutMedia', width: '1/3'},
       ],
-    })).toContain('require one Spacer Block')
+    })).toBe(true)
+  })
+
+  it('rejects multi-block rows whose widths do not total full width', () => {
     expect(validateContentLayoutRow({
       blocks: [
         {_type: 'contentLayoutSpacer', width: '1/3'},
         {_type: 'contentLayoutMedia', width: '1/3'},
         {_type: 'contentLayoutMedia', width: '1/4'},
       ],
-    })).toContain('widths totaling full width')
+    })).toContain('must total full width')
+    expect(validateContentLayoutRow({
+      blocks: [
+        {_type: 'contentLayoutMedia', width: '1/4'},
+        {_type: 'contentLayoutMedia', width: '1/4'},
+        {_type: 'contentLayoutMedia', width: '1/4'},
+        {_type: 'contentLayoutMedia', width: '1/3'},
+      ],
+    })).toContain('must total full width')
   })
 
   it('requires explicit widths for every block', () => {
@@ -166,7 +198,7 @@ describe('Content Layout Row contract', () => {
     }
     expect(validateContentLayoutRow(row)).toContain('spans the full row')
     // The blocks-array validator defers to the row validator's message.
-    expect(validateTwoBlockRowWidths(row.blocks)).toBe(true)
+    expect(validateRowBlockWidths(row.blocks)).toBe(true)
   })
 
   it('gives the Video Carousel Block videos and no width control', () => {

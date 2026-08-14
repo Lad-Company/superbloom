@@ -13,29 +13,37 @@ type ContentLayoutRow = {
   fullBleed?: boolean
 }
 
-const WIDTH_VALUES: Record<string, number> = {
-  '1/4': 1 / 4,
-  '1/3': 1 / 3,
-  '1/2': 1 / 2,
-  '2/3': 2 / 3,
-  '3/4': 3 / 4,
-  full: 1,
+// Widths as twelfths of the 12-column grid, so multi-block totals compare
+// exactly (1/3 + 1/3 + 1/3 is not exactly 1 in floating point).
+const WIDTH_COLUMNS: Record<string, number> = {
+  '1/4': 3,
+  '1/3': 4,
+  '1/2': 6,
+  '2/3': 8,
+  '3/4': 9,
+  full: 12,
 }
+const FULL_WIDTH_COLUMNS = 12
+
+export const MAX_ROW_BLOCKS = 4
 
 const isCarouselBlock = (block: ContentLayoutBlock) =>
   block?._type === 'contentLayoutCarousel'
 
-export const validateTwoBlockRowWidths = (blocks: unknown): true | string => {
-  if (!Array.isArray(blocks) || blocks.length !== 2) return true
+export const validateRowBlockWidths = (blocks: unknown): true | string => {
+  if (!Array.isArray(blocks) || blocks.length < 2) return true
 
-  const [first, second] = blocks as ContentLayoutBlock[]
+  const rowBlocks = blocks as ContentLayoutBlock[]
   // Carousel rows are rejected by validateContentLayoutRow with a clearer
   // message; don't pile on a width error here.
-  if (isCarouselBlock(first) || isCarouselBlock(second)) return true
-  if (!first.width || !second.width) return 'Every Content Layout block requires a width.'
+  if (rowBlocks.some(isCarouselBlock)) return true
+  if (rowBlocks.some((block) => !block.width)) {
+    return 'Every Content Layout block requires a width.'
+  }
 
-  return WIDTH_VALUES[first.width] + WIDTH_VALUES[second.width] === 1 ||
-    'Two-block row widths must total full width (e.g., 1/3 + 2/3, 1/2 + 1/2).'
+  const total = rowBlocks.reduce((sum, block) => sum + (WIDTH_COLUMNS[block.width!] ?? 0), 0)
+  return total === FULL_WIDTH_COLUMNS ||
+    'Multi-block row widths must total full width (e.g., 1/2 + 1/2, 1/3 + 1/3 + 1/3, 1/4 + 1/4 + 1/4 + 1/4).'
 }
 
 export const isFullBleedEligible = (row: ContentLayoutRow): boolean =>
@@ -48,8 +56,8 @@ export const validateContentLayoutRow = (value: unknown): true | string => {
 
   const row = value as ContentLayoutRow
   const blocks = row.blocks
-  if (!Array.isArray(blocks) || blocks.length < 1 || blocks.length > 3) {
-    return 'A Content Layout Row must contain one, two, or three blocks.'
+  if (!Array.isArray(blocks) || blocks.length < 1 || blocks.length > MAX_ROW_BLOCKS) {
+    return 'A Content Layout Row must contain between one and four blocks.'
   }
 
   // Carousels have no width control: they always take the full row, so a
@@ -64,16 +72,7 @@ export const validateContentLayoutRow = (value: unknown): true | string => {
     return 'Every Content Layout block requires a width.'
   }
 
-  if (blocks.length === 3) {
-    const spacers = blocks.filter((block) => block._type === 'contentLayoutSpacer')
-    const totalWidth = blocks.reduce((total, block) => total + (WIDTH_VALUES[block.width!] ?? 0), 0)
-
-    if (spacers.length !== 1 || totalWidth !== 1) {
-      return 'Three-block rows require one Spacer Block and widths totaling full width.'
-    }
-  }
-
-  const widthResult = validateTwoBlockRowWidths(blocks)
+  const widthResult = validateRowBlockWidths(blocks)
   if (widthResult !== true) return widthResult
 
   return true
