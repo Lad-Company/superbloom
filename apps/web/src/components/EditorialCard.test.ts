@@ -20,4 +20,8 @@ describe('Editorial Card', () => {
     expect(source).toContain('formatPublicationDateIndex')
     expect(source).not.toContain('dateFormat')
   })
+
+  it('caps media height through an overridable custom property', () => {
+    expect(source).toContain('max-height: var(--card-media-max-height, 60svh)')
+  })
 })

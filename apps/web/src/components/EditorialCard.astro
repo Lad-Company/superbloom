@@ -116,11 +116,14 @@ const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDa
     text-decoration: none;
   }
 
-  /* Height ceiling on card media, on every surface (rails and grids): tall
-     ratios like 9:16 crop via object-fit instead of towering over the row.
-     svh ties the cap to the screen height; tune the single value here. */
+  /* Height ceiling on card media: tall ratios like 9:16 crop via object-fit
+     instead of towering over the row. svh ties the cap to the screen height.
+     The 60svh default binds every surface (rails, grids, Next Project);
+     large browse placements (/work, /index) raise it through
+     --card-media-max-height so CMS-authored ratios survive at wide card
+     widths. */
   .editorial-card :global(.media-frame) {
-    max-height: 60svh;
+    max-height: var(--card-media-max-height, 60svh);
   }
 
   .content {

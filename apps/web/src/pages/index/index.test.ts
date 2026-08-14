@@ -46,4 +46,8 @@ describe('Index page', () => {
   it('does not pass a Read More CTA to Index items', () => {
     expect(source).not.toContain('showCopy')
   })
+
+  it('raises the card media cap so CMS-authored ratios survive', () => {
+    expect(source).toContain('--card-media-max-height: 120svh')
+  })
 })

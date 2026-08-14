@@ -91,6 +91,14 @@ const heroHeading = workIndex?.heroHeading ?? 'Unexpected minds. Unignorable wor
 </Layout>
 
 <style>
+  /* Large placement: raise the EditorialCard media cap (default 60svh) so
+     cards obey their CMS aspect ratio — 60svh crops even 16:9 at full width
+     and 4:5 at 1/2. 120svh clears every ratio at every authored width on
+     desktop; only extremes like full-width 9:16 still crop. */
+  .featured-work,
+  .all-work {
+    --card-media-max-height: 120svh;
+  }
   .all-work {
     display: grid;
     gap: var(--space-xl);

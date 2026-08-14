@@ -170,8 +170,11 @@ Three settings:
   full width below 1024px; rails instead collapse every card to one narrow
   width below 960px.
 - **Media Aspect Ratio** — `intrinsic, 1:1, 4:5, 9:16, 3:2, 16:9, 2:1`. Card
-  media is capped at 60svh on every surface; taller ratios crop via
-  `object-fit: cover` instead of towering over the row.
+  media is capped at 60svh by default; taller ratios crop via
+  `object-fit: cover` instead of towering over the row. The large browse
+  placements (/work and /index) raise the cap to 120svh through
+  `--card-media-max-height` so CMS-authored ratios survive at wide card
+  widths; only extremes like full-width 9:16 still crop.
 - **Info Position** — `below, left, right`. Left/right require Card Width ≥ `1/2`
   and revert to `below` on mobile.
 
