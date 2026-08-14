@@ -2,6 +2,7 @@
 import Metric from '../Metric.astro';
 import SurfaceSection from '../SurfaceSection.astro';
 import ContentLayoutRow from '../ContentLayoutRow.astro';
+import {vars as surfaceVars, type SurfaceRole} from '../../lib/surfaceRole';
 import type { CaseStudyBySlugQueryResult } from '../../sanity.types';
 
 type ResultsData = NonNullable<NonNullable<CaseStudyBySlugQueryResult>['results']>;
@@ -13,28 +14,65 @@ interface Props {
 }
 
 const { id, label, results } = Astro.props;
-const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-primary';
+// Variant is new schema; documents saved before it existed default to the
+// original quantitative grid.
+const qualitative = results.variant === 'qualitative';
+const role: SurfaceRole = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-primary';
+const alternateRole: SurfaceRole = role === 'case-primary' ? 'case-secondary' : 'case-primary';
+// Qualitative bands alternate the case brand colors, starting from the
+// section's Background Color choice. Each band's foreground is the surface
+// role's contrast-checked ink (black/white by luminance — see caseBrandVars).
+const bandRole = (index: number): SurfaceRole => (index % 2 === 0 ? role : alternateRole);
+const stats = results.stats ?? [];
+const supportingRows = results.supportingRows ?? [];
 ---
 
-<SurfaceSection role={role} id={id} tabindex={-1} class="results-surface">
-  <div class="results">
-    <h2 class="type-section-heading">{label}</h2>
-    <ul data-results-stats>
-      {(results.stats ?? []).map((stat) => (
-        <li>
-          <Metric value={stat.value} label={stat.label} />
-        </li>
+{qualitative ? (
+  <SurfaceSection role={role} id={id} tabindex={-1} class="results-surface">
+    <div class="results results--qualitative">
+      <h2 class="sr-only">{label}</h2>
+      <ul class="bands">
+        {stats.map((stat, index) => (
+          <li class="band" data-surface-role={bandRole(index)} style={surfaceVars[bandRole(index)]}>
+            {stat.value && <p class="band-value type-h4">{stat.value}</p>}
+            {stat.label && <p class="band-label type-caption">{stat.label}</p>}
+          </li>
+        ))}
+      </ul>
+      {supportingRows.length > 0 && (
+        <div class="supporting">
+          {supportingRows.map((row) => (
+            <ContentLayoutRow row={row} />
+          ))}
+        </div>
+      )}
+    </div>
+  </SurfaceSection>
+) : (
+  <SurfaceSection role={role} id={id} tabindex={-1} class="results-surface">
+    <div class="results">
+      <h2 class="type-section-heading">{label}</h2>
+      <ul data-results-stats>
+        {stats.map((stat) => (
+          <li>
+            <Metric value={stat.value} label={stat.label} />
+          </li>
+        ))}
+      </ul>
+      {supportingRows.map((row) => (
+        <ContentLayoutRow row={row} />
       ))}
-    </ul>
-    {(results.supportingRows ?? []).map((row) => (
-      <ContentLayoutRow row={row} />
-    ))}
-  </div>
-</SurfaceSection>
+    </div>
+  </SurfaceSection>
+)}
 
 <script>
   import {revealStats} from '../../lib/motion';
 
+  // Count-up + rise reveal runs only for the quantitative variant — the
+  // qualitative bands render their final state with no animation. The
+  // [data-results-stats] hook exists only in the quantitative branch, so
+  // this is a no-op on qualitative pages.
   const cleanups: Array<() => void> = [];
   const initStats = () =>
     document.querySelectorAll<HTMLElement>('[data-results-stats]').forEach((container) => {
@@ -82,6 +120,50 @@ const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-
   li :global(.value) {
     overflow-wrap: anywhere;
   }
+
+  /* Qualitative: full-bleed statement bands stacked flush, alternating the
+     case primary/secondary surfaces. The section heading stays available to
+     assistive tech (and the spine-nav anchor) but is not shown — the bands
+     carry the section on their own. */
+  .results--qualitative {
+    gap: 0;
+    padding: 0;
+  }
+  .results--qualitative .bands {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .band {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+    padding: var(--space-m) var(--page-inset);
+    background: var(--bg);
+    color: var(--fg);
+  }
+  .band-value,
+  .band-label {
+    margin: 0;
+  }
+  .band-value {
+    overflow-wrap: anywhere;
+  }
+  .results--qualitative .supporting {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-m);
+    padding: var(--space-2xl) var(--page-inset) var(--space-3xl);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
   @media (--bp-below-desktop) {
     .results {
       margin-top: var(--space-3xl);
@@ -98,6 +180,15 @@ const role = results.backgroundColor === 'secondary' ? 'case-secondary' : 'case-
     }
     ul {
       grid-template-columns: 1fr;
+    }
+    .results--qualitative {
+      padding-block: 0;
+    }
+    .band {
+      padding: var(--space-xs) var(--page-inset);
+    }
+    .results--qualitative .supporting {
+      padding-block: var(--space-xl);
     }
   }
 </style>

@@ -152,7 +152,7 @@ export const caseStudy = defineType({
     rule.custom((document) => {
       const doc = document as {
         secondaryColor?: unknown
-        results?: {backgroundColor?: string}
+        results?: {backgroundColor?: string; variant?: string}
         cardWidth?: string
         infoPosition?: string
       }

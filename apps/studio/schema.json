@@ -2785,6 +2785,23 @@
             "value": "caseStudyResults"
           }
         },
+        "variant": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "quantitative"
+              },
+              {
+                "type": "string",
+                "value": "qualitative"
+              }
+            ]
+          },
+          "optional": true
+        },
         "backgroundColor": {
           "type": "objectAttribute",
           "value": {

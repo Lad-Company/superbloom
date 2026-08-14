@@ -7,9 +7,27 @@ export const caseStudyResults = defineType({
   type: 'object',
   fields: [
     defineField({
+      name: 'variant',
+      title: 'Stats Style',
+      type: 'string',
+      description:
+        'Quantitative: numeric grid with count-up animation. Qualitative: full-width statement bands that alternate the primary/secondary brand colors.',
+      options: {
+        list: [
+          {title: 'Quantitative', value: 'quantitative'},
+          {title: 'Qualitative', value: 'qualitative'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'quantitative',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
       name: 'backgroundColor',
       title: 'Background Color',
       type: 'string',
+      description:
+        'Quantitative: section background. Qualitative: color of the first band; bands alternate from there.',
       options: {
         list: [
           {title: 'Primary brand color', value: 'primary'},
@@ -24,6 +42,8 @@ export const caseStudyResults = defineType({
       name: 'stats',
       title: 'Stats',
       type: 'array',
+      description:
+        'Quantitative: value is the number (counts up on scroll). Qualitative: value is the headline statement, label the supporting caption.',
       of: [
         {
           type: 'object',
@@ -65,10 +85,10 @@ export const caseStudyResults = defineType({
     }),
   ],
   preview: {
-    select: {backgroundColor: 'backgroundColor', count: 'stats.length'},
-    prepare: ({backgroundColor, count}) => ({
+    select: {backgroundColor: 'backgroundColor', count: 'stats.length', variant: 'variant'},
+    prepare: ({backgroundColor, count, variant}) => ({
       title: 'Results',
-      subtitle: `${count ?? 0} stat(s) · ${backgroundColor === 'secondary' ? 'Secondary' : 'Primary'} background`,
+      subtitle: `${count ?? 0} stat(s) · ${variant === 'qualitative' ? 'Qualitative' : 'Quantitative'} · ${backgroundColor === 'secondary' ? 'Secondary' : 'Primary'} background`,
     }),
   },
 })
