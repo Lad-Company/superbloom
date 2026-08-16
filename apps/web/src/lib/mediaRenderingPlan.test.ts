@@ -1,7 +1,5 @@
 import {describe, expect, it} from 'vitest'
 import {planMediaRendering, muxPosterRendering, type MediaPlacement} from './mediaRenderingPlan'
-import {cardImageSizes, CARD_WIDTHS, INFO_POSITIONS, type ContentCardSettings} from './contentCard'
-import {contentLayoutSizes, type ContentLayoutWidth} from './contentLayout'
 
 const sizes = (placement: MediaPlacement) => planMediaRendering(placement).sizes
 
@@ -17,11 +15,6 @@ describe('planMediaRendering — the sizing table', () => {
       'capped fractional hero (article detail)',
       {context: 'hero', capPx: 1440, fraction: 0.9},
       '(max-width: 1599.98px) 90vw, 1440px',
-    ],
-    [
-      'capped narrow band (editorial rail)',
-      {context: 'hero', capPx: 960},
-      '(max-width: 959.98px) 100vw, 960px',
     ],
     [
       'grid card, info below',
@@ -108,35 +101,6 @@ describe('planMediaRendering — priority bundle', () => {
   it('an explicit priority overrides the placement default (carousel initial slide)', () => {
     expect(planMediaRendering({context: 'split'}, {priority: true}).loading).toBe('eager')
     expect(planMediaRendering({context: 'hero'}, {priority: false}).preload).toBe('none')
-  })
-})
-
-/**
- * Migration parity (temporary — delete with the legacy helpers): the planner
- * must emit byte-identical strings to the hand-written paths it replaces,
- * except the documented normalizations (redundant `full` media condition,
- * `.98` cap boundaries) and deliberate fixes (rail accuracy, sized posters).
- */
-describe('parity with legacy sizing helpers', () => {
-  it('matches cardImageSizes for every settings combination', () => {
-    for (const cardWidth of CARD_WIDTHS) {
-      for (const infoPosition of INFO_POSITIONS) {
-        const settings: ContentCardSettings = {cardWidth, mediaAspectRatio: '16:9', infoPosition}
-        expect(sizes({context: 'card', settings})).toBe(cardImageSizes(settings))
-      }
-    }
-  })
-
-  it('matches contentLayoutSizes for every non-full width', () => {
-    const widths: ContentLayoutWidth[] = ['1/4', '1/3', '1/2', '2/3', '3/4']
-    for (const width of widths) {
-      expect(sizes({context: 'layoutBlock', width})).toBe(contentLayoutSizes(width))
-    }
-  })
-
-  it('normalizes the redundant full-width media condition', () => {
-    expect(contentLayoutSizes('full')).toBe('(max-width: 1023.98px) 100vw, 100vw')
-    expect(sizes({context: 'layoutBlock', width: 'full'})).toBe('100vw')
   })
 })
 

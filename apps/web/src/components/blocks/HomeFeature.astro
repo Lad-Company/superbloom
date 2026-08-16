@@ -24,14 +24,24 @@ const { headline, body, primaryMedia, secondaryMedia } = Astro.props;
       {primaryMedia && (
         <div class="primary-depth" data-depth="0.35">
           <div class="primary" data-pointer-depth="70">
-            <MediaFrame media={primaryMedia} ratio="1:1" title={headline} />
+            <MediaFrame
+              media={primaryMedia}
+              ratio="1:1"
+              placement={{context: 'fixed', px: {small: 444, large: 444}}}
+              title={headline}
+            />
           </div>
         </div>
       )}
       {secondaryMedia && (
         <div class="secondary-depth" data-depth="0.7">
           <div class="secondary" data-pointer-depth="35">
-            <MediaFrame media={secondaryMedia} ratio="3:2" title={headline} />
+            <MediaFrame
+              media={secondaryMedia}
+              ratio="3:2"
+              placement={{context: 'fixed', px: {small: 391, large: 391}}}
+              title={headline}
+            />
           </div>
         </div>
       )}

@@ -60,12 +60,8 @@ interface Props {
   ratio?: MediaRatio | null
   /** Where this frame sits in the page composition. The plan derives
    *  `sizes`, poster widths, and the load-priority bundle from it — callers
-   *  state the Placement, never the math. Wins over `sizes` when both are
-   *  set. */
-  placement?: MediaPlacement | null
-  /** @deprecated Escape hatch during the Placement migration; pass
-   *  `placement` instead. Deleted once every caller has migrated. */
-  sizes?: string | null
+   *  state the Placement, never the math. */
+  placement: MediaPlacement
   title?: string | null
   /** Overrides the placement's load-priority default (heroes eager,
    *  everything else lazy). */
@@ -79,7 +75,6 @@ const {
   media,
   ratio = '16:9',
   placement,
-  sizes,
   title,
   priority: priorityProp,
   active = true,
@@ -87,11 +82,12 @@ const {
   class: className,
 } = Astro.props
 
-const plan = placement
-  ? planMediaRendering(placement, priorityProp === undefined ? undefined : {priority: priorityProp})
-  : null
-const priority = plan?.priority ?? priorityProp ?? false
-const frameSizes = plan?.sizes ?? sizes ?? '100vw'
+const plan = planMediaRendering(
+  placement,
+  priorityProp === undefined ? undefined : {priority: priorityProp},
+)
+const priority = plan.priority
+const frameSizes = plan.sizes
 
 const ratioMap: Record<MediaRatio, string> = {
   intrinsic: 'auto',
@@ -120,14 +116,9 @@ const styleAttr =
 const hasAsset =
   (asset?._type === 'image' && Boolean(asset.asset?._ref)) ||
   (asset?._type === 'mux.video' && Boolean(asset.playbackId))
-// Placement-planned frames get sized webp posters riding the width ladder;
-// the legacy sizes-string path keeps the full-res jpeg until its caller
-// migrates (the srcset-less shape is the marker).
 const videoPoster =
   asset?._type === 'mux.video' && asset.playbackId
-    ? plan
-      ? muxPosterRendering(asset.playbackId)
-      : {src: `https://image.mux.com/${asset.playbackId}/thumbnail.jpg?time=0`, srcset: undefined}
+    ? muxPosterRendering(asset.playbackId)
     : undefined
 const isVideo = asset?._type === 'mux.video' && Boolean(asset.playbackId)
 const showControls = isVideo && controls !== 'none'
@@ -183,7 +174,7 @@ const imageRendering =
         class="media-frame__poster"
         src={videoPoster.src}
         srcset={videoPoster.srcset}
-        sizes={videoPoster.srcset ? frameSizes : undefined}
+        sizes={frameSizes}
         alt=""
         loading={priority ? 'eager' : 'lazy'}
         fetchpriority={priority ? 'high' : 'auto'}

@@ -3,9 +3,9 @@
    rails cannot drift.
 
    Card Width is a literal fraction of the viewport width: 1/2 = half the
-   viewport, full = the whole viewport. This mirrors cardImageSizes() in
-   lib/contentCard.ts, which builds the img `sizes` attribute from the same
-   fractions. Below 960px every card collapses to one narrow width (the
+   viewport, full = the whole viewport. The rail branch of
+   lib/mediaRenderingPlan.ts builds the img `sizes` attribute from this same
+   collapse table. Below 960px every card collapses to one narrow width (the
    explicit responsive exception — Info stays below too). */
 
 .marquee-set > .content-card,
