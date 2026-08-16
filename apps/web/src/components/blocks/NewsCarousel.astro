@@ -44,6 +44,7 @@ const halfItems = Array.from({length: copiesPerHalf}, () => items).flat()
           {halfItems.map((item) => (
             <ArticleCard
               item={item}
+              rail
               settings={overrides.get(item._id)}
               listSettings={listSettings}
               globalSettings={globalSettings}

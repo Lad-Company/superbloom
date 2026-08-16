@@ -33,6 +33,7 @@ interface Props {
   item: ArticleItem
   showCopy?: boolean
   class?: string
+  rail?: boolean
   settings?: PartialContentCardSettings
   listSettings?: PartialContentCardSettings
   globalSettings?: PartialContentCardSettings
@@ -43,6 +44,7 @@ const {
   item,
   showCopy = false,
   class: className,
+  rail = false,
   settings,
   listSettings,
   globalSettings,
@@ -60,6 +62,7 @@ const typeLabel = item.articleType ? ARTICLE_TYPE_LABELS[item.articleType] : 'Ed
   href={href}
   title={item.title}
   media={item.cardMedia}
+  rail={rail}
   contentSettings={item}
   settings={settings}
   listSettings={listSettings}
