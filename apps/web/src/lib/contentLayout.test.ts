@@ -120,9 +120,9 @@ describe('Content Layout Row rendering contract', () => {
     expect(caseStudyRendererSource).not.toContain('caseStudyTextMedia');
   });
 
-  it('threads srcset / sizes attributes through media blocks', () => {
-    expect(componentSource).toContain('sizes={sizesFor(block.width ?? undefined)}')
-    expect(componentSource).toContain("'100vw'")
+  it('threads the media Placement through media blocks', () => {
+    expect(componentSource).toContain('placement={placementFor(block.width ?? undefined)}')
+    expect(componentSource).toContain("context: 'layoutBlock'")
   });
 
   it('gives Case Study row videos the Presented control bar while articles stay Ambient', () => {

@@ -54,6 +54,16 @@ describe('planMediaRendering — the sizing table', () => {
       '(max-width: 1023.98px) 100vw, 33vw',
     ],
     ['full layout block', {context: 'layoutBlock', width: 'full'}, '100vw'],
+    [
+      'capped full layout block (article media band)',
+      {context: 'layoutBlock', width: 'full', capPx: 1440},
+      '(max-width: 1439.98px) 100vw, 1440px',
+    ],
+    [
+      'capped narrow layout block (editorial rail band)',
+      {context: 'layoutBlock', width: 'full', capPx: 960},
+      '(max-width: 959.98px) 100vw, 960px',
+    ],
     ['full-bleed layout block', {context: 'layoutBlock', width: 'full', fullBleed: true}, '100vw'],
     ['split at desktop collapse', {context: 'split'}, '(max-width: 1023.98px) 100vw, 50vw'],
     [

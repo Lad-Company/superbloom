@@ -1,5 +1,6 @@
 ---
 import MediaFrame, {type Media} from '../MediaFrame.astro';
+import type {MediaPlacement} from '../../lib/mediaRenderingPlan';
 
 interface Props {
   layout?: 'full-width' | 'editorial-rail' | 'paired' | null;
@@ -12,19 +13,17 @@ const layout: 'full-width' | 'editorial-rail' | 'paired' = layoutProp ?? 'full-w
 const frames = layout === 'paired' ? pairedMedia ?? [] : media ? [media] : [];
 
 // full-width targets the wide content frame (~1440px); editorial-rail is
-// narrower (~960px); paired splits the frame 50/50 below 1440px. The single
-// media-condition + length form is the only syntax `sizes` accepts, so we
-// approximate the CSS-side min() caps with an explicit branch.
-const sizesFor = (name: 'full-width' | 'editorial-rail' | 'paired') => {
-  if (name === 'paired') return '(max-width: 1023.98px) 100vw, 50vw'
-  if (name === 'editorial-rail') return '(max-width: 959.98px) 100vw, 960px'
-  return '(max-width: 1439px) 100vw, 1440px'
+// narrower (~960px); paired splits the frame 50/50 below desktop.
+const placementFor = (name: 'full-width' | 'editorial-rail' | 'paired'): MediaPlacement => {
+  if (name === 'paired') return {context: 'split'}
+  if (name === 'editorial-rail') return {context: 'layoutBlock', width: 'full', capPx: 960}
+  return {context: 'layoutBlock', width: 'full', capPx: 1440}
 }
 ---
 
 {frames.length > 0 && (
   <section class:list={['article-media', `layout-${layout}`]}>
-    {frames.map((frame) => <MediaFrame media={frame} ratio={layout === 'editorial-rail' ? '3:2' : '16:9'} sizes={sizesFor(layout)} />)}
+    {frames.map((frame) => <MediaFrame media={frame} ratio={layout === 'editorial-rail' ? '3:2' : '16:9'} placement={placementFor(layout)} />)}
   </section>
 )}
 

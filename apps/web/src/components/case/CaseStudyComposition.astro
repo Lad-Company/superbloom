@@ -41,9 +41,8 @@ const capabilityTitles = (caseStudy.capabilities ?? [])
         <MediaFrame
           media={caseStudy.leadMedia}
           ratio="16:9"
-          sizes="(max-width: 1439px) 100vw, 1440px"
+          placement={{context: 'hero', capPx: 1440}}
           title={caseStudy.title}
-          priority
           controls={caseStudy.leadMedia.asset?._type === 'mux.video' ? 'full' : 'none'}
         />
       </div>

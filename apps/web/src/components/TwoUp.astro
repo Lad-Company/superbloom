@@ -24,7 +24,7 @@ const {items} = Astro.props
         <MediaFrame
           media={item.media}
           ratio="1:1"
-          sizes="(max-width: 767.98px) 100vw, 50vw"
+          placement={{context: 'split', collapseAt: 'small'}}
           title={item.heading ?? undefined}
         />
         {item.heading && <p class="heading type-h5">{item.heading}</p>}

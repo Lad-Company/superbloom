@@ -1,6 +1,7 @@
 ---
 import MediaFrame, {type Media} from '../MediaFrame.astro'
 import PortableText from '../PortableText.astro'
+import type {MediaPlacement} from '../../lib/mediaRenderingPlan'
 import type {TypedObject} from 'astro-portabletext/types'
 
 type Layout = 'fullBleed16x9' | 'pairedSquare' | 'textAndMedia'
@@ -14,14 +15,14 @@ interface Props {
 const {layout = 'fullBleed16x9', media, text} = Astro.props
 
 const items = media ?? []
-const sizesFor = (name: Layout) =>
-  name === 'fullBleed16x9' ? '100vw' : '(max-width: 1023.98px) 100vw, 50vw'
+const placementFor = (name: Layout): MediaPlacement =>
+  name === 'fullBleed16x9' ? {context: 'layoutBlock', width: 'full'} : {context: 'split'}
 ---
 
 {
   layout === 'fullBleed16x9' && (
     <div class="full-bleed">
-      <MediaFrame media={items[0]} ratio="16:9" sizes={sizesFor(layout)} />
+      <MediaFrame media={items[0]} ratio="16:9" placement={placementFor(layout)} />
     </div>
   )
 }
@@ -31,7 +32,7 @@ const sizesFor = (name: Layout) =>
     <div class="paired">
       {items.map((item) => (
         <div class="pair-item">
-          <MediaFrame media={item} ratio="1:1" sizes={sizesFor(layout)} />
+          <MediaFrame media={item} ratio="1:1" placement={placementFor(layout)} />
         </div>
       ))}
     </div>
@@ -47,7 +48,7 @@ const sizesFor = (name: Layout) =>
       <div class="tam-media">
         {items.map((item) => (
           <div class="tam-item">
-            <MediaFrame media={item} sizes={sizesFor(layout)} />
+            <MediaFrame media={item} placement={placementFor(layout)} />
           </div>
         ))}
       </div>
