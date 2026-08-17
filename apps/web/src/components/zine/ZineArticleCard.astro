@@ -28,6 +28,7 @@ interface Props {
     tags?: Tag[] | null
   }
   issueSlug: string
+  rail?: boolean
   settings?: PartialContentCardSettings
   listSettings?: PartialContentCardSettings
   globalSettings?: PartialContentCardSettings
@@ -37,6 +38,7 @@ interface Props {
 const {
   article,
   issueSlug,
+  rail = false,
   settings,
   listSettings,
   globalSettings,
@@ -52,6 +54,7 @@ const summary = article.overview
   href={`/zine/issues/${issueSlug}/${article.slug}`}
   title={article.title ?? null}
   media={article.cardMedia ?? null}
+  rail={rail}
   contentSettings={article}
   settings={settings}
   listSettings={listSettings}

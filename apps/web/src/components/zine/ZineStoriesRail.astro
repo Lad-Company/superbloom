@@ -54,6 +54,7 @@ const overrideFor = (id?: string | null) =>
           <ZineArticleCard
             article={article}
             issueSlug={issueSlug}
+            rail
             settings={overrideFor(article._id)}
             listSettings={listDefaults}
             globalSettings={globalCardDefaults}

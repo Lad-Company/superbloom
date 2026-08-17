@@ -29,12 +29,13 @@ interface WorkItem {
 interface Props {
   item: WorkItem;
   class?: string;
+  rail?: boolean;
   settings?: PartialContentCardSettings;
   listSettings?: PartialContentCardSettings;
   globalSettings?: PartialContentCardSettings;
 }
 
-const { item, class: className, settings, listSettings, globalSettings } = Astro.props;
+const { item, class: className, rail = false, settings, listSettings, globalSettings } = Astro.props;
 const href = item.slug ? `/work/${item.slug}` : '#';
 ---
 
@@ -42,6 +43,7 @@ const href = item.slug ? `/work/${item.slug}` : '#';
   href={href}
   title={item.title}
   media={item.media}
+  rail={rail}
   contentSettings={item}
   settings={settings}
   listSettings={listSettings}

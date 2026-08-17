@@ -113,7 +113,7 @@ const destinationCtaLabel = article.source
       <nav class="related-items" aria-label="More stories">
         <CardCarousel label="More stories" heading="More stories">
           {relatedItems.map((item) => (
-            <MixedArticleCard item={item} globalSettings={article.globalCardDefaults} showCopy />
+            <MixedArticleCard item={item} rail globalSettings={article.globalCardDefaults} showCopy />
           ))}
         </CardCarousel>
       </nav>

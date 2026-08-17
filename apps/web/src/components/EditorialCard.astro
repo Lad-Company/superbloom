@@ -1,10 +1,7 @@
 ---
-import MediaFrame, {type Media, type MediaRatio} from './MediaFrame.astro'
-import {
-  cardImageSizes,
-  resolveContentCardSettings,
-  type PartialContentCardSettings,
-} from '../lib/contentCard'
+import MediaFrame, {type Media} from './MediaFrame.astro'
+import {resolveContentCardSettings, type PartialContentCardSettings} from '../lib/contentCard'
+import type {MediaPlacement} from '../lib/mediaRenderingPlan'
 import {formatPublicationDateIndex} from '../lib/publicationDate'
 
 interface Props {
@@ -16,6 +13,10 @@ interface Props {
   class?: string
   ctaLabel?: string | null
   cardId?: string | null
+  /** True when the card sits on a horizontal rail (News marquee, Card
+   *  Carousel) — rail cards render at literal viewport fractions and
+   *  collapse to one narrow width, so the media plan differs from grids. */
+  rail?: boolean
   contentSettings?: PartialContentCardSettings
   settings?: PartialContentCardSettings
   listSettings?: PartialContentCardSettings
@@ -31,6 +32,7 @@ const {
   class: className,
   ctaLabel,
   cardId,
+  rail = false,
   contentSettings,
   settings,
   listSettings,
@@ -42,7 +44,7 @@ const resolved = resolveContentCardSettings({
   list: listSettings,
   item: settings,
 })
-const sizes = cardImageSizes(resolved)
+const placement: MediaPlacement = {context: 'card', settings: resolved, rail}
 const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDate) : null
 ---
 
@@ -53,12 +55,7 @@ const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDa
   data-info-position={resolved.infoPosition}
   data-content-card-id={cardId}
 >
-  <MediaFrame
-    media={media}
-    ratio={resolved.mediaAspectRatio as MediaRatio}
-    sizes={sizes}
-    title={title}
-  >
+  <MediaFrame media={media} ratio={resolved.mediaAspectRatio} placement={placement} title={title}>
     <slot name="overlay" />
   </MediaFrame>
   <div class="content">
