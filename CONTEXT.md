@@ -31,7 +31,7 @@ content, and experiential campaigns for brand clients.
 ## Content
 
 - **Media Asset** — a reusable image or Mux video from a Media field. _Avoid_:
-  attachment, file (except a Zine PDF).
+  attachment, file.
 - **Poster Image** — an optional curated still paired with a Media field's
   video asset (`mediaBox.poster`). When set, a content card is dormant until
   hover/focus/tap slides the poster away to reveal the video; when unset, the
@@ -62,6 +62,10 @@ content, and experiential campaigns for brand clients.
   blog, magazine.
 - **Zine Issue** — one edition; contains one or more ordered Zine Articles.
   _Avoid_: volume, edition.
+- **Issue Mode** — a Zine Issue's top-level presentation flag: **Full issue**
+  (the designed page: hero, Letter from the Editor, article rail) or **ISSUU
+  embed only** (a minimal flipbook page, for past zines that live on ISSUU and
+  are not authored in the CMS). _Avoid_: linkout, external issue.
 - **Super-Header** — the optional kicker above a Zine Issue's hero title (the
   `eyebrow` field, e.g. "Issue No. 5"). _Avoid_: announcement bar, masthead.
 - **Zine Article** — a long-form story belonging to exactly one Zine Issue.

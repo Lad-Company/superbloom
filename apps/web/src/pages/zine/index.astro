@@ -24,8 +24,12 @@ const introFallbackMedia = [
   zineLanding.currentIssue.heroMedia,
   zineLanding.currentIssue.cardMedia,
 ].filter((media): media is NonNullable<typeof media> => media !== null)
+// Reads happen on the internal ISSUU flipbook page.
+const currentIssue = zineLanding.currentIssue
 const currentIssueHref =
-  zineLanding.currentIssue.pdfUrl ?? zineLanding.currentIssue.issuuUrl ?? '/zine'
+  currentIssue.issuuUrl && currentIssue.slug
+    ? `/zine/issues/${currentIssue.slug}/read`
+    : '/zine'
 ---
 
 <Layout

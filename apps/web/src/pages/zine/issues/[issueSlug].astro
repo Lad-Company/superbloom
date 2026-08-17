@@ -3,6 +3,7 @@ import Layout from '../../../layouts/Layout.astro'
 import Footer from '../../../components/Footer.astro'
 import ContactBand from '../../../components/ContactBand.astro'
 import IssueDetail from '../../../components/zine/IssueDetail.astro'
+import IssuuEmbed from '../../../components/zine/IssuuEmbed.astro'
 import {getSanityClient} from '../../../lib/sanity'
 import {isPreviewRequest} from '../../../lib/preview'
 import {setContentCache} from '../../../lib/cacheHeaders'
@@ -19,15 +20,21 @@ if (!issue) {
   return Astro.rewrite('/404')
 }
 
-const zineLanding = await client.fetch(zineLandingQuery)
+// ISSUU-embed-only issues skip the full treatment: their archive URL serves a
+// minimal flipbook page instead.
+const isEmbedOnly = issue.issueMode === 'embed'
 
-if (issue && zineLanding?.currentIssue?.slug === issue.slug) {
-  return Astro.redirect('/zine', 302)
+if (!isEmbedOnly) {
+  const zineLanding = await client.fetch(zineLandingQuery)
+
+  if (zineLanding?.currentIssue?.slug === issue.slug) {
+    return Astro.redirect('/zine', 302)
+  }
 }
 
 setContentCache(Astro.response, preview)
 
-const pastIssues = await client.fetch(issueArchiveQuery, {slug: issue.slug})
+const pastIssues = isEmbedOnly ? [] : await client.fetch(issueArchiveQuery, {slug: issue.slug})
 ---
 
 <Layout
@@ -37,7 +44,15 @@ const pastIssues = await client.fetch(issueArchiveQuery, {slug: issue.slug})
   canonicalUrl={`/zine/issues/${issue.slug}`}
   navRole="dark"
 >
-  <IssueDetail issue={issue} pastIssues={pastIssues} />
-  <ContactBand role="brand-deep" />
+  {
+    isEmbedOnly ? (
+      <IssuuEmbed title={issue.title} eyebrow={issue.eyebrow} issuuUrl={issue.issuuUrl} />
+    ) : (
+      <>
+        <IssueDetail issue={issue} pastIssues={pastIssues} />
+        <ContactBand role="brand-deep" />
+      </>
+    )
+  }
   <Footer />
 </Layout>
