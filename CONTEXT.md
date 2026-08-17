@@ -36,6 +36,12 @@ content, and experiential campaigns for brand clients.
   video asset (`mediaBox.poster`). When set, a content card is dormant until
   hover/focus/tap slides the poster away to reveal the video; when unset, the
   video autoplays ambiently as before. _Avoid_: thumbnail, cover image.
+- **Placement** — where a Media Asset sits in a page composition, named by the
+  composition that hosts it: hero, Content Card (grid or rail), Content Layout
+  block, split (a two-up sharing a row), or fixed-size thumbnail. A Media
+  Asset's Placement determines how large it renders across viewports; stating
+  the Placement is the caller's whole job — the sizing math is not. _Avoid_:
+  sizes (the HTML attribute), slot, position.
 - **Work** — the portfolio section (`/work`), composed of Case Studies. _Avoid_:
   Projects, Portfolio.
 - **Case Study** — a documented work engagement; belongs to one or more

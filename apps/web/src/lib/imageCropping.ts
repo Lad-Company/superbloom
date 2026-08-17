@@ -1,4 +1,5 @@
 import imageUrlBuilder from '@sanity/image-url'
+import type {MediaAspectRatio} from '@superbloom/schemas/mediaAspectRatio'
 import {sanityClient} from './sanity'
 
 const builder = imageUrlBuilder(sanityClient)
@@ -23,15 +24,9 @@ export interface ImageSource {
     | null
 }
 
-export type CropRatio =
-  | 'intrinsic'
-  | '1:1'
-  | '4:5'
-  | '9:16'
-  | '3:2'
-  | '16:9'
-  | '2:1'
-  | 'fill'
+// Authorable ratios come from the schema package; `fill` is the one
+// presentation-only extension an editor can never author.
+export type CropRatio = MediaAspectRatio | 'fill'
 
 type FixedRatio = Exclude<CropRatio, 'intrinsic' | 'fill'>
 

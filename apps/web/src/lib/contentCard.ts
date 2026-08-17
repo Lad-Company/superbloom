@@ -1,9 +1,14 @@
+// The authorable aspect-ratio set is owned by the schema package (single
+// typed source of content shape); web only re-exports it. Presentation-only
+// ratios like `fill` live in `imageCropping.ts`, never here.
+import {MEDIA_ASPECT_RATIOS, type MediaAspectRatio} from '@superbloom/schemas/mediaAspectRatio';
+
+export {MEDIA_ASPECT_RATIOS, type MediaAspectRatio};
+
 export const CARD_WIDTHS = ['1/4', '1/3', '1/2', '2/3', '3/4', 'full'] as const;
-export const MEDIA_ASPECT_RATIOS = ['intrinsic', '1:1', '4:5', '9:16', '3:2', '16:9', '2:1'] as const;
 export const INFO_POSITIONS = ['below', 'left', 'right'] as const;
 
 export type CardWidth = (typeof CARD_WIDTHS)[number];
-export type MediaAspectRatio = (typeof MEDIA_ASPECT_RATIOS)[number];
 export type InfoPosition = (typeof INFO_POSITIONS)[number];
 
 export interface ContentCardSettings {
