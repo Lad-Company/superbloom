@@ -1,7 +1,8 @@
+import {readFileSync} from 'node:fs'
 import {describe, expect, it} from 'vitest'
+import {BREAKPOINTS} from './breakpoints'
+import {CARD_WIDTHS} from './contentCard'
 import {planMediaRendering, muxPosterRendering, type MediaPlacement} from './mediaRenderingPlan'
-import {cardImageSizes, CARD_WIDTHS, INFO_POSITIONS, type ContentCardSettings} from './contentCard'
-import {contentLayoutSizes, type ContentLayoutWidth} from './contentLayout'
 
 const sizes = (placement: MediaPlacement) => planMediaRendering(placement).sizes
 
@@ -17,11 +18,6 @@ describe('planMediaRendering — the sizing table', () => {
       'capped fractional hero (article detail)',
       {context: 'hero', capPx: 1440, fraction: 0.9},
       '(max-width: 1599.98px) 90vw, 1440px',
-    ],
-    [
-      'capped narrow band (editorial rail)',
-      {context: 'hero', capPx: 960},
-      '(max-width: 959.98px) 100vw, 960px',
     ],
     [
       'grid card, info below',
@@ -111,32 +107,46 @@ describe('planMediaRendering — priority bundle', () => {
   })
 })
 
-/**
- * Migration parity (temporary — delete with the legacy helpers): the planner
- * must emit byte-identical strings to the hand-written paths it replaces,
- * except the documented normalizations (redundant `full` media condition,
- * `.98` cap boundaries) and deliberate fixes (rail accuracy, sized posters).
- */
-describe('parity with legacy sizing helpers', () => {
-  it('matches cardImageSizes for every settings combination', () => {
-    for (const cardWidth of CARD_WIDTHS) {
-      for (const infoPosition of INFO_POSITIONS) {
-        const settings: ContentCardSettings = {cardWidth, mediaAspectRatio: '16:9', infoPosition}
-        expect(sizes({context: 'card', settings})).toBe(cardImageSizes(settings))
-      }
-    }
+describe('rail widths — contract with contentCardRail.css', () => {
+  // The CSS is the single source of truth for rail card widths; the planner
+  // hardcodes mirrors of its literals. Re-derive every value from the file
+  // (the breakpoints.test.ts / ADR-0024 pattern) so the mirror cannot drift.
+  const railCss = readFileSync(new URL('../styles/contentCardRail.css', import.meta.url), 'utf8')
+  const desktopWidths = new Map(
+    [...railCss.matchAll(/\[data-card-width='([^']+)'\]\s*\{\s*width:\s*([^;]+);/g)].map((m) => [
+      m[1],
+      m[2],
+    ]),
+  )
+  const collapseWidths = new Map(
+    [...railCss.matchAll(/@media \(--bp-(\d+)\)[^{]*\{[^{]*\{\s*width:\s*([^;]+);/g)].map((m) => [
+      Number(m[1]),
+      m[2],
+    ]),
+  )
+
+  it('reads the full width table from the CSS', () => {
+    expect([...desktopWidths.keys()].sort()).toEqual([...CARD_WIDTHS].sort())
+    expect([...collapseWidths.keys()].sort()).toEqual([600, 960])
   })
 
-  it('matches contentLayoutSizes for every non-full width', () => {
-    const widths: ContentLayoutWidth[] = ['1/4', '1/3', '1/2', '2/3', '3/4']
-    for (const width of widths) {
-      expect(sizes({context: 'layoutBlock', width})).toBe(contentLayoutSizes(width))
-    }
+  it('collapses at the canonical rail breakpoints', () => {
+    expect(BREAKPOINTS.railTightMax).toBe(600 - 0.02)
+    expect(BREAKPOINTS.railNarrowMax).toBe(960 - 0.02)
   })
 
-  it('normalizes the redundant full-width media condition', () => {
-    expect(contentLayoutSizes('full')).toBe('(max-width: 1023.98px) 100vw, 100vw')
-    expect(sizes({context: 'layoutBlock', width: 'full'})).toBe('100vw')
+  it.each([...CARD_WIDTHS])('rail %s card sizes reproduce the CSS width table', (cardWidth) => {
+    expect(
+      planMediaRendering({
+        context: 'card',
+        settings: {cardWidth, mediaAspectRatio: '16:9', infoPosition: 'below'},
+        rail: true,
+      }).sizes,
+    ).toBe(
+      `(max-width: ${BREAKPOINTS.railTightMax}px) ${collapseWidths.get(600)}, ` +
+        `(max-width: ${BREAKPOINTS.railNarrowMax}px) ${collapseWidths.get(960)}, ` +
+        `${desktopWidths.get(cardWidth)}`,
+    )
   })
 })
 

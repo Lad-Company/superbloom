@@ -17,7 +17,12 @@ const {heading, body, media, aspectRatio = '1:1'} = Astro.props
     {body && <p class="body type-h6">{body}</p>}
   </div>
   <div class="media-col">
-    <MediaFrame media={media} ratio={aspectRatio} title={heading ?? undefined} />
+    <MediaFrame
+      media={media}
+      ratio={aspectRatio}
+      placement={{context: 'split', collapseAt: 'small'}}
+      title={heading ?? undefined}
+    />
   </div>
 </div>
 
