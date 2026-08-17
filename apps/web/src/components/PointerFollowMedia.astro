@@ -10,8 +10,9 @@ interface Props {
 const {media, title = '', class: className} = Astro.props
 const items = media.filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 4)
 // Each tracer image is up to ~30vw wide; on mobile the tracer is hidden and
-// the parent section paints full-bleed, so hint 100vw below the lg breakpoint.
-const sizes = '(max-width: 767.98px) 100vw, 50vw'
+// the parent section paints full-bleed, so the split plan's 100vw floor at
+// the small breakpoint covers it.
+const placement = {context: 'split', collapseAt: 'small'} as const
 ---
 
 {
@@ -19,7 +20,7 @@ const sizes = '(max-width: 767.98px) 100vw, 50vw'
     <div class:list={['pointer-follow', className]} data-pointer-follow>
       {items.map((entry) => (
         <div class="follow-item" data-follow-item>
-          <MediaFrame media={entry} ratio="fill" sizes={sizes} title={title} />
+          <MediaFrame media={entry} ratio="fill" placement={placement} title={title} />
         </div>
       ))}
     </div>

@@ -14,7 +14,9 @@ import {IMAGE_LADDER} from './imageCropping'
  * - `card` — a Content Card's Media Frame; grid lists derive from the card
  *   settings, rails (`rail: true`) from the literal viewport-fraction table
  *   in `styles/contentCardRail.css`.
- * - `layoutBlock` — a Content Layout Row media block on the 12-col grid.
+ * - `layoutBlock` — a Content Layout Row media block on the 12-col grid;
+ *   full-width blocks may cap at a content-frame width (`capPx`) instead of
+ *   growing with the viewport. Lazy by default, unlike `hero`.
  * - `split` — a block sharing a row at desktop (`vw` of the viewport,
  *   default 50), full width below its collapse breakpoint.
  * - `fixed` — fixed pixel rendering (small / large viewports).
@@ -22,7 +24,7 @@ import {IMAGE_LADDER} from './imageCropping'
 export type MediaPlacement =
   | {context: 'hero'; capPx?: number; fraction?: number}
   | {context: 'card'; settings: ContentCardSettings; rail?: boolean}
-  | {context: 'layoutBlock'; width?: ContentLayoutWidth | null; fullBleed?: boolean}
+  | {context: 'layoutBlock'; width?: ContentLayoutWidth | null; fullBleed?: boolean; capPx?: number}
   | {context: 'split'; collapseAt?: 'desktop' | 'small'; vw?: number}
   | {context: 'fixed'; px: {small: number; large: number}}
 
@@ -93,8 +95,13 @@ const cardSizes = (settings: ContentCardSettings, rail: boolean): string => {
   return belowDesktop(`${viewportPercentage}vw`)
 }
 
-const layoutBlockSizes = (width?: ContentLayoutWidth | null, fullBleed?: boolean): string => {
-  if (fullBleed || !width || width === 'full') return '100vw'
+const layoutBlockSizes = (
+  width?: ContentLayoutWidth | null,
+  fullBleed?: boolean,
+  capPx?: number,
+): string => {
+  if (fullBleed) return '100vw'
+  if (!width || width === 'full') return capPx ? heroSizes(capPx) : '100vw'
   const fraction = Math.round((LAYOUT_WIDTH_COLUMNS[width] / 12) * 100)
   return belowDesktop(`${fraction}vw`)
 }
@@ -111,7 +118,7 @@ const sizesFor = (placement: MediaPlacement): string => {
     case 'card':
       return cardSizes(placement.settings, placement.rail ?? false)
     case 'layoutBlock':
-      return layoutBlockSizes(placement.width, placement.fullBleed ?? false)
+      return layoutBlockSizes(placement.width, placement.fullBleed ?? false, placement.capPx)
     case 'split':
       return splitSizes(placement.collapseAt ?? 'desktop', placement.vw ?? 50)
     case 'fixed':

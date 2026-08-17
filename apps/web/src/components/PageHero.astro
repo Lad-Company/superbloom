@@ -30,7 +30,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
 {
   isMedia ? (
     <section class:list={['hero-media', `ratio-${mediaRatio.replace(':', '-')}`]} style={control.onDark}>
-      <MediaFrame media={media} ratio="fill" sizes="100vw" title={heading} priority>
+      <MediaFrame media={media} ratio="fill" placement={{context: 'hero'}} title={heading}>
         <div class="scrim"></div>
         <div class="overlay">
           <div class="heading-stack">

@@ -93,6 +93,7 @@ const slideNumber = (index: number) =>
                 media={video}
                 ratio="intrinsic"
                 controls="full"
+                placement={{context: 'layoutBlock', width: 'full'}}
                 active={index === initialIndex}
                 priority={index === initialIndex}
                 title={video.altText}

@@ -88,7 +88,7 @@ const readZineHref = issue.pdfUrl ?? issue.issuuUrl ?? null
           <MediaFrame
             media={issue.editorLetter.media ?? issue.heroMedia}
             ratio="1:1"
-            sizes="(max-width: 1023.98px) 100vw, 50vw"
+            placement={{context: 'split'}}
             title={issue.editorLetter.heading}
           >
             <TagList slot="overlay" tags={editorLetterLabels} />

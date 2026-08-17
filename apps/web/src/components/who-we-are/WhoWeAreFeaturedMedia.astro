@@ -12,7 +12,7 @@ const {media, ratio = '16:9', title, controls = 'full'} = Astro.props
 ---
 
 <section class="featured-media">
-  <MediaFrame media={media} ratio={ratio} sizes="100vw" title={title} controls={controls} />
+  <MediaFrame media={media} ratio={ratio} placement={{context: 'layoutBlock', width: 'full'}} title={title} controls={controls} />
 </section>
 
 <style>

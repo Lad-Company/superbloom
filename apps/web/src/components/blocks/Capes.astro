@@ -23,7 +23,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
       {
         displayedCapabilities.map((cap, i) => (
           <div class:list={['frame', { 'is-active': i === 0 }]} data-capes-frame>
-            <MediaFrame media={cap.media} ratio="fill" sizes="100vw" active={i === 0}>
+            <MediaFrame media={cap.media} ratio="fill" placement={{context: 'layoutBlock', width: 'full'}} active={i === 0}>
               <div class="scrim"></div>
             </MediaFrame>
           </div>

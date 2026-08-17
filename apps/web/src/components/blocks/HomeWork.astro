@@ -127,7 +127,7 @@ const anchoredAtEdge = (index: number): boolean => {
                 <MediaFrame
                   media={item.media}
                   ratio={slot.ratio as MediaRatio}
-                  sizes={`(max-width: 1023.98px) 100vw, ${slot.widthVw}vw`}
+                  placement={{context: 'split', vw: slot.widthVw}}
                   title={item.title}
                 >
                   <TagList slot="overlay" tags={item.tags} />
