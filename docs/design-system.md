@@ -168,7 +168,8 @@ Three settings:
   full`. In grid lists, a fraction of the 12-column container (span 3/4/6/8/9/12).
   On horizontal rails (News marquee, Card Carousel), a literal fraction of the
   viewport width — 1/2 = 50vw, full = 100vw — from one shared table
-  (`styles/contentCardRail.css`), mirrored by `cardImageSizes()`. Grid lists go
+  (`styles/contentCardRail.css`), mirrored by the rail branch of
+  `lib/mediaRenderingPlan.ts`. Grid lists go
   full width below 1024px; rails instead collapse every card to one narrow
   width below 960px.
 - **Media Aspect Ratio** — `intrinsic, 1:1, 4:5, 9:16, 3:2, 16:9, 2:1`. Card
