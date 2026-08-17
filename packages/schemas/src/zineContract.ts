@@ -1,7 +1,7 @@
 type Reference = {_ref?: string}
 type PortableTextBlock = {children?: Array<{text?: string}>}
 type ValidationContext = {
-  document?: {_id?: string; _type?: string}
+  document?: {_id?: string; _type?: string; issueMode?: string}
   getClient?: (options: {apiVersion: string}) => {
     fetch: (query: string, params: Record<string, unknown>) => Promise<unknown>
   }
@@ -106,20 +106,38 @@ export const validateIssuuUrl = (value: unknown): true | string => {
   }
 }
 
-export const validateIssuuOrPdfRequired = (
-  document?: {issuuUrl?: string; pdfAsset?: unknown},
+/** An issue flagged "ISSUU embed only" skips the full-treatment page and
+   renders a minimal flipbook page at its archive URL. */
+export const isEmbedOnlyIssue = (document: unknown): boolean =>
+  (document as {issueMode?: string} | undefined)?.issueMode === 'embed'
+
+/** Full-treatment fields (hero, letter, articles, list defaults) stay required
+   for full issues but are waived for ISSUU-embed-only issues. */
+export const validateFullIssueField = (
+  value: unknown,
+  context?: ValidationContext,
 ): true | string => {
-  if (!document) return true
-  const hasIssuu = !!document.issuuUrl
-  const hasPdf = !!document.pdfAsset
+  if (isEmbedOnlyIssue(context?.document)) return true
+  return value ? true : 'Required for full issues.'
+}
 
-  if (!hasIssuu && !hasPdf) {
-    return 'Provide either an ISSUU URL or a PDF asset.'
-  }
+/** Full-treatment object fields hidden for ISSUU-embed-only issues. */
+const FULL_TREATMENT_FIELDS = new Set([
+  'heroMedia',
+  'editorLetter',
+  'articles',
+  'listDefaults',
+  'articleOverrides',
+])
 
-  if (hasIssuu && hasPdf) {
-    return 'Provide either an ISSUU URL or a PDF asset, not both.'
-  }
+type FieldValidationContext = {document?: unknown; path?: unknown[]}
 
-  return true
+/** True when a validator runs inside a full-treatment field of an
+   ISSUU-embed-only issue. Those fields are hidden, so their nested validation
+   must not block publishing (hidden errors give editors no way to act).
+   Visible fields like cardMedia are unaffected. */
+export const isEmbedOnlyHiddenField = (context?: FieldValidationContext): boolean => {
+  if (!isEmbedOnlyIssue(context?.document)) return false
+  const root = Array.isArray(context?.path) ? context.path[0] : undefined
+  return typeof root === 'string' && FULL_TREATMENT_FIELDS.has(root)
 }

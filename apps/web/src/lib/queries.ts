@@ -373,6 +373,7 @@ const zineArticleCardProjection = `
 const zineIssueProjection = `
   title,
   "slug": slug.current,
+  issueMode,
   eyebrow,
   "cardMedia": cardMedia${mediaProjection},
   "heroMedia": heroMedia${mediaProjection},
@@ -389,7 +390,6 @@ const zineIssueProjection = `
   listDefaults,
   articleOverrides[]{ "articleId": article._ref, cardWidth, mediaAspectRatio, infoPosition },
   issuuUrl,
-  "pdfUrl": pdfAsset.asset->url,
   "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
 `
 
@@ -401,6 +401,7 @@ export const zineLandingQuery = defineQuery(`
     "pastIssues": *[_type == "zineIssue" && _id != ^.currentIssue._ref] | order(orderRank) {
       title,
       "slug": slug.current,
+      eyebrow,
       "cardMedia": cardMedia${mediaProjection}
     },
     intro{
@@ -421,6 +422,7 @@ export const issueArchiveQuery = defineQuery(`
   *[_type == "zineIssue" && slug.current != $slug] | order(orderRank) {
     title,
     "slug": slug.current,
+    eyebrow,
     "cardMedia": cardMedia${mediaProjection}
   }
 `)

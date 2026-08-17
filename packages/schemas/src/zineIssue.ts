@@ -5,8 +5,22 @@ import {
   validateArticlesMinOneAndUnique,
   validateArticlesNotInAnotherIssue,
   validateIssuuUrl,
-  validateIssuuOrPdfRequired,
+  isEmbedOnlyHiddenField,
+  isEmbedOnlyIssue,
+  validateFullIssueField,
 } from './zineContract'
+
+const hiddenForEmbedOnly = ({document}: {document?: unknown}) => isEmbedOnlyIssue(document)
+
+/** Hidden fields must not block publishing: validators nested inside the
+   full-treatment fields waive themselves for ISSUU-embed-only issues. */
+const requiredUnlessEmbedOnlyHidden = (
+  value: unknown,
+  context: {document?: unknown; path?: unknown[]},
+): true | string => {
+  if (isEmbedOnlyHiddenField(context)) return true
+  return value ? true : 'Required'
+}
 import {cardWidthField, infoPositionField, mediaAspectRatioField} from './cardSettings'
 import {validateResolvedCardOverride} from './cardSettingsContract'
 
@@ -29,6 +43,23 @@ export const zineIssue = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'issueMode',
+      title: 'Issue Mode',
+      type: 'string',
+      description:
+        'Full issues get the designed issue page (hero, letter, articles). ISSUU embed only issues skip to a minimal flipbook page — use it for past zines that live on ISSUU.',
+      options: {
+        list: [
+          {title: 'Full issue', value: 'full'},
+          {title: 'ISSUU embed only', value: 'embed'},
+        ],
+        layout: 'radio',
+        direction: 'horizontal',
+      },
+      initialValue: 'full',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
       name: 'eyebrow',
       title: 'Super-Header',
       type: 'string',
@@ -44,49 +75,62 @@ export const zineIssue = defineType({
       name: 'heroMedia',
       title: 'Hero Image',
       type: 'mediaBox',
-      validation: (rule) => rule.required(),
+      hidden: hiddenForEmbedOnly,
+      validation: (rule) => rule.custom(validateFullIssueField),
     }),
     defineField({
       name: 'editorLetter',
       title: 'Letter from the Editor',
       type: 'object',
+      hidden: hiddenForEmbedOnly,
       fields: [
         defineField({
           name: 'media',
           title: 'Image',
           type: 'mediaBox',
-          validation: (rule) => rule.required(),
+          validation: (rule) => rule.custom(requiredUnlessEmbedOnlyHidden),
         }),
         defineField({
           name: 'labels',
           title: 'Labels',
           type: 'array',
           of: [{type: 'string'}],
-          validation: (rule) => rule.max(2),
+          validation: (rule) =>
+            rule.custom((labels, context) => {
+              if (isEmbedOnlyHiddenField(context)) return true
+              if (Array.isArray(labels) && labels.length > 2)
+                return 'Must have at most 2 labels.'
+              return true
+            }),
         }),
         defineField({
           name: 'heading',
           title: 'Title',
           type: 'string',
           initialValue: 'Letter from the Editor',
-          validation: (rule) => rule.required(),
+          validation: (rule) => rule.custom(requiredUnlessEmbedOnlyHidden),
         }),
         defineField({
           name: 'body',
           title: 'Description',
           type: 'array',
           of: [{type: 'block'}],
-          validation: (rule) => rule.required().custom(validatePortableTextNonEmpty),
+          validation: (rule) =>
+            rule.custom((value, context) => {
+              if (isEmbedOnlyHiddenField(context)) return true
+              if (!value) return 'Required'
+              return validatePortableTextNonEmpty(value)
+            }),
         }),
         defineField({
           name: 'ctaLabel',
           title: 'CTA Label',
           type: 'string',
           initialValue: 'Read the Zine',
-          validation: (rule) => rule.required(),
+          validation: (rule) => rule.custom(requiredUnlessEmbedOnlyHidden),
         }),
       ],
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.custom(validateFullIssueField),
     }),
     defineField({
       name: 'articles',
@@ -99,27 +143,37 @@ export const zineIssue = defineType({
           options: {filter: 'articleType == "zine"'},
         },
       ],
+      hidden: hiddenForEmbedOnly,
       validation: (rule) => [
-        rule.required().custom(validateArticlesMinOneAndUnique),
-        rule.custom(validateArticlesNotInAnotherIssue),
+        rule.custom((articles, context) =>
+          isEmbedOnlyIssue(context.document) ? true : validateArticlesMinOneAndUnique(articles),
+        ),
+        rule.custom((articles, context) =>
+          isEmbedOnlyIssue(context.document)
+            ? true
+            : validateArticlesNotInAnotherIssue(articles, context),
+        ),
       ],
-      description: 'Ordered list of Zine articles for this issue. At least one required.',
+      description:
+        'Ordered list of Zine articles for this issue. At least one required for full issues.',
     }),
     defineField({
       name: 'listDefaults',
       title: 'Article List Defaults',
       type: 'object',
+      hidden: hiddenForEmbedOnly,
       fields: [
         cardWidthField({required: true}),
         mediaAspectRatioField({required: true}),
         infoPositionField({required: true}),
       ],
-      validation: (rule) => rule.required(),
+      validation: (rule) => rule.custom(validateFullIssueField),
     }),
     defineField({
       name: 'articleOverrides',
       title: 'Article Overrides',
       type: 'array',
+      hidden: hiddenForEmbedOnly,
       of: [
         {
           type: 'object',
@@ -129,7 +183,7 @@ export const zineIssue = defineType({
               type: 'reference',
               to: [{type: 'article'}],
               options: {filter: 'articleType == "zine"'},
-              validation: (rule) => rule.required(),
+              validation: (rule) => rule.custom(requiredUnlessEmbedOnlyHidden),
             }),
             cardWidthField({partial: true}),
             mediaAspectRatioField({partial: true}),
@@ -143,28 +197,14 @@ export const zineIssue = defineType({
       name: 'issuuUrl',
       title: 'ISSUU Flipbook URL',
       type: 'url',
-      validation: (rule) => rule.custom((value) => (value ? validateIssuuUrl(value) : true)),
-      description: 'Paste the public ISSUU publication or embed URL. Provide either ISSUU or PDF, not both.',
-    }),
-    defineField({
-      name: 'pdfAsset',
-      title: 'PDF Asset',
-      type: 'file',
-      options: {accept: '.pdf'},
-      description: 'Upload a PDF file. Provide either ISSUU or PDF, not both.',
+      validation: (rule) => [
+        rule.required(),
+        rule.custom((value) => (value ? validateIssuuUrl(value) : true)),
+      ],
+      description:
+        'Paste the public ISSUU publication or embed URL (not the iframe embed code). Powers the flipbook reader page.',
     }),
   ],
-  validation: (rule) =>
-    rule.custom((document) => {
-      const doc = document as {issuuUrl?: string; pdfAsset?: unknown}
-      const result = validateIssuuOrPdfRequired(doc)
-      if (result !== true) {
-        // The editor can satisfy this at either field, so mark both; a bare
-        // string lands on the document root and gives no direction.
-        return {message: result, paths: [['issuuUrl'], ['pdfAsset']]}
-      }
-      return true
-    }),
   preview: {
     select: {title: 'title'},
   },

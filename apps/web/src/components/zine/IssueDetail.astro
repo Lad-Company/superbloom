@@ -32,6 +32,7 @@ type Article = {
 type PastIssue = {
   title?: string | null
   slug?: string | null
+  eyebrow?: string | null
   cardMedia?: Media | null
 }
 
@@ -53,7 +54,6 @@ interface Props {
     listDefaults?: PartialContentCardSettings
     articleOverrides?: Array<{articleId?: string | null} & ContentCardSettingsInput> | null
     issuuUrl?: string | null
-    pdfUrl?: string | null
     globalCardDefaults?: PartialContentCardSettings
   }
   pastIssues?: PastIssue[]
@@ -68,7 +68,8 @@ interface Props {
 
 const {issue, pastIssues = [], landingIntro} = Astro.props
 const editorLetterLabels = issue.editorLetter?.labels?.map((title) => ({title}))
-const readZineHref = issue.pdfUrl ?? issue.issuuUrl ?? null
+// Reads happen on the internal ISSUU flipbook page.
+const readZineHref = issue.issuuUrl && issue.slug ? `/zine/issues/${issue.slug}/read` : null
 ---
 
 <article class="issue-detail">
@@ -102,12 +103,7 @@ const readZineHref = issue.pdfUrl ?? issue.issuuUrl ?? null
             <PortableText value={issue.editorLetter.body} class="type-body" />
           )}
           {issue.editorLetter.ctaLabel && readZineHref && (
-            <Button
-              href={readZineHref}
-              label={issue.editorLetter.ctaLabel}
-              target="_blank"
-              rel="noopener noreferrer"
-            />
+            <Button href={readZineHref} label={issue.editorLetter.ctaLabel} />
           )}
         </div>
       </section>

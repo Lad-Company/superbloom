@@ -1,0 +1,36 @@
+---
+import Layout from '../../../../layouts/Layout.astro'
+import Footer from '../../../../components/Footer.astro'
+import IssuuEmbed from '../../../../components/zine/IssuuEmbed.astro'
+import {getSanityClient} from '../../../../lib/sanity'
+import {isPreviewRequest} from '../../../../lib/preview'
+import {setContentCache} from '../../../../lib/cacheHeaders'
+import {issueBySlugQuery} from '../../../../lib/queries'
+
+const issueSlug = Astro.params.issueSlug
+const preview = isPreviewRequest(Astro.cookies)
+const client = getSanityClient(preview)
+const issue = await client.fetch(issueBySlugQuery, {slug: issueSlug})
+
+if (!issue?.issuuUrl) {
+  Astro.response.status = 404
+  return Astro.rewrite('/404')
+}
+
+// Embed-only issues serve the flipbook at their archive URL; /read is the
+// flipbook route for full issues.
+if (issue.issueMode === 'embed') {
+  return Astro.redirect(`/zine/issues/${issue.slug}`, 302)
+}
+
+setContentCache(Astro.response, preview)
+---
+
+<Layout
+  title={`Read ${issue.title ?? 'Zine'}`}
+  canonicalUrl={`/zine/issues/${issue.slug}/read`}
+  navRole="dark"
+>
+  <IssuuEmbed title={issue.title} eyebrow={issue.eyebrow} issuuUrl={issue.issuuUrl} />
+  <Footer />
+</Layout>

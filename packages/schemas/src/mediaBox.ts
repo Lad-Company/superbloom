@@ -1,4 +1,5 @@
 import {defineField, defineType} from 'sanity'
+import {isEmbedOnlyHiddenField} from './zineContract'
 
 export const mediaBox = defineType({
   name: 'mediaBox',
@@ -26,7 +27,16 @@ export const mediaBox = defineType({
           },
         },
       ],
-      validation: (rule) => rule.required().length(1),
+      validation: (rule) =>
+        // Waived inside hidden full-treatment fields (heroMedia, editorLetter)
+        // of ISSUU-embed-only zine issues.
+        rule.custom((asset, context) => {
+          if (isEmbedOnlyHiddenField(context)) return true
+          if (!asset) return 'Required'
+          if (!Array.isArray(asset) || asset.length !== 1)
+            return 'Exactly one asset is required.'
+          return true
+        }),
     }),
     defineField({
       name: 'poster',
@@ -48,6 +58,7 @@ export const mediaBox = defineType({
       },
       validation: (rule) =>
         rule.custom((poster, context) => {
+          if (isEmbedOnlyHiddenField(context)) return true
           const parent = context.parent as {asset?: Array<{_type: string}>} | undefined
           if (poster && parent?.asset?.[0]?._type === 'image') {
             return 'A Poster Image can only be set on a video asset'
@@ -62,6 +73,7 @@ export const mediaBox = defineType({
       description: 'Descriptive text for screen readers and when media fails to load.',
       validation: (rule) =>
         rule.custom((altText, context) => {
+          if (isEmbedOnlyHiddenField(context)) return true
           const parent = context.parent as
             | {asset?: Array<{_type: string}>; decorative?: boolean}
             | undefined

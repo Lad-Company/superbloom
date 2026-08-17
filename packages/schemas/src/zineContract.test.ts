@@ -7,7 +7,9 @@ import {
   validateArticlesNotInAnotherIssue,
   validateZineArticleIssueMembership,
   validateIssuuUrl,
-  validateIssuuOrPdfRequired,
+  isEmbedOnlyHiddenField,
+  isEmbedOnlyIssue,
+  validateFullIssueField,
 } from './zineContract'
 
 describe('Zine Contract Validators', () => {
@@ -206,31 +208,55 @@ describe('Zine Contract Validators', () => {
     })
   })
 
-  describe('validateIssuuOrPdfRequired', () => {
-    it('allows an uninitialized draft', () => {
-      expect(validateIssuuOrPdfRequired(undefined)).toBe(true)
+  describe('isEmbedOnlyIssue', () => {
+    it('detects the embed-only mode', () => {
+      expect(isEmbedOnlyIssue({issueMode: 'embed'})).toBe(true)
+      expect(isEmbedOnlyIssue({issueMode: 'full'})).toBe(false)
+      expect(isEmbedOnlyIssue({})).toBe(false)
+      expect(isEmbedOnlyIssue(undefined)).toBe(false)
+    })
+  })
+
+  describe('isEmbedOnlyHiddenField', () => {
+    const embedDoc = {_id: 'i1', issueMode: 'embed'}
+
+    it('is true inside hidden full-treatment fields of embed-only issues', () => {
+      expect(isEmbedOnlyHiddenField({document: embedDoc, path: ['heroMedia', 'asset']})).toBe(true)
+      expect(isEmbedOnlyHiddenField({document: embedDoc, path: ['editorLetter', 'body']})).toBe(true)
+      expect(isEmbedOnlyHiddenField({document: embedDoc, path: ['listDefaults', 'cardWidth']})).toBe(
+        true,
+      )
     })
 
-    it('requires at least one of ISSUU or PDF', () => {
-      expect(validateIssuuOrPdfRequired({})).toContain('either')
-      expect(validateIssuuOrPdfRequired({issuuUrl: undefined, pdfAsset: undefined})).toContain('either')
+    it('is false for visible fields on embed-only issues', () => {
+      expect(isEmbedOnlyHiddenField({document: embedDoc, path: ['cardMedia', 'asset']})).toBe(false)
+      expect(isEmbedOnlyHiddenField({document: embedDoc, path: ['issuuUrl']})).toBe(false)
     })
 
-    it('allows ISSUU only', () => {
-      expect(validateIssuuOrPdfRequired({issuuUrl: 'https://issuu.com/test/doc'})).toBe(true)
-    })
-
-    it('allows PDF only', () => {
-      expect(validateIssuuOrPdfRequired({pdfAsset: {_type: 'file', asset: {_ref: 'file-123'}}})).toBe(true)
-    })
-
-    it('rejects both ISSUU and PDF', () => {
+    it('is false for full issues and non-issue documents', () => {
       expect(
-        validateIssuuOrPdfRequired({
-          issuuUrl: 'https://issuu.com/test/doc',
-          pdfAsset: {_type: 'file', asset: {_ref: 'file-123'}},
-        }),
-      ).toContain('not both')
+        isEmbedOnlyHiddenField({document: {_id: 'i1', issueMode: 'full'}, path: ['heroMedia']}),
+      ).toBe(false)
+      expect(isEmbedOnlyHiddenField({document: {_type: 'caseStudy'}, path: ['heroMedia']})).toBe(
+        false,
+      )
+      expect(isEmbedOnlyHiddenField(undefined)).toBe(false)
+    })
+  })
+
+  describe('validateFullIssueField', () => {
+    it('waives the requirement for embed-only issues', () => {
+      expect(
+        validateFullIssueField(undefined, {document: {_id: 'i1', issueMode: 'embed'}}),
+      ).toBe(true)
+    })
+
+    it('requires a value for full issues', () => {
+      expect(validateFullIssueField(undefined, {document: {_id: 'i1', issueMode: 'full'}})).toContain(
+        'full issues',
+      )
+      expect(validateFullIssueField(undefined, {document: {_id: 'i1'}})).toContain('full issues')
+      expect(validateFullIssueField({asset: []}, {document: {_id: 'i1'}})).toBe(true)
     })
   })
 })

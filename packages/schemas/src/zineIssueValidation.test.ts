@@ -12,6 +12,7 @@ function baseZineIssue(overrides: Record<string, unknown> = {}) {
     _type: 'zineIssue',
     title: 'Issue One',
     slug: {_type: 'slug', current: 'issue-one'},
+    issueMode: 'full',
     cardMedia: mediaBoxImage(),
     heroMedia: mediaBoxImage(),
     editorLetter: {
@@ -32,26 +33,94 @@ describe('zine issue document validation', () => {
     expect(await errorMarkers(baseZineIssue())).toEqual([])
   })
 
-  it('points the ISSUU-or-PDF requirement at both source fields', async () => {
+  it('requires an ISSUU URL', async () => {
     const markers = await errorMarkers(baseZineIssue({issuuUrl: undefined}))
-    expect(markers).toHaveLength(2)
+    expect(markers).toEqual([
+      {path: ['issuuUrl'], message: expect.stringContaining('Required')},
+    ])
+  })
+
+  it('requires the issue mode', async () => {
+    const markers = await errorMarkers(baseZineIssue({issueMode: undefined}))
+    expect(markers).toEqual(
+      expect.arrayContaining([{path: ['issueMode'], message: expect.stringContaining('Required')}]),
+    )
+  })
+
+  it('accepts an embed-only issue with just card media and an ISSUU URL', async () => {
+    const markers = await errorMarkers(
+      baseZineIssue({
+        issueMode: 'embed',
+        heroMedia: undefined,
+        editorLetter: undefined,
+        articles: undefined,
+        listDefaults: undefined,
+        issuuUrl: 'https://e.issuu.com/embed.html?d=superbloom_zineissue1_web&u=superbloomhouse',
+      }),
+    )
+    expect(markers).toEqual([])
+  })
+
+  it('still requires card media, title, and slug for embed-only issues', async () => {
+    const markers = await errorMarkers(
+      baseZineIssue({issueMode: 'embed', cardMedia: undefined, title: undefined}),
+    )
     expect(markers).toEqual(
       expect.arrayContaining([
-        {path: ['issuuUrl'], message: expect.stringContaining('ISSUU')},
-        {path: ['pdfAsset'], message: expect.stringContaining('ISSUU')},
+        {path: ['cardMedia'], message: expect.stringContaining('Required')},
+        {path: ['title'], message: expect.stringContaining('Required')},
       ]),
     )
   })
 
-  it('points the ISSUU-and-PDF conflict at both source fields', async () => {
+  it('requires an ISSUU URL for embed-only issues too', async () => {
+    const markers = await errorMarkers(baseZineIssue({issueMode: 'embed', issuuUrl: undefined}))
+    expect(markers).toEqual([
+      {path: ['issuuUrl'], message: expect.stringContaining('Required')},
+    ])
+  })
+
+  it('publishes a formerly-full issue flipped to embed mode with its data intact', async () => {
+    // Regression: hidden full-treatment fields keep their data in embed mode
+    // and must not block publishing.
+    const markers = await errorMarkers(baseZineIssue({issueMode: 'embed'}))
+    expect(markers).toEqual([])
+  })
+
+  it('publishes an embed-only issue whose hidden fields hold form-initialized empty objects', async () => {
+    // Regression: the Studio form initializes hidden object fields as empty
+    // objects, and their nested requireds (hero asset, letter image, letter
+    // description) must not block publishing — hidden errors are unactionable.
     const markers = await errorMarkers(
-      baseZineIssue({pdfAsset: {_type: 'file', asset: {_type: 'reference', _ref: 'file-abc'}}}),
+      baseZineIssue({
+        issueMode: 'embed',
+        heroMedia: {_type: 'mediaBox'},
+        editorLetter: {
+          _type: 'object',
+          heading: 'Letter from the Editor',
+          ctaLabel: 'Read the Zine',
+        },
+      }),
     )
-    expect(markers).toHaveLength(2)
+    expect(markers).toEqual([])
+  })
+
+  it('still requires nested hero and letter fields for full issues', async () => {
+    const markers = await errorMarkers(
+      baseZineIssue({
+        heroMedia: {_type: 'mediaBox'},
+        editorLetter: {
+          _type: 'object',
+          heading: 'Letter from the Editor',
+          ctaLabel: 'Read the Zine',
+        },
+      }),
+    )
     expect(markers).toEqual(
       expect.arrayContaining([
-        {path: ['issuuUrl'], message: expect.stringContaining('not both')},
-        {path: ['pdfAsset'], message: expect.stringContaining('not both')},
+        {path: ['heroMedia', 'asset'], message: expect.stringContaining('Required')},
+        {path: ['editorLetter', 'media'], message: expect.stringContaining('Required')},
+        {path: ['editorLetter', 'body'], message: expect.stringContaining('Required')},
       ]),
     )
   })

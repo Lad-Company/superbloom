@@ -268,18 +268,31 @@ eyebrows, nav labels, and order stay in lockstep.
 
 ### Zine
 
-- **Zine Issue** is the publication authority: an ordered `articles[]` of
-  `articleType == "zine"`, and exactly one format — an ISSUU Flipbook URL *or* a
-  PDF asset (not both, not neither). Membership/order live only on the Issue; a
-  Zine Article publishes only when exactly one Issue references it.
+- **Zine Issue** is the publication authority, with an **Issue Mode** flag:
+  `full` (the designed issue page) or `embed` (ISSUU embed only, for past
+  zines that live on ISSUU and are not authored in the CMS).
+- Full issues hold an ordered `articles[]` of `articleType == "zine"`.
+  Membership/order live only on the Issue; a Zine Article publishes only when
+  exactly one Issue references it.
+- Every issue requires an **ISSUU Flipbook URL** (publication or embed URL) —
+  the flipbook is the zine's only reading format (PDF support was removed).
+- Embed-only issues waive the hero, letter, articles, and list-default
+  requirements; they need just a title, slug, card media, and an ISSUU URL.
+  Their Past Zines card and archive URL lead to the flipbook page.
 - Issue owns card media, hero media, an optional **Super-Header** kicker above
-  the hero title (`eyebrow`, e.g. "Issue No. 5"), and a **Letter from the
-  Editor** section (media, heading, body, editable CTA label defaulting to
-  "Read the Zine").
+  the hero title (`eyebrow`, e.g. "Issue No. 5", also shown on Past Zines
+  cards), and a **Letter from the Editor** section (media, heading, body,
+  editable CTA label defaulting to "Read the Zine").
 - Routes: `/zine` (current issue via the `zineLanding` singleton),
-  `/zine/issues/[slug]` (archive). The current issue's archive URL redirects to
-  `/zine` and is excluded from the sitemap.
-- Membership can be audited: `pnpm --filter studio audit:zine`.
+  `/zine/issues/[slug]` (archive: the full issue page, or the minimal ISSUU
+  flipbook page for embed-only issues), and `/zine/issues/[slug]/read` (the
+  ISSUU flipbook for full issues; redirects to the archive URL for embed-only
+  issues). The current issue's archive URL redirects to `/zine` and is
+  excluded from the sitemap. The "Read the Zine" CTA links to the internal
+  flipbook page.
+- Membership can be audited: `pnpm --filter studio audit:zine`. Issues created
+  before the Issue Mode flag can be backfilled:
+  `pnpm --filter studio migrate:zine-issue-mode`.
 
 ### Tag
 
