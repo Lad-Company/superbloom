@@ -117,7 +117,7 @@ const hasAsset =
   (asset?._type === 'mux.video' && Boolean(asset.playbackId))
 const videoPoster =
   asset?._type === 'mux.video' && asset.playbackId
-    ? muxPosterRendering(asset.playbackId)
+    ? muxPosterRendering(asset.playbackId, placement)
     : undefined
 const isVideo = asset?._type === 'mux.video' && Boolean(asset.playbackId)
 const showControls = isVideo && controls !== 'none'
@@ -183,12 +183,14 @@ const imageRendering =
     )
   }
   {
-    /* poster="" suppresses mux-player's built-in full-res poster fetch; the
-       adaptive poster <img> above owns the still frame until 'playing'. */
+    /* The player poster covers the gap between the overlay poster's fade and
+       the first painted video frame (visual QA: poster="" flashed a blank
+       frame there). One placement-sized URL — the attribute takes no srcset —
+       and it overrides mux-player's built-in full-res poster fetch. */
     isVideo && (
       <mux-player
         playback-id={asset?._type === 'mux.video' ? asset.playbackId ?? undefined : undefined}
-        poster=""
+        poster={videoPoster?.src}
         metadata-video-title={title ?? undefined}
         stream-type="on-demand"
         muted
@@ -415,10 +417,9 @@ const imageRendering =
         this.player.addEventListener('pause', this.handlePause)
         this.player.addEventListener('volumechange', this.handleVolumeChange)
         // Keep the static poster painted until playback actually starts
-        // ('playing', not 'canplay'): the player carries `poster=""` — the
-        // adaptive poster <img> is the only still, so fading it on a
-        // non-playing frame (reduced motion, paused before first frame)
-        // would expose a blank player.
+        // ('playing', not 'canplay') so non-playing frames (reduced motion,
+        // paused before first frame) hold the adaptive still; the player's
+        // own placement-sized poster covers the fade-to-first-frame gap.
         this.player.addEventListener('playing', this.handleReady)
 
         if (this.isFullControls) {

@@ -151,10 +151,42 @@ describe('rail widths — contract with contentCardRail.css', () => {
 })
 
 describe('muxPosterRendering', () => {
-  const rendering = muxPosterRendering('abc123')
+  const rendering = muxPosterRendering('abc123', {context: 'hero'})
 
-  it('serves webp at the mid ladder rung', () => {
-    expect(rendering.src).toBe('https://image.mux.com/abc123/thumbnail.webp?width=1280&time=0')
+  // The player poster attribute takes exactly one URL (no srcset), so the
+  // src rides a rung estimated from the placement: viewport fractions at a
+  // nominal 1440px desktop, capped bands at their cap, fixed frames at 2x.
+  it.each<[string, MediaPlacement, number]>([
+    ['an uncapped hero', {context: 'hero'}, 1600],
+    ['a capped hero (case study / article lead)', {context: 'hero', capPx: 1440}, 1600],
+    [
+      'a grid card',
+      {
+        context: 'card',
+        settings: {cardWidth: '1/3', mediaAspectRatio: '16:9', infoPosition: 'below'},
+      },
+      640,
+    ],
+    [
+      'a rail card',
+      {
+        context: 'card',
+        settings: {cardWidth: '1/2', mediaAspectRatio: '16:9', infoPosition: 'below'},
+        rail: true,
+      },
+      960,
+    ],
+    ['a full layout block (Capes, carousel)', {context: 'layoutBlock', width: 'full'}, 1600],
+    ['a capped band', {context: 'layoutBlock', width: 'full', capPx: 960}, 960],
+    ['a grid layout block', {context: 'layoutBlock', width: '1/3'}, 640],
+    ['a split', {context: 'split'}, 960],
+    ['a mosaic slot (home work)', {context: 'split', vw: 62}, 960],
+    ['fixed thumbnails (past issues)', {context: 'fixed', px: {small: 96, large: 210}}, 640],
+    ['fixed collage frames (home feature)', {context: 'fixed', px: {small: 444, large: 444}}, 960],
+  ])('picks the rung for %s', (_name, placement, width) => {
+    expect(muxPosterRendering('abc123', placement).src).toBe(
+      `https://image.mux.com/abc123/thumbnail.webp?width=${width}&time=0`,
+    )
   })
 
   it('offers the full width ladder as srcset', () => {

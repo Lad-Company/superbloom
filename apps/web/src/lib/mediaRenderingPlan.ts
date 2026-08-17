@@ -81,6 +81,12 @@ const heroSizes = (capPx?: number, fraction = 1): string => {
   return `(max-width: ${boundary}px) ${vw}vw, ${capPx}px`
 }
 
+const cardPictureFraction = (settings: ContentCardSettings): number => {
+  const cardFraction = CARD_WIDTH_FRACTIONS[settings.cardWidth]
+  const infoSharesRow = settings.infoPosition === 'left' || settings.infoPosition === 'right'
+  return infoSharesRow ? cardFraction / 2 : cardFraction
+}
+
 const cardSizes = (settings: ContentCardSettings, rail: boolean): string => {
   if (rail) {
     // Rails collapse every card to one narrow width in two steps
@@ -88,10 +94,7 @@ const cardSizes = (settings: ContentCardSettings, rail: boolean): string => {
     // card at every range.
     return `(max-width: ${BREAKPOINTS.railTightMax}px) ${RAIL_TIGHT_WIDTH}, (max-width: ${BREAKPOINTS.railNarrowMax}px) ${RAIL_NARROW_WIDTH}, ${RAIL_WIDTH_VW[settings.cardWidth]}`
   }
-  const cardFraction = CARD_WIDTH_FRACTIONS[settings.cardWidth]
-  const infoSharesRow = settings.infoPosition === 'left' || settings.infoPosition === 'right'
-  const pictureFraction = infoSharesRow ? cardFraction / 2 : cardFraction
-  const viewportPercentage = Math.max(1, Math.round(pictureFraction * 100))
+  const viewportPercentage = Math.max(1, Math.round(cardPictureFraction(settings) * 100))
   return belowDesktop(`${viewportPercentage}vw`)
 }
 
@@ -141,7 +144,8 @@ export const planMediaRendering = (
 }
 
 export interface MuxPosterRendering {
-  /** Mid-rung URL — the poster `<img src>` fallback under the srcset. */
+  /** Placement-rung URL — the `<mux-player poster>` attribute (which takes
+   *  exactly one URL) and the poster `<img src>` fallback under the srcset. */
   src: string
   srcset: string
 }
@@ -149,15 +153,51 @@ export interface MuxPosterRendering {
 const muxPosterUrl = (playbackId: string, width: number): string =>
   `https://image.mux.com/${playbackId}/thumbnail.webp?width=${width}&time=0`
 
+/** The single-URL poster can't adapt per viewport, so estimate the rendered
+ *  width once: viewport-fraction placements at a nominal desktop viewport,
+ *  capped bands at their cap, and fixed frames at 2x their declared pixels
+ *  (small enough that DPR sharpness is cheap). */
+const NOMINAL_VIEWPORT_PX = 1440
+
+const posterTargetPx = (placement: MediaPlacement): number => {
+  switch (placement.context) {
+    case 'hero':
+      return placement.capPx ?? NOMINAL_VIEWPORT_PX * (placement.fraction ?? 1)
+    case 'card':
+      if (placement.rail) {
+        return (parseFloat(RAIL_WIDTH_VW[placement.settings.cardWidth]) / 100) * NOMINAL_VIEWPORT_PX
+      }
+      return cardPictureFraction(placement.settings) * NOMINAL_VIEWPORT_PX
+    case 'layoutBlock': {
+      if (placement.fullBleed) return NOMINAL_VIEWPORT_PX
+      if (!placement.width || placement.width === 'full') {
+        return placement.capPx ?? NOMINAL_VIEWPORT_PX
+      }
+      return (LAYOUT_WIDTH_COLUMNS[placement.width] / 12) * NOMINAL_VIEWPORT_PX
+    }
+    case 'split':
+      return ((placement.vw ?? 50) / 100) * NOMINAL_VIEWPORT_PX
+    case 'fixed':
+      return placement.px.large * 2
+  }
+}
+
+const posterRung = (targetPx: number): number =>
+  IMAGE_LADDER.find((width) => width >= targetPx) ?? IMAGE_LADDER[IMAGE_LADDER.length - 1]
+
 /**
  * Sized Mux poster thumbnails riding the shared width ladder; the poster
  * `<img sizes>` comes from the same plan as the frame, so the browser picks
  * a rung matching the placement instead of downloading a full-res frame.
+ * `src` rides the placement's own rung because the player poster attribute
+ * gets no srcset.
  */
-export const muxPosterRendering = (playbackId: string): MuxPosterRendering => {
-  const midRung = IMAGE_LADDER[Math.floor(IMAGE_LADDER.length / 2)]
+export const muxPosterRendering = (
+  playbackId: string,
+  placement: MediaPlacement,
+): MuxPosterRendering => {
   return {
-    src: muxPosterUrl(playbackId, midRung),
+    src: muxPosterUrl(playbackId, posterRung(posterTargetPx(placement))),
     srcset: IMAGE_LADDER.map((w) => `${muxPosterUrl(playbackId, w)} ${w}w`).join(', '),
   }
 }
