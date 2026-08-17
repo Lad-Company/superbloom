@@ -183,10 +183,12 @@ const imageRendering =
     )
   }
   {
+    /* poster="" suppresses mux-player's built-in full-res poster fetch; the
+       adaptive poster <img> above owns the still frame until 'playing'. */
     isVideo && (
       <mux-player
         playback-id={asset?._type === 'mux.video' ? asset.playbackId ?? undefined : undefined}
-        poster={videoPoster?.src}
+        poster=""
         metadata-video-title={title ?? undefined}
         stream-type="on-demand"
         muted
@@ -412,10 +414,12 @@ const imageRendering =
         this.player.addEventListener('play', this.handlePlay)
         this.player.addEventListener('pause', this.handlePause)
         this.player.addEventListener('volumechange', this.handleVolumeChange)
-        // Keep the static poster painted until the player can show a real
-        // frame, so the video swaps in without a gray-box flash.
+        // Keep the static poster painted until playback actually starts
+        // ('playing', not 'canplay'): the player carries `poster=""` — the
+        // adaptive poster <img> is the only still, so fading it on a
+        // non-playing frame (reduced motion, paused before first frame)
+        // would expose a blank player.
         this.player.addEventListener('playing', this.handleReady)
-        this.player.addEventListener('canplay', this.handleReady)
 
         if (this.isFullControls) {
           this.player.addEventListener('timeupdate', this.handleTimeUpdate)
@@ -498,7 +502,6 @@ const imageRendering =
       this.player?.removeEventListener('play', this.handlePlay)
       this.player?.removeEventListener('pause', this.handlePause)
       this.player?.removeEventListener('playing', this.handleReady)
-      this.player?.removeEventListener('canplay', this.handleReady)
       this.player?.removeEventListener('volumechange', this.handleVolumeChange)
       this.player?.removeEventListener('timeupdate', this.handleTimeUpdate)
       this.player?.removeEventListener('durationchange', this.handleDurationChange)
@@ -826,8 +829,8 @@ const imageRendering =
   }
 
   /* Video frames stack a static poster under the player so the frame paints an
-     image at first load instead of a blank box; the poster fades out once the
-     player can show a real frame (see `data-video-ready`). */
+     image at first load instead of a blank box; the poster fades out once
+     playback starts (see `data-video-ready`). */
   .media-frame :global(mux-player),
   .media-frame__poster {
     position: absolute;

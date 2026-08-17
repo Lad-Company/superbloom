@@ -141,7 +141,7 @@ export const planMediaRendering = (
 }
 
 export interface MuxPosterRendering {
-  /** Mid-rung URL — the `<mux-player poster>` attribute and `<img src>`. */
+  /** Mid-rung URL — the poster `<img src>` fallback under the srcset. */
   src: string
   srcset: string
 }
