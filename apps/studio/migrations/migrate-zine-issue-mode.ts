@@ -23,12 +23,14 @@ async function main() {
     console.log(`- ${issue.title ?? issue._id} (mode: ${issue.issueMode ?? 'missing'}, pdf: ${issue.hasPdf})`)
   }
 
-  const transaction = issues.reduce((current, issue) => {
-    let patch = current.patch(issue._id)
-    if (!issue.issueMode) patch = patch.set({issueMode: 'full'})
-    if (issue.hasPdf) patch = patch.unset(['pdfAsset'])
-    return patch
-  }, client.transaction())
+  let transaction = client.transaction()
+
+  for (const issue of issues) {
+    const patch: {setIfMissing?: Record<string, unknown>; unset?: string[]} = {}
+    if (!issue.issueMode) patch.setIfMissing = {issueMode: 'full'}
+    if (issue.hasPdf) patch.unset = ['pdfAsset']
+    transaction = transaction.patch(issue._id, patch)
+  }
 
   await transaction.commit()
   console.log('Done. Flip past zines to "ISSUU embed only" in the Studio as needed.')
