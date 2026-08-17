@@ -86,7 +86,6 @@ const plan = planMediaRendering(
   placement,
   priorityProp === undefined ? undefined : {priority: priorityProp},
 )
-const priority = plan.priority
 const frameSizes = plan.sizes
 
 const ratioMap: Record<MediaRatio, string> = {
@@ -176,8 +175,8 @@ const imageRendering =
         srcset={videoPoster.srcset}
         sizes={frameSizes}
         alt=""
-        loading={priority ? 'eager' : 'lazy'}
-        fetchpriority={priority ? 'high' : 'auto'}
+        loading={plan.loading}
+        fetchpriority={plan.fetchpriority}
         decoding="async"
         aria-hidden="true"
       />
@@ -193,7 +192,7 @@ const imageRendering =
         muted
         loop
         default-hidden-captions
-        preload={priority ? 'auto' : 'none'}
+        preload={plan.preload}
       />
     )
   }
@@ -211,8 +210,8 @@ const imageRendering =
         alt={isDecorative ? '' : (altText ?? '')}
         width={posterRendering.width || undefined}
         height={posterRendering.height || undefined}
-        loading={priority ? 'eager' : 'lazy'}
-        fetchpriority={priority ? 'high' : 'auto'}
+        loading={plan.loading}
+        fetchpriority={plan.fetchpriority}
         decoding="async"
       />
     )
@@ -226,8 +225,8 @@ const imageRendering =
         alt={isDecorative ? '' : (altText ?? '')}
         width={imageRendering.width || undefined}
         height={imageRendering.height || undefined}
-        loading={priority ? 'eager' : 'lazy'}
-        fetchpriority={priority ? 'high' : 'auto'}
+        loading={plan.loading}
+        fetchpriority={plan.fetchpriority}
       />
     )
   }
