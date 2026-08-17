@@ -43,9 +43,10 @@ const {issues} = Astro.props;
 }
 
 <style>
-  /* No bottom padding: the last row sits flush against the next section. */
+  /* No vertical padding: the stories rail above owns the hand-off gap, and
+     the last row sits flush against the next section. */
   .past-issues {
-    padding: var(--space-4xl) 0 0;
+    padding: 0;
     background: #000;
     color: #fff;
   }
