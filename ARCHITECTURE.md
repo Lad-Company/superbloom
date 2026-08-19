@@ -53,7 +53,7 @@ API glue (`apps/web/src/pages/api/*`).
 ## 4. `apps/web` layers
 
 - **`pages/`** — routes (see §5) and API endpoints (`api/contact.ts`,
-  `api/newsletter/*`, `api/shop/*`).
+  `api/newsletter/*`, `api/shop/*`, `api/hooks/*` observability relay, ADR-0028).
 - **`components/`** — primitives, blocks, and per-surface compositions
   (`home/`, `case/`, `who-we-are/`, `shop/`, `cart/`, `blocks/`, `motion/`).
   Boundaries and primitives: `docs/design-system.md` §2.
@@ -206,6 +206,19 @@ another doc, that doc is authoritative.
   link, and `source` leaves the card. Slug uniqueness spans News + Editorial
   (shared `/articles/` route); Zine stays scoped per type. Amends 0022's
   card-only-News clause.
+- **0028 — Observability: Sentry error aggregation with a Discord drain.**
+  Errors aggregate in a new Sentry project (`sbh-web`) in the existing
+  business org via `@sentry/astro` (production-only, `dataCollection` privacy
+  limits, commit-SHA releases with source maps) and alert to Discord
+  `#site-alerts` through Sentry's native integration. Everything else flows
+  through a thin relay in `apps/web/src/pages/api/hooks/*`: production deploys
+  from GitHub `deployment_status` events (Hobby plan has no Account Webhooks),
+  content publishes from a GROQ-filtered Sanity webhook (allowlist of
+  page-owning types; `formSubmission` permanently excluded), and a daily GA4
+  traffic digest via Vercel Cron. Every Discord post is sanitized by
+  construction (field allowlists, `allowed_mentions: []`, 2000-char cap).
+  Logins, signup/form events, Shopify/Mux activity, and preview deploys are
+  out of scope. *(docs/observability-pipeline-spec.md.)*
 
 **Superseded or amended (kept as guardrails):**
 
