@@ -1,7 +1,11 @@
 import {defineQuery} from 'groq'
 
+// The mediaBox schema allows exactly one asset, but corrupt docs have shipped
+// with stray empty array members ahead of the real one (e.g. article-news-1).
+// Filter to members that actually reference an asset so the projection never
+// picks an empty shell.
 const mediaProjection = `{
-  "asset": asset[0]{
+  "asset": asset[defined(asset._ref)][0]{
     _type,
     _type == "image" => {
       asset,

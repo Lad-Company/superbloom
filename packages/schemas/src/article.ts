@@ -79,7 +79,15 @@ export const article = defineType({
     defineField({
       name: 'leadMedia',
       type: 'mediaBox',
-      validation: (rule) => rule.required(),
+      // News links out to external coverage and typically carries no internal
+      // lead media (ADR-0029 amends 0027's required-leadMedia clause);
+      // Editorial and Zine detail pages still require one.
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          if (articleTypeOf(context) === 'news') return true
+          if (!value) return 'Lead media is required.'
+          return true
+        }),
     }),
     defineField({
       name: 'overview',
