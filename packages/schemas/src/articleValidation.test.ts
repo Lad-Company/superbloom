@@ -42,6 +42,24 @@ describe('article document validation', () => {
     expect(await errorMarkers(baseArticle())).toEqual([])
   })
 
+  it('accepts a news article without lead media', async () => {
+    const markers = await errorMarkers(
+      baseArticle({
+        articleType: 'news',
+        destination: 'https://example.com/story',
+        leadMedia: undefined,
+      }),
+    )
+    expect(markers).toEqual([])
+  })
+
+  it('requires lead media for editorial articles', async () => {
+    const markers = await errorMarkers(baseArticle({leadMedia: undefined}))
+    expect(markers).toEqual(
+      expect.arrayContaining([{path: ['leadMedia'], message: 'Lead media is required.'}]),
+    )
+  })
+
   it('points the info-position/card-width error at both card settings fields', async () => {
     const markers = await errorMarkers(baseArticle({cardWidth: '1/4', infoPosition: 'left'}))
     expect(markers).toHaveLength(2)
