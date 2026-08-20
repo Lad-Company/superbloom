@@ -49,6 +49,8 @@ export default defineConfig({
       'import.meta.env.SENTRY_DSN': JSON.stringify(env.SENTRY_DSN ?? ''),
       'import.meta.env.SENTRY_RELEASE': JSON.stringify(env.VERCEL_GIT_COMMIT_SHA ?? ''),
       'import.meta.env.SENTRY_ENVIRONMENT': JSON.stringify(env.VERCEL_ENV ?? 'development'),
+      // Lets src/middleware.ts apply the same gate for endpoint-only requests.
+      'import.meta.env.SENTRY_ENABLED': JSON.stringify(String(sentryEnabled)),
     },
   },
 })

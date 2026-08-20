@@ -228,7 +228,10 @@ and keeps no copy of any payload.
 - **Self-monitoring:** the relay runs inside `apps/web`, so its own failures
   (bad signatures excluded) are captured by the Sentry SDK like any other API
   route error. A failed Discord post surfaces as a Sentry issue in
-  `#site-alerts` — the pipeline reports its own breakage.
+  `#site-alerts` — the pipeline reports its own breakage. A top-level
+  `src/middleware.ts` runs the Sentry server init on every request: the
+  `@sentry/astro` integration auto-injects the init into SSR page renders
+  only, so endpoint-only requests would otherwise drop captured events.
 - **Response contract:** 2xx only after the Discord post is accepted (or the
   event is intentionally dropped, e.g. preview deploys); 5xx otherwise, so
   Sanity/GitHub retry semantics apply.
