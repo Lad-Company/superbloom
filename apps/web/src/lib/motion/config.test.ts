@@ -1,5 +1,5 @@
 import {afterEach, describe, expect, it, vi} from 'vitest'
-import {isPreviewMode, prefersReducedMotion} from './config'
+import {prefersReducedMotion} from './config'
 
 const stubDom = (preview: boolean, reducedMotion: boolean) => {
   vi.stubGlobal('document', {
@@ -8,20 +8,21 @@ const stubDom = (preview: boolean, reducedMotion: boolean) => {
   vi.stubGlobal('window', {matchMedia: () => ({matches: reducedMotion})})
 }
 
-describe('preview mode motion gate', () => {
+describe('reduced motion gate', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
   })
 
-  it('treats data-preview on <html> as reduced motion', () => {
+  it('does not treat data-preview on <html> as reduced motion', () => {
+    // Draft preview used to quiet the whole motion system, which silently
+    // disabled pinned sections for anyone holding the sb_preview cookie.
+    // Motion now follows the visitor's own preference only.
     stubDom(true, false)
-    expect(isPreviewMode()).toBe(true)
-    expect(prefersReducedMotion()).toBe(true)
+    expect(prefersReducedMotion()).toBe(false)
   })
 
-  it('follows the media query when the flag is absent', () => {
+  it('follows the media query', () => {
     stubDom(false, true)
-    expect(isPreviewMode()).toBe(false)
     expect(prefersReducedMotion()).toBe(true)
 
     stubDom(false, false)

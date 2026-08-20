@@ -473,10 +473,12 @@ export const indexPageQuery = defineQuery(`
   }
 `)
 
+// Zine Articles are excluded: they surface under /zine, not on the News &
+// Press index.
 export const indexViewAllNewestQuery = defineQuery(`
   *[
     _type == "article" &&
-    articleType in ["news", "editorial", "zine"] &&
+    articleType in ["news", "editorial"] &&
     (!defined($typeFilter) || articleType == $typeFilter) &&
     !(_id in $featuredIds) &&
     (!defined($tagId) || $tagId in tags[]._ref)
@@ -488,7 +490,7 @@ export const indexViewAllNewestQuery = defineQuery(`
 export const indexViewAllOldestQuery = defineQuery(`
   *[
     _type == "article" &&
-    articleType in ["news", "editorial", "zine"] &&
+    articleType in ["news", "editorial"] &&
     (!defined($typeFilter) || articleType == $typeFilter) &&
     !(_id in $featuredIds) &&
     (!defined($tagId) || $tagId in tags[]._ref)

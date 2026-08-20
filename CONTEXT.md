@@ -86,8 +86,9 @@ content, and experiential campaigns for brand clients.
   _Avoid_: a fourth visitor-facing type, universal content model.
 - **Article Detail** — the reusable long-form presentation shared by News,
   Editorial Articles, and Zine Articles. _Avoid_: universal adapter.
-- **Index Page** — the mixed Article browse at `/index` (News + Editorial + Zine;
-  excludes Case Studies). _Avoid_: All Work, Blog.
+- **Index Page** — the mixed Article browse at `/index` (News + Editorial;
+  excludes Zine Articles, which live under `/zine`, and Case Studies). _Avoid_:
+  All Work, Blog.
 - **Publication Date** — the date used to sort Articles and Case Studies.
   Auto-stamped at an Article's first publish, then frozen; Article cards display
   it, Case Study cards do not. _Avoid_: manual rank.
@@ -129,7 +130,8 @@ Do not describe them as implemented.
 ## Example dialogue
 
 > **Dev:** Is Brand Salon its own nav section? — **Expert:** No, it's a Capability.
-> **Dev:** Does `/index` include Zine Articles? — **Expert:** Yes: News, Editorial,
-> and Zine. It excludes Case Studies (those live in Work).
+> **Dev:** Does `/index` include Zine Articles? — **Expert:** No: News and
+> Editorial only. Zine Articles live under `/zine`, and Case Studies live in
+> Work.
 > **Dev:** Where do we link the Shop? — **Expert:** Main nav. It's a first-class
 > section, not an external link.

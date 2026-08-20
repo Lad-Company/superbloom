@@ -17,7 +17,9 @@ interface Tag {
 
 interface ArticleItem {
   _id?: string | null
-  articleType?: ArticleTypeFilter | null
+  // Curated sections can still hand a Zine Article here even though zine is
+  // not a browse filter on /index.
+  articleType?: ArticleTypeFilter | 'zine' | null
   title: string | null
   slug: string | null
   overview?: Array<{children?: Array<{text?: string | null}>}> | null

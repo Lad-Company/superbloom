@@ -1,11 +1,13 @@
-// Visitor-facing Article Types for the /index browse. Mirrors the required
-// `articleType` select on the Article CMS document; labels match the Type
-// badge shown on cards.
-export const ARTICLE_TYPES = ['news', 'editorial', 'zine'] as const
+// Visitor-facing Article Types for the /index browse. Zine Articles still
+// exist in the CMS but surface under /zine, so they are not a browse filter.
+export const ARTICLE_TYPES = ['news', 'editorial'] as const
 
 export type ArticleTypeFilter = (typeof ARTICLE_TYPES)[number]
 
-export const ARTICLE_TYPE_LABELS: Record<ArticleTypeFilter, string> = {
+// Labels match the Type badge shown on cards. Zine is included because
+// curated sections (e.g. the Index page's Featured) can still render a Zine
+// Article card.
+export const ARTICLE_TYPE_LABELS: Record<ArticleTypeFilter | 'zine', string> = {
   news: 'News',
   editorial: 'Editorial',
   zine: 'Zine',

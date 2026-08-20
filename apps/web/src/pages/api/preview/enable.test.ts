@@ -34,7 +34,7 @@ describe('preview enable route', () => {
     expect(ctx.cookies.set).not.toHaveBeenCalled()
   })
 
-  it('sets a session preview cookie and redirects to the target on a valid signature', async () => {
+  it('sets a bounded-lifetime preview cookie and redirects to the target on a valid signature', async () => {
     vi.stubEnv('SANITY_API_READ_TOKEN', 'test-read-token')
     mockedValidate.mockResolvedValue({isValid: true, redirectTo: '/work'})
 
@@ -46,9 +46,10 @@ describe('preview enable route', () => {
       'true',
       expect.objectContaining({httpOnly: true, secure: true, sameSite: 'none', path: '/'}),
     )
-    // Session lifetime: no Max-Age/expires, so share links die with the browser.
+    // Bounded to one workday: a bare session cookie survives browser restarts
+    // under Chrome's session restore, silently stranding editors in draft mode.
     const options = ctx.cookies.set.mock.calls[0][2] as Record<string, unknown>
-    expect(options).not.toHaveProperty('maxAge')
+    expect(options).toHaveProperty('maxAge', 60 * 60 * 8)
     expect(options).not.toHaveProperty('expires')
 
     expect(res.status).toBe(302)

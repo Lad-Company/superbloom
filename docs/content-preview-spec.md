@@ -44,7 +44,8 @@ stale-while-revalidate=86400` via `lib/cacheHeaders.ts` (`setPublicCache`).
   on `mm.add('(prefers-reduced-motion: no-preference)')` directly
   (`pinnedStory.ts`, `depthLayer.ts`, `horizontalRail.ts`);
   `styles/motion.css` has a reduced-motion block that renders final-state
-  content. This is the path preview mode reuses.
+  content. ~~This is the path preview mode reuses.~~ (Superseded, see §4:
+  preview no longer reuses the reduced-motion path.)
 - `layouts/Layout.astro` computes a `gaMode` by hostname; preview traffic must
   not count as prod GA.
 - The Studio is dashboard-hosted (ADR-0023) with CORS already configured. All
@@ -65,8 +66,19 @@ stale-while-revalidate=86400` via `lib/cacheHeaders.ts` (`setPublicCache`).
 5. **Full resolve map** (see §5): every routable document type gets a preview
    location; News → `/index`; Site Settings → `/`; Capability, Tag, and Form
    Submission get none.
-6. **Motion quieted in preview** via the existing reduced-motion path: no
-   Lenis, no pinned stories, no reveals; content renders in final state.
+6. ~~**Motion quieted in preview** via the existing reduced-motion path: no
+   Lenis, no pinned stories, no reveals; content renders in final state.~~
+   **Superseded (2026-08-20).** Quieting motion invisibly broke the site for
+   anyone holding the cookie: a session cookie survives browser restarts
+   under Chrome's "Continue where you left off", so editors who had opened a
+   share link or the Presentation tool saw the production site with no Lenis
+   and no pinned sections — reported as "the scroll-jack section doesn't
+   capture scroll", un-reproducible on any machine without the cookie.
+   Preview now runs full motion like any visitor; the visitor's own
+   `prefers-reduced-motion` setting is the only motion gate. The cookie also
+   gained an 8-hour `Max-Age` backstop and a visible preview bar with an
+   Exit affordance (`PreviewBar.astro`) so draft mode can never strand
+   anyone silently again.
 7. **No editor-facing docs** in scope.
 8. **This spec lives in `docs/`** with a GitHub tracking issue.
 
@@ -147,21 +159,29 @@ When `isPreviewRequest` is true, `layouts/Layout.astro`:
 The flag must survive View Transitions: stamp it on the incoming document in
 the same `astro:before-swap` path that stamps the `js` class.
 
-## 4. Workstream 2 — Web: quiet motion in preview
+## 4. Workstream 2 — Web: preview visibility (supersedes "quiet motion")
 
-Reuse the reduced-motion path; do not build a parallel system.
+**Original plan (2026-08-11), now reverted:** quiet motion in preview by
+reusing the reduced-motion path (`prefersReducedMotion()` honoring
+`data-preview`, early-returns in `pinnedStory.ts` / `depthLayer.ts` /
+`horizontalRail.ts`, an `html[data-preview]` final-state block in
+`styles/motion.css`). Reverted 2026-08-20 — see decision 6: with no visible
+indicator, the quieted motion read as a broken site to cookie-holding
+editors, and the whole failure class was invisible to anyone without the
+cookie.
 
-- `lib/motion/config.ts`: `prefersReducedMotion()` also returns `true` when
-  `document.documentElement.hasAttribute('data-preview')`. Lenis
-  (`smoothScroll.ts`) and reveals (`reveal.ts`) pick this up for free.
-- The three direct `mm.add('(prefers-reduced-motion: no-preference)')` sites
-  (`pinnedStory.ts`, `depthLayer.ts`, `horizontalRail.ts`) early-return when
-  the preview flag is set.
-- `styles/motion.css`: mirror the existing reduced-motion final-state block
-  under an `html[data-preview]` selector so reveal targets never start hidden.
+Current behavior:
 
-Editors judge content and layout in the preview; motion QA stays on the real
-site.
+- Preview runs the **full motion system**, identical to any visitor; the
+  visitor's own `prefers-reduced-motion` setting is the only gate.
+- `data-preview` on `<html>` still marks the request for GA suppression and
+  draft-content switching, but motion code no longer reads it.
+- `PreviewBar.astro` (rendered by Layout on preview requests) makes draft
+  mode visible and offers an Exit link to `/api/preview/disable`; it hides
+  itself inside the Studio Presentation iframe, where the session belongs
+  to the tool.
+- The enable route sets the cookie with an 8-hour `Max-Age` — a session
+  cookie survives browser restarts under Chrome's session restore.
 
 ## 5. Workstream 3 — Studio: Presentation tool (`apps/studio`)
 
@@ -212,7 +232,8 @@ Automated:
       non-preview keep `setPublicCache` output.
 - [ ] Unit: enable route rejects a bad signature with 401 and sets no cookie;
       accepts a valid one, sets cookie, redirects to the target path.
-- [ ] Unit: `prefersReducedMotion()` honors `data-preview`.
+- [x] ~~Unit: `prefersReducedMotion()` honors `data-preview`.~~ Superseded:
+      unit asserts preview does **not** force reduced motion (see §4).
 - [ ] `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm format:check` green.
 
 Manual:
@@ -222,8 +243,10 @@ Manual:
       browser without the cookie show published content only.
 - [ ] Preview responses carry `Cache-Control: no-store`; normal responses keep
       the public edge cache header.
-- [ ] Native scroll (no Lenis) and final-state content inside the preview;
-      motion unchanged for normal visitors.
+- [ ] ~~Native scroll (no Lenis) and final-state content inside the preview;
+      motion unchanged for normal visitors.~~ Superseded (see §4): preview
+      runs full motion; the preview bar is visible outside the Studio iframe
+      and Exit clears the cookie.
 - [ ] GA scripts absent in preview responses.
 - [ ] Disable route exits draft mode.
 - [ ] View Transition navigation between pages keeps the preview active.

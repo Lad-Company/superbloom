@@ -1,6 +1,6 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { isPreviewMode, prefersReducedMotion, SCROLL } from './config';
+import { prefersReducedMotion, SCROLL } from './config';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -32,9 +32,6 @@ export function initPinnedStory(options: PinnedStoryOptions): () => void {
     return () => {};
   }
   onChapter(0);
-
-  // Preview mode renders the final state: first chapter, no pin.
-  if (isPreviewMode()) return () => {};
 
   const mm = gsap.matchMedia();
 

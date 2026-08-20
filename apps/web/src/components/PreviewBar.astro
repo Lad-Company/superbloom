@@ -1,0 +1,57 @@
+---
+// Draft-preview indicator. Rendered by Layout on preview requests (the
+// sb_preview cookie). Until this existed, preview mode was invisible: an
+// editor who opened a share link or the Presentation tool stayed in draft
+// mode for the whole browser session (indefinitely under Chrome's session
+// restore) with no way out short of knowing the disable route. Exit runs a
+// full navigation — the cookie change must not ride the View Transitions
+// router.
+---
+
+<aside class="preview-bar" data-preview-bar role="status">
+  <p class="note">Previewing draft content</p>
+  <a class="exit" href="/api/preview/disable" data-astro-reload>Exit</a>
+</aside>
+
+<script is:inline>
+  // Inside the Studio Presentation iframe the session belongs to the tool;
+  // exiting there would silently drop the iframe back to published content.
+  ;(() => {
+    const bar = document.querySelector('[data-preview-bar]')
+    if (bar && window.self !== window.top) bar.setAttribute('hidden', '')
+  })()
+</script>
+
+<style>
+  .preview-bar {
+    position: fixed;
+    left: 50%;
+    bottom: var(--space-xs);
+    transform: translateX(-50%);
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-3xs) var(--space-xs);
+    background: var(--control-bg);
+    color: var(--control-fg);
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .preview-bar[hidden] {
+    display: none;
+  }
+
+  .note {
+    margin: 0;
+  }
+
+  .exit {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+</style>

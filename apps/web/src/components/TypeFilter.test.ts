@@ -12,10 +12,14 @@ describe('TypeFilter', () => {
   })
 
   it('offers every visitor-facing article type as a dropdown option', () => {
-    expect(ARTICLE_TYPES).toEqual(['news', 'editorial', 'zine'])
+    expect(ARTICLE_TYPES).toEqual(['news', 'editorial'])
     expect(ARTICLE_TYPE_LABELS).toEqual({news: 'News', editorial: 'Editorial', zine: 'Zine'})
     expect(source).toContain('ARTICLE_TYPES.map')
     expect(source).toContain('data-type-filter')
+  })
+
+  it('does not offer Zine as a filter option', () => {
+    expect(ARTICLE_TYPES).not.toContain('zine')
   })
 
   it('uses a details dropdown, not a native select or system dialogue', () => {
@@ -25,7 +29,7 @@ describe('TypeFilter', () => {
   })
 
   it('marks the selected type and clears the filter by re-selecting it', () => {
-    expect(source).toContain("aria-current={selected")
+    expect(source).toContain('aria-current={selected')
     expect(source).toContain('hrefFor(selected ? null : type)')
   })
 
@@ -50,7 +54,7 @@ describe('TypeFilter', () => {
   it('parses only visitor-facing article types from the URL', () => {
     expect(parseArticleTypeFilter('news')).toBe('news')
     expect(parseArticleTypeFilter('editorial')).toBe('editorial')
-    expect(parseArticleTypeFilter('zine')).toBe('zine')
+    expect(parseArticleTypeFilter('zine')).toBeNull()
     expect(parseArticleTypeFilter('case-study')).toBeNull()
     expect(parseArticleTypeFilter('')).toBeNull()
     expect(parseArticleTypeFilter(null)).toBeNull()

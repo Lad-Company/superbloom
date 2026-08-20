@@ -48,13 +48,6 @@ export function reducedMotionQuery(): MediaQueryList {
   return window.matchMedia(REDUCED_MOTION_QUERY)
 }
 
-// Draft preview mode: Layout stamps `data-preview` on <html> for preview
-// requests, and the motion system quiets to its reduced-motion path so
-// editors judge content and layout in their final state.
-export function isPreviewMode(): boolean {
-  return typeof document !== 'undefined' && document.documentElement.hasAttribute('data-preview')
-}
-
 export function prefersReducedMotion(): boolean {
-  return isPreviewMode() || reducedMotionQuery().matches
+  return reducedMotionQuery().matches
 }

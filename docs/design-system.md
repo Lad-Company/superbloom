@@ -233,8 +233,9 @@ discriminator selects the Studio field set, route, and content adapter:
 
 ### Index vs Work (browse pages)
 
-- **`/index`** — mixed browse of published News + Editorial + Zine Articles
-  (excludes Case Studies). Optional Featured (1–4, manually ordered, masonry) then
+- **`/index`** — mixed browse of published News + Editorial Articles (excludes
+  Zine Articles, which live under `/zine`, and Case Studies). Optional Featured
+  (1–4, manually ordered, masonry) then
   a required All section (remaining matching articles). The Index singleton may set
   one Tag as a CMS source rule (not a visitor-facing filter). Cards show the Type
   badge + ≤1 Tag and the publication date.

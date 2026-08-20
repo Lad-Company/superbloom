@@ -18,14 +18,19 @@ export const GET: APIRoute = async ({cookies, url, redirect}) => {
     return new Response('Invalid preview URL', {status: 401})
   }
 
-  // Session cookie (no maxAge): share links self-expire when the browser
-  // closes. SameSite=None lets the cookie ride the Studio's cross-origin
-  // iframe, and Secure is required for SameSite=None.
+  // Bounded lifetime: a session cookie was the original intent ("share links
+  // self-expire when the browser closes"), but Chrome's "Continue where you
+  // left off" restores session cookies indefinitely, silently stranding
+  // editors in draft mode on the production URL. Eight hours covers one
+  // editor workday; the preview bar's Exit affordance ends a session early.
+  // SameSite=None lets the cookie ride the Studio's cross-origin iframe, and
+  // Secure is required for SameSite=None.
   cookies.set(PREVIEW_COOKIE, 'true', {
     httpOnly: true,
     secure: true,
     sameSite: 'none',
     path: '/',
+    maxAge: 60 * 60 * 8,
   })
 
   const response = redirect(redirectTo ?? '/')

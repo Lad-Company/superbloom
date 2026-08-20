@@ -69,7 +69,7 @@ API glue (`apps/web/src/pages/api/*`).
 ## 5. Routes
 
 - `/` — homepage (Fixed Composition; `homepage` singleton)
-- `/index` — mixed Article browse (News + Editorial + Zine)
+- `/index` — mixed Article browse (News + Editorial; Zine lives under `/zine`)
 - `/work`, `/work/[slug]` — Case Study browse + detail
 - `/who-we-are` — Fixed art-directed page (`whoWeAre` singleton)
 - `/articles/[slug]` — News / Editorial Article detail
@@ -188,9 +188,11 @@ another doc, that doc is authoritative.
   Preview requests swap the Sanity client (`perspective: 'drafts'`,
   `useCdn: false`, viewer-scoped `SANITY_API_READ_TOKEN`) and send
   `Cache-Control: no-store` — the edge cache keys by URL, not cookie, and
-  would otherwise serve drafts publicly. Preview quiets motion via the
-  existing reduced-motion path (`data-preview` on `<html>`) and forces GA
-  off. The Studio's preview origin is env-driven across dev, staging, and
+  would otherwise serve drafts publicly. Preview forces GA off and runs full
+  motion (a visible `PreviewBar` with an Exit affordance plus an 8-hour
+  cookie `Max-Age` replaced the original quiet-motion-in-preview design,
+  which silently disabled pinned sections for cookie-holding editors).
+  `data-preview` on `<html>` marks the request; motion no longer reads it. The Studio's preview origin is env-driven across dev, staging, and
   prod (`SANITY_STUDIO_PREVIEW_ORIGIN(S)`); pre-launch the deployed Studio
   defaults to the Vercel staging hostname because superbloomhouse.com still
   serves the legacy Netlify site. There is no shared env secret: rotation is
@@ -226,6 +228,11 @@ another doc, that doc is authoritative.
   of the real asset) are filtered in the shared GROQ media projection and
   pruned at the data level by `migrate:prune-empty-mediabox-assets`. Amends
   0027's required-leadMedia clause.
+- **0030 — Zine Articles leave the Index browse.** `/index` is News + Editorial
+  only; the All queries and the visitor-facing Type filter drop `zine`, and
+  Zine Articles surface under `/zine`. The Index page's Featured section stays
+  CMS-curated, so a Zine Article can still be featured there deliberately.
+  Amends 0020's "Index (all article types)" clause.
 
 **Superseded or amended (kept as guardrails):**
 

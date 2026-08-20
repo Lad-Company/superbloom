@@ -23,6 +23,13 @@ describe('Index page', () => {
     }
   })
 
+  it('excludes Zine Articles from both view-all queries', () => {
+    for (const query of [indexViewAllNewestQuery, indexViewAllOldestQuery]) {
+      expect(query).toContain('articleType in ["news", "editorial"]')
+      expect(query).not.toContain('"zine"')
+    }
+  })
+
   it('defaults to the sort control and shows one browse control at a time with JS', () => {
     expect(source).toContain('data-active-control="sort"')
     expect(source).toContain('html.js')
