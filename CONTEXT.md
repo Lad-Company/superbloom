@@ -71,8 +71,10 @@ content, and experiential campaigns for brand clients.
 - **Zine Article** — a long-form story belonging to exactly one Zine Issue.
   _Avoid_: Editorial Article, News.
 - **News** — press, announcements, and coverage of Superbloom; a full Article
-  Detail page like Editorial, plus a required Destination powering a footer CTA
-  and an optional Source naming the outlet. _Avoid_: blog, posts.
+  Detail page like Editorial (lead media optional — News usually links out to
+  external coverage rather than hosting its own), plus a required Destination
+  powering a footer CTA and an optional Source naming the outlet. _Avoid_:
+  blog, posts.
 - **Destination** — the required outbound URL a News article's footer CTA links
   to.
 - **Source** — the optional outlet name on a News article (e.g. "Vogue"); the

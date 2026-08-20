@@ -1,24 +1,22 @@
-import {writeFileSync} from 'node:fs'
 import {getCliClient} from 'sanity/cli'
 
 /**
- * Prunes corrupt mediaBox asset arrays and removes the duplicate editorial
- * article.
+ * Prunes corrupt mediaBox asset arrays across all documents (published +
+ * drafts).
  *
- * Prune pass: the mediaBox schema requires exactly one asset, but some docs
- * (notably article-news-1's cardMedia) shipped with stray empty array members
- * ahead of the real asset. The web projection takes the first member that
- * references an asset, but the corrupt data itself is cleaned here: drop
- * members without an asset reference, keep the first member that has one.
+ * The mediaBox schema requires exactly one asset, but some docs (notably
+ * article-news-1's cardMedia) shipped with stray empty array members ahead of
+ * the real asset. The web projection takes the first member that references
+ * an asset, but the corrupt data itself is cleaned here: drop members without
+ * an asset reference, keep the first member that has one.
  *
- * Deletion pass: removes the duplicate editorial copy of the 5th-Birthday
- * news story (f9698dcf-53b1-40a5-bff0-a8f92d2c6f98), backing it up first.
- * Skipped with a warning if anything still references it.
+ * The first production run (2026-08-20) also backed up and deleted the
+ * duplicate editorial copy of the 5th-Birthday story
+ * (f9698dcf-53b1-40a5-bff0-a8f92d2c6f98, no references); that one-off cleanup
+ * is not part of this script.
  *
  * Idempotent. Run with --dry-run to review the report without writing.
  */
-
-const DUPLICATE_EDITORIAL_ID = 'f9698dcf-53b1-40a5-bff0-a8f92d2c6f98'
 
 const client = getCliClient({apiVersion: '2026-07-22'}).withConfig({perspective: 'raw'})
 const dryRun = process.argv.includes('--dry-run')
@@ -26,6 +24,8 @@ const dryRun = process.argv.includes('--dry-run')
 type Json = Record<string, unknown>
 
 type Patch = {id: string; path: string; value: unknown}
+
+type PathSegment = string | {_key: string}
 
 const isRecord = (value: unknown): value is Json =>
   Boolean(value && typeof value === 'object' && !Array.isArray(value))
@@ -45,17 +45,40 @@ const pruneMediaBox = (mediaBox: Json): Json | null => {
   return {...mediaBox, asset: pruned}
 }
 
-const segmentToPath = (segment: string | {_key: string}): string =>
-  typeof segment === 'string' ? segment : `[_key=="${segment._key}"]`
+const escapeKey = (key: string): string => key.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
 
-const collectPatches = (doc: Json): Patch[] => {
+/**
+ * Canonical Sanity patch path, e.g. `body[_key=="abc"].media` — a keyed
+ * segment attaches to its parent with no dot in between.
+ */
+const pathToString = (path: PathSegment[]): string =>
+  path
+    .map((segment, index) => {
+      if (typeof segment !== 'string') return `[_key=="${escapeKey(segment._key)}"]`
+      return index === 0 ? segment : `.${segment}`
+    })
+    .join('')
+
+/** True when a corrupt mediaBox hides somewhere inside a keyless array member. */
+const containsPrunableMediaBox = (node: unknown): boolean => {
+  if (Array.isArray(node)) return node.some(containsPrunableMediaBox)
+  if (!isRecord(node)) return false
+  if (node._type === 'mediaBox') return pruneMediaBox(node) !== null
+  return Object.values(node).some(containsPrunableMediaBox)
+}
+
+const collectPatches = (doc: Json): {patches: Patch[]; unaddressable: string[]} => {
   const patches: Patch[] = []
+  const unaddressable: string[] = []
 
-  const walk = (node: unknown, path: Array<string | {_key: string}>) => {
+  const walk = (node: unknown, path: PathSegment[]) => {
     if (Array.isArray(node)) {
       for (const item of node) {
         if (isRecord(item) && typeof item._key === 'string') {
           walk(item, [...path, {_key: item._key}])
+        } else if (containsPrunableMediaBox(item)) {
+          // No _key means no addressable patch path; report instead of skipping silently.
+          unaddressable.push(pathToString(path))
         }
       }
       return
@@ -67,7 +90,7 @@ const collectPatches = (doc: Json): Patch[] => {
       if (pruned) {
         patches.push({
           id: doc._id as string,
-          path: path.map(segmentToPath).join('.'),
+          path: pathToString(path),
           value: pruned,
         })
         return // pruned value replaces this subtree; no need to descend
@@ -85,7 +108,7 @@ const collectPatches = (doc: Json): Patch[] => {
     walk(value, [key])
   }
 
-  return patches
+  return {patches, unaddressable}
 }
 
 console.log('Scanning all documents (published + drafts) for corrupt mediaBox assets...')
@@ -93,7 +116,13 @@ console.log('Scanning all documents (published + drafts) for corrupt mediaBox as
 const docs = await client.fetch<Json[]>(`*[!(_type match "system.*") && !(_type match "sanity.*")]`)
 const patches: Patch[] = []
 for (const doc of docs) {
-  patches.push(...collectPatches(doc))
+  const {patches: docPatches, unaddressable} = collectPatches(doc)
+  patches.push(...docPatches)
+  for (const path of unaddressable) {
+    console.log(
+      `  WARN ${doc._id} at ${path}: mediaBox inside an array member without a _key cannot be patched; inspect manually.`,
+    )
+  }
 }
 
 for (const patch of patches) {
@@ -101,62 +130,16 @@ for (const patch of patches) {
 }
 console.log(`${patches.length} mediaBox field(s) to prune across ${docs.length} document(s).`)
 
-// Duplicate editorial article: back up and delete, unless still referenced.
-const referencing = await client.fetch<Array<{_id: string; _type: string; title?: string}>>(
-  `*[references($id) && _id != $id]{_id, _type, title}`,
-  {id: DUPLICATE_EDITORIAL_ID},
-)
-
-const deletionIds = [DUPLICATE_EDITORIAL_ID, `drafts.${DUPLICATE_EDITORIAL_ID}`]
-const existingDeletionDocs = await client.fetch<Json[]>(`*[_id in $ids]`, {ids: deletionIds})
-
-let skipDeletion = false
-if (referencing.length > 0) {
-  skipDeletion = true
-  for (const ref of referencing) {
-    console.log(
-      `  WARN duplicate editorial ${DUPLICATE_EDITORIAL_ID} still referenced by ${ref._type} "${ref.title ?? ref._id}" (${ref._id}); skipping deletion.`,
-    )
-  }
-}
-if (existingDeletionDocs.length === 0) {
-  skipDeletion = true
-  console.log(`Duplicate editorial ${DUPLICATE_EDITORIAL_ID} not found; nothing to delete.`)
-}
-
 if (dryRun) {
-  if (!skipDeletion) {
-    console.log(
-      `Would back up and delete ${existingDeletionDocs.length} document(s): ${existingDeletionDocs.map((doc) => doc._id).join(', ')}`,
-    )
-  }
-  console.log('Dry run complete. No documents were changed or deleted.')
+  console.log('Dry run complete. No documents were changed.')
   process.exit(0)
 }
 
-const mutations: Array<Record<string, unknown>> = []
-for (const patch of patches) {
-  mutations.push({patch: {id: patch.id, set: {[patch.path]: patch.value}}})
-}
-
-if (!skipDeletion) {
-  const backupPath = new URL(
-    `../backup-duplicate-editorial-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
-    import.meta.url,
-  )
-  writeFileSync(backupPath, JSON.stringify(existingDeletionDocs, null, 2))
-  console.log(`Backed up ${existingDeletionDocs.length} document(s) to ${backupPath.pathname}`)
-  for (const doc of existingDeletionDocs) {
-    mutations.push({delete: {id: doc._id as string}})
-  }
-}
+const mutations = patches.map((patch) => ({patch: {id: patch.id, set: {[patch.path]: patch.value}}}))
 
 if (mutations.length === 0) {
   console.log('Nothing to migrate.')
 } else {
   await client.mutate(mutations as never)
-  console.log(
-    `Applied ${patches.length} prune patch(es)` +
-      (skipDeletion ? '.' : ` and deleted ${existingDeletionDocs.length} duplicate document(s).`),
-  )
+  console.log(`Applied ${mutations.length} prune patch(es).`)
 }

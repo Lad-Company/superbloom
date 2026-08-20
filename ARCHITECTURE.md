@@ -205,7 +205,7 @@ another doc, that doc is authoritative.
   back to "Read the full story", opening in a new tab — instead of the card
   link, and `source` leaves the card. Slug uniqueness spans News + Editorial
   (shared `/articles/` route); Zine stays scoped per type. Amends 0022's
-  card-only-News clause.
+  card-only-News clause; its required-leadMedia clause is amended by 0029.
 - **0028 — Observability: Sentry error aggregation with a Discord drain.**
   Errors aggregate in a new Sentry project (`sbh-web`) in the existing
   business org via `@sentry/astro` (production-only, `dataCollection` privacy
@@ -219,6 +219,13 @@ another doc, that doc is authoritative.
   construction (field allowlists, `allowed_mentions: []`, 2000-char cap).
   Logins, signup/form events, Shopify/Mux activity, and preview deploys are
   out of scope. *(docs/observability-pipeline-spec.md.)*
+- **0029 — News leadMedia optional.** News articles link out to external
+  coverage and typically carry no internal lead media, so `leadMedia` is no
+  longer required for `articleType: 'news'`; Editorial and Zine detail pages
+  still require it. Corrupt mediaBox asset arrays (stray empty members ahead
+  of the real asset) are filtered in the shared GROQ media projection and
+  pruned at the data level by `migrate:prune-empty-mediabox-assets`. Amends
+  0027's required-leadMedia clause.
 
 **Superseded or amended (kept as guardrails):**
 
