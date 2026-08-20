@@ -1,22 +1,26 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
-import vercel from '@astrojs/vercel';
-import UnoCSS from '@unocss/astro';
-import sentry from '@sentry/astro';
-import { loadEnv } from 'vite';
+import {defineConfig} from 'astro/config'
+import vercel from '@astrojs/vercel'
+import UnoCSS from '@unocss/astro'
+import sentry from '@sentry/astro'
+import {loadEnv} from 'vite'
 
 // Env lives at the repo root (vite.envDir '../..'); loadEnv exposes it to this
 // config file both locally (.env.local) and on Vercel (process.env).
-const env = loadEnv(process.env.NODE_ENV ?? 'development', '../..', '');
+const env = loadEnv(process.env.NODE_ENV ?? 'development', '../..', '')
 
-const onVercel = Boolean(env.VERCEL);
+const onVercel = Boolean(env.VERCEL)
 // Errors are reported from production only: preview deploys and local dev stay
-// out of Sentry (mirrors the gaMode preview exclusion, ADR-0026).
-const sentryEnabled = Boolean(env.SENTRY_DSN) &&
-  (onVercel ? env.VERCEL_ENV === 'production' : process.env.NODE_ENV === 'production');
+// out of Sentry (mirrors the gaMode preview exclusion, ADR-0026). Set
+// SENTRY_FORCE_ENABLE=1 to override — e.g. to smoke-test from a preview deploy
+// or a local dev server (env vars load from the repo-root .env.local too).
+const sentryEnabled =
+  Boolean(env.SENTRY_DSN) &&
+  (env.SENTRY_FORCE_ENABLE === '1' ||
+    (onVercel ? env.VERCEL_ENV === 'production' : process.env.NODE_ENV === 'production'))
 // Source maps upload only from Vercel production builds, never local ones.
 const sentryAuthToken =
-  onVercel && env.VERCEL_ENV === 'production' ? env.SENTRY_AUTH_TOKEN : undefined;
+  onVercel && env.VERCEL_ENV === 'production' ? env.SENTRY_AUTH_TOKEN : undefined
 
 // https://astro.build/config
 export default defineConfig({
@@ -47,4 +51,4 @@ export default defineConfig({
       'import.meta.env.SENTRY_ENVIRONMENT': JSON.stringify(env.VERCEL_ENV ?? 'development'),
     },
   },
-});
+})

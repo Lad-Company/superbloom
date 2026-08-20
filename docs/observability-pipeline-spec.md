@@ -265,7 +265,8 @@ Vercel project settings for deployed environments.
 | `DISCORD_ACTIVITY_WEBHOOK_URL`                        | Relay posts to #site-activity                |
 | `GITHUB_WEBHOOK_SECRET`                               | `X-Hub-Signature-256` verification           |
 | `SANITY_WEBHOOK_SECRET`                               | Sanity signature verification                |
-| `CRON_SECRET`                                         | Bearer check on the cron route               |
+| `CRON_SECRET`                                         | Bearer check on the cron route; also gates the Sentry smoke-test hook (`/api/debug/sentry-test`, `/debug/sentry`) |
+| `SENTRY_FORCE_ENABLE`                                 | Optional `1` override: reports errors from preview/local builds (events are tagged with their `environment`) |
 | `GA4_PROPERTY_ID`                                     | Numeric GA4 property ID for `runReport`      |
 | `GA4_CLIENT_EMAIL` / `GA4_PRIVATE_KEY`                | Service-account credentials for the Data API |
 

@@ -1,0 +1,31 @@
+---
+import {safeCompare} from '../../lib/hookSecurity'
+
+// Client-side counterpart to /api/debug/sentry-test: a page that throws an
+// uncaught error in the browser so the client Sentry SDK captures it. Gated
+// by CRON_SECRET as a query param; 404s otherwise so it stays invisible.
+//
+//   /debug/sentry?secret=$CRON_SECRET
+const cronSecret = import.meta.env.CRON_SECRET
+const secret = Astro.url.searchParams.get('secret') ?? ''
+if (!cronSecret || !safeCompare(secret, cronSecret)) {
+  return new Response('Not found', {status: 404})
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>Sentry smoke test</title>
+  </head>
+  <body>
+    <button id="smoke">Throw client error</button>
+    <script>
+      document.getElementById('smoke')?.addEventListener('click', () => {
+        throw new Error('Sentry smoke test (client)')
+      })
+    </script>
+  </body>
+</html>
