@@ -116,7 +116,9 @@ another doc, that doc is authoritative.
 - **0006 — Mailchimp only, no Resend.** Client already on Mailchimp; avoid a second
   email vendor.
 - **0008 — Hybrid SSR.** `output: 'server'`; content SSR per-request, static
-  surfaces opt into prerender. Rejected pure-static+rebuild and ISR.
+  surfaces opt into prerender. Rejected pure-static+rebuild and ISR. Its
+  60s-edge-cache clause is superseded by 0031 (content HTML is no longer
+  shared-cached).
 - **0009 — UnoCSS styling.** Utility velocity + on-demand engine; CSS custom
   properties (Figma tokens) are the source of truth. Rejected Tailwind v4 /
   CSS Modules / vanilla scoped CSS. *(Token specifics: `docs/design-system.md` §1.)*
@@ -233,6 +235,22 @@ another doc, that doc is authoritative.
   Zine Articles surface under `/zine`. The Index page's Featured section stays
   CMS-curated, so a Zine Article can still be featured there deliberately.
   Amends 0020's "Index (all article types)" clause.
+- **0031 — Content HTML is never shared-cached.** Cookie-gated draft preview
+  (0026) proved incompatible with Vercel's URL-keyed edge cache: cached
+  published pages were served to `sb_preview`-cookie requests, hijacking the
+  Presentation pane ("Unable to connect", empty document list) and share
+  links (published content, no preview bar), and the 24h
+  stale-while-revalidate window kept each hijacked URL broken for up to a
+  day. Content routes now send `private, no-cache` (preview stays
+  `no-store`); cookie-independent endpoints (sitemap) keep the public edge
+  cache. Measured cost before deciding: an edge HIT saved ~80ms over warm
+  SSR (~100ms vs ~180ms); the real loss is cold-start masking (~2s blank tab
+  for the first visitor after idle), accepted pre-launch. If that trade
+  reverses at launch, the path back is ISR + `bypassToken` (Vercel's
+  platform-native draft bypass), not shorter TTLs — any nonzero shared cache
+  reintroduces the hijack. Amends 0008's per-request-SSR clause (the 60s
+  edge cache is gone) and 0026's cache-safety clause (no-store on preview
+  responses was necessary but not sufficient).
 
 **Superseded or amended (kept as guardrails):**
 
