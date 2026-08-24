@@ -39,7 +39,7 @@ const displayedCapabilities = capabilities.slice(0, 8);
           {
             displayedCapabilities.map((cap, index) => (
               <li class:list={['type-h3', { 'is-active': index === 0 }]} data-cap data-index={index}>
-                {cap.title}
+                <a href="/who-we-are">{cap.title}</a>
               </li>
             ))
           }
@@ -161,6 +161,25 @@ const displayedCapabilities = capabilities.slice(0, 8);
       opacity var(--motion-standard) var(--motion-ease-out);
   }
 
+  /* The overlay opts out of pointer events so the section never blocks the
+     scroll; the capability links opt back in. Past items have scrolled away
+     and are invisible, so they stay non-interactive. */
+  .list li a {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    pointer-events: auto;
+  }
+
+  .list li a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+
+  .list li.is-past a {
+    pointer-events: none;
+  }
+
   .list li.is-active {
     color: var(--bg);
   }
@@ -210,8 +229,13 @@ const displayedCapabilities = capabilities.slice(0, 8);
 
     const scrollListY = list ? gsap.quickTo(list, 'y', { duration: 0.6, ease: 'power3.out' }) : null;
 
+    // Scroll drives scrollIndex; hover/focus overrides the shown chapter
+    // without touching list position or the is-past scroll state.
+    let scrollIndex = 0;
+    let hoverIndex: number | null = null;
     let previous = 0;
-    const setActive = (i: number) => {
+
+    const activateFrame = (i: number) => {
       frames.forEach((frame, idx) => {
         const isActive = idx === i;
         frame.classList.toggle('is-active', isActive || idx === previous);
@@ -219,8 +243,18 @@ const displayedCapabilities = capabilities.slice(0, 8);
         frame.querySelector('media-frame')?.toggleAttribute('active', isActive);
       });
       previous = i;
+    };
+
+    const highlightItem = (i: number) => {
+      listItems.forEach((item, idx) => item.classList.toggle('is-active', idx === i));
+    };
+
+    const setActive = (i: number) => {
+      scrollIndex = i;
+      const shown = hoverIndex ?? i;
+      activateFrame(shown);
+      highlightItem(shown);
       listItems.forEach((item, idx) => {
-        item.classList.toggle('is-active', idx === i);
         item.classList.toggle('is-past', idx < i);
       });
 
@@ -232,6 +266,32 @@ const displayedCapabilities = capabilities.slice(0, 8);
         }
       }
     };
+
+    listItems.forEach((item, idx) => {
+      const link = item.querySelector('a');
+      if (!link) return;
+      const enter = () => {
+        hoverIndex = idx;
+        activateFrame(idx);
+        highlightItem(idx);
+      };
+      const leave = () => {
+        if (hoverIndex !== idx) return;
+        hoverIndex = null;
+        activateFrame(scrollIndex);
+        highlightItem(scrollIndex);
+      };
+      link.addEventListener('pointerenter', enter);
+      link.addEventListener('focus', enter);
+      link.addEventListener('pointerleave', leave);
+      link.addEventListener('blur', leave);
+      cleanups.push(() => {
+        link.removeEventListener('pointerenter', enter);
+        link.removeEventListener('focus', enter);
+        link.removeEventListener('pointerleave', leave);
+        link.removeEventListener('blur', leave);
+      });
+    });
 
     const destroyPinnedStory = initPinnedStory({
       section,
