@@ -14,8 +14,10 @@ export type SurfaceRole = (typeof surfaceRoles)[number]
 // Each role declares its surface paint (--bg/--fg) plus Contained Control tokens.
 // Controls resolve to pure black/white by surface darkness: dark surfaces get a
 // white button that wipes to black; light surfaces get a black button that wipes
-// to white. --surface-wipe-outline matches the post-wipe ink so the inset border
-// is always visible. Case surfaces derive from their CMS fg/bg pair.
+// to white. --surface-wipe-outline matches the post-wipe ink; only controls that
+// opt into a stroke via --wipe-outline (Media Control Bar buttons) consume it —
+// pill CTAs and tags wipe without a border. Case surfaces derive from their CMS
+// fg/bg pair.
 export const control = {
   onDark: '--control-bg: #ffffff; --control-fg: #000000; --surface-wipe-outline: #ffffff;',
   onLight: '--control-bg: #000000; --control-fg: #ffffff; --surface-wipe-outline: #000000;',

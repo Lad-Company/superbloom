@@ -1,7 +1,7 @@
 import type {APIContext} from 'astro'
 import {describe, expect, it, vi} from 'vitest'
 import {GET} from './disable'
-import {PREVIEW_COOKIE} from '../../../lib/preview'
+import {PREVIEW_COOKIE, PREVIEW_INACTIVE_COOKIE} from '../../../lib/preview'
 
 const context = (referer?: string) => ({
   cookies: {delete: vi.fn()},
@@ -20,11 +20,21 @@ describe('preview disable route', () => {
     const res = await callDisable(ctx)
 
     expect(ctx.cookies.delete).toHaveBeenCalledWith(PREVIEW_COOKIE, {path: '/'})
+    expect(ctx.cookies.delete).toHaveBeenCalledWith(PREVIEW_INACTIVE_COOKIE, {path: '/'})
     expect(res.headers.get('location')).toBe('/')
   })
 
   it('returns to the same-origin referer path', async () => {
     const ctx = context('http://localhost:4321/work?sort=oldest')
+    const res = await callDisable(ctx)
+
+    expect(res.headers.get('location')).toBe('/work?sort=oldest')
+  })
+
+  it('strips preview params off the referer so Exit does not re-arm the inactive notice', async () => {
+    const ctx = context(
+      'http://localhost:4321/work?sanity-preview-perspective=drafts&sanity-preview-variant=x&sort=oldest',
+    )
     const res = await callDisable(ctx)
 
     expect(res.headers.get('location')).toBe('/work?sort=oldest')

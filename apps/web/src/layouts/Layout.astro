@@ -11,7 +11,12 @@ import CookieConsent from '../components/CookieConsent.astro';
 import PageLoader from '../components/PageLoader.astro';
 import PreviewBar from '../components/PreviewBar.astro';
 import { type SurfaceRole } from '../lib/surfaceRole';
-import { isPreviewRequest } from '../lib/preview';
+import {
+  isPreviewRequest,
+  isPreviewInactiveRequest,
+  hasPreviewParam,
+  PREVIEW_INACTIVE_COOKIE,
+} from '../lib/preview';
 
 interface Props {
   title?: string;
@@ -36,6 +41,22 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
 // Draft preview: stamp the request marker and keep editor/share-link
 // preview traffic out of prod analytics.
 const preview = isPreviewRequest(Astro.cookies);
+
+// The Presentation "Open preview" popup and share-link redirects land on
+// URLs carrying the sanity-preview-perspective param. When the cookie didn't
+// make it into this browser context, say so explicitly — a silently
+// published page is indistinguishable from a draft to an editor. The marker
+// cookie carries the state past the landing URL, since the param is gone
+// after the first navigation.
+const previewInactive = isPreviewInactiveRequest(Astro.cookies, Astro.url);
+if (previewInactive && hasPreviewParam(Astro.url)) {
+  Astro.cookies.set(PREVIEW_INACTIVE_COOKIE, '1', {
+    secure: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 8,
+  });
+}
 
 const host = Astro.url.hostname;
 const gaMode = preview
@@ -158,6 +179,7 @@ const gaMode = preview
     <slot />
     <CartDrawer />
     {preview && <PreviewBar />}
+    {previewInactive && <PreviewBar inactive />}
     {(gaMode !== 'off' || import.meta.env.DEV) && <CookieConsent />}
     <script>
       import { getLenis, initMotion, initSmoothScroll, prefersReducedMotion } from '../lib/motion';

@@ -5,7 +5,7 @@ const source = readFileSync(new URL('./NewsCarousel.astro', import.meta.url), 'u
 
 describe('News Carousel', () => {
   it('keeps the section within the page gutter', () => {
-    expect(source).toContain('padding: var(--space-4xl) var(--page-inset) var(--space-2xl)')
+    expect(source).toContain('padding: var(--space-4xl) var(--page-inset) 0')
     expect(source).toContain('padding-inline: 12px')
   })
 

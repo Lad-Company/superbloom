@@ -6,11 +6,34 @@
 // restore) with no way out short of knowing the disable route. Exit runs a
 // full navigation — the cookie change must not ride the View Transitions
 // router.
+//
+// The `inactive` variant covers the opposite failure: the Presentation
+// tool's "Open preview" button opens a bare URL (no signed secret) marked
+// with the sanity-preview-perspective param, and relies on the cookie the
+// iframe set cross-site. When that cookie is partitioned (Firefox), blocked
+// (Safari ITP, Chrome third-party-cookie blocking), or expired, the new tab
+// would otherwise render published content indistinguishable from a draft —
+// the editor can't tell which they're looking at. The param lets us say so.
+interface Props {
+  inactive?: boolean
+}
+
+const {inactive = false} = Astro.props
 ---
 
 <aside class="preview-bar" data-preview-bar role="status">
-  <p class="note">Previewing draft content</p>
-  <a class="exit" href="/api/preview/disable" data-astro-reload>Exit</a>
+  {
+    inactive ? (
+      <p class="note">Draft preview inactive — viewing published content</p>
+    ) : (
+      <>
+        <p class="note">Previewing draft content</p>
+        <a class="exit" href="/api/preview/disable" data-astro-reload>
+          Exit
+        </a>
+      </>
+    )
+  }
 </aside>
 
 <script is:inline>

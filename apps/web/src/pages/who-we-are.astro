@@ -101,7 +101,11 @@ const faqs = page?.faqs ?? [];
 
 <style>
   .discipline-section {
-    padding: var(--space-4xl) 0;
+    /* Top padding only: the next section (TwoUp) carries its own 4xl top
+       padding, so a bottom pad here would double the gap to 400px. The
+       single 4xl (2xl on mobile via TwoUp) is the intended inter-section
+       spacing. */
+    padding: var(--space-4xl) 0 0;
   }
 
   /* The header (dark) and the lead media (accent) are separate colored

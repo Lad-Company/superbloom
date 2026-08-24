@@ -38,7 +38,10 @@ const {items} = Astro.props
   .two-up {
     display: flex;
     gap: var(--page-gutter);
-    padding: var(--space-4xl) var(--space-xs);
+    /* No bottom padding: the next section (Faq, or ContactBand when no
+       faqs) carries its own 4xl top padding, so a bottom pad here would
+       double the gap to 400px. */
+    padding: var(--space-4xl) var(--space-xs) 0;
     align-items: flex-start;
   }
   .col {
@@ -62,7 +65,9 @@ const {items} = Astro.props
          shrink-wraps each column to its content width and pins it left.
          Stretch makes columns (and their media) full width. */
       align-items: stretch;
-      padding: var(--space-2xl) var(--space-3xs);
+      /* Bottom padding stays 0 on mobile too; Faq's 2xl top padding is the
+         single spacer. */
+      padding: var(--space-2xl) var(--space-3xs) 0;
     }
   }
 </style>

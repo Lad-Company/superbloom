@@ -69,9 +69,11 @@
 .surface-wipe:focus-visible::before {
   transform: scaleY(1);
 }
+/* The inset hover/focus stroke is opt-in via --wipe-outline (Media Control
+   Bar buttons set it); pill CTAs and tags wipe without a stroke. */
 .surface-wipe:hover::after,
 .surface-wipe:focus-visible::after {
-  border-color: var(--surface-wipe-outline, var(--wipe-outline, transparent));
+  border-color: var(--wipe-outline, transparent);
 }
 .surface-wipe.is-pressed {
   transform: scale(0.98);

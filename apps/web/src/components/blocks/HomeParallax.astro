@@ -25,7 +25,9 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
   .home-parallax {
     position: relative;
     display: flex;
-    align-items: center;
+    /* Statement pins to the top of the section (matching the Zine landing
+       intro sibling); the min-height below belongs to the pointer layers. */
+    align-items: flex-start;
     min-height: clamp(460px, 56vw, 760px);
     /* No bottom padding: the section hands off flush to the Capes section. */
     padding: clamp(var(--space-3xl), 12vw, var(--space-4xl)) var(--page-inset) 0;
