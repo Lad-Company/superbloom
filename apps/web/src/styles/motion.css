@@ -33,6 +33,7 @@
   overflow: hidden;
   transition:
     color var(--motion-quick) var(--motion-ease-out),
+    background-color var(--motion-quick) var(--motion-ease-out),
     transform var(--motion-instant) var(--motion-ease-out);
 }
 .surface-wipe::before {
@@ -67,6 +68,12 @@
 .surface-wipe:hover,
 .surface-wipe:focus-visible {
   color: var(--wipe-ink, var(--bg)) !important;
+  /* The ::before fill is clipped by the parent's border-radius overflow
+     clip, whose anti-aliased edge lets the resting background peek through
+     as a thin seam (most visible at the corners). Flipping the element's
+     own background to the wipe color on the same timing makes the seam
+     render in the target color, so the fill reads edge-to-edge. */
+  background-color: var(--wipe-surface, currentColor) !important;
 }
 .surface-wipe:hover::before,
 .surface-wipe:focus-visible::before {

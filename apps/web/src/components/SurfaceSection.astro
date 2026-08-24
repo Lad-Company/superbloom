@@ -35,6 +35,11 @@ const {
 <style>
   .surface-section {
     --fg-12: color-mix(in srgb, var(--fg) 12%, transparent);
+    /* The shared hairline must re-derive here, not in tokens.css: custom
+       properties resolve var() at computed-value time where they are
+       declared, so the :root --fg-20 bakes in :root's black --fg and
+       inherits as black-at-20% everywhere — invisible on dark surfaces. */
+    --fg-20: color-mix(in srgb, var(--fg) 20%, transparent);
     --fg-30: color-mix(in srgb, var(--fg) 30%, transparent);
     --fg-60: color-mix(in srgb, var(--fg) 60%, transparent);
     --fg-80: color-mix(in srgb, var(--fg) 80%, transparent);

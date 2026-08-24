@@ -21,9 +21,10 @@
   --bg-60: rgba(255, 255, 255, 0.6);
   --fg-12: rgba(0, 0, 0, 0.12);
   /* Shared hairline opacity: every divider and resting border uses --fg-20
-     so hairlines read identically site-wide. Declared as color-mix (not a
-     hardcoded rgba) so it re-derives from each surface role's --fg at the
-     point of use — dark/brand sections get a 20% white hairline for free. */
+     so hairlines read identically site-wide. This :root value is only the
+     light-surface fallback — custom properties resolve var() where they are
+     declared, so SurfaceSection re-declares --fg-20 (next to --fg-12/30/60/80)
+     to re-derive it from each surface role's --fg. */
   --fg-20: color-mix(in srgb, var(--fg) 20%, transparent);
   --fg-60: rgba(0, 0, 0, 0.6);
 

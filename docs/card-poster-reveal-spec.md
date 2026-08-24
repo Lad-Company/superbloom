@@ -10,7 +10,7 @@ Status: proposed (spec only, no implementation). Sibling to
 Let editors attach a curated **Poster Image** to a video card. A poster card is
 **dormant** — the video does not load or play — until the visitor interacts
 (hover, keyboard focus, or tap). On interaction the poster **slides up and away**
-(240ms, the hover-reveal token) to reveal the video, which starts playing. On
+(480ms, `--motion-standard`) to reveal the video, which starts playing. On
 mouse-leave/blur the poster slides back and the video pauses.
 
 Applies to **every content card surface site-wide** (work grid, `HomeWork`,
@@ -173,7 +173,8 @@ A new named recipe under the Content Card family in `docs/design-system.md`
   `translateY(-100%)` (slides up off the top); conceal reverses it. The frame
   must clip (`overflow: clip` on the media frame) so the traveling poster
   never paints outside the card.
-- **Timing:** `--motion-quick` (240ms — the "hover + all reveals" token),
+- **Timing:** `--motion-standard` (480ms — slowed from `--motion-quick` after
+  visual QA; the reveal reads as a curtain lift, not a snap),
   `--motion-ease-out` (`cubic-bezier(0.22,0.8,0.2,1)`), same duration/easing in
   both directions. No stagger, no opacity fade, no delay.
 - **Direction rationale:** upward reads as lifting a curtain and rhymes with
@@ -249,7 +250,7 @@ Site (desktop):
 
 - A poster card is still at rest: no video motion, and the Network panel shows
   no Mux segment requests before the first interaction.
-- Hover slides the poster up off the card in ~240ms; the revealed frame shows
+- Hover slides the poster up off the card in ~480ms; the revealed frame shows
   the video's still immediately (no gray box) and starts playing shortly
   after. Mouse-leave slides the poster back and the video pauses. Re-hover is
   instant (no reload stutter).

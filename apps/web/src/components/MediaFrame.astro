@@ -851,7 +851,7 @@ const imageRendering =
   }
 
   /* Poster Slide (design-system §5, Content Card family): transform-only,
-     --motion-quick / --motion-ease-out in both directions, no fade, no
+     --motion-standard / --motion-ease-out in both directions, no fade, no
      stagger. The reveal lands on the Mux thumbnail layer underneath, so the
      frame never shows a gray box. */
   .media-frame__curated-poster {
@@ -861,7 +861,7 @@ const imageRendering =
     height: 100%;
     object-fit: cover;
     pointer-events: none;
-    transition: transform var(--motion-quick) var(--motion-ease-out);
+    transition: transform var(--motion-standard) var(--motion-ease-out);
   }
 
   .media-frame[revealed] .media-frame__curated-poster {

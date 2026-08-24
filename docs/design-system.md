@@ -72,7 +72,10 @@ The primary design file is
   never has a radius). There is no separate field radius.
 - Hairlines: every divider and resting border uses one shared opacity,
   `--fg-20` (20% of the surface foreground), declared as a `color-mix` in
-  `tokens.css` so it re-derives per Surface Role. Interaction states (focus
+  `tokens.css` (light-surface fallback) and re-derived per Surface Role in
+  `SurfaceSection.astro` — custom properties resolve `var(--fg)` where they
+  are declared, so the per-surface re-declaration is what makes dark/brand
+  sections get a 20% white hairline. Interaction states (focus
   rings, hover strokes) may go stronger; resting chrome never diverges.
 - Frosted overlay: `--frosted-layer` at `--frosted-layer-blur` 35px.
 
@@ -451,7 +454,7 @@ Named Content Card recipes:
 - **Poster Slide** — a video card with a curated Poster Image (`mediaBox.poster`)
   rests dormant; on hover/focus/tap the poster slides up and away,
   `translateY(0)` → `translateY(-100%)`, and slides back on leave/blur.
-  Transform only, `--motion-quick` (240ms) + `--motion-ease-out` in both
+  Transform only, `--motion-standard` (480ms) + `--motion-ease-out` in both
   directions, no opacity fade, no stagger, no delay; the frame clips the
   traveling poster (`overflow: clip`). Upward reads as lifting a curtain and
   rhymes with the Type Reveal's rise — direction is systemic, never per-card.
