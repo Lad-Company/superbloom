@@ -68,7 +68,9 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
      wrap to every line instead of truncation. */
   .hero-heading {
     margin: 0;
-    max-width: 21ch;
+    /* 28ch floor: titles get at least ~28 characters of flow per line before
+       wrapping (the old 21ch broke even mid-length titles too early). */
+    max-width: 28ch;
     display: block;
     overflow: visible;
   }

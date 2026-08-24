@@ -2,14 +2,14 @@ import type {APIContext} from 'astro'
 import {afterEach, describe, expect, it, vi} from 'vitest'
 import {validatePreviewUrl} from '@sanity/preview-url-secret'
 import {GET} from './enable'
-import {PREVIEW_COOKIE, PREVIEW_INACTIVE_COOKIE} from '../../../lib/preview'
+import {PREVIEW_COOKIE} from '../../../lib/preview'
 
 vi.mock('@sanity/preview-url-secret', () => ({validatePreviewUrl: vi.fn()}))
 
 const mockedValidate = vi.mocked(validatePreviewUrl)
 
 const context = () => ({
-  cookies: {set: vi.fn(), delete: vi.fn()},
+  cookies: {set: vi.fn()},
   url: new URL('http://localhost:4321/api/preview/enable?sanity-preview-secret=abc'),
   redirect: (path: string, status?: number) =>
     new Response(null, {status: status ?? 302, headers: {location: path}}),
@@ -55,10 +55,6 @@ describe('preview enable route', () => {
     expect(res.status).toBe(302)
     expect(res.headers.get('location')).toBe('/work')
     expect(res.headers.get('Cache-Control')).toBe('no-store')
-
-    // A real session replaces the "preview inactive" marker from a previous
-    // cookie-less Open preview landing.
-    expect(ctx.cookies.delete).toHaveBeenCalledWith(PREVIEW_INACTIVE_COOKIE, {path: '/'})
   })
 
   it('is unavailable when the read token is not configured', async () => {

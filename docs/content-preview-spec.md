@@ -355,3 +355,29 @@ markup + `Cache-Control` + `x-vercel-cache`).
   singleton existed with a null secret, so every outstanding share link got
   a 401. Re-enabled via the API (equivalent to the tool's Share toggle);
   rotation remains "toggle Share access off/on in the tool" per §10.
+
+---
+
+## 12. "Open preview" new-tab behavior (decision, 2026-08-24)
+
+The Presentation tool's **Open preview** button opens the bare current
+location plus a `sanity-preview-perspective` query param (verified in the
+installed `sanity@6.9.2` bundle; there is no config hook to make it use the
+signed enable URL). The new tab is therefore draft-mode only when the
+`sb_preview` cookie — set cross-site inside the Studio iframe — carries
+over: yes under Chrome defaults, no under Firefox's cookie partitioning,
+Safari ITP, Chrome with third-party cookies blocked, or after the 8-hour
+`Max-Age` lapses.
+
+An "inactive preview" pill (param detection + a site-wide marker cookie)
+was implemented to flag that case and **rejected the same day**: the marker
+made the notice follow the editor across the whole site, and the
+alternative — trusting the bare param to activate drafts — was rejected on
+security grounds (the param is public knowledge from Sanity's open source;
+drafts can be unreleased client work).
+
+Accepted behavior: when the cookie is missing, the new tab shows published
+content silently; the PreviewBar pill only ever means "preview is active".
+Editors on cookie-blocking browsers should open the **Share** menu's signed
+link instead — it is a top-level navigation through `/api/preview/enable`,
+which sets the cookie first-party and always activates preview.

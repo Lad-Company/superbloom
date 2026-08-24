@@ -70,6 +70,10 @@ The primary design file is
 - Layout: `--page-gutter` 24px, `--page-inset` 32px.
 - Radius: `--radius-control` 6px (tags + buttons only); `--radius-media` 0 (media
   never has a radius). There is no separate field radius.
+- Hairlines: every divider and resting border uses one shared opacity,
+  `--fg-25` (25% of the surface foreground), declared as a `color-mix` in
+  `tokens.css` so it re-derives per Surface Role. Interaction states (focus
+  rings, hover strokes) may go stronger; resting chrome never diverges.
 - Frosted overlay: `--frosted-layer` at `--frosted-layer-blur` 35px.
 
 ### Layout and responsive ranges
@@ -261,7 +265,7 @@ eyebrows, nav labels, and order stay in lockstep.
   between **Quantitative** (default: numeric grid with the count-up animation;
   surface set by `backgroundColor`, `primary` / `secondary`, default
   `primary`) and **Qualitative** (full-width statement bands stacked in a
-  column on the primary brand surface, separated by the same `--fg-12`
+  column on the primary brand surface, separated by the same `--fg-25`
   hairline as the contact footer divider; no count-up, `backgroundColor`
   does not apply).
 - **Press:** 0–3 unique News items, rendered only if at least one resolves.

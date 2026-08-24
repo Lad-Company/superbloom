@@ -38,7 +38,10 @@
 .surface-wipe::before {
   content: '';
   position: absolute;
-  inset: 0;
+  /* 1px overscan past the box so the fill covers the control edge-to-edge —
+     at inset 0, subpixel rounding along the border-radius clip left slivers
+     of the resting background visible on hover. */
+  inset: -1px;
   z-index: 1;
   background: var(--wipe-surface, currentColor);
   transform: scaleY(0);

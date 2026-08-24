@@ -7,7 +7,7 @@
   padding: 0 var(--space-2xs);
   appearance: none;
   background: transparent;
-  border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
+  border: 1px solid var(--fg-25);
   border-radius: var(--radius-control);
   color: var(--fg);
   font-family: var(--font-body);
@@ -25,7 +25,7 @@
 }
 .input--filled {
   background: var(--fg);
-  border-color: color-mix(in srgb, var(--fg) 12%, transparent);
+  border-color: var(--fg-25);
   color: var(--bg);
 }
 .input--message {

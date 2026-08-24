@@ -1,7 +1,7 @@
 import type {APIRoute} from 'astro'
 import {validatePreviewUrl} from '@sanity/preview-url-secret'
 import {getSanityClient} from '../../../lib/sanity'
-import {PREVIEW_COOKIE, PREVIEW_INACTIVE_COOKIE} from '../../../lib/preview'
+import {PREVIEW_COOKIE} from '../../../lib/preview'
 
 // Enables draft mode for requests carrying a Studio-signed preview URL — the
 // Presentation pane and share links both land here. The secret is validated
@@ -32,9 +32,6 @@ export const GET: APIRoute = async ({cookies, url, redirect}) => {
     path: '/',
     maxAge: 60 * 60 * 8,
   })
-  // The session is real now — drop the "preview inactive" marker so the pill
-  // flips from the inactive notice to the live Exit affordance.
-  cookies.delete(PREVIEW_INACTIVE_COOKIE, {path: '/'})
 
   const response = redirect(redirectTo ?? '/')
   response.headers.set('Cache-Control', 'no-store')
