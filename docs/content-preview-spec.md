@@ -318,3 +318,40 @@ Recorded at implementation time against the installed `sanity@4.22` +
   finds no targets and no click-to-edit UI appears. Cost: the overlay
   runtime (~1 MB unminified in dev, lazy-loaded) ships with preview
   responses only — regular visitors never download it.
+
+---
+
+## 11. Staging breakage amendments (2026-08-21, ADR-0031)
+
+Three staging reports — no preview bar on opened links, "Unable to connect"
+in the pane on first visit, and a permanently empty "Documents on this
+page" — traced to two root causes plus one dead switch. All were diagnosed
+with a curl-only loop (mint a `sanity.previewUrlSecret` draft with the write
+token → hit `/api/preview/enable` → re-fetch with the cookie and assert on
+markup + `Cache-Control` + `x-vercel-cache`).
+
+- **The edge cache hijacked preview requests (both link and pane).** §3.4's
+  `no-store` on preview responses protected the public from drafts, but not
+  editors from the public cache: Vercel keys its edge cache by URL, not
+  cookie, so any URL with a live public copy (60s fresh + **24h
+  stale-while-revalidate**) served the published page to cookie-carrying
+  requests. That page carries no `@sanity/visual-editing` script (the comlink
+  handshake times out — "Unable to connect"), no `PreviewBar`, no
+  `data-preview`, and GA on. One cookie-less visit to a URL poisoned preview
+  on it for up to a day, which is why the failures read as intermittent /
+  "first visit". Fix: content HTML is never shared-cached — `setContentCache`
+  sends `private, no-cache` for published responses (preview stays
+  `no-store`); `setPublicCache` remains for cookie-independent endpoints
+  (sitemap). Measured trade in ADR-0031; the path back to edge-cached HTML
+  is ISR + `bypassToken`, never TTL tuning.
+- **"No matching documents" was a missing `resolve.mainDocuments`.** The
+  pane's only feeds are overlay-reported stega refs (deliberately absent,
+  §2.4) and the URL→document `mainDocuments` map, which was never
+  configured. `presentation.ts` now maps every routable surface (`/`,
+  `/index`, `/work(/:slug)`, `/who-we-are`, `/articles/:slug`, `/zine`,
+  `/zine/issues/:slug(/read)`, `/zine/issues/:issueSlug/:articleSlug`);
+  Shopify surfaces have no Sanity document and stay unmapped.
+- **Share access was off.** The `sanity-preview-url-secret.share-access`
+  singleton existed with a null secret, so every outstanding share link got
+  a 401. Re-enabled via the API (equivalent to the tool's Share toggle);
+  rotation remains "toggle Share access off/on in the tool" per §10.

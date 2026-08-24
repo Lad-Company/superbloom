@@ -1,5 +1,5 @@
 import {getPublishedId} from 'sanity'
-import {defineLocations, presentationTool} from 'sanity/presentation'
+import {defineDocuments, defineLocations, presentationTool} from 'sanity/presentation'
 import type {DocumentLocationResolver, DocumentLocationResolverObject} from 'sanity/presentation'
 import {catchError, map, of} from 'rxjs'
 import {ARTICLE_LOCATIONS_QUERY, resolveArticleLocations} from './articleLocations'
@@ -63,6 +63,33 @@ export const presentation = presentationTool({
     },
   },
   resolve: {
+    // URL → document, for the tool's "Documents on this page" pane. Without
+    // this map the pane is empty by construction ("No matching documents"):
+    // its only other feed is overlay-reported stega/data-sanity refs, which
+    // this site deliberately does not emit (no Visual Editing overlays,
+    // docs/content-preview-spec.md §2.4). Locations below are the reverse
+    // direction (document → URL) and cannot populate the pane.
+    mainDocuments: defineDocuments([
+      {route: '/', type: 'homepage'},
+      {route: '/index', type: 'indexPage'},
+      {route: '/work', type: 'workIndex'},
+      {route: '/work/:slug', filter: `_type == "caseStudy" && slug.current == $slug`},
+      {route: '/who-we-are', type: 'whoWeAre'},
+      {route: '/articles/:slug', filter: `_type == "article" && slug.current == $slug`},
+      {route: '/zine', type: 'zineLanding'},
+      {route: '/zine/issues/:slug', filter: `_type == "zineIssue" && slug.current == $slug`},
+      // The reader view belongs to the issue; it must precede the generic
+      // article route or "read" is matched as an article slug.
+      {
+        route: '/zine/issues/:issueSlug/read',
+        filter: `_type == "zineIssue" && slug.current == $issueSlug`,
+      },
+      {
+        route: '/zine/issues/:issueSlug/:articleSlug',
+        filter: `_type == "article" && articleType == "zine" && slug.current == $articleSlug`,
+      },
+      // /shop and /cart are Shopify-owned surfaces with no Sanity document.
+    ]),
     locations: {
       homepage: defineLocations({locations: [{title: 'Homepage', href: '/'}]}),
       workIndex: defineLocations({locations: [{title: 'Work', href: '/work'}]}),
