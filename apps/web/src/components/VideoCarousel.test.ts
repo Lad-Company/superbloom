@@ -84,7 +84,7 @@ describe('Video Carousel', () => {
   it('styles prev/next like the Card Carousel, grouped below the track', () => {
     expect(source).toContain('class="control previous surface-wipe"')
     expect(source).toContain('class="control next surface-wipe"')
-    expect(source).toContain('border: 1px solid var(--fg-25)')
+    expect(source).toContain('border: 1px solid var(--fg-20)')
     expect(source).toContain('border-radius: var(--radius-control)')
     // Same spacing as the Card Carousel's control group.
     expect(source).toContain('gap: var(--space-3xs)')

@@ -20,11 +20,11 @@
   --bg-20: rgba(255, 255, 255, 0.2);
   --bg-60: rgba(255, 255, 255, 0.6);
   --fg-12: rgba(0, 0, 0, 0.12);
-  /* Shared hairline opacity: every divider and resting border uses --fg-25
+  /* Shared hairline opacity: every divider and resting border uses --fg-20
      so hairlines read identically site-wide. Declared as color-mix (not a
      hardcoded rgba) so it re-derives from each surface role's --fg at the
-     point of use — dark/brand sections get a 25% white hairline for free. */
-  --fg-25: color-mix(in srgb, var(--fg) 25%, transparent);
+     point of use — dark/brand sections get a 20% white hairline for free. */
+  --fg-20: color-mix(in srgb, var(--fg) 20%, transparent);
   --fg-60: rgba(0, 0, 0, 0.6);
 
   /* Contained Control (button) tokens — resolve to pure black/white by surface

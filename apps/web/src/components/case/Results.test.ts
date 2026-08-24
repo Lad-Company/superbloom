@@ -20,7 +20,7 @@ describe('Case Study Results variants', () => {
   })
 
   it('separates qualitative bands with the contact-footer hairline', () => {
-    expect(source).toContain('border-top: 1px solid var(--fg-25)')
+    expect(source).toContain('border-top: 1px solid var(--fg-20)')
   })
 
   it('renders qualitative statements with display type and a caption, no count-up hook', () => {
