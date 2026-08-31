@@ -20,8 +20,8 @@ const {issues} = Astro.props;
     <nav class="past-issues" aria-labelledby="past-issues-heading">
       <h2 id="past-issues-heading" class="type-h3">Past Zines</h2>
       <ul>
-        {issues.map((issue, index) => (
-          <li class:list={{featured: index === 0}}>
+        {issues.map((issue) => (
+          <li>
             <a href={`/zine/issues/${issue.slug}`}>
               <MediaFrame
                 media={issue.cardMedia}
@@ -61,30 +61,47 @@ const {issues} = Astro.props;
     gap: 0;
   }
 
-  /* Non-featured rows are inset with a hairline divider; the featured row's
-     pink band bleeds to the section edges (Figma Past Zines). */
+  /* Rows are inset with a hairline divider; the pink band is the hover
+     state (Figma Past Zines), not a permanent treatment on any row. The band
+     bleeds past the row inset to the viewport edges via a ::before layer. */
   li {
+    position: relative;
     margin-inline: var(--page-inset);
     border-top: 1px solid var(--fg-20);
   }
 
-  li.featured {
-    --item-bg: var(--pink);
-    --item-fg: var(--pink-fg);
-    margin-inline: 0;
-    padding-inline: var(--page-inset);
-    border-top: 0;
-    background: var(--item-bg);
+  li::before {
+    content: '';
+    position: absolute;
+    inset: 0 calc(-1 * var(--page-inset));
+    background: var(--pink);
+    opacity: 0;
+    transition: opacity var(--motion-quick) var(--motion-ease-out);
+  }
+
+  li:hover::before {
+    opacity: 1;
+  }
+
+  /* No hairline across the band's top edge while it shows. */
+  li:hover {
+    border-top-color: transparent;
   }
 
   a {
+    position: relative;
     display: grid;
     grid-template-columns: 210px minmax(0, 1fr) auto;
     align-items: center;
     gap: var(--space-2xs);
     padding-block: var(--space-2xs);
-    color: var(--item-fg, #fff);
+    color: #fff;
     text-decoration: none;
+    transition: color var(--motion-quick) var(--motion-ease-out);
+  }
+
+  li:hover a {
+    color: var(--pink-fg);
   }
 
   media-frame {

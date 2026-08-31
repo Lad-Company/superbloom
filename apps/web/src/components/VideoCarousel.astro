@@ -89,15 +89,23 @@ const slideNumber = (index: number) =>
               aria-label={`${slideNumber(index)} of ${ordered.length}`}
               style={`--ratio: ${ratios[index]};`}
             >
-              <MediaFrame
-                media={video}
-                ratio="intrinsic"
-                controls="full"
-                placement={{context: 'layoutBlock', width: 'full'}}
-                active={index === initialIndex}
-                priority={index === initialIndex}
-                title={video.altText}
-              />
+              {/* The recede scale lives on this inner wrapper, not on the
+                  slide itself: the slide's border box is its scroll-snap
+                  area, and Chrome resolves snap destinations from the
+                  *transformed* box — a scaled slide snaps 0.04·width off its
+                  anchor, clipping its leading edge (and the Media Control
+                  Bar) under the track. */}
+              <div class="slide-inner">
+                <MediaFrame
+                  media={video}
+                  ratio="intrinsic"
+                  controls="full"
+                  placement={{context: 'layoutBlock', width: 'full'}}
+                  active={index === initialIndex}
+                  priority={index === initialIndex}
+                  title={video.altText}
+                />
+              </div>
             </div>
           ))}
         </div>
@@ -109,7 +117,11 @@ const slideNumber = (index: number) =>
               data-motion-control
               aria-label="Previous video"
             >
-              <span class="control__icon" aria-hidden="true">←</span>
+              <span class="control__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
             </button>
             <button
               type="button"
@@ -117,7 +129,11 @@ const slideNumber = (index: number) =>
               data-motion-control
               aria-label="Next video"
             >
-              <span class="control__icon" aria-hidden="true">→</span>
+              <span class="control__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
             </button>
           </div>
         )}
@@ -241,21 +257,38 @@ const slideNumber = (index: number) =>
       this.slideHandlers = []
     }
 
+    /** How far a slide sits from its anchor, in layout geometry: 0 when the
+     *  slide's text-side edge (split) or center (full) rests exactly on the
+     *  anchor. Derived from offset* properties rather than
+     *  getBoundingClientRect so the recede/grow scale transform never
+     *  pollutes the measurement — a rect read mid-transition mis-anchors the
+     *  slide by the shrink offset, leaving its leading edge (and the Media
+     *  Control Bar on it) clipped under the track's edge. */
+    private anchorDelta(slide: HTMLElement): number {
+      const track = this.track
+      if (!track) return 0
+      const style = getComputedStyle(track)
+      const padLeft = parseFloat(style.paddingLeft) || 0
+      const padRight = parseFloat(style.paddingRight) || 0
+      const contentWidth = track.clientWidth - padLeft - padRight
+      // offsetLeft is measured from the nearest positioned ancestor (the
+      // stage) for both the track and the slide, so their difference is the
+      // slide's layout position inside the track, scroll- and transform-free
+      // until scrollLeft is subtracted.
+      const left = slide.offsetLeft - track.offsetLeft - padLeft - track.scrollLeft
+      const width = slide.offsetWidth
+      if (!this.anchored) return left + width / 2 - contentWidth / 2
+      return this.layout === 'textRight' ? left + width - contentWidth : left
+    }
+
     /** The active slide is whichever sits at the anchor: closest to the
      *  text-side track edge in split layouts, or to the center otherwise. */
     private nearestIndex(): number {
       if (!this.track) return 0
-      const trackRect = this.track.getBoundingClientRect()
-      const center = trackRect.left + trackRect.width / 2
       let best = 0
       let bestDistance = Infinity
       this.slides.forEach((slide, index) => {
-        const rect = slide.getBoundingClientRect()
-        const distance = this.anchored
-          ? this.layout === 'textRight'
-            ? Math.abs(rect.right - trackRect.right)
-            : Math.abs(rect.left - trackRect.left)
-          : Math.abs(rect.left + rect.width / 2 - center)
+        const distance = Math.abs(this.anchorDelta(slide))
         if (distance < bestDistance) {
           bestDistance = distance
           best = index
@@ -303,19 +336,14 @@ const slideNumber = (index: number) =>
     }
 
     /** Scrolls so the given slide lands on the anchor: the text-side track
-     *  edge in split layouts, or the track's center otherwise. */
+     *  edge in split layouts, or the track's center otherwise. The delta is
+     *  transform-free (see anchorDelta), so the target always equals the
+     *  scroll-snap position exactly. */
     private scrollToSlide(index: number, behavior: ScrollBehavior) {
       if (!this.track) return
       const slide = this.slides[index]
       if (!slide) return
-      const trackRect = this.track.getBoundingClientRect()
-      const slideRect = slide.getBoundingClientRect()
-      const delta = this.anchored
-        ? this.layout === 'textRight'
-          ? slideRect.right - trackRect.right
-          : slideRect.left - trackRect.left
-        : slideRect.left + slideRect.width / 2 - (trackRect.left + trackRect.width / 2)
-      this.track.scrollTo({left: this.track.scrollLeft + delta, behavior})
+      this.track.scrollTo({left: this.track.scrollLeft + this.anchorDelta(slide), behavior})
     }
 
     private goTo(index: number) {
@@ -448,8 +476,13 @@ const slideNumber = (index: number) =>
     width: min(var(--slide-w), calc(var(--cap-h) * var(--ratio)));
     scroll-snap-align: center;
     position: relative;
-    /* Receded state: neighbours shrink and dim so the anchored video sits
-       slightly forward in space. */
+  }
+
+  /* Receded state: neighbours shrink and dim so the anchored video sits
+     slightly forward in space. The transform must stay on this inner
+     wrapper — on the slide it would distort the scroll-snap area (see the
+     slide-inner comment in the markup). */
+  .slide-inner {
     transform: scale(0.92);
     opacity: 0.55;
     transition:
@@ -458,9 +491,12 @@ const slideNumber = (index: number) =>
   }
 
   .slide[data-active] {
+    z-index: 2;
+  }
+
+  .slide[data-active] .slide-inner {
     transform: scale(1);
     opacity: 1;
-    z-index: 2;
   }
 
   /* Only the anchored video shows its Media Control Bar and receives
@@ -506,8 +542,12 @@ const slideNumber = (index: number) =>
   }
 
   .control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
     height: 40px;
+    padding: 0;
     border: 1px solid var(--fg-20);
     border-radius: var(--radius-control);
     background: transparent;
@@ -525,6 +565,12 @@ const slideNumber = (index: number) =>
   .control__icon {
     position: relative;
     z-index: 2;
+    display: inline-flex;
+  }
+
+  .control__icon svg {
+    width: 16px;
+    height: 16px;
   }
 
   .control:focus-visible {
@@ -534,7 +580,7 @@ const slideNumber = (index: number) =>
 
   /* Without the carousel enhancement, native scroll + snap still browse the
      videos; show every slide plainly. */
-  video-carousel:not([data-enhanced]) .slide {
+  video-carousel:not([data-enhanced]) .slide-inner {
     transform: none;
     opacity: 1;
   }
@@ -570,7 +616,7 @@ const slideNumber = (index: number) =>
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .slide {
+    .slide-inner {
       transition: none;
     }
   }

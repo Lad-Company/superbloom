@@ -58,8 +58,28 @@ describe('Video Carousel', () => {
     expect(source).toContain('this.goTo(this.activeIndex - this.navDir)')
     expect(source).toContain('this.goTo(this.activeIndex + this.navDir)')
     // Anchored scrolling aligns the slide's text-side edge, not its center.
-    expect(source).toContain('slideRect.right - trackRect.right')
-    expect(source).toContain('slideRect.left - trackRect.left')
+    expect(source).toContain(
+      "return this.layout === 'textRight' ? left + width - contentWidth : left",
+    )
+    expect(source).toContain('this.track.scrollLeft + this.anchorDelta(slide)')
+  })
+
+  it('anchors slides by layout geometry so the recede scale never skews them', () => {
+    // getBoundingClientRect includes the 0.92 recede scale (and any
+    // mid-transition value); measuring with it mis-anchored the active slide
+    // by the shrink offset, leaving its leading edge — and the Media Control
+    // Bar's leading button — clipped under the track edge. offset* geometry
+    // is transform-free, so the scroll target always equals the snap
+    // position.
+    expect(source).toContain('slide.offsetLeft')
+    expect(source).toContain('slide.offsetWidth')
+    expect(source).not.toContain('getBoundingClientRect()')
+    // The recede scale lives on .slide-inner, not the slide: the slide's
+    // border box is its scroll-snap area, and Chrome resolves snap
+    // destinations from the transformed box, so a scaled slide snaps off its
+    // anchor by the shrink offset.
+    expect(source).toContain('class="slide-inner"')
+    expect(source).toContain('.slide[data-active] .slide-inner')
   })
 
   it('caps every video at the 16:9 slide height, whatever its ratio', () => {

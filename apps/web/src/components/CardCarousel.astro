@@ -63,11 +63,19 @@ const mergedNextProps = {
         {showControls && (
           <div class="controls" aria-label={`${heading ?? label} controls`}>
             <button {...mergedPreviousProps}>
-              <span class="control__icon" aria-hidden="true">←</span>
+              <span class="control__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
             </button>
             {showNextButton && (
               <button {...mergedNextProps}>
-                <span class="control__icon" aria-hidden="true">→</span>
+                <span class="control__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
               </button>
             )}
           </div>
@@ -164,8 +172,12 @@ const mergedNextProps = {
   }
 
   .control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 40px;
     height: 40px;
+    padding: 0;
     border: 1px solid var(--fg-20);
     border-radius: var(--radius-control);
     background: transparent;
@@ -178,6 +190,12 @@ const mergedNextProps = {
   .control__icon {
     position: relative;
     z-index: 2;
+    display: inline-flex;
+  }
+
+  .control__icon svg {
+    width: 16px;
+    height: 16px;
   }
 
   .control:focus-visible {
