@@ -246,8 +246,8 @@ guard):
 ## 7. Capes exclusion (explicit)
 
 `Capes.astro` is a Pinned Storytelling chapter: only the active/adjacent frame is
-visible, media is blurred (`blur(7.5px) scale(1.1)`) as a backdrop, and the "play
-head" is the scroll position, driven by `initPinnedStory`. A play/pause button or
+visible and the "play head" is the scroll position, driven by `initPinnedStory`.
+A play/pause button or
 scrubber there would fight the scroll scrub and misrepresent the interaction.
 Capes stays **Ambient with no controls**; its per-chapter `active` toggling and
 visibility pausing are unchanged.

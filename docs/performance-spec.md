@@ -56,11 +56,11 @@ HomeParallax `PointerFollowMedia` (a continuous rAF spring loop that calls
 mutation + a forced refresh in the first ~2 frames = synchronous reflow storms →
 startup jank, and Lenis fights the double scroll-settle.
 
-### RC4 — Sustained GPU blur on Capes media (`Capes.astro`)
-Each active/adjacent Capes frame paints a full-bleed image **or video** with
-`filter: blur(7.5px)` + `transform: scale(1.1)`, continuously. With video this is
-a per-frame blur of a moving texture during the pinned scrub, and all 8 players
-mount even though only one is visible.
+### RC4 — ~~Sustained GPU blur on Capes media~~ (`Capes.astro`) — RESOLVED
+The live `filter: blur(7.5px)` + `transform: scale(1.1)` on Capes media has been
+removed entirely, so the pinned scrub no longer composites a per-frame blurred
+moving texture. (All 8 players still mount even though only one is visible; the
+decode-cost half of this root cause lives on in C5.)
 
 ## Candidate fixes (prioritized)
 
@@ -121,10 +121,9 @@ animates smoothly (60fps, no blur compositing spikes in a Performance trace).
 Acceptance: Performance trace of the first 1s after load shows no long task /
 layout-thrash cluster; scrolling immediately after load is smooth.
 
-### C5 — Reduce Capes GPU + decode cost (`Capes.astro`) — MEDIUM
-- Replace the live `filter: blur(7.5px)` on media with a **pre-blurred poster**
-  (blurred Mux/Sanity thumbnail) or apply the blur to a cheaper static layer, so
-  the pinned scrub isn't compositing a live-blurred moving video.
+### C5 — Reduce Capes decode cost (`Capes.astro`) — MEDIUM
+- ~~Replace the live `filter: blur(7.5px)` on media~~ — done: the blur was
+  removed entirely rather than replaced with a pre-blurred poster.
 - Only mount/upgrade the mux-player for the **active + adjacent** frames; keep the
   rest as poster `<img>` until needed (pairs with C1). Avoids 8 concurrent HLS
   decodes.

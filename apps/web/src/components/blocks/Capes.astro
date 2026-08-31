@@ -73,21 +73,11 @@ const displayedCapabilities = capabilities.slice(0, 8);
     position: absolute;
     /* Oversized vertically so the data-depth scrub never pulls media past an
        edge: travel is ±depth*48% of stack height (±12.7% at depth 0.2 with
-       this height), inside the 16% bleed on each edge. Same bleed-and-clip
-       pattern as the blur scale below. */
+       this height), inside the 16% bleed on each edge. */
     inset: -16% 0;
     /* Stacking context so the JS-set frame z-indexes stay below the overlay. */
     z-index: 0;
     overflow: clip;
-  }
-
-  /* Blur the media itself rather than the backdrop: a backdrop blur samples
-     past the section bounds and softens the edge, while blurring the media
-     with a scale bleed lets the stack clip to a hard edge. */
-  .frame :global(.media-frame img),
-  .frame :global(.media-frame mux-player) {
-    filter: blur(7.5px);
-    transform: scale(1.1);
   }
 
   .frame {
