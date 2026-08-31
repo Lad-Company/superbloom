@@ -44,3 +44,7 @@ jobs:
       - name: Build
         if: ${{ !cancelled() }}
         run: pnpm build
+
+      - name: Guard SSR graph against client-only imports
+        if: ${{ !cancelled() }}
+        run: pnpm --filter web run check:ssr

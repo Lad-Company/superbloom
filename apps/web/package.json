@@ -11,7 +11,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "typecheck": "astro check",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:ssr": "node scripts/check-ssr-imports.mjs"
   },
   "dependencies": {
     "@astrojs/vercel": "^10.0.8",

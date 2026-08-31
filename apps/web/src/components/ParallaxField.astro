@@ -1,6 +1,10 @@
 ---
 import MediaFrame, {type Media} from './MediaFrame.astro'
-import {PARALLAX_FIELD} from '../lib/motion'
+// Frontmatter must import from 'lib/motion/config' directly, never the
+// 'lib/motion' barrel: the barrel re-exports modules that top-level-import
+// gsap (client-only), and a client lib in the SSR graph crashes the Vercel
+// function at module load. CI enforces this via `pnpm check:ssr`.
+import {PARALLAX_FIELD} from '../lib/motion/config'
 
 interface Props {
   media: (Media | null)[]
