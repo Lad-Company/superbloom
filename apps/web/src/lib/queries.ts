@@ -496,6 +496,27 @@ export const indexViewAllOldestQuery = defineQuery(`
   }
 `)
 
+// Optional 50/50-style feature above the shop product grid. Reuses the
+// case-study content blocks (media + text with CMS widths) plus a CTA; the
+// schema requires all three once the section exists.
+export const shopPageQuery = defineQuery(`
+  *[_id == "shopPage"][0]{
+    featured{
+      ctaLabel,
+      ctaHref,
+      media{
+        width,
+        aspectRatio,
+        "media": media${mediaProjection}
+      },
+      text{
+        width,
+        text
+      }
+    }
+  }
+`)
+
 export const siteSettingsQuery = defineQuery(`
   *[_type == "siteSettings"][0]{
     instagramUrl,

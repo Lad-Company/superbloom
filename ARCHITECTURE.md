@@ -74,7 +74,8 @@ API glue (`apps/web/src/pages/api/*`).
 - `/who-we-are` — Fixed art-directed page (`whoWeAre` singleton)
 - `/articles/[slug]` — News / Editorial Article detail
 - `/zine`, `/zine/issues/[slug]`, `/zine/issues/[slug]/[article]`
-- `/shop`, `/shop/products/[handle]`, `/cart`
+- `/shop`, `/shop/products/[handle]`, `/cart` (`/shop` optionally leads with a
+  CMS-authored Featured Item from the `shopPage` singleton)
 - `robots.txt`, `sitemap.xml`, `404`
 
 ## 6. Content model (schemas)
@@ -83,7 +84,7 @@ Authoritative shape lives in `packages/schemas/src`; the intent is in
 `docs/design-system.md` §3. In brief:
 
 - **Singletons:** `homepage`, `whoWeAre`, `siteSettings`, `workIndex`, `indexPage`,
-  `zineLanding`.
+  `zineLanding`, `shopPage`.
 - **Documents:** `caseStudy`, `article` (unified News/Editorial/Zine via a
   visible, required `articleType` select), `zineIssue`, `capability`, `tag`,
   `formSubmission`.

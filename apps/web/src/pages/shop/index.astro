@@ -3,7 +3,11 @@ import Layout from '../../layouts/Layout.astro'
 import Footer from '../../components/Footer.astro'
 import PageHero from '../../components/PageHero.astro'
 import ProductGrid from '../../components/shop/ProductGrid.astro'
+import ShopFeature from '../../components/shop/ShopFeature.astro'
 import {listProducts} from '../../lib/shopify'
+import {getSanityClient} from '../../lib/sanity'
+import {isPreviewRequest} from '../../lib/preview'
+import {shopPageQuery} from '../../lib/queries'
 
 const cursor = Astro.url.searchParams.get('after')
 let result: Awaited<ReturnType<typeof listProducts>> | null = null
@@ -13,11 +17,20 @@ try {
 } catch {
   error = true
 }
+
+// Optional CMS feature above the product grid; a CMS outage never takes
+// the shop down with it.
+async function fetchFeatured() {
+  const shopPage = await getSanityClient(isPreviewRequest(Astro.cookies)).fetch(shopPageQuery)
+  return shopPage?.featured ?? null
+}
+const featured = await fetchFeatured().catch(() => null)
 ---
 
 <Layout title="Shop | Superbloom House" navRole="dark">
   <main>
     <PageHero heading="Shop" />
+    <ShopFeature featured={featured} />
     {
       error ? (
         <p class="message">Unable to load products. Please try again.</p>

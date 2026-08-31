@@ -1,0 +1,122 @@
+---
+import MediaFrame, {type Media, type MediaRatio} from '../MediaFrame.astro'
+import PortableText from '../PortableText.astro'
+import Button from '../Button.astro'
+import type {TypedObject} from 'astro-portabletext/types'
+import type {ContentLayoutWidth} from '../../lib/contentLayout'
+
+// Featured shop item: the same media/copy split structure as the zine
+// Letter from the Editor, but the column widths are CMS-defined with the
+// case-study Content Layout widths (media + text must total full width).
+interface Props {
+  featured: {
+    ctaLabel?: string | null
+    ctaHref?: string | null
+    media?: {
+      width?: ContentLayoutWidth | null
+      aspectRatio?: MediaRatio | null
+      media?: Media | null
+    } | null
+    text?: {
+      width?: ContentLayoutWidth | null
+      text?: TypedObject[] | null
+    } | null
+  } | null
+}
+
+const {featured} = Astro.props
+
+// Twelfths of the 12-column grid, mirroring the content layout contract.
+const WIDTH_COLUMNS: Record<ContentLayoutWidth, number> = {
+  '1/4': 3,
+  '1/3': 4,
+  '1/2': 6,
+  '2/3': 8,
+  '3/4': 9,
+  full: 12,
+}
+
+const mediaBlock = featured?.media
+const textBlock = featured?.text
+// Render only a complete section; the CMS requires all parts, but a
+// published doc may predate that rule.
+const complete =
+  mediaBlock?.media && textBlock?.text?.length && featured?.ctaLabel && featured?.ctaHref
+
+const mediaColumns = WIDTH_COLUMNS[mediaBlock?.width ?? '1/2']
+const textColumns = WIDTH_COLUMNS[textBlock?.width ?? '1/2']
+---
+
+{
+  complete && (
+    <section
+      class="shop-feature"
+      aria-label="Featured"
+      style={`--media-columns: ${mediaColumns}; --text-columns: ${textColumns};`}
+    >
+      <div class="shop-feature-media">
+        <MediaFrame
+          media={mediaBlock.media}
+          ratio={mediaBlock.aspectRatio ?? '1:1'}
+          placement={{context: 'layoutBlock', width: mediaBlock.width ?? '1/2', fullBleed: false}}
+        />
+      </div>
+      <div class="shop-feature-copy">
+        <PortableText value={textBlock.text ?? []} class="type-body" />
+        <Button href={featured.ctaHref ?? undefined} label={featured.ctaLabel ?? ''} />
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .shop-feature {
+    display: grid;
+    grid-template-columns:
+      repeat(var(--media-columns), minmax(0, 1fr))
+      repeat(var(--text-columns), minmax(0, 1fr));
+    align-items: start;
+    /* Min 64px between the columns (page-gutter is 24px), same as the
+       zine Letter from the Editor split. */
+    gap: max(var(--space-m), var(--page-gutter));
+    padding: clamp(var(--space-3xl), 14vw, var(--space-4xl)) var(--page-inset);
+  }
+
+  .shop-feature-media,
+  .shop-feature-copy {
+    min-width: 0;
+  }
+
+  .shop-feature-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: var(--space-xs);
+  }
+
+  .shop-feature-copy :global(.portable-text) {
+    text-box-trim: trim-both;
+    text-box-edge: cap alphabetic;
+  }
+
+  .shop-feature-copy :global(.portable-text p) {
+    margin: 0 0 var(--space-xs);
+  }
+
+  .shop-feature-copy :global(.portable-text p:last-child) {
+    margin-bottom: 0;
+  }
+
+  @media (--bp-below-desktop) {
+    .shop-feature {
+      grid-template-columns: 1fr;
+      gap: var(--space-m);
+    }
+  }
+
+  @media (--bp-small) {
+    .shop-feature {
+      padding-block: var(--space-xs);
+    }
+  }
+</style>

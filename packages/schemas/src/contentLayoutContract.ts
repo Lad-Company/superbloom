@@ -15,7 +15,9 @@ type ContentLayoutRow = {
 
 // Widths as twelfths of the 12-column grid, so multi-block totals compare
 // exactly (1/3 + 1/3 + 1/3 is not exactly 1 in floating point).
-const WIDTH_COLUMNS: Record<string, number> = {
+// Exported for other split-layout contracts (e.g. the Shop Page Featured
+// Item) that hold blocks to the same total-full-width rule.
+export const WIDTH_COLUMNS: Record<string, number> = {
   '1/4': 3,
   '1/3': 4,
   '1/2': 6,
@@ -23,7 +25,7 @@ const WIDTH_COLUMNS: Record<string, number> = {
   '3/4': 9,
   full: 12,
 }
-const FULL_WIDTH_COLUMNS = 12
+export const FULL_WIDTH_COLUMNS = 12
 
 export const MAX_ROW_BLOCKS = 4
 

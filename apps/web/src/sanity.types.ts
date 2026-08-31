@@ -121,6 +121,20 @@ export type SiteSettings = {
   }
 }
 
+export type ShopPage = {
+  _id: string
+  _type: 'shopPage'
+  _createdAt: string
+  _updatedAt: string
+  _rev: string
+  featured?: {
+    media?: ContentLayoutMedia
+    text?: ContentLayoutText
+    ctaLabel?: string
+    ctaHref?: string
+  }
+}
+
 export type ArticleReference = {
   _ref: string
   _type: 'reference'
@@ -973,6 +987,7 @@ export type AllSanitySchemaTypes =
   | ContentLayoutText
   | ContentLayoutMedia
   | SiteSettings
+  | ShopPage
   | ArticleReference
   | TagReference
   | IndexPage
@@ -3877,6 +3892,75 @@ export type IndexViewAllOldestQueryResult = Array<{
 }>
 
 // Source: ../web/src/lib/queries.ts
+// Variable: shopPageQuery
+// Query: *[_id == "shopPage"][0]{    featured{      ctaLabel,      ctaHref,      media{        width,        aspectRatio,        "media": media{  "asset": asset[defined(asset._ref)][0]{    _type,    _type == "image" => {      asset,      crop,      hotspot,      "width": asset->metadata.dimensions.width,      "height": asset->metadata.dimensions.height,      "mimeType": asset->mimeType    },    _type == "mux.video" => {      "playbackId": asset->playbackId,      "aspectRatio": asset->data.aspect_ratio    }  },  "poster": poster{    _type,    asset,    crop,    hotspot,    "width": asset->metadata.dimensions.width,    "height": asset->metadata.dimensions.height,    "mimeType": asset->mimeType  },  altText,  decorative}      },      text{        width,        text      }    }  }
+export type ShopPageQueryResult =
+  | {
+      featured: null
+    }
+  | {
+      featured: {
+        ctaLabel: string | null
+        ctaHref: string | null
+        media: {
+          width: '1/2' | '1/3' | '1/4' | '2/3' | '3/4' | 'full' | null
+          aspectRatio: '1:1' | '16:9' | '2:1' | '3:2' | '4:5' | '9:16' | 'intrinsic' | null
+          media: {
+            asset:
+              | {
+                  _type: 'image'
+                  asset: SanityImageAssetReference
+                  crop: SanityImageCrop | null
+                  hotspot: SanityImageHotspot | null
+                  width: number | null
+                  height: number | null
+                  mimeType: string | null
+                }
+              | {
+                  _type: 'mux.video'
+                  playbackId: string | null
+                  aspectRatio: string | null
+                }
+              | null
+            poster: {
+              _type: 'image'
+              asset: SanityImageAssetReference | null
+              crop: SanityImageCrop | null
+              hotspot: SanityImageHotspot | null
+              width: number | null
+              height: number | null
+              mimeType: string | null
+            } | null
+            altText: string | null
+            decorative: boolean | null
+          } | null
+        } | null
+        text: {
+          width: '1/2' | '1/3' | '1/4' | '2/3' | '3/4' | 'full' | null
+          text: Array<{
+            children?: Array<{
+              marks?: Array<string>
+              text?: string
+              _type: 'span'
+              _key: string
+            }>
+            style?: 'blockquote' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'normal'
+            listItem?: 'bullet' | 'number'
+            markDefs?: Array<{
+              href?: string
+              _type: 'link'
+              _key: string
+            }>
+            level?: number
+            _type: 'block'
+            _key: string
+          }> | null
+        } | null
+      } | null
+    }
+  | null
+
+// Source: ../web/src/lib/queries.ts
 // Variable: siteSettingsQuery
 // Query: *[_type == "siteSettings"][0]{    instagramUrl,    linkedInUrl,    vimeoUrl,    youTubeUrl,    cardDefaults  }
 export type SiteSettingsQueryResult = {
@@ -3935,6 +4019,7 @@ declare module '@sanity/client' {
     '\n  *[_id == "indexPage"][0]{\n    header,\n    featured[]{\n      _key,\n      "item": article->{\n        \n  _id,\n  _type,\n  articleType,\n  title,\n  "slug": slug.current,\n  overview,\n  cardCtaLabel,\n  publicationDate,\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  "cardMedia": cardMedia{\n  "asset": asset[defined(asset._ref)][0]{\n    _type,\n    _type == "image" => {\n      asset,\n      crop,\n      hotspot,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "mimeType": asset->mimeType\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  "poster": poster{\n    _type,\n    asset,\n    crop,\n    hotspot,\n    "width": asset->metadata.dimensions.width,\n    "height": asset->metadata.dimensions.height,\n    "mimeType": asset->mimeType\n  },\n  altText,\n  decorative\n}\n\n      }\n    },\n    allSection{\n      listDefaults,\n      "tagId": tagFilter._ref,\n      itemOverrides[]{ "itemId": article._ref, cardWidth, mediaAspectRatio, infoPosition }\n    },\n    "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults\n  }\n': IndexPageQueryResult
     '\n  *[\n    _type == "article" &&\n    articleType in ["news", "editorial"] &&\n    (!defined($typeFilter) || articleType == $typeFilter) &&\n    !(_id in $featuredIds) &&\n    (!defined($tagId) || $tagId in tags[]._ref)\n  ] | order(publicationDate desc)[$offset...$end]{\n    \n  _id,\n  _type,\n  articleType,\n  title,\n  "slug": slug.current,\n  overview,\n  cardCtaLabel,\n  publicationDate,\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  "cardMedia": cardMedia{\n  "asset": asset[defined(asset._ref)][0]{\n    _type,\n    _type == "image" => {\n      asset,\n      crop,\n      hotspot,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "mimeType": asset->mimeType\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  "poster": poster{\n    _type,\n    asset,\n    crop,\n    hotspot,\n    "width": asset->metadata.dimensions.width,\n    "height": asset->metadata.dimensions.height,\n    "mimeType": asset->mimeType\n  },\n  altText,\n  decorative\n}\n\n  }\n': IndexViewAllNewestQueryResult
     '\n  *[\n    _type == "article" &&\n    articleType in ["news", "editorial"] &&\n    (!defined($typeFilter) || articleType == $typeFilter) &&\n    !(_id in $featuredIds) &&\n    (!defined($tagId) || $tagId in tags[]._ref)\n  ] | order(publicationDate asc)[$offset...$end]{\n    \n  _id,\n  _type,\n  articleType,\n  title,\n  "slug": slug.current,\n  overview,\n  cardCtaLabel,\n  publicationDate,\n  cardWidth,\n  mediaAspectRatio,\n  infoPosition,\n  "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,\n  tags[]->{ title, color },\n  "cardMedia": cardMedia{\n  "asset": asset[defined(asset._ref)][0]{\n    _type,\n    _type == "image" => {\n      asset,\n      crop,\n      hotspot,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "mimeType": asset->mimeType\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  "poster": poster{\n    _type,\n    asset,\n    crop,\n    hotspot,\n    "width": asset->metadata.dimensions.width,\n    "height": asset->metadata.dimensions.height,\n    "mimeType": asset->mimeType\n  },\n  altText,\n  decorative\n}\n\n  }\n': IndexViewAllOldestQueryResult
+    '\n  *[_id == "shopPage"][0]{\n    featured{\n      ctaLabel,\n      ctaHref,\n      media{\n        width,\n        aspectRatio,\n        "media": media{\n  "asset": asset[defined(asset._ref)][0]{\n    _type,\n    _type == "image" => {\n      asset,\n      crop,\n      hotspot,\n      "width": asset->metadata.dimensions.width,\n      "height": asset->metadata.dimensions.height,\n      "mimeType": asset->mimeType\n    },\n    _type == "mux.video" => {\n      "playbackId": asset->playbackId,\n      "aspectRatio": asset->data.aspect_ratio\n    }\n  },\n  "poster": poster{\n    _type,\n    asset,\n    crop,\n    hotspot,\n    "width": asset->metadata.dimensions.width,\n    "height": asset->metadata.dimensions.height,\n    "mimeType": asset->mimeType\n  },\n  altText,\n  decorative\n}\n      },\n      text{\n        width,\n        text\n      }\n    }\n  }\n': ShopPageQueryResult
     '\n  *[_type == "siteSettings"][0]{\n    instagramUrl,\n    linkedInUrl,\n    vimeoUrl,\n    youTubeUrl,\n    cardDefaults\n  }\n': SiteSettingsQueryResult
     '\n  {\n    "caseStudies": *[_type == "caseStudy" && defined(slug.current)]{\n      "path": "/work/" + slug.current,\n      "updatedAt": _updatedAt\n    },\n    "articles": *[_type == "article" && articleType in ["news", "editorial"] && defined(slug.current)]{\n      "path": "/articles/" + slug.current,\n      "updatedAt": _updatedAt\n    },\n    "pastIssues": *[\n      _type == "zineIssue" &&\n      defined(slug.current) &&\n      _id != *[_type == "zineLanding"][0].currentIssue._ref\n    ]{\n      "path": "/zine/issues/" + slug.current,\n      "updatedAt": _updatedAt\n    },\n    "zineArticles": *[_type == "zineIssue" && defined(slug.current)]{\n      "issueSlug": slug.current,\n      "updatedAt": _updatedAt,\n      "articles": articles[]->{ "slug": slug.current, "updatedAt": _updatedAt }\n    }\n  }\n': SitemapQueryResult
   }

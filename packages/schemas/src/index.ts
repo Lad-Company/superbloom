@@ -21,6 +21,7 @@ import {homeWhyBlock} from './homeWhyBlock'
 import {homeParallaxBlock} from './homeParallaxBlock'
 import {homeTestimonialsBlock} from './homeTestimonialsBlock'
 import {indexPage} from './indexPage'
+import {shopPage} from './shopPage'
 import {siteSettings} from './siteSettings'
 import {contentLayoutMedia} from './contentLayoutMedia'
 import {contentLayoutText} from './contentLayoutText'
@@ -62,6 +63,7 @@ export const schemaTypes = [
   homeParallaxBlock,
   homeTestimonialsBlock,
   indexPage,
+  shopPage,
   siteSettings,
   contentLayoutMedia,
   contentLayoutText,

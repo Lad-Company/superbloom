@@ -46,6 +46,10 @@ export default defineConfig({
                       .title('Index Page')
                       .id('indexPage')
                       .child(S.document().schemaType('indexPage').documentId('indexPage')),
+                    S.listItem()
+                      .title('Shop Page')
+                      .id('shopPage')
+                      .child(S.document().schemaType('shopPage').documentId('shopPage')),
                   ]),
               ),
             S.listItem()
