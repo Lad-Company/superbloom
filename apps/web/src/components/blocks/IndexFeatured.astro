@@ -1,0 +1,198 @@
+---
+import MixedArticleCard from '../MixedArticleCard.astro'
+import type {IndexPageQueryResult} from '../../sanity.types'
+import type {ContentCardSettingsInput, PartialContentCardSettings} from '../../lib/contentCard'
+
+type FeaturedEntry = NonNullable<NonNullable<IndexPageQueryResult>['featured']>[number]
+type FeaturedItem = NonNullable<FeaturedEntry['item']>
+
+interface Props {
+  items: FeaturedItem[]
+  globalSettings?: PartialContentCardSettings
+}
+
+const {items, globalSettings} = Astro.props
+const [lead, ...side] = items
+
+// Layout is locked by design (openai.com/news/company-announcements
+// reference): featured cards author no card settings in the CMS. The lead
+// story owns the 3/4 column at 16:9; side cards lock to 1:1 with info
+// pinned below.
+const LEAD_SETTINGS = {
+  cardWidth: '3/4',
+  mediaAspectRatio: '16:9',
+  infoPosition: 'below',
+} satisfies ContentCardSettingsInput
+const SIDE_SETTINGS = {
+  cardWidth: '1/4',
+  mediaAspectRatio: '1:1',
+  infoPosition: 'below',
+} satisfies ContentCardSettingsInput
+---
+
+{
+  lead && (
+    <index-featured class="index-featured">
+      <div class="stick">
+        <div class="grid">
+          <div class="lead">
+            <MixedArticleCard
+              item={lead}
+              settings={LEAD_SETTINGS}
+              globalSettings={globalSettings}
+              minimal
+            />
+          </div>
+          {side.length > 0 && (
+            <div class="rail-slot">
+              <div class="rail">
+                {side.slice(0, 3).map((item) => (
+                  <MixedArticleCard
+                    item={item}
+                    settings={SIDE_SETTINGS}
+                    globalSettings={globalSettings}
+                    minimal
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </index-featured>
+  )
+}
+
+<script>
+  // Scroll-jacked side rail, position-driven (no wheel interception): the
+  // element reserves pin distance (its height = grid height + rail overhang)
+  // and the grid sticks to the viewport top. Once the lead card hits the top
+  // of the scroll window, further page scroll translates the rail instead —
+  // the rail cannot be scrolled independently, and pointer position is
+  // irrelevant. The jack ends when the last side card's bottom aligns with
+  // the bottom edge of the lead media; scrolling up reverses it until the
+  // first side card locks back to the lead's top edge. Lenis drives the page
+  // scroll as usual — the rail just reads the scroll position.
+  class IndexFeaturedElement extends HTMLElement {
+    private grid: HTMLElement | null = null
+    private rail: HTMLElement | null = null
+    private leadMedia: HTMLElement | null = null
+    private maxOffset = 0
+    private observer?: ResizeObserver
+    private desktop = window.matchMedia('(min-width: 1024px)')
+
+    connectedCallback() {
+      this.grid = this.querySelector(':scope > .stick > .grid')
+      this.rail = this.querySelector(':scope .rail')
+      this.leadMedia = this.querySelector(':scope .lead .media-frame')
+      if (!this.grid || !this.rail || !this.leadMedia) return
+      this.observer = new ResizeObserver(() => this.measure())
+      this.observer.observe(this.grid)
+      this.observer.observe(this.rail)
+      this.desktop.addEventListener('change', this.handleBreakpoint)
+      window.addEventListener('scroll', this.handleScroll, {passive: true})
+      this.measure()
+    }
+
+    disconnectedCallback() {
+      this.observer?.disconnect()
+      this.desktop.removeEventListener('change', this.handleBreakpoint)
+      window.removeEventListener('scroll', this.handleScroll)
+    }
+
+    private handleBreakpoint = () => {
+      this.measure()
+      this.handleScroll()
+    }
+
+    private measure() {
+      if (!this.grid || !this.rail || !this.leadMedia) return
+      if (!this.desktop.matches) {
+        this.maxOffset = 0
+        this.style.removeProperty('height')
+        this.rail.style.removeProperty('transform')
+        return
+      }
+      // Rail overhang past the bottom edge of the lead media — the distance
+      // the rail (and the pinned page) travels.
+      this.maxOffset = Math.max(0, this.rail.offsetHeight - this.leadMedia.offsetHeight)
+      this.style.height = `${this.grid.offsetHeight + this.maxOffset}px`
+      this.handleScroll()
+    }
+
+    private handleScroll = () => {
+      if (!this.rail) return
+      const offset = Math.min(Math.max(-this.getBoundingClientRect().top, 0), this.maxOffset)
+      if (offset > 0) {
+        this.rail.style.transform = `translateY(${-offset}px)`
+      } else {
+        this.rail.style.removeProperty('transform')
+      }
+    }
+  }
+
+  if (!customElements.get('index-featured')) {
+    customElements.define('index-featured', IndexFeaturedElement)
+  }
+</script>
+
+<style>
+  .index-featured {
+    display: block;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+
+  .lead,
+  .rail-slot {
+    min-width: 0;
+  }
+
+  .rail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  @media (--bp-desktop) {
+    .stick {
+      position: sticky;
+      top: 0;
+    }
+
+    .grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--page-gutter);
+      /* The lead card alone owns the row height; the absolute rail cannot
+         stretch it. */
+      align-items: stretch;
+    }
+
+    .lead {
+      grid-column: span 3;
+    }
+
+    .rail-slot {
+      grid-column: span 1;
+      position: relative;
+      /* Clip only above the top edge: side cards scrolling up vanish at the
+         grid's top line, while the resting overhang stays visible past the
+         lead's bottom edge. */
+      clip-path: inset(0 -100vmax -100vmax -100vmax);
+    }
+
+    .rail {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      gap: var(--space-xs);
+      overflow: visible;
+      will-change: transform;
+    }
+  }
+</style>

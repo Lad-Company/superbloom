@@ -1,7 +1,7 @@
-import {validateContentDefaultsCompleteness, validateFeaturedCardFullyConfigured} from './cardSettingsContract'
+import {validateContentDefaultsCompleteness} from './cardSettingsContract'
 
 type Reference = {_ref?: unknown; article?: Reference}
-type FeaturedCard = {article?: Reference; cardWidth?: string; mediaAspectRatio?: string; infoPosition?: string}
+type FeaturedCard = {article?: Reference}
 
 function referenceIds(items: unknown): string[] {
   if (!Array.isArray(items)) return []
@@ -14,11 +14,16 @@ function referenceIds(items: unknown): string[] {
 }
 
 /**
- * Featured section must have 0-4 cards.
+ * Featured section is either empty or holds one lead card plus 2-3 side
+ * cards (3-4 total) — the layout locks one 3/4-width lead against a 1/4
+ * rail, so anything between renders broken.
  */
 export function validateIndexPageFeaturedCount(featured: unknown): true | string {
   if (!Array.isArray(featured)) return true
-  if (featured.length > 4) return 'Featured section can contain at most 4 cards'
+  if (featured.length === 0) return true
+  if (featured.length < 3 || featured.length > 4) {
+    return 'Featured section needs a lead card plus 2-3 side cards (3-4 cards total), or leave it empty'
+  }
   return true
 }
 
@@ -33,20 +38,6 @@ export function validateIndexPageFeaturedCardsUnique(featured: unknown): true | 
 
   const uniqueIds = new Set(ids)
   return uniqueIds.size === ids.length || 'Featured cards must have unique articles'
-}
-
-/**
- * Featured cards must fully configure all three card settings.
- */
-export function validateIndexPageFeaturedCardsFullyConfigured(cards: unknown): true | string {
-  if (!Array.isArray(cards)) return true
-
-  for (const card of cards) {
-    const validation = validateFeaturedCardFullyConfigured(card)
-    if (validation !== true) return validation
-  }
-
-  return true
 }
 
 /**

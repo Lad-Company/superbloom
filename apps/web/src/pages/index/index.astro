@@ -4,6 +4,7 @@ import Footer from '../../components/Footer.astro'
 import Layout from '../../layouts/Layout.astro'
 import PageHero from '../../components/PageHero.astro'
 import ContentCardList from '../../components/ContentCardList.astro'
+import IndexFeatured from '../../components/blocks/IndexFeatured.astro'
 import MixedArticleCard from '../../components/MixedArticleCard.astro'
 import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro'
 import SortControl from '../../components/SortControl.astro'
@@ -34,10 +35,10 @@ const recordLimit = page * BATCH_SIZE
 
 const indexPage = await client.fetch<IndexPageQueryResult>(indexPageQuery)
 const pageHeader = indexPage?.header ?? "What they've been saying"
-const featured = indexPage?.featured?.filter((entry) => entry?.item) ?? []
-const featuredIds = featured
-  .map((entry) => entry.item?._id)
-  .filter((id): id is string => Boolean(id))
+const featuredItems = (indexPage?.featured ?? []).flatMap((entry) =>
+  entry?.item ? [entry.item] : [],
+)
+const featuredIds = featuredItems.map((item) => item._id).filter((id): id is string => Boolean(id))
 const viewAllQuery = sort === 'oldest' ? indexViewAllOldestQuery : indexViewAllNewestQuery
 const fetchedItems = await client.fetch<
   IndexViewAllNewestQueryResult | IndexViewAllOldestQueryResult
@@ -72,22 +73,9 @@ const queryFor = (nextPage: number, nextSort = sort) => {
     <main>
       <PageHero heading={pageHeader} id="featured-heading" />
       {
-        featured.length > 0 && (
+        featuredItems.length > 0 && (
           <section class="featured" aria-labelledby="featured-heading">
-            <ContentCardList columnPack>
-              {featured.map((entry) => {
-                const item = entry.item!
-                const settings = entry as PartialContentCardSettings
-                return (
-                  <MixedArticleCard
-                    item={item}
-                    settings={settings}
-                    globalSettings={globalSettings}
-                    minimal
-                  />
-                )
-              })}
-            </ContentCardList>
+            <IndexFeatured items={featuredItems} globalSettings={globalSettings} />
           </section>
         )
       }
