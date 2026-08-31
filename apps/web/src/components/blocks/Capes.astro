@@ -1,5 +1,6 @@
 ---
 import MediaFrame, {type Media} from '../MediaFrame.astro';
+import { blockId } from '../../lib/blockId';
 
 interface Capability {
   title: string | null;
@@ -39,7 +40,10 @@ const displayedCapabilities = capabilities.slice(0, 8);
           {
             displayedCapabilities.map((cap, index) => (
               <li class:list={['type-h3', { 'is-active': index === 0 }]} data-cap data-index={index}>
-                <a href="/who-we-are">{cap.title}</a>
+                {/* Deep-link to the matching Discipline row on Who We Are; both
+                    sides derive the anchor from the title via blockId. A
+                    capability with no matching discipline lands at page top. */}
+                <a href={cap.title ? `/who-we-are#discipline-${blockId(cap.title)}` : '/who-we-are'}>{cap.title}</a>
               </li>
             ))
           }

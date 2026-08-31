@@ -1,4 +1,6 @@
 ---
+import { blockId } from '../lib/blockId';
+
 interface Discipline {
   _key?: string;
   title: string | null;
@@ -14,7 +16,9 @@ const { items } = Astro.props;
 
 <ul class="discipline-list">
   {items.map((item) => (
-    <li class="row">
+    /* The id is the deep-link target for the home Capes capability list;
+       both sides derive it from the title via blockId. */
+    <li class="row" id={item.title ? `discipline-${blockId(item.title)}` : undefined}>
       <p class="title type-h4">{item.title}</p>
       {item.description && (
         <p class="description type-caption">{item.description}</p>
@@ -32,6 +36,9 @@ const { items } = Astro.props;
   .row {
     display: flex;
     gap: var(--page-gutter);
+    /* Deep links (from the home Capes list) land the row just below the nav,
+       matching the case-study chapter offset. */
+    scroll-margin-top: 72px;
     /* Description column pins to the top of the row, level with the title. */
     align-items: flex-start;
     /* 32px of vertical padding inside each row's divider boundaries. */
