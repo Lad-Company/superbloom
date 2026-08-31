@@ -8,7 +8,6 @@ import {listProducts} from '../../lib/shopify'
 import {getSanityClient} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {shopPageQuery} from '../../lib/queries'
-import {isShopFeatureComplete} from '../../lib/shopFeature'
 
 const cursor = Astro.url.searchParams.get('after')
 let result: Awaited<ReturnType<typeof listProducts>> | null = null
@@ -30,13 +29,7 @@ const featured = await fetchFeatured().catch(() => null)
 
 <Layout title="Shop | Superbloom House" navRole="dark">
   <main>
-    {
-      /* The published shop page either has a complete Featured Item or none
-         (Sanity blocks publishing a partial one), so the feature replaces the
-         Shop header outright — the header returns when the section is cleared
-         and the doc republished. */
-      !isShopFeatureComplete(featured) && <PageHero heading="Shop" />
-    }
+    <PageHero heading="Shop" />
     <ShopFeature featured={featured} />
     {
       error ? (

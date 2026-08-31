@@ -4,6 +4,7 @@ import PortableText from '../PortableText.astro'
 import Button from '../Button.astro'
 import {isShopFeatureComplete, type ShopFeatureValue} from '../../lib/shopFeature'
 import type {ContentLayoutWidth} from '../../lib/contentLayout'
+import {control} from '../../lib/surfaceRole'
 
 interface Props {
   featured: ShopFeatureValue | null
@@ -32,7 +33,7 @@ const textColumns = WIDTH_COLUMNS[textBlock?.width ?? '1/2']
     <section
       class="shop-feature"
       aria-label="Featured"
-      style={`--media-columns: ${mediaColumns}; --text-columns: ${textColumns};`}
+      style={`--media-columns: ${mediaColumns}; --text-columns: ${textColumns}; ${control.onDark}`}
     >
       <div class="shop-feature-media">
         <MediaFrame
@@ -50,6 +51,11 @@ const textColumns = WIDTH_COLUMNS[textBlock?.width ?? '1/2']
 }
 
 <style>
+  /* The section rides the shop page's dark body surface; control.onDark (set
+     inline above, same pattern as the PageHero media hero) resolves the CTA's
+     --control-bg/--control-fg tokens so the button paints white-on-black and
+     wipes to black-on-white instead of falling back to the light-surface
+     default and disappearing on the black background. */
   .shop-feature {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
