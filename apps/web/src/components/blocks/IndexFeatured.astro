@@ -32,134 +32,102 @@ const SIDE_SETTINGS = {
 
 {
   lead && (
-    <index-featured class="index-featured" data-lenis-prevent>
-      <div class="lead">
-        <MixedArticleCard
-          item={lead}
-          settings={LEAD_SETTINGS}
-          globalSettings={globalSettings}
-          minimal
-        />
-      </div>
-      {side.length > 0 && (
-        <div class="rail-slot">
-          <div class="rail" role="region" tabindex="0" aria-label="More featured stories">
-            {side.slice(0, 3).map((item) => (
-              <MixedArticleCard
-                item={item}
-                settings={SIDE_SETTINGS}
-                globalSettings={globalSettings}
-                minimal
-              />
-            ))}
+    <index-featured class="index-featured">
+      <div class="stick">
+        <div class="grid">
+          <div class="lead">
+            <MixedArticleCard
+              item={lead}
+              settings={LEAD_SETTINGS}
+              globalSettings={globalSettings}
+              minimal
+            />
           </div>
+          {side.length > 0 && (
+            <div class="rail-slot">
+              <div class="rail">
+                {side.slice(0, 3).map((item) => (
+                  <MixedArticleCard
+                    item={item}
+                    settings={SIDE_SETTINGS}
+                    globalSettings={globalSettings}
+                    minimal
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </index-featured>
   )
 }
 
 <script>
-  // Scroll-jacked side rail: while the featured grid is under the pointer,
-  // wheel input translates the rail instead of scrolling the page; once the
-  // rail is exhausted in that direction the page scroll resumes. The rail
-  // moves by transform rather than native overflow, so it renders no
-  // scrollbar of its own and never clips its cards (overflow stays visible).
-  // `data-lenis-prevent` keeps Lenis from double-handling these wheel events.
+  // Scroll-jacked side rail, position-driven (no wheel interception): the
+  // element reserves pin distance (its height = grid height + rail overhang)
+  // and the grid sticks to the viewport top. Once the lead card hits the top
+  // of the scroll window, further page scroll translates the rail instead —
+  // the rail cannot be scrolled independently, and pointer position is
+  // irrelevant. The jack ends when the last side card's bottom aligns with
+  // the bottom edge of the lead media; scrolling up reverses it until the
+  // first side card locks back to the lead's top edge. Lenis drives the page
+  // scroll as usual — the rail just reads the scroll position.
   class IndexFeaturedElement extends HTMLElement {
+    private grid: HTMLElement | null = null
     private rail: HTMLElement | null = null
-    private railSlot: HTMLElement | null = null
-    private offset = 0
+    private leadMedia: HTMLElement | null = null
     private maxOffset = 0
     private observer?: ResizeObserver
     private desktop = window.matchMedia('(min-width: 1024px)')
 
     connectedCallback() {
-      this.railSlot = this.querySelector(':scope > .rail-slot')
-      this.rail = this.railSlot?.querySelector(':scope > .rail') ?? null
-      if (!this.rail || !this.railSlot) return
+      this.grid = this.querySelector(':scope > .stick > .grid')
+      this.rail = this.querySelector(':scope .rail')
+      this.leadMedia = this.querySelector(':scope .lead .media-frame')
+      if (!this.grid || !this.rail || !this.leadMedia) return
       this.observer = new ResizeObserver(() => this.measure())
-      this.observer.observe(this.railSlot)
+      this.observer.observe(this.grid)
       this.observer.observe(this.rail)
-      this.addEventListener('wheel', this.handleWheel, {passive: false})
-      this.rail.addEventListener('keydown', this.handleKeydown)
       this.desktop.addEventListener('change', this.handleBreakpoint)
+      window.addEventListener('scroll', this.handleScroll, {passive: true})
       this.measure()
     }
 
     disconnectedCallback() {
       this.observer?.disconnect()
-      this.removeEventListener('wheel', this.handleWheel)
-      this.rail?.removeEventListener('keydown', this.handleKeydown)
       this.desktop.removeEventListener('change', this.handleBreakpoint)
+      window.removeEventListener('scroll', this.handleScroll)
     }
 
     private handleBreakpoint = () => {
-      if (!this.desktop.matches) this.setOffset(0)
       this.measure()
+      this.handleScroll()
     }
 
     private measure() {
-      if (!this.rail || !this.railSlot) return
-      this.maxOffset = this.desktop.matches
-        ? Math.max(0, this.rail.scrollHeight - this.railSlot.clientHeight)
-        : 0
-      this.setOffset(this.offset)
-    }
-
-    private setOffset(next: number) {
-      this.offset = Math.min(Math.max(next, 0), this.maxOffset)
-      this.rail?.style.setProperty('transform', `translateY(${-this.offset}px)`)
-    }
-
-    /** True when the rail cannot move further in the scroll direction and
-     *  the gesture should fall through to the page. */
-    private exhausted(delta: number) {
-      if (delta > 0) return this.offset >= this.maxOffset
-      if (delta < 0) return this.offset <= 0
-      return true
-    }
-
-    private handleWheel = (event: WheelEvent) => {
-      if (!this.desktop.matches || this.maxOffset <= 0) return
-      if (event.ctrlKey || event.deltaY === 0) return
-      // deltaMode 1 = lines (Firefox); normalize to pixels.
-      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : 1)
-      if (this.exhausted(delta)) return
-      event.preventDefault()
-      this.setOffset(this.offset + delta)
-    }
-
-    private handleKeydown = (event: KeyboardEvent) => {
-      if (!this.desktop.matches || this.maxOffset <= 0) return
-      const step = 40
-      const page = this.railSlot?.clientHeight ?? 0
-      let next: number
-      switch (event.key) {
-        case 'ArrowDown':
-          next = this.offset + step
-          break
-        case 'ArrowUp':
-          next = this.offset - step
-          break
-        case 'PageDown':
-          next = this.offset + page
-          break
-        case 'PageUp':
-          next = this.offset - page
-          break
-        case 'Home':
-          next = 0
-          break
-        case 'End':
-          next = this.maxOffset
-          break
-        default:
-          return
+      if (!this.grid || !this.rail || !this.leadMedia) return
+      if (!this.desktop.matches) {
+        this.maxOffset = 0
+        this.style.removeProperty('height')
+        this.rail.style.removeProperty('transform')
+        return
       }
-      if (this.exhausted(next - this.offset)) return
-      event.preventDefault()
-      this.setOffset(next)
+      // Rail overhang past the bottom edge of the lead media — the distance
+      // the rail (and the pinned page) travels.
+      this.maxOffset = Math.max(0, this.rail.offsetHeight - this.leadMedia.offsetHeight)
+      this.style.height = `${this.grid.offsetHeight + this.maxOffset}px`
+      this.handleScroll()
+    }
+
+    private handleScroll = () => {
+      if (!this.rail) return
+      const offset = Math.min(Math.max(-this.getBoundingClientRect().top, 0), this.maxOffset)
+      if (offset > 0) {
+        this.rail.style.transform = `translateY(${-offset}px)`
+      } else {
+        this.rail.style.removeProperty('transform')
+      }
     }
   }
 
@@ -170,6 +138,10 @@ const SIDE_SETTINGS = {
 
 <style>
   .index-featured {
+    display: block;
+  }
+
+  .grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-xl);
@@ -187,10 +159,16 @@ const SIDE_SETTINGS = {
   }
 
   @media (--bp-desktop) {
-    .index-featured {
+    .stick {
+      position: sticky;
+      top: 0;
+    }
+
+    .grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: var(--page-gutter);
-      /* The lead card alone owns the row height; the rail is pinned to it. */
+      /* The lead card alone owns the row height; the absolute rail cannot
+         stretch it. */
       align-items: stretch;
     }
 
@@ -201,24 +179,20 @@ const SIDE_SETTINGS = {
     .rail-slot {
       grid-column: span 1;
       position: relative;
+      /* Clip only above the top edge: side cards scrolling up vanish at the
+         grid's top line, while the resting overhang stays visible past the
+         lead's bottom edge. */
+      clip-path: inset(0 -100vmax -100vmax -100vmax);
     }
 
-    /* Scroll-jacked rail: absolutely pinned to the lead card's height, but
-       never clipped (overflow stays visible — extra cards bleed past the
-       lead's bottom edge) and never scrollbar'd (movement is transform-
-       driven from the hijacked page scroll). */
     .rail {
       position: absolute;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100%;
       gap: var(--space-xs);
       overflow: visible;
-      scrollbar-width: none;
       will-change: transform;
-    }
-
-    .rail:focus-visible {
-      outline: 2px solid currentColor;
-      outline-offset: 4px;
     }
   }
 </style>
