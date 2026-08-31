@@ -459,16 +459,18 @@ accessibility, loading, hover, and cleanup rules.
 
 Named Content Card recipes:
 
-- **Poster Slide** — a video card with a curated Poster Image (`mediaBox.poster`)
-  rests dormant; on hover/focus/tap the poster slides up and away,
-  `translateY(0)` → `translateY(-100%)`, and slides back on leave/blur.
-  Transform only, `--motion-standard` (480ms) + `--motion-ease-out` in both
-  directions, no opacity fade, no stagger, no delay; the frame clips the
-  traveling poster (`overflow: clip`). Upward reads as lifting a curtain and
-  rhymes with the Type Reveal's rise — direction is systemic, never per-card.
-  The video's own ready-fade (`--motion-standard`) composes underneath.
-  Reduced motion removes the slide; the state change survives as an instant
-  swap. Playback contract: `docs/card-poster-reveal-spec.md`.
+- **Poster Punch** — a video card with a curated Poster Image (`mediaBox.poster`)
+  rests dormant; on hover/focus/tap the poster zooms in while fading out,
+  `scale(1)` → `scale(1.12)` at `--motion-deliberate` (800ms) with the
+  `opacity 1` → `0` fade (560ms) delayed one `--motion-instant` beat (120ms)
+  so the dissolve interleaves with the punch and ends just before the zoom
+  settles; conceal settles back on leave/blur.
+  `--motion-ease-out` in both directions; the frame clips the scaling poster
+  (`overflow: clip`). The zoom reads as punching into the frame — magnitude
+  is systemic, never per-card. The video's own ready-fade
+  (`--motion-standard`) composes underneath. Reduced motion removes the
+  zoom/fade; the state change survives as an instant swap. Playback
+  contract: `docs/card-poster-reveal-spec.md`.
 
 **Reduced motion** preserves state changes, color changes, and link underlines while
 removing pinning, scrubbing, parallax, blur, and delayed/staggered reveals.

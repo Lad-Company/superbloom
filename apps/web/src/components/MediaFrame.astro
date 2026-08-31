@@ -36,7 +36,8 @@ export interface Media {
   /** Curated still for a video asset (card-poster-reveal-spec §2). When set
    *  on a `mux.video` asset the frame becomes Gated Ambient: dormant until
    *  the visitor reveals it (hover/focus/tap), at which point the poster
-   *  slides away. When unset the video keeps today's Ambient autoplay. */
+   *  zooms in and fades out. When unset the video keeps today's Ambient
+   *  autoplay. */
   poster?: ImageProjection | null
   altText?: string | null
   decorative?: boolean | null
@@ -203,7 +204,7 @@ const imageRendering =
   {
     /* Curated poster (Gated Ambient) — paints above the player and the Mux
        thumbnail, below the overlay slot (DOM order alone, no z-index, so
-       TagList overlays stay on top). Slides up off the frame on `revealed`;
+       TagList overlays stay on top). Zooms in and fades out on `revealed`;
        the video's ready-fade composes underneath. */
     isGated && posterRendering?.src && (
       <img
@@ -478,7 +479,7 @@ const imageRendering =
       if (name === 'revealed') {
         // The poster conveys the same content as the video it covers, so it
         // leaves the accessibility tree while revealed (card-poster-reveal
-        // §6). The slide itself is attribute-driven CSS.
+        // §6). The reveal transition itself is attribute-driven CSS.
         this.curatedPoster?.setAttribute(
           'aria-hidden',
           String(this.hasAttribute('revealed')),
@@ -806,8 +807,8 @@ const imageRendering =
   .media-frame {
     display: block;
     position: relative;
-    /* Clip (not hidden) so the traveling curated poster never paints outside
-       the card during the Poster Slide (card-poster-reveal §5). */
+    /* Clip (not hidden) so the scaling curated poster never paints outside
+       the card during the Poster Punch (card-poster-reveal §5). */
     overflow: clip;
     border-radius: var(--radius-media);
     /* Placeholder gradient's dimmer step, derived locally (nav/cart precedent)
@@ -850,10 +851,13 @@ const imageRendering =
     opacity: 0;
   }
 
-  /* Poster Slide (design-system §5, Content Card family): transform-only,
-     --motion-standard / --motion-ease-out in both directions, no fade, no
-     stagger. The reveal lands on the Mux thumbnail layer underneath, so the
-     frame never shows a gray box. */
+  /* Poster Punch (design-system §5, Content Card family): the poster zooms
+     in (scale punch) at --motion-deliberate pace while the opacity fade
+     (delayed one --motion-instant beat, slightly stretched) runs mostly
+     alongside it — the dissolve is interleaved with the press-in rather
+     than trailing it, ending just before the zoom settles. The fade lands
+     on the Mux thumbnail layer underneath, so the frame never shows a gray
+     box. */
   .media-frame__curated-poster {
     position: absolute;
     inset: 0;
@@ -861,11 +865,14 @@ const imageRendering =
     height: 100%;
     object-fit: cover;
     pointer-events: none;
-    transition: transform var(--motion-standard) var(--motion-ease-out);
+    transition:
+      transform var(--motion-deliberate) var(--motion-ease-out),
+      opacity 560ms var(--motion-ease-out) var(--motion-instant);
   }
 
   .media-frame[revealed] .media-frame__curated-poster {
-    transform: translateY(-100%);
+    transform: scale(1.12);
+    opacity: 0;
   }
 
   .media-placeholder {
@@ -1111,7 +1118,7 @@ const imageRendering =
   }
 
   @media (prefers-reduced-motion: reduce) {
-    /* Poster Slide off; the reveal/conceal state change survives as an
+    /* Poster Punch off; the reveal/conceal state change survives as an
        instant swap (design-system §5 reduced-motion rule). */
     .media-frame__curated-poster,
     .media-controls,

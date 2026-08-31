@@ -43,7 +43,7 @@ export const mediaBox = defineType({
       title: 'Poster Image',
       type: 'image',
       description:
-        'Optional still shown over the video until a visitor hovers or taps the card, where it slides away to reveal the video. Leave empty to autoplay the video whenever the card is on screen.',
+        'Optional still shown over the video until a visitor hovers or taps the card, where it zooms in and fades out to reveal the video. Leave empty to autoplay the video whenever the card is on screen.',
       hidden: ({parent}) =>
         (parent as {asset?: Array<{_type: string}>} | undefined)?.asset?.[0]?._type !==
         'mux.video',

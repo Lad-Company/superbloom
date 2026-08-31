@@ -1,4 +1,4 @@
-# Card Poster Reveal Spec — curated poster that slides away to reveal video
+# Card Poster Reveal Spec — curated poster that zooms and fades to reveal video
 
 Status: proposed (spec only, no implementation). Sibling to
 `docs/media-playback-spec.md` (playback contract) and `docs/design-system.md` §5
@@ -9,9 +9,10 @@ Status: proposed (spec only, no implementation). Sibling to
 
 Let editors attach a curated **Poster Image** to a video card. A poster card is
 **dormant** — the video does not load or play — until the visitor interacts
-(hover, keyboard focus, or tap). On interaction the poster **slides up and away**
-(480ms, `--motion-standard`) to reveal the video, which starts playing. On
-mouse-leave/blur the poster slides back and the video pauses.
+(hover, keyboard focus, or tap). On interaction the poster **zooms in**
+(800ms, `--motion-deliberate`) **then fades out** to reveal the video, which
+starts playing. On mouse-leave/blur the poster settles back and the video
+pauses.
 
 Applies to **every content card surface site-wide** (work grid, `HomeWork`,
 `ArticleCard`, `MixedArticleCard`, `ZineArticleCard`,
@@ -83,7 +84,7 @@ In `packages/schemas/src/mediaBox.ts`:
     `hidden` rule is the primary guard).
 - Description (editor-facing UX copy, draft):
   > Optional still shown over the video until a visitor hovers or taps the
-  > card, where it slides away to reveal the video. Leave empty to autoplay
+  > card, where it zooms and fades to reveal the video. Leave empty to autoplay
   > the video whenever the card is on screen.
 - **Alt text:** the poster reuses the mediaBox's existing `altText` — one
   media unit, one alt. No new alt field. (In card context the link's
@@ -104,7 +105,7 @@ In `packages/schemas/src/mediaBox.ts`:
 
 | `poster` on a video asset | Card behavior |
 |---|---|
-| **set** | **Gated**: dormant until interaction; curated poster slides away to reveal video (this spec) |
+| **set** | **Gated**: dormant until interaction; curated poster zooms/fades away to reveal video (this spec) |
 | **unset** | **Ambient**: today's behavior, unchanged — muted autoplay loop while visible, Mux `time=0` thumbnail until ready |
 
 The feature rolls out editorially, card by card. Nothing changes for existing
@@ -129,7 +130,7 @@ value — no control DOM is involved — it is a playback gate.
   (plus the existing `userIntent` override). With `preload="none"` and no
   `play()` call, Mux fetches no segments before first reveal; a poster card is
   strictly cheaper than today's ambient card.
-- **Reveal** (hover/focus/tap, §4): set `revealed`, call `play()`. The slide
+- **Reveal** (hover/focus/tap, §4): set `revealed`, call `play()`. The fade
   lands on the **existing Mux `time=0` thumbnail layer** — never a gray box —
   and the video fades in when ready via the existing `data-video-ready` path.
   The first reveal per card therefore reads as still → motion a beat later;
@@ -164,26 +165,28 @@ observes `revealed`, drives the poster transform (§5) and `updatePlayback()`.
 
 ---
 
-## 5. Motion recipe — "Poster Slide"
+## 5. Motion recipe — "Poster Punch"
 
-A new named recipe under the Content Card family in `docs/design-system.md`
-§5, composed from existing tokens only:
+A named recipe under the Content Card family in `docs/design-system.md` §5,
+composed from existing tokens only (supersedes the original "Poster Slide"):
 
-- **Property:** `transform` only. The poster translates `translateY(0)` →
-  `translateY(-100%)` (slides up off the top); conceal reverses it. The frame
-  must clip (`overflow: clip` on the media frame) so the traveling poster
-  never paints outside the card.
-- **Timing:** `--motion-standard` (480ms — slowed from `--motion-quick` after
-  visual QA; the reveal reads as a curtain lift, not a snap),
-  `--motion-ease-out` (`cubic-bezier(0.22,0.8,0.2,1)`), same duration/easing in
-  both directions. No stagger, no opacity fade, no delay.
-- **Direction rationale:** upward reads as lifting a curtain and rhymes with
-  the Type Reveal's upward rise. Direction is systemic, never per-card.
+- **Property:** `transform` + `opacity`. The poster zooms in `scale(1)` →
+  `scale(1.12)` and then fades `opacity 1` → `0` (a punch into the frame
+  that dissolves onto the video); conceal reverses it. The frame must clip
+  (`overflow: clip` on the media frame) so the scaling poster never paints
+  outside the card.
+- **Timing:** the zoom runs `--motion-deliberate` (800ms); the fade runs
+  560ms on a one-beat `--motion-instant` (120ms) delay, so the dissolve
+  interleaves with the zoom and ends just before the punch settles.
+  `--motion-ease-out` (`cubic-bezier(0.22,0.8,0.2,1)`), same easing in both
+  directions. No stagger.
+- **Magnitude rationale:** a scale-up reads as pressing into the media
+  rather than wiping it away; magnitude is systemic, never per-card.
 - The video's own ready-fade (`data-video-ready`, `--motion-standard`) is
-  unchanged and composes underneath the slide.
-- **Reduced motion:** the slide transition is removed; the poster state change
-  is preserved as an instant swap (design-system §5: state changes survive,
-  motion does not).
+  unchanged and composes underneath the fade.
+- **Reduced motion:** the zoom/fade transition is removed; the poster state
+  change is preserved as an instant swap (design-system §5: state changes
+  survive, motion does not).
 
 ---
 
@@ -194,7 +197,7 @@ A new named recipe under the Content Card family in `docs/design-system.md`
 - **Keyboard parity:** focus reveals exactly as hover does (§4), so the
   poster never hides content from keyboard users.
 - **Reduced motion:**
-  - Slide animation off; poster swaps instantly (state change preserved).
+  - Zoom/fade animation off; poster swaps instantly (state change preserved).
   - Hover/focus reveal does **not** start playback — `updatePlayback` already
     blocks autoplay under reduced-motion, so the reveal shows the still
     thumbnail. This matches today's reduced-motion ambient contract.
@@ -222,7 +225,7 @@ A new named recipe under the Content Card family in `docs/design-system.md`
 - `apps/web/src/components/EditorialCard.astro` — hover/focus/tap wiring that
   toggles `revealed` on its `media-frame`; first-tap `preventDefault` on
   touch; outside-`pointerdown` conceal.
-- `docs/design-system.md` §5 — add the Poster Slide recipe to the Content Card
+- `docs/design-system.md` §5 — add the Poster Punch recipe to the Content Card
   family.
 - `docs/media-playback-spec.md` — cross-reference: its §Non-goals "poster art
   direction" deferral is now owned here; add Gated Ambient to the profile
@@ -231,7 +234,7 @@ A new named recipe under the Content Card family in `docs/design-system.md`
   editorial conversation.
 
 No new dependencies. No new motion tokens. GSAP is not required — a CSS
-transition on an attribute-driven class is sufficient and preferred (the slide
+transition on an attribute-driven class is sufficient and preferred (the reveal
 is a state change, not a timeline).
 
 ---
@@ -250,9 +253,9 @@ Site (desktop):
 
 - A poster card is still at rest: no video motion, and the Network panel shows
   no Mux segment requests before the first interaction.
-- Hover slides the poster up off the card in ~480ms; the revealed frame shows
+- Hover zooms the poster in, then fades it out (~1s total); the revealed frame shows
   the video's still immediately (no gray box) and starts playing shortly
-  after. Mouse-leave slides the poster back and the video pauses. Re-hover is
+  after. Mouse-leave settles the poster back and the video pauses. Re-hover is
   instant (no reload stutter).
 - Keyboard: tabbing to the card reveals it; tabbing away conceals it. The card
   remains a single tab stop; Enter navigates.
@@ -268,7 +271,7 @@ Site (touch):
 
 Reduced motion (OS setting):
 
-- Poster swap is instant (no slide). Hover/focus reveal shows the still but
+- Poster swap is instant (no zoom/fade). Hover/focus reveal shows the still but
   does not play the video. Tap reveal plays it.
 
 General:
@@ -283,7 +286,7 @@ General:
 ## 9. Open questions
 
 - **OQ1 — Hover-intent damping.** Raw `pointerenter` fires on every drive-by
-  cursor crossing a grid. Ship without damping (240ms slide is cheap and
+  cursor crossing a grid. Ship without damping (240ms reveal is cheap and
   reversible); add intent detection only if human QA finds it twitchy.
 - **OQ2 — Conceal timing.** Pause immediately on conceal (spec default) vs.
   let the video finish a beat under the returning poster. Default: immediate.
