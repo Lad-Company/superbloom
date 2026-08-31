@@ -16,11 +16,11 @@ const [lead, ...side] = items
 
 // Layout is locked by design (openai.com/news/company-announcements
 // reference): featured cards author no card settings in the CMS. The lead
-// story owns the 3/4 column at 4:5; side cards lock to 1:1 with info
+// story owns the 3/4 column at 16:9; side cards lock to 1:1 with info
 // pinned below.
 const LEAD_SETTINGS = {
   cardWidth: '3/4',
-  mediaAspectRatio: '4:5',
+  mediaAspectRatio: '16:9',
   infoPosition: 'below',
 } satisfies ContentCardSettingsInput
 const SIDE_SETTINGS = {
