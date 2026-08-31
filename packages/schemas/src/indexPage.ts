@@ -3,7 +3,6 @@ import {
   validateIndexPageFeaturedCardsUnique,
   validateIndexPageFeaturedCount,
   validateIndexPageAllListDefaults,
-  validateIndexPageFeaturedCardsFullyConfigured,
   validateIndexPageItemOverridesUnique,
 } from './indexPageContract'
 import {cardWidthField, mediaAspectRatioField, infoPositionField} from './cardSettings'
@@ -21,11 +20,15 @@ export const indexPage = defineType({
       validation: (rule) => rule.required(),
     }),
 
-    // Featured section: 0-4 manually ordered cards with full card settings
+    // Featured section: one lead card plus 2-3 side cards, manually ordered.
+    // The layout is locked by the frontend (lead 3/4 width, side cards 1:1
+    // with info below), so featured cards author no card settings here.
     defineField({
       name: 'featured',
       title: 'Featured Section',
       type: 'array',
+      description:
+        'First card is the large lead story; the next 2-3 render in the side rail. Add 3-4 cards total, or leave empty.',
       of: [
         {
           type: 'object',
@@ -38,9 +41,6 @@ export const indexPage = defineType({
               options: {filter: 'articleType in ["news", "editorial", "zine"]'},
               validation: (rule) => rule.required(),
             }),
-            cardWidthField({required: true}),
-            mediaAspectRatioField({required: true}),
-            infoPositionField({required: true}),
           ],
           preview: {
             select: {title: 'article.title'},
@@ -50,7 +50,6 @@ export const indexPage = defineType({
       validation: (rule) => [
         rule.custom(validateIndexPageFeaturedCount),
         rule.custom(validateIndexPageFeaturedCardsUnique),
-        rule.custom(validateIndexPageFeaturedCardsFullyConfigured),
       ],
     }),
 

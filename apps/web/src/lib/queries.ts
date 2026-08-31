@@ -457,9 +457,6 @@ export const indexPageQuery = defineQuery(`
     header,
     featured[]{
       _key,
-      cardWidth,
-      mediaAspectRatio,
-      infoPosition,
       "item": article->{
         ${editorialCardProjection}
       }

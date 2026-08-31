@@ -9,9 +9,15 @@ import {indexPage} from './indexPage'
 
 describe('Index Page contract validators', () => {
   describe('validateIndexPageFeaturedCount', () => {
-    it('allows 0-4 featured cards', () => {
+    it('allows an empty section or one lead plus 2-3 side cards', () => {
       expect(validateIndexPageFeaturedCount([])).toBe(true)
-      expect(validateIndexPageFeaturedCount([{article: {_ref: 'a'}}])).toBe(true)
+      expect(
+        validateIndexPageFeaturedCount([
+          {article: {_ref: 'a'}},
+          {article: {_ref: 'b'}},
+          {article: {_ref: 'c'}},
+        ]),
+      ).toBe(true)
       expect(
         validateIndexPageFeaturedCount([
           {article: {_ref: 'a'}},
@@ -22,7 +28,11 @@ describe('Index Page contract validators', () => {
       ).toBe(true)
     })
 
-    it('rejects more than 4 featured cards', () => {
+    it('rejects 1-2 cards and more than 4 cards', () => {
+      expect(validateIndexPageFeaturedCount([{article: {_ref: 'a'}}])).toContain('3-4 cards total')
+      expect(
+        validateIndexPageFeaturedCount([{article: {_ref: 'a'}}, {article: {_ref: 'b'}}]),
+      ).toContain('3-4 cards total')
       expect(
         validateIndexPageFeaturedCount([
           {article: {_ref: 'a'}},
@@ -31,7 +41,7 @@ describe('Index Page contract validators', () => {
           {article: {_ref: 'd'}},
           {article: {_ref: 'e'}},
         ]),
-      ).toContain('at most 4')
+      ).toContain('3-4 cards total')
     })
   })
 
@@ -87,5 +97,13 @@ describe('Index Page contract validators', () => {
     const headerField = indexPage.fields.find((field) => field.name === 'header')
     expect(headerField?.type).toBe('string')
     expect(headerField?.validation).toBeDefined()
+  })
+
+  it('locks featured card layout: cards author only their article reference', () => {
+    const featured = indexPage.fields.find((field) => field.name === 'featured')
+    const cardType = (
+      featured as {of?: Array<{name?: string; fields?: Array<{name: string}>}>} | undefined
+    )?.of?.find((member) => member.name === 'featuredCard')
+    expect(cardType?.fields?.map((field) => field.name)).toEqual(['article'])
   })
 })
