@@ -87,10 +87,12 @@ const uniqueScopedSlug = async (
 }
 
 /**
- * Publish action for Articles. Stamps publicationDate and generates a
- * scoped-unique slug from the title on first publish; both stay frozen
- * afterwards. Replaces the default publish action so the hidden, required
- * slug field does not block the very publish that generates it.
+ * Publish action for Articles. Stamps publicationDate (when the editor left
+ * it empty) and generates a scoped-unique slug from the title on first
+ * publish. The slug stays frozen afterwards; publicationDate stays editable
+ * so publishers can control card dates and sort order. Replaces the default
+ * publish action so the hidden, required slug field does not block the very
+ * publish that generates it.
  */
 export const articlePublishAction: DocumentActionComponent = (props) => {
   const {patch, publish} = useDocumentOperation(props.id, props.type)

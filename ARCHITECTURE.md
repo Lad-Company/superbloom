@@ -140,10 +140,11 @@ another doc, that doc is authoritative.
   required `articleType` select at the top of the form; News is pared to an
   outbound-link card (required `destination` URL + optional `source` outlet label;
   no body, leadMedia, or relatedItems, replacing `externalCoverage` +
-  `cardDestination`); slug and publicationDate are hidden, auto-generated/stamped
-  at first publish and frozen thereafter; the `/news/[slug]` detail route is
+  `cardDestination`); slug is hidden, auto-generated at first publish and
+  frozen thereafter; the `/news/[slug]` detail route is
   removed. Amends 0020's hidden-`articleType` clause and 0011's composite-News
-  clause; its card-only-News clause is amended by 0027.
+  clause; its card-only-News clause is amended by 0027 and its
+  hidden/frozen-`publicationDate` clause by 0032.
 - **0021 — Adopt Lenis smooth scroll.** Lenis global, synced to `gsap.ticker` +
   `ScrollTrigger.update`, `lerp 0.1`, disabled for reduced-motion / no-JS.
   Supersedes the no-Lenis clause of 0007. *(`docs/design-system.md` §5.)*
@@ -251,6 +252,14 @@ another doc, that doc is authoritative.
   reintroduces the hijack. Amends 0008's per-request-SSR clause (the 60s
   edge cache is gone) and 0026's cache-safety clause (no-store on preview
   responses was necessary but not sufficient).
+- **0032 — Editable article `publicationDate`.** `publicationDate` leaves the
+  hidden/readOnly auto-stamp and becomes a visible, editable datetime on all
+  article types so publishers can backdate or reorder News, Editorial, and
+  Zine items; the field still auto-stamps at first publish when left empty
+  and the publish action never overwrites an editor-set value. Cards, the
+  Studio Articles list ordering, and the Index/related GROQ queries already
+  read and sort by this field, so no web change is needed. Amends 0022's
+  hidden/frozen-`publicationDate` clause.
 
 **Superseded or amended (kept as guardrails):**
 

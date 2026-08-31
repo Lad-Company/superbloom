@@ -72,9 +72,8 @@ export const article = defineType({
     defineField({
       name: 'publicationDate',
       type: 'datetime',
-      hidden: true,
-      readOnly: true,
-      description: 'Stamped automatically at first publish and frozen from then on.',
+      description:
+        'Shown on cards and used to sort article lists newest-first. Stamped automatically at first publish when left empty; editable at any time.',
     }),
     defineField({
       name: 'leadMedia',
