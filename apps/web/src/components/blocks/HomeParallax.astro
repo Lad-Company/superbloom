@@ -1,6 +1,6 @@
 ---
 import {type Media} from '../MediaFrame.astro'
-import PointerFollowMedia from '../PointerFollowMedia.astro'
+import ParallaxField from '../ParallaxField.astro'
 import SurfaceSection from '../SurfaceSection.astro'
 
 interface Props {
@@ -9,11 +9,11 @@ interface Props {
 }
 
 const {headline, images} = Astro.props
-const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 4)
+const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 10)
 ---
 
 <SurfaceSection role="light" class="home-parallax" data-pointer-scope>
-  <PointerFollowMedia media={layers} />
+  <ParallaxField media={layers} />
   {headline && (
     <div class="content">
       <h2>{headline}</h2>
@@ -31,17 +31,16 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
     min-height: clamp(460px, 56vw, 760px);
     /* No bottom padding: the section hands off flush to the Capes section. */
     padding: clamp(var(--space-3xl), 12vw, var(--space-4xl)) var(--page-inset) 0;
-    /* Let the pointer layers bleed past the top/bottom edges so they slide
-       underneath the neighboring sections (which paint above with their own
-       backgrounds); clip only horizontally so no scrollbar appears. */
-    overflow-x: clip;
-    overflow-y: visible;
+    /* Clip the field at the section box on all sides: items plant past the
+       edges with no inner padding and read as sliding under the sections
+       above and below. */
+    overflow: clip;
     isolation: isolate;
   }
 
-  /* Match the zine landing intro: the pointer layers float underneath the
-     section's content rather than covering it. */
-  .home-parallax :global(.pointer-follow) {
+  /* The parallax field floats underneath the section's content rather than
+     covering it. */
+  .home-parallax :global(.parallax-field) {
     z-index: 0;
   }
 

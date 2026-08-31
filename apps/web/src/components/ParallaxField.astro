@@ -1,0 +1,276 @@
+---
+import MediaFrame, {type Media} from './MediaFrame.astro'
+import {PARALLAX_FIELD} from '../lib/motion'
+
+interface Props {
+  media: (Media | null)[]
+  title?: string
+  class?: string
+}
+
+const {media, title = '', class: className} = Astro.props
+const entries = media
+  .filter((entry): entry is Media => Boolean(entry?.asset))
+  .slice(0, PARALLAX_FIELD.maxItems)
+
+// The scatter is a deterministic PRNG (not Math.random) so server markup,
+// client hydration, and repeat visits all land on the same composition.
+const mulberry32 = (seed: number) => () => {
+  seed |= 0
+  seed = (seed + 0x6d2b79f5) | 0
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+}
+
+function shuffled<T>(list: T[], rand: () => number): T[] {
+  const copy = [...list]
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
+}
+
+interface PlacedItem {
+  entry: Media
+  /** Top-left anchor, % of the section box; the ranges below deliberately
+   *  reach past the edges so items clip against the section bounds and read
+   *  as sliding under the sections above and below. */
+  left: number
+  top: number
+  /** Width in vw, scaled by depth so closer items render larger. */
+  widthVw: number
+  /** 0..1 — 1 is the closest plane. */
+  depth: number
+  z: number
+  /** Full inline style string, precomputed here so the markup stays a flat
+   *  attribute list. */
+  style: string
+}
+
+const layout = (items: Media[]): PlacedItem[] => {
+  const count = items.length
+  const rand = mulberry32(count * 7919 + 17)
+
+  // Loose grid keeps the scatter even; jitter breaks the grid up. Cell
+  // assignment and depths are both shuffled so no slot always lands close.
+  const cols = count <= 6 ? 3 : 4
+  const rows = Math.ceil(count / cols)
+  const cells = shuffled(
+    Array.from({length: count}, (_, i) => ({col: i % cols, row: Math.floor(i / cols)})),
+    rand,
+  )
+  const depths = shuffled(
+    count === 1
+      ? [1]
+      : Array.from({length: count}, (_, i) => 1 - (i / (count - 1)) * 0.65),
+    rand,
+  )
+
+  return items.map((entry, i) => {
+    const depth = depths[i]
+    const widthVw = (10 + rand() * 10) * (0.65 + 0.35 * depth)
+    const jitterX = (rand() - 0.5) * (72 / cols)
+    const jitterY = (rand() - 0.5) * (72 / rows)
+    const left = Math.min(96, Math.max(-8, ((cells[i].col + 0.5) / cols) * 100 + jitterX - widthVw / 2))
+    const top = Math.min(88, Math.max(-14, ((cells[i].row + 0.5) / rows) * 100 + jitterY - 18))
+    const roundedLeft = Math.round(left * 10) / 10
+    const roundedTop = Math.round(top * 10) / 10
+    const roundedWidth = Math.round(widthVw * 10) / 10
+    return {
+      entry,
+      left: roundedLeft,
+      top: roundedTop,
+      widthVw: roundedWidth,
+      depth: Math.round(depth * 100) / 100,
+      z: Math.round(depth * 10),
+      style:
+        `left: ${roundedLeft}%; top: ${roundedTop}%; ` +
+        `width: clamp(140px, ${roundedWidth}vw, 400px); ` +
+        `z-index: ${Math.round(depth * 10)};`,
+    }
+  })
+}
+
+const placed = layout(entries)
+// Items run 10–20vw wide (clamped in CSS); on mobile they ride the same vw
+// ramp, so the split plan's 100vw floor below --bp-small covers them — the
+// same contract PointerFollowMedia used for its tracer layers.
+const placement = {context: 'split', collapseAt: 'small', vw: 30} as const
+---
+
+{
+  placed.length > 0 && (
+    <div class:list={['parallax-field', className]} data-parallax-field>
+      {placed.map((item) => (
+        <div
+          class="field-item"
+          data-parallax-item
+          data-depth={item.depth}
+          style={item.style}
+        >
+          <div class="field-item__drift" data-parallax-drift>
+            <MediaFrame media={item.entry} ratio="intrinsic" placement={placement} title={title} />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+<script>
+  import gsap from 'gsap'
+  import {ScrollTrigger} from 'gsap/ScrollTrigger'
+  import {PARALLAX_FIELD} from '../lib/motion'
+
+  gsap.registerPlugin(ScrollTrigger)
+
+  // Parallax Field: items are planted once (deterministic scatter from the
+  // frontmatter) and then move on two axes — a ScrollTrigger scrub on the
+  // outer wrapper (yPercent) and a pointer push-away on the inner element
+  // (x/y via quickTo), each scaled by the item's random depth. Closer items
+  // are repelled harder and settle faster. See PARALLAX_FIELD in
+  // lib/motion/config.ts.
+
+  // Push-away only makes sense with a fine pointer; scroll scrub runs
+  // everywhere (touch included).
+  const finePointer = window.matchMedia('(pointer: fine)')
+
+  const cleanups: Array<() => void> = []
+
+  const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
+
+  const initFields = () => {
+    document.querySelectorAll<HTMLElement>('[data-parallax-field]').forEach((root) => {
+      if (root.dataset.parallaxInitialized) return
+      const items = Array.from(root.querySelectorAll<HTMLElement>('[data-parallax-item]'))
+      if (!items.length) return
+      root.dataset.parallaxInitialized = 'true'
+
+      const scope = root.closest<HTMLElement>('[data-pointer-scope]') ?? root
+      const motion = gsap.matchMedia()
+
+      motion.add('(prefers-reduced-motion: no-preference)', () => {
+        const tweens = items.map((item) => {
+          const depth = clamp01(Number(item.dataset.depth ?? 0))
+          return gsap.fromTo(
+            item,
+            {yPercent: depth * PARALLAX_FIELD.scrollEnter},
+            {
+              yPercent: -depth * PARALLAX_FIELD.scrollExit,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: scope,
+                start: 'top bottom',
+                end: 'bottom top',
+                // Seconds of catch-up (not `true`) so the scrub lags the
+                // scrollbar and eases back fluidly when scroll stops or
+                // reverses.
+                scrub: PARALLAX_FIELD.scrollScrub,
+                invalidateOnRefresh: true,
+              },
+            },
+          )
+        })
+
+        const drifters = items.map((item) => {
+          const depth = clamp01(Number(item.dataset.depth ?? 0))
+          const drift = item.querySelector<HTMLElement>('[data-parallax-drift]')
+          if (!drift) return null
+          // Slow depth-scaled settle on both axes: the push builds fluidly
+          // and the same ease carries the item home when the cursor leaves
+          // its radius, so the rebound reads as a glide, not a snap.
+          const lag =
+            PARALLAX_FIELD.pushLagFar -
+            (PARALLAX_FIELD.pushLagFar - PARALLAX_FIELD.pushLagNear) * depth
+          return {
+            item,
+            push: PARALLAX_FIELD.pushFar + (PARALLAX_FIELD.pushNear - PARALLAX_FIELD.pushFar) * depth,
+            x: gsap.quickTo(drift, 'x', {duration: lag, ease: 'power3.out'}),
+            y: gsap.quickTo(drift, 'y', {duration: lag, ease: 'power3.out'}),
+          }
+        })
+
+        const handleMove = (event: PointerEvent) => {
+          if (!finePointer.matches) return
+          // Push-away: each item is repelled from the cursor along the
+          // cursor→item vector, with force easing to zero at pushRadius.
+          // The outer item's rect is read live so the push tracks the
+          // scrub-adjusted position (the inner drift never feeds back in).
+          const radius = scope.getBoundingClientRect().width * PARALLAX_FIELD.pushRadius
+          drifters.forEach((drifter) => {
+            if (!drifter) return
+            const rect = drifter.item.getBoundingClientRect()
+            const dx = rect.left + rect.width / 2 - event.clientX
+            const dy = rect.top + rect.height / 2 - event.clientY
+            const dist = Math.hypot(dx, dy)
+            if (dist >= radius) {
+              drifter.x(0)
+              drifter.y(0)
+              return
+            }
+            const force = (1 - dist / radius) ** 1.5 * drifter.push
+            const ux = dist > 0.01 ? dx / dist : 0
+            const uy = dist > 0.01 ? dy / dist : 0
+            drifter.x(ux * force)
+            drifter.y(uy * force)
+          })
+        }
+        const reset = () =>
+          drifters.forEach((drifter) => {
+            if (!drifter) return
+            drifter.x(0)
+            drifter.y(0)
+          })
+
+        scope.addEventListener('pointermove', handleMove)
+        scope.addEventListener('pointerleave', reset)
+        return () => {
+          tweens.forEach((tween) => tween.kill())
+          scope.removeEventListener('pointermove', handleMove)
+          scope.removeEventListener('pointerleave', reset)
+        }
+      })
+
+      cleanups.push(() => {
+        motion.revert()
+        delete root.dataset.parallaxInitialized
+      })
+    })
+  }
+
+  const cleanupAll = () => cleanups.splice(0).forEach((cleanup) => cleanup())
+
+  initFields()
+  document.addEventListener('astro:page-load', initFields)
+  document.addEventListener('astro:before-swap', cleanupAll)
+  window.addEventListener('pagehide', cleanupAll)
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) initFields()
+  })
+</script>
+
+<style>
+  .parallax-field {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .field-item {
+    position: absolute;
+    will-change: transform;
+  }
+
+  .field-item :global(.media-frame) {
+    width: 100%;
+    border-radius: var(--radius-media);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .field-item {
+      will-change: auto;
+    }
+  }
+</style>

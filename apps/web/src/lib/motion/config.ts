@@ -42,6 +42,32 @@ export const POINTER_TRAIL = {
   exitScale: 0.92,
 } as const
 
+/** Parallax Field (HomeParallax / ZineLandingIntro): a persistent scattered
+ *  media composition whose items sit at random depths. Depth drives the
+ *  pointer push-away (closer items are repelled harder and settle faster),
+ *  the scroll scrub (closer sweeps more of its own height), and the static
+ *  depth cues (size, z-order). */
+export const PARALLAX_FIELD = {
+  maxItems: 10,
+  /** Push-away: px of repulsion at the cursor's position for the closest /
+   *  farthest layers; falls off to zero at pushRadius. */
+  pushNear: 140,
+  pushFar: 40,
+  /** Push falloff radius, as a fraction of the section width. */
+  pushRadius: 0.35,
+  /** Push-away settle time in seconds for the closest / farthest layers.
+   *  The same slow ease-out covers the rebound home when the cursor moves
+   *  away, so items glide back instead of snapping. */
+  pushLagNear: 1.1,
+  pushLagFar: 2,
+  /** Scroll scrub: yPercent sweeps from depth * enter to -depth * exit,
+   *  smoothed by `scrollScrub` seconds of catch-up so the field lags and
+   *  rebounds fluidly instead of tracking the scrollbar 1:1. */
+  scrollEnter: 36,
+  scrollExit: 72,
+  scrollScrub: 1.4,
+} as const
+
 export const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 
 export function reducedMotionQuery(): MediaQueryList {

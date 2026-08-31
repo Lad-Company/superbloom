@@ -1,7 +1,7 @@
 ---
 import Button from '../Button.astro'
 import {type Media} from '../MediaFrame.astro'
-import PointerFollowMedia from '../PointerFollowMedia.astro'
+import ParallaxField from '../ParallaxField.astro'
 import SurfaceSection from '../SurfaceSection.astro'
 
 interface Props {
@@ -17,7 +17,7 @@ const resolvedHeading =
   heading ??
   'Original stories, interviews, and visual essays from the creative collective on what helps ideas grow.'
 const resolvedImageLayers = imageLayers ?? []
-const layers = (resolvedImageLayers.length > 0 ? resolvedImageLayers : fallbackMedia).slice(0, 4)
+const layers = (resolvedImageLayers.length > 0 ? resolvedImageLayers : fallbackMedia).slice(0, 10)
 const resolvedCtaLabel = ctaLabel ?? 'Explore the issue'
 ---
 
@@ -27,7 +27,7 @@ const resolvedCtaLabel = ctaLabel ?? 'Explore the issue'
   data-pointer-scope
   aria-labelledby="zine-landing-intro-heading"
 >
-  <PointerFollowMedia media={layers} class="zine-media" />
+  <ParallaxField media={layers} class="zine-media" />
 
   <div class="content">
     <h2 id="zine-landing-intro-heading">{resolvedHeading}</h2>
@@ -41,12 +41,15 @@ const resolvedCtaLabel = ctaLabel ?? 'Explore the issue'
     display: flex;
     align-items: start;
     min-height: clamp(460px, 56vw, 760px);
-    overflow: hidden;
+    /* Clip the field at the section box on all sides: items plant past the
+       edges with no inner padding and read as sliding under the sections
+       above and below. */
+    overflow: clip;
     padding: var(--space-4xl) var(--page-inset) var(--space-l);
     isolation: isolate;
   }
 
-  .zine-landing-intro :global(.pointer-follow.zine-media) {
+  .zine-landing-intro :global(.parallax-field.zine-media) {
     z-index: 0;
   }
 

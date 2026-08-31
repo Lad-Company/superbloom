@@ -31,8 +31,9 @@ export const zineLanding = defineType({
           title: 'Image Layers',
           type: 'array',
           of: [{type: 'mediaBox'}],
-          validation: (rule) => rule.max(4),
-          description: 'Up to four decorative layers. Images are arranged and animated by their order.',
+          validation: (rule) => rule.min(5).max(10),
+          description:
+            'Five to ten decorative layers scattered at random depths, rendered at their native aspect ratios. They drift with scroll and are pushed away by the cursor.',
         }),
         defineField({
           name: 'ctaLabel',

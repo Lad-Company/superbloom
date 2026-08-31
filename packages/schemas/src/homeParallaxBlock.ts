@@ -16,8 +16,9 @@ export const homeParallaxBlock = defineType({
       title: 'Images',
       type: 'array',
       of: [{type: 'mediaBox'}],
-      validation: (rule) => rule.max(4),
-      description: 'Up to four images that fan around and follow the cursor. Leave empty to hide the section.',
+      validation: (rule) => rule.min(5).max(10),
+      description:
+        'Five to ten images or videos scattered around the headline at random depths, rendered at their native aspect ratios. They drift with scroll and are pushed away by the cursor. Leave empty to hide the section.',
     }),
   ],
   preview: {

@@ -339,6 +339,14 @@ Hero → News → Parallax → Capabilities (Capes) → Our Work → Creative Co
 - **Hero** (`PageHero.astro`, media mode) — full-bleed hero: background media
   with an overlaid headline (`display-1`) and intro, headline left ~2/3, intro
   bottom-right.
+- **Parallax** (`HomeParallax.astro` + `ParallaxField.astro`) — statement
+  headline over a CMS-editable field of 5–10 media items rendered at native
+  aspect ratios, scattered at random depths (deterministic seed). Closer items
+  render larger and sit higher in z. Items plant past the section edges and
+  clip against them, reading as sliding under the neighbors. Motion: scroll
+  scrub plus a pointer push-away that repels items from the cursor, both
+  scaled by depth. The same field renders the Zine landing intro
+  (`ZineLandingIntro.astro`).
 - **Capes** (`Capes.astro`) — capability grid (headline + short description),
   3-col desktop / 2-col mobile, up to 6 capabilities; inherits page color mode.
   Reference recipe for Pinned Storytelling + Depth Layer motion.
