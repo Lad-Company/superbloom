@@ -75,7 +75,8 @@ API glue (`apps/web/src/pages/api/*`).
 - `/articles/[slug]` — News / Editorial Article detail
 - `/zine`, `/zine/issues/[slug]`, `/zine/issues/[slug]/[article]`
 - `/shop`, `/shop/products/[handle]`, `/cart` (`/shop` optionally leads with a
-  CMS-authored Featured Item from the `shopPage` singleton)
+  CMS-authored Featured Item from the `shopPage` singleton; when present, the
+  feature replaces the Shop page header)
 - `robots.txt`, `sitemap.xml`, `404`
 
 ## 6. Content model (schemas)

@@ -1,27 +1,12 @@
 ---
-import MediaFrame, {type Media, type MediaRatio} from '../MediaFrame.astro'
+import MediaFrame from '../MediaFrame.astro'
 import PortableText from '../PortableText.astro'
 import Button from '../Button.astro'
-import type {TypedObject} from 'astro-portabletext/types'
+import {isShopFeatureComplete, type ShopFeatureValue} from '../../lib/shopFeature'
 import type {ContentLayoutWidth} from '../../lib/contentLayout'
 
-// Featured shop item: the same media/copy split structure as the zine
-// Letter from the Editor, but the column widths are CMS-defined with the
-// case-study Content Layout widths (media + text must total full width).
 interface Props {
-  featured: {
-    ctaLabel?: string | null
-    ctaHref?: string | null
-    media?: {
-      width?: ContentLayoutWidth | null
-      aspectRatio?: MediaRatio | null
-      media?: Media | null
-    } | null
-    text?: {
-      width?: ContentLayoutWidth | null
-      text?: TypedObject[] | null
-    } | null
-  } | null
+  featured: ShopFeatureValue | null
 }
 
 const {featured} = Astro.props
@@ -38,17 +23,12 @@ const WIDTH_COLUMNS: Record<ContentLayoutWidth, number> = {
 
 const mediaBlock = featured?.media
 const textBlock = featured?.text
-// Render only a complete section; the CMS requires all parts, but a
-// published doc may predate that rule.
-const complete =
-  mediaBlock?.media && textBlock?.text?.length && featured?.ctaLabel && featured?.ctaHref
-
 const mediaColumns = WIDTH_COLUMNS[mediaBlock?.width ?? '1/2']
 const textColumns = WIDTH_COLUMNS[textBlock?.width ?? '1/2']
 ---
 
 {
-  complete && (
+  isShopFeatureComplete(featured) && (
     <section
       class="shop-feature"
       aria-label="Featured"
@@ -56,14 +36,14 @@ const textColumns = WIDTH_COLUMNS[textBlock?.width ?? '1/2']
     >
       <div class="shop-feature-media">
         <MediaFrame
-          media={mediaBlock.media}
-          ratio={mediaBlock.aspectRatio ?? '1:1'}
-          placement={{context: 'layoutBlock', width: mediaBlock.width ?? '1/2', fullBleed: false}}
+          media={mediaBlock?.media}
+          ratio={mediaBlock?.aspectRatio ?? '1:1'}
+          placement={{context: 'layoutBlock', width: mediaBlock?.width ?? '1/2', fullBleed: false}}
         />
       </div>
       <div class="shop-feature-copy">
-        <PortableText value={textBlock.text ?? []} class="type-body" />
-        <Button href={featured.ctaHref ?? undefined} label={featured.ctaLabel ?? ''} />
+        <PortableText value={textBlock?.text ?? []} class="type-body" />
+        <Button href={featured?.ctaHref ?? undefined} label={featured?.ctaLabel ?? ''} />
       </div>
     </section>
   )
@@ -72,9 +52,7 @@ const textColumns = WIDTH_COLUMNS[textBlock?.width ?? '1/2']
 <style>
   .shop-feature {
     display: grid;
-    grid-template-columns:
-      repeat(var(--media-columns), minmax(0, 1fr))
-      repeat(var(--text-columns), minmax(0, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
     align-items: start;
     /* Min 64px between the columns (page-gutter is 24px), same as the
        zine Letter from the Editor split. */
@@ -87,7 +65,12 @@ const textColumns = WIDTH_COLUMNS[textBlock?.width ?? '1/2']
     min-width: 0;
   }
 
+  .shop-feature-media {
+    grid-column: span var(--media-columns);
+  }
+
   .shop-feature-copy {
+    grid-column: span var(--text-columns);
     display: flex;
     flex-direction: column;
     align-items: start;
@@ -111,6 +94,11 @@ const textColumns = WIDTH_COLUMNS[textBlock?.width ?? '1/2']
     .shop-feature {
       grid-template-columns: 1fr;
       gap: var(--space-m);
+    }
+
+    .shop-feature-media,
+    .shop-feature-copy {
+      grid-column: 1 / -1;
     }
   }
 
