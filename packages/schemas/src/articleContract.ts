@@ -11,8 +11,15 @@ const hasPortableTextContent = (value: unknown) =>
     block.children?.some((child) => Boolean(child.text?.trim())),
   )
 
-export const validateArticleBody = (body: unknown): true | string =>
-  Array.isArray(body) && body.length > 0 ? true : 'An article body is required.'
+// News links out to external coverage and carries no internal body (ADR-0033);
+// Editorial and Zine detail pages still require one.
+export const validateArticleBody = (
+  body: unknown,
+  context?: ValidationContext,
+): true | string => {
+  if (context?.document?.articleType === 'news') return true
+  return Array.isArray(body) && body.length > 0 ? true : 'An article body is required.'
+}
 
 export const validatePortableTextNonEmpty = (value: unknown): true | string =>
   hasPortableTextContent(value) || 'This field is required.'

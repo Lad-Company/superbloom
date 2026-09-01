@@ -6,8 +6,12 @@ import {
 } from './articleContract'
 
 describe('Article contract validators', () => {
-  it('requires a body for every article type', () => {
+  it('requires a body for editorial and zine articles, but not news', () => {
     expect(validateArticleBody([])).toContain('required')
+    expect(validateArticleBody([], {document: {articleType: 'editorial'}})).toContain('required')
+    expect(validateArticleBody([], {document: {articleType: 'zine'}})).toContain('required')
+    expect(validateArticleBody(undefined, {document: {articleType: 'news'}})).toBe(true)
+    expect(validateArticleBody([], {document: {articleType: 'news'}})).toBe(true)
     expect(
       validateArticleBody([
         {_type: 'contentLayoutRow', blocks: [{_type: 'contentLayoutText', width: 'full'}]}],

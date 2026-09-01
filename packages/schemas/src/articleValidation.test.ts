@@ -42,15 +42,23 @@ describe('article document validation', () => {
     expect(await errorMarkers(baseArticle())).toEqual([])
   })
 
-  it('accepts a news article without lead media', async () => {
+  it('accepts a news article without lead media or body', async () => {
     const markers = await errorMarkers(
       baseArticle({
         articleType: 'news',
         destination: 'https://example.com/story',
         leadMedia: undefined,
+        body: undefined,
       }),
     )
     expect(markers).toEqual([])
+  })
+
+  it('requires a body for editorial articles', async () => {
+    const markers = await errorMarkers(baseArticle({body: undefined}))
+    expect(markers).toEqual(
+      expect.arrayContaining([{path: ['body'], message: 'An article body is required.'}]),
+    )
   })
 
   it('requires lead media for editorial articles', async () => {

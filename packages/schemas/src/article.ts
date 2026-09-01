@@ -102,6 +102,10 @@ export const article = defineType({
       name: 'body',
       type: 'array',
       of: [{type: 'contentLayoutRow'}],
+      // News links out to external coverage and has no internal body
+      // (ADR-0033 amends 0027's required-body clause); Editorial and Zine
+      // detail pages still require one.
+      hidden: ({document}) => document?.articleType === 'news',
       validation: (rule) => rule.custom(validateArticleBody),
     }),
     defineField({

@@ -261,6 +261,11 @@ another doc, that doc is authoritative.
   Studio Articles list ordering, and the Index/related GROQ queries already
   read and sort by this field, so no web change is needed. Amends 0022's
   hidden/frozen-`publicationDate` clause.
+- **0033 — News body removed.** News articles link out to external coverage
+  and carry no internal body, so `body` is hidden and no longer validated
+  for `articleType: 'news'`; a News item needs only a title, overview, card
+  settings, and a destination URL. Editorial and Zine detail pages still
+  require one. Amends 0027's required-body clause.
 
 **Superseded or amended (kept as guardrails):**
 
