@@ -113,7 +113,7 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
   - `'none'` (default — **Ambient**) — muted loop, visibility-gated, paused on
     offscreen/background-tab/reduced-motion/`active=false`. No control DOM, not
     focusable, not in the tab order. Cards, grids, background media, the
-    parallax field, and Capes.
+    pointer-follow cluster, and Capes.
   - `'compact'` — single play/pause button free-floating bottom-right
     (40px circle, `surface-wipe`, `aria-pressed`). Existing boolean default for
     mid-page featured videos.

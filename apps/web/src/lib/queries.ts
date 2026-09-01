@@ -148,10 +148,7 @@ export const whoWeAreQuery = defineQuery(`
     },
     marquee{ text },
     introStatement,
-    parallax{
-      headline,
-      "images": images[]${mediaProjection}
-    },
+    "introMedia": introMedia[]${mediaProjection},
     statCards[]{
       _key,
       label,

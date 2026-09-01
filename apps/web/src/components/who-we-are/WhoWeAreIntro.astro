@@ -1,0 +1,45 @@
+---
+import PointerFollowMedia from '../PointerFollowMedia.astro';
+import { type Media } from '../MediaFrame.astro';
+
+interface Props {
+  statement: string;
+  media?: (Media | null)[];
+}
+
+const { statement, media = [] } = Astro.props;
+---
+
+<div class="intro" data-pointer-scope>
+  <p class="intro-statement type-h4">{statement}</p>
+  <PointerFollowMedia media={media} />
+</div>
+
+<style>
+  .intro {
+    position: relative;
+    padding: var(--space-4xl) var(--page-inset);
+    overflow: hidden;
+  }
+
+  .intro-statement {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    /* Figma R3: the statement column is 1034px on desktop; narrower viewports
+       are constrained by the container before this ever binds. */
+    max-width: 1034px;
+  }
+
+  /* The pointer-follow cluster trails the cursor behind the statement, not
+     over it. */
+  .intro :global(.pointer-follow) {
+    z-index: 0;
+  }
+
+  @media (--bp-small) {
+    .intro {
+      padding: var(--space-2xl) var(--space-3xs);
+    }
+  }
+</style>

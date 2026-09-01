@@ -1,21 +1,18 @@
 ---
 import {type Media} from '../MediaFrame.astro'
-import {type SurfaceRole} from '../../lib/surfaceRole'
 import ParallaxField from '../ParallaxField.astro'
 import SurfaceSection from '../SurfaceSection.astro'
 
 interface Props {
   headline?: string | null
   images?: (Media | null)[] | null
-  /** Surface role for the section — home renders it light, Who We Are dark. */
-  role?: SurfaceRole
 }
 
-const {headline, images, role = 'light'} = Astro.props
+const {headline, images} = Astro.props
 const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 10)
 ---
 
-<SurfaceSection role={role} class="home-parallax" data-pointer-scope>
+<SurfaceSection role="light" class="home-parallax" data-pointer-scope>
   <ParallaxField media={layers} />
   {headline && (
     <div class="content">

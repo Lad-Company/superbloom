@@ -51,8 +51,8 @@ On every `astro:page-load`: Lenis init → `settleScrollPosition()` → `initMot
 (all Type Reveals split + tween) → `requestAnimationFrame(ScrollTrigger.refresh()
 + settleScrollPosition())`. In parallel the block scripts boot on the same event:
 Capes `initPinnedStory` (pin spacer insertion) + `initDepthLayer`, and
-HomeParallax `ParallaxField` (scroll-scrub tweens plus pointer push-away
-reading `getBoundingClientRect()` on every pointermove). Pin-spacer insertion + SplitText DOM
+HomeParallax `PointerFollowMedia` (a continuous rAF spring loop that calls
+`getBoundingClientRect()` every frame). Pin-spacer insertion + SplitText DOM
 mutation + a forced refresh in the first ~2 frames = synchronous reflow storms →
 startup jank, and Lenis fights the double scroll-settle.
 
@@ -110,7 +110,7 @@ animates smoothly (60fps, no blur compositing spikes in a Performance trace).
 
 ### C4 — Sequence startup work off the critical frame (`Layout.astro`) — MEDIUM
 - Run the hero reveal + Lenis first; defer non-critical inits (Capes pin, depth,
-  parallax field) to the next idle/frame (`requestIdleCallback` fallback
+  pointer-follow) to the next idle/frame (`requestIdleCallback` fallback
   `setTimeout`), so pin-spacer insertion and SplitType mutation don't reflow on
   the same frame as the hero animation.
 - Do a **single** `ScrollTrigger.refresh()` after layout settles, and call
@@ -131,12 +131,10 @@ layout-thrash cluster; scrolling immediately after load is smooth.
 Acceptance: during the Capes pin scrub, GPU/raster stays within frame budget
 (no dropped frames in a trace) on a mid-tier laptop.
 
-### C6 — Pointer-follow reflow (`PointerFollowMedia.astro`) — RESOLVED
-The pointer-follow tracer was removed (Who We Are intro now uses the shared
-`ParallaxField`), so the per-frame reflow concern no longer applies. The
-parallax field's pointer push-away still reads `getBoundingClientRect()` per
-pointermove; cache and recompute on resize/scroll/refresh if it shows in a
-trace.
+### C6 — Pointer-follow reflow (`PointerFollowMedia.astro`) — LOW
+Cache each group's `getBoundingClientRect()` and recompute on
+resize/scroll/refresh instead of every rAF tick, to drop the per-frame forced
+reflow. Minor with one group; do it if it shows in a trace.
 
 ## Non-goals
 - Implementation (this pass is spec only).

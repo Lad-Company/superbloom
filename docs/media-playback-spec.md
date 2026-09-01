@@ -106,7 +106,7 @@ controls?: 'none' | 'compact' | 'full'   // 'none' = Ambient; 'full' = Presented
 | Case Study lead media | `CaseStudyComposition.astro` | **Presented (`full`)** if full-bleed video; else Ambient |
 | Case Study section media | `ContentLayoutRow.astro` via `CaseStudyNarrativeSection` / `Results` (`mediaControls="full"`); `VideoCarousel.astro` | **Presented (`full`)** for every `mux.video` block |
 | All Content Cards / grids | `HomeWork`, `EditorialCard`, `WorkCard` media, `TwoUp`, `MediaSection`, `ArticleMediaSection`, `ContentLayoutRow` (article body rows), `HomeZine`, `HomeWhy`, `PastIssues` | **Ambient** |
-| Parallax field | `ParallaxField.astro` (HomeParallax / ZineLandingIntro / Who We Are intro) | **Ambient** (decorative, no controls) |
+| Pointer-follow cluster | `PointerFollowMedia.astro` | **Ambient** (decorative, no controls) |
 | Capes pinned stack | `Capes.astro` | **Ambient, excluded from controls** — playback is scroll-driven storytelling, not a watchable clip; see §7 |
 
 ---

@@ -23,7 +23,6 @@
     "migrate:zine-issue-mode": "sanity exec migrations/migrate-zine-issue-mode.ts",
     "migrate:zine-landing": "sanity exec migrations/migrate-zine-landing-content.ts",
     "migrate:zine-landing-intro": "sanity exec migrations/migrate-zine-landing-intro.ts",
-    "migrate:who-we-are-parallax": "sanity exec migrations/migrate-who-we-are-intro-parallax.ts --with-user-token",
     "migrate:article-body": "sanity exec migrations/migrate-article-body.ts",
     "migrate:standardize-article": "sanity exec migrations/standardize-article.ts",
     "migrate:prune-empty-mediabox-assets": "sanity exec migrations/prune-empty-mediabox-assets.ts",
