@@ -63,7 +63,12 @@ const textColumns = WIDTH_COLUMNS[textBlock?.width ?? '1/2']
     /* Min 64px between the columns (page-gutter is 24px), same as the
        zine Letter from the Editor split. */
     gap: max(var(--space-m), var(--page-gutter));
-    padding: clamp(var(--space-3xl), 14vw, var(--space-4xl)) var(--page-inset);
+    /* Standard hand-offs (same rhythm as /work): the text hero's bottom
+       padding is 0 so the following section owns the 96px header→content
+       gap — hence 96 top here — and the feature's 0 bottom lets the product
+       grid's own 96 top padding be the entire feature→grid gap. With no
+       feature, that same grid padding is the standard 96 header→grid gap. */
+    padding: var(--space-xl) var(--page-inset) 0;
   }
 
   .shop-feature-media,
@@ -100,17 +105,16 @@ const textColumns = WIDTH_COLUMNS[textBlock?.width ?? '1/2']
     .shop-feature {
       grid-template-columns: 1fr;
       gap: var(--space-m);
+      /* Mobile hand-offs, mirroring /work: 32 top pairs with the hero's 32
+         bottom for the consistent 64px header→feature gap; 0 bottom leaves
+         the grid's 32 top as the whole feature→grid gap. 12px sides match
+         every other mobile section. */
+      padding: var(--space-xs) var(--space-3xs) 0;
     }
 
     .shop-feature-media,
     .shop-feature-copy {
       grid-column: 1 / -1;
-    }
-  }
-
-  @media (--bp-small) {
-    .shop-feature {
-      padding-block: var(--space-xs);
     }
   }
 </style>
