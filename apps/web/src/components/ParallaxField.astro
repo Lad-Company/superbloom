@@ -99,8 +99,7 @@ const layout = (items: Media[]): PlacedItem[] => {
 
 const placed = layout(entries)
 // Items run 10–20vw wide (clamped in CSS); on mobile they ride the same vw
-// ramp, so the split plan's 100vw floor below --bp-small covers them — the
-// same contract PointerFollowMedia used for its tracer layers.
+// ramp, so the split plan's 100vw floor below --bp-small covers them.
 const placement = {context: 'split', collapseAt: 'small', vw: 30} as const
 ---
 

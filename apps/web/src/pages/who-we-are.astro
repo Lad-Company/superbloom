@@ -10,7 +10,7 @@ import Faq from '../components/Faq.astro';
 import SurfaceSection from '../components/SurfaceSection.astro';
 import PageHero from '../components/PageHero.astro';
 import WhoWeAreFeaturedMedia from '../components/who-we-are/WhoWeAreFeaturedMedia.astro';
-import WhoWeAreIntro from '../components/who-we-are/WhoWeAreIntro.astro';
+import HomeParallax from '../components/blocks/HomeParallax.astro';
 import WhoWeAreAdvantages from '../components/who-we-are/WhoWeAreAdvantages.astro';
 import { getSanityClient } from '../lib/sanity';
 import { isPreviewRequest } from '../lib/preview';
@@ -34,7 +34,10 @@ const marqueeText =
   'Campaigns. Content. Experiences. branded Entertainment. Social. strategy. creative.';
 const featuredMedia = page?.featuredMedia?.media ?? null;
 const featuredMediaRatio = page?.featuredMedia?.aspectRatio ?? '16:9';
-const introMedia = page?.introMedia?.length ? page.introMedia : (featuredMedia ? [featuredMedia] : []);
+const parallaxHeadline = page?.parallax?.headline ?? introStatement;
+const parallaxImages = page?.parallax?.images?.length
+  ? page.parallax.images
+  : (featuredMedia ? [featuredMedia] : []);
 const statCards = page?.statCards ?? [];
 const advantageHeadline = page?.advantageHeadline ?? 'Our unfair advantage';
 const advantageBlocks = page?.advantageBlocks ?? [];
@@ -63,9 +66,7 @@ const faqs = page?.faqs ?? [];
     <Marquee text={marqueeText} />
   </SurfaceSection>
 
-  <SurfaceSection role="dark">
-    <WhoWeAreIntro statement={introStatement} media={introMedia} />
-  </SurfaceSection>
+  <HomeParallax headline={parallaxHeadline} images={parallaxImages} role="dark" />
 
   {statCards.length > 0 && (
     <FactCardGrid cards={statCards} />

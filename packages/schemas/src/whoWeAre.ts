@@ -50,12 +50,11 @@ export const whoWeAre = defineType({
         'SuperBloom is an independent creative company built to move brands beyond advertising. We bring varied disciplines together powered by a collective of unexpected minds who make unignorable work.',
     }),
     defineField({
-      name: 'introMedia',
-      title: 'Intro Media',
-      type: 'array',
-      of: [{type: 'mediaBox'}],
-      validation: (rule) => rule.max(4),
-      description: 'Up to four images that fan around and follow the cursor across the intro section.',
+      name: 'parallax',
+      title: 'Intro Parallax',
+      type: 'homeParallaxBlock',
+      description:
+        'Scrolling parallax section under the marquee — same block as the homepage parallax. The intro statement is reused as its headline fallback.',
     }),
     defineField({
       name: 'statCards',

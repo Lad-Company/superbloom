@@ -24,9 +24,9 @@ in `MediaFrame` + `EditorialCard` so all surfaces inherit it.
 - **Implementation.** This pass is spec only.
 - **Agent browser QA and agent screenshots.** Verification is human QA only,
   against the acceptance criteria in §8.
-- **Capes and `PointerFollowMedia`.** Capes is scroll-driven Pinned
+- **Capes and `ParallaxField`.** Capes is scroll-driven Pinned
   Storytelling (blurred backdrop chapters, excluded from interactive video per
-  `media-playback-spec.md` §7); pointer-follow media is decorative. Neither gets
+  `media-playback-spec.md` §7); parallax field media is decorative. Neither gets
   posters or reveal behavior.
 - **Presented media** (heroes, Who We Are featured, case study lead). Poster
   gating is a card behavior; Presented frames keep their control bar contract.
