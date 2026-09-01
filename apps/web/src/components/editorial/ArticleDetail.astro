@@ -97,6 +97,7 @@ const destinationCtaLabel = article.source
   {
     article.destination && (
       <section class="destination-cta">
+        <div class="destination-cta-spacer" aria-hidden="true" />
         <Button
           href={article.destination}
           label={destinationCtaLabel}
@@ -146,9 +147,13 @@ const destinationCtaLabel = article.source
     margin: 0 0 var(--space-xs);
   }
 
+  /* Mirrors the .overview grid so the news CTA's left edge aligns with the
+     overview content column (1/4-width inset from the page edge). */
   .destination-cta {
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: var(--page-gutter);
+    justify-items: start;
     padding: var(--space-2xl) var(--page-inset);
   }
 
@@ -162,11 +167,13 @@ const destinationCtaLabel = article.source
   }
 
   @media (--bp-small) {
-    .overview {
+    .overview,
+    .destination-cta {
       grid-template-columns: 1fr;
     }
 
-    .overview-spacer {
+    .overview-spacer,
+    .destination-cta-spacer {
       display: none;
     }
 
