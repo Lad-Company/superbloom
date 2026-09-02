@@ -26,9 +26,9 @@ const { statement, media = [] } = Astro.props;
     position: relative;
     z-index: 1;
     margin: 0;
-    /* Figma R3: the statement column is 1034px on desktop; narrower viewports
-       are constrained by the container before this ever binds. */
-    max-width: 1034px;
+    /* Statement wraps at a shared 34ch cap — the same measure as the
+       Home parallax and Zine landing intro siblings. */
+    max-width: 34ch;
   }
 
   /* The pointer-follow cluster trails the cursor behind the statement, not

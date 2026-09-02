@@ -52,10 +52,10 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
   }
 
   h2 {
-    /* Full-width statement, matching the Zine landing intro sibling: no
-       character cap, so the wrap follows the page inset on all viewports. */
+    /* Statement wraps at a shared 34ch cap — the same measure as the
+       Who We Are intro and Zine landing intro siblings. */
     width: 100%;
-    max-width: none;
+    max-width: 34ch;
     margin: 0;
     font-family: var(--font-display-tight);
     /* Statement rides the shared type-h3 ramp — same size as its sibling
@@ -71,10 +71,6 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
     .home-parallax {
       min-height: 420px;
       padding: var(--space-xs) var(--space-3xs) 0;
-    }
-
-    h2 {
-      max-width: none;
     }
   }
 </style>

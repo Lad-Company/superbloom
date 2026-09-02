@@ -65,7 +65,9 @@ const resolvedCtaLabel = ctaLabel ?? 'Explore the issue'
 
   h2 {
     width: 100%;
-    max-width: none;
+    /* Statement wraps at a shared 34ch cap — the same measure as the
+       Who We Are intro and Home parallax siblings. */
+    max-width: 34ch;
     margin: 0;
     font-family: var(--font-display-tight);
     /* Mid-page statement rides the shared type-h3 ramp (spec §3.4: snapped
@@ -83,11 +85,6 @@ const resolvedCtaLabel = ctaLabel ?? 'Explore the issue'
          the media hero), 32 bottom to pair with the next section's 32. */
       min-height: 420px;
       padding: var(--space-m) var(--page-inset) var(--space-xs);
-    }
-
-    h2 {
-      width: 100%;
-      max-width: none;
     }
   }
 </style>
