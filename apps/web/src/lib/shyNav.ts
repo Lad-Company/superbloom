@@ -26,6 +26,11 @@ let state: ShyState = 'top'
 let lastY = 0
 let ticking = false
 let listening = false
+/* The SSR role vars as inlined by Navigation (style={vars[role]}). Captured
+   at init — removeProperty would delete the SSR theme itself, dropping the
+   nav back to the light :root defaults (black ink on dark heroes). */
+let roleBg = ''
+let roleFg = ''
 
 const desktop = window.matchMedia(DESKTOP_QUERY)
 
@@ -73,11 +78,11 @@ const applySurfaceColors = () => {
   }
 }
 
-/* Back at page top the SSR role vars (the nav's inline style attribute) take
-   over again. */
+/* Back at page top the captured SSR role vars take over again. */
 const restoreRoleColors = () => {
-  nav?.style.removeProperty('--bg')
-  nav?.style.removeProperty('--fg')
+  if (!nav) return
+  if (roleBg) nav.style.setProperty('--bg', roleBg)
+  if (roleFg) nav.style.setProperty('--fg', roleFg)
 }
 
 const setState = (next: ShyState) => {
@@ -133,8 +138,11 @@ const onScroll = () => {
 export const initShyNav = () => {
   nav = document.querySelector<HTMLElement>('.navigation')
   state = 'top'
-  // Reset any shy state that survived a swap/restore on the same element.
+  // Reset any shy state that survived a swap/restore on the same element,
+  // then capture this page's SSR role colors as the top-state theme.
   nav?.classList.remove('is-shy', 'is-revealed')
+  roleBg = nav?.style.getPropertyValue('--bg').trim() ?? ''
+  roleFg = nav?.style.getPropertyValue('--fg').trim() ?? ''
   restoreRoleColors()
   lastY = window.scrollY
   if (!listening) {

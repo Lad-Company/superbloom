@@ -187,7 +187,8 @@ const readZineHref = issue.issuuUrl && issue.slug ? `/zine/issues/${issue.slug}/
 
   @media (--bp-small) {
     .editor-letter {
-      padding-block: var(--space-xs);
+      /* Sides drop to the shared 12px mobile gutter. */
+      padding: var(--space-xs) var(--space-3xs);
     }
   }
 </style>

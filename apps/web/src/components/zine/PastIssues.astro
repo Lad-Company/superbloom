@@ -126,6 +126,20 @@ const {issues} = Astro.props;
       padding: var(--space-xs) 0;
     }
 
+    /* Rows and heading drop to the shared 12px mobile gutter; the hover
+       band's bleed tracks the same inset. */
+    h2 {
+      padding-inline: var(--space-3xs);
+    }
+
+    li {
+      margin-inline: var(--space-3xs);
+    }
+
+    li::before {
+      inset: 0 calc(-1 * var(--space-3xs));
+    }
+
     a {
       grid-template-columns: 96px minmax(0, 1fr);
       padding-block: var(--space-3xs);
