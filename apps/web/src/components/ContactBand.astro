@@ -17,7 +17,7 @@ const {role} = Astro.props
   <section class="contact-band" aria-labelledby="contact-heading">
     <PageGrid class="contact-grid">
       <div class="page-grid-item contact-left">
-        <h2 id="contact-heading" class="type-h5">
+        <h2 id="contact-heading" class="type-h3">
           Ready? We are.
         </h2>
       </div>
@@ -142,14 +142,17 @@ const {role} = Astro.props
   .contact-band {
     padding-block: var(--space-4xl);
   }
-  .contact-grid {
+  /* contact-grid lives on the child PageGrid's root element, so scoped
+     selectors can't reach it — go :global from the band, which is local. */
+  .contact-band :global(.contact-grid) {
     align-items: start;
   }
   .contact-left {
     padding-right: var(--space-xl);
   }
-  /* Headline rides the shared fluid type-h5 ramp via the Uno class. */
-  .type-h5 {
+  /* Headline rides the shared fluid type-h3 ramp via the Uno class — same
+     size as the zine signup headline (HomeZine). */
+  .type-h3 {
     margin: 0;
   }
   .contact-form,
@@ -208,8 +211,18 @@ const {role} = Astro.props
     .contact-band {
       padding-block: var(--space-xs);
     }
+    /* Match the footer newsletter's mobile inset (12px) so the form fields
+       align with the heading and the sections below. (:global — see above.) */
+    .contact-band :global(.contact-grid) {
+      padding-inline: var(--space-3xs);
+    }
     .contact-left {
       padding-right: 0;
+    }
+    /* Mobile headline steps down to the type-h2 ramp, matching the "What
+       they're saying" (HomePressCta) header size. */
+    .type-h3 {
+      font-size: var(--type-h2);
     }
   }
 </style>

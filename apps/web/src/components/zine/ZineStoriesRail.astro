@@ -80,13 +80,18 @@ const overrideFor = (id?: string | null) =>
 
   @media (--bp-small) {
     .stories {
-      padding-block: var(--space-xs);
+      /* Sides drop to the shared 12px mobile gutter. */
+      padding: var(--space-xs) var(--space-3xs);
     }
 
     /* The section padding owns the top rhythm on mobile; the rail's desktop
        96px margin would double it. */
     :global(.article-rail) {
       margin-top: 0;
+    }
+
+    :global(.article-rail .rail) {
+      margin-right: calc(-1 * var(--space-3xs));
     }
   }
 </style>

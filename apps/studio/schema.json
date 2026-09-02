@@ -1568,6 +1568,13 @@
             }
           },
           "optional": true
+        },
+        "showImageLayers": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "boolean"
+          },
+          "optional": true
         }
       }
     }
@@ -2109,6 +2116,13 @@
                     "name": "mediaBox"
                   }
                 }
+              },
+              "optional": true
+            },
+            "showImageLayers": {
+              "type": "objectAttribute",
+              "value": {
+                "type": "boolean"
               },
               "optional": true
             },
@@ -3474,6 +3488,13 @@
               "name": "mediaBox"
             }
           }
+        },
+        "optional": true
+      },
+      "showImageLayers": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "boolean"
         },
         "optional": true
       },

@@ -62,6 +62,13 @@ const {headline, body, ctaLabel, ctaHref, media} = Astro.props
       grid-template-columns: 1fr;
       padding: var(--space-3xl) var(--space-2xs);
     }
+    /* Collapsed to one column, media leads the stack (site-wide split-layout
+       rule); desktop side-by-side order is unchanged. The headline's
+       data-motion-text reveal is element-scoped, so reordering is safe. */
+    .visual {
+      order: -1;
+      padding-top: 0;
+    }
   }
   @media (--bp-small) {
     .why {

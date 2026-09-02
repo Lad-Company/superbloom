@@ -63,9 +63,9 @@ const faqs = page?.faqs ?? [];
     <Marquee text={marqueeText} />
   </SurfaceSection>
 
-  <SurfaceSection role="dark">
-    <WhoWeAreIntro statement={introStatement} media={introMedia} />
-  </SurfaceSection>
+  {/* WhoWeAreIntro renders its own SurfaceSection via the shared
+      ParallaxStatement section component. */}
+  <WhoWeAreIntro statement={introStatement} media={introMedia} showImageLayers={page?.showImageLayers} />
 
   {statCards.length > 0 && (
     <FactCardGrid cards={statCards} />

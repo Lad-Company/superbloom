@@ -29,7 +29,7 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
           {card.value && <Metric value={card.value} />}
           {card.description && <p class="description type-caption">{card.description}</p>}
           {card.items && card.items.length > 0 && (
-            <ul class="items type-h6">
+            <ul class="items type-body">
               {card.items.map((item) => <li>{item}</li>)}
             </ul>
           )}
@@ -98,10 +98,6 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
     max-width: 32ch;
   }
 
-  :global(.fact-card .items) {
-    line-height: 1.2;
-  }
-
   :global(.fact-card .items li) {
     margin: 0;
   }
@@ -117,10 +113,15 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
       grid-template-columns: 1fr;
     }
 
-    /* Stacked full-width cards keep the bottom-anchored value. */
+    /* Stacked full-width cards keep the bottom-anchored value. Mobile bumps
+       the interior vertical padding (12 → 32) so the copy doesn't read
+       cramped against the colored card edges; sides keep the 12px gutter. */
     :global(.fact-card) {
       min-height: 320px;
-      padding: var(--space-3xs);
+      padding: var(--space-xs) var(--space-3xs);
+      /* Minimum label→body gap on mobile: the clients list fills the card,
+         so space-between alone leaves the header flush against the list. */
+      gap: var(--space-xs);
     }
   }
 </style>

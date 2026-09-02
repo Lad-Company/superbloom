@@ -18,7 +18,10 @@ const { contextualCopy, capabilities } = Astro.props;
 const displayedCapabilities = capabilities.slice(0, 8);
 ---
 
-<section class="capes" data-capes data-depth-scope>
+  {/* data-nav-surface: the visible surface is the scrimmed media stack, so
+      the shy nav samples this as dark (the section's own --bg var is the
+      inverted overlay ink and can't carry the nav's theme vars). */}
+<section class="capes" data-capes data-depth-scope data-nav-surface="dark">
   <div class="pin" data-pin>
     <div class="media-stack" data-depth="0.2">
       {

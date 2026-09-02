@@ -101,7 +101,8 @@ export const homepageQuery = defineQuery(`
     },
     parallax{
       headline,
-      "images": images[]${mediaProjection}
+      "images": images[]${mediaProjection},
+      showImageLayers
     },
     work{
       headline,
@@ -150,6 +151,7 @@ export const whoWeAreQuery = defineQuery(`
     marquee{ text },
     introStatement,
     "introMedia": introMedia[]${mediaProjection},
+    showImageLayers,
     statCards[]{
       _key,
       label,
@@ -416,7 +418,8 @@ export const zineLandingQuery = defineQuery(`
     intro{
       heading,
       "imageLayers": imageLayers[]${mediaProjection},
-      ctaLabel
+      ctaLabel,
+      showImageLayers
     }
   }
 `)

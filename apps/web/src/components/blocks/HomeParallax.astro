@@ -1,76 +1,15 @@
 ---
 import {type Media} from '../MediaFrame.astro'
-import ParallaxField from '../ParallaxField.astro'
-import SurfaceSection from '../SurfaceSection.astro'
+import ParallaxStatement from '../ParallaxStatement.astro'
 
+/* Thin wrapper around the shared ParallaxStatement section (see D2). */
 interface Props {
   headline?: string | null
   images?: (Media | null)[] | null
+  showImageLayers?: boolean | null
 }
 
-const {headline, images} = Astro.props
-const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 10)
+const {headline, images, showImageLayers} = Astro.props
 ---
 
-<SurfaceSection role="light" class="home-parallax" data-pointer-scope>
-  <ParallaxField media={layers} />
-  {headline && (
-    <div class="content">
-      <h2>{headline}</h2>
-    </div>
-  )}
-</SurfaceSection>
-
-<style>
-  .home-parallax {
-    position: relative;
-    display: flex;
-    /* Statement pins to the top of the section (matching the Zine landing
-       intro sibling); the min-height below belongs to the pointer layers. */
-    align-items: flex-start;
-    min-height: clamp(460px, 56vw, 760px);
-    /* No bottom padding: the section hands off flush to the Capes section. */
-    padding: clamp(var(--space-3xl), 12vw, var(--space-4xl)) var(--page-inset) 0;
-    /* Clip the field at the section box on all sides: items plant past the
-       edges with no inner padding and read as sliding under the sections
-       above and below. */
-    overflow: clip;
-    isolation: isolate;
-  }
-
-  /* The parallax field floats underneath the section's content rather than
-     covering it. */
-  .home-parallax :global(.parallax-field) {
-    z-index: 0;
-  }
-
-  .content {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    pointer-events: none;
-  }
-
-  h2 {
-    /* Statement wraps at a shared 34ch cap — the same measure as the
-       Who We Are intro and Zine landing intro siblings. */
-    width: 100%;
-    max-width: 34ch;
-    margin: 0;
-    font-family: var(--font-display-tight);
-    /* Statement rides the shared type-h3 ramp — same size as its sibling
-       Zine statement (spec §3.4). */
-    font-size: var(--type-h3);
-    font-weight: 750;
-    line-height: 0.9;
-    letter-spacing: 0;
-    text-transform: uppercase;
-  }
-
-  @media (--bp-small) {
-    .home-parallax {
-      min-height: 420px;
-      padding: var(--space-xs) var(--space-3xs) 0;
-    }
-  }
-</style>
+<ParallaxStatement role="light" headline={headline} media={images} showLayers={showImageLayers} />

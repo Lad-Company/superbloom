@@ -1,0 +1,135 @@
+---
+import {type Media} from './MediaFrame.astro'
+import ParallaxField from './ParallaxField.astro'
+import SurfaceSection from './SurfaceSection.astro'
+import Button from './Button.astro'
+import {type SurfaceRole} from '../lib/surfaceRole'
+
+/* Shared statement section for the three parallax-style intros — homepage
+   parallax, zine landing intro, and Who We Are intro. One component ends the
+   drift between the three: ParallaxField scattered layers behind an uppercase
+   display statement on the shared type ramp (34ch measure), with an optional
+   CTA. The Who We Are intro's PointerFollowMedia cursor-trailing behavior is
+   sunset in favor of this shared ParallaxField look. */
+interface Props {
+  headline?: string | null
+  media?: (Media | null)[] | null
+  ctaLabel?: string | null
+  ctaHref?: string | null
+  role?: SurfaceRole
+  /* CMS toggle for the scattered image layers. Governs desktop only — layers
+     never render on mobile (see the --bp-small rule below). Unset (existing
+     documents) defaults to on, preserving the pre-toggle appearance. */
+  showLayers?: boolean | null
+  class?: string
+}
+
+const {headline, media, ctaLabel, ctaHref, role = 'light', showLayers, class: className} =
+  Astro.props
+const layers = (media ?? []).filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 10)
+const renderLayers = (showLayers ?? true) && layers.length > 0
+---
+
+<SurfaceSection
+  role={role}
+  class:list={['parallax-statement', {'has-layers': renderLayers}, className]}
+  data-pointer-scope
+>
+  {renderLayers && <ParallaxField media={layers} />}
+  <div class="content">
+    {headline && <h2>{headline}</h2>}
+    {ctaLabel && ctaHref && <Button href={ctaHref} label={ctaLabel} />}
+  </div>
+</SurfaceSection>
+
+<style>
+  .parallax-statement {
+    position: relative;
+    display: flex;
+    /* Statement pins to the top of the section; the min-height below belongs
+       to the pointer layers. */
+    align-items: flex-start;
+    /* Shared inner vertical rhythm for all three statement sections:
+       symmetric 4xl above/below on desktop, 2xl on mobile (the WhoWeAreIntro
+       definition). */
+    padding: var(--space-4xl) var(--page-inset);
+    /* Clip the field at the section box on all sides: items plant past the
+       edges with no inner padding and read as sliding under the sections
+       above and below. */
+    overflow: clip;
+    isolation: isolate;
+  }
+
+  /* The min-height canvas exists only for the scattered layers; with layers
+     toggled off the section collapses to content plus the padding above. */
+  .parallax-statement.has-layers {
+    min-height: clamp(460px, 56vw, 760px);
+  }
+
+  /* The parallax field floats underneath the section's content rather than
+     covering it. */
+  .parallax-statement :global(.parallax-field) {
+    z-index: 0;
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+    width: 100%;
+    /* The statement doesn't intercept pointer input meant for the field... */
+    pointer-events: none;
+  }
+
+  /* ...but the CTA (zine instance) stays clickable. */
+  .content :global(.btn) {
+    pointer-events: auto;
+  }
+
+  h2 {
+    /* Statement wraps at a shared 34ch cap — the same measure across the
+       home, zine, and who-we-are instances. */
+    width: 100%;
+    max-width: 34ch;
+    margin: 0;
+    font-family: var(--font-display-tight);
+    /* Statement rides the shared type-h3 ramp on every instance. */
+    font-size: var(--type-h3);
+    font-weight: 750;
+    line-height: 0.88;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  /* Mobile statements drop to the page-header size (the type-h1 floor) and
+     wrap with the hero's preferences — no 34ch cap, long words stay inside
+     the section instead of overflowing it. */
+  @media (--bp-below-desktop) {
+    h2 {
+      max-width: none;
+    }
+  }
+
+  @media (--bp-small) {
+    .parallax-statement {
+      /* Layers are hidden on mobile, so the min-height canvas goes with
+         them — the section collapses to content plus mirrored 2xl padding. */
+      min-height: 0;
+      padding: var(--space-2xl) var(--space-3xs);
+    }
+
+    h2 {
+      font-size: var(--type-h1);
+    }
+
+    /* No parallax image layers on mobile, even when the CMS toggle is on;
+       the statement (and CTA) are unaffected. The ParallaxField script is
+       gated to min-width: 768px, so no layer motion JS runs here either. */
+    .parallax-statement :global(.parallax-field) {
+      display: none;
+    }
+  }
+</style>

@@ -63,6 +63,7 @@ interface Props {
     fallbackMedia?: Media[]
     ctaLabel?: string | null
     ctaHref: string
+    showImageLayers?: boolean | null
   }
 }
 
@@ -84,7 +85,7 @@ const readZineHref = issue.issuuUrl && issue.slug ? `/zine/issues/${issue.slug}/
 
   {
     issue.editorLetter && (
-      <section class="editor-letter" aria-labelledby="editor-letter-heading">
+      <section class="editor-letter" aria-labelledby="editor-letter-heading" data-nav-surface="light">
         <div class="editor-letter-media">
           <MediaFrame
             media={issue.editorLetter.media ?? issue.heroMedia}
@@ -186,7 +187,8 @@ const readZineHref = issue.issuuUrl && issue.slug ? `/zine/issues/${issue.slug}/
 
   @media (--bp-small) {
     .editor-letter {
-      padding-block: var(--space-xs);
+      /* Sides drop to the shared 12px mobile gutter. */
+      padding: var(--space-xs) var(--space-3xs);
     }
   }
 </style>

@@ -86,10 +86,17 @@ const links = [
 <script>
   import { navigate } from 'astro:transitions/client'
   import {initDropdownDismiss} from '../lib/dropdownDismiss'
+  import {initShyNav} from '../lib/shyNav'
 
   // Compact menu shares the site-wide dropdown dismissal (outside pointer,
   // Escape).
   initDropdownDismiss()
+
+  // Desktop shy nav: hides on scroll down, re-appears on any scroll up, and
+  // re-colors to the surface beneath it while revealed. Rebound after each
+  // view-transition swap.
+  initShyNav()
+  document.addEventListener('astro:page-load', initShyNav)
 
   const updateCartLinks = (itemCount: number) => {
     const isActive = itemCount > 0
@@ -140,6 +147,7 @@ const links = [
     width: 100%;
     color: var(--fg);
     --fg-12: color-mix(in srgb, var(--fg) 12%, transparent);
+    --fg-20: color-mix(in srgb, var(--fg) 20%, transparent);
     --fg-60: color-mix(in srgb, var(--fg) 60%, transparent);
   }
   .logo,
@@ -310,9 +318,14 @@ const links = [
       color: #fff;
     }
 
-    /* Flip logo + toggle to white so they read on the black overlay. */
+    /* Flip logo + toggle to white so they read on the black overlay; the
+       shy bar's tint/blur would read as a stray strip over the panel. */
     .navigation:has(.compact-menu[open]) {
       color: #fff;
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      border-bottom-color: transparent;
     }
     .navigation:has(.compact-menu[open]) .logo {
       position: relative;
@@ -338,10 +351,40 @@ const links = [
     }
   }
 
+  /* Shy nav, all breakpoints: past the page top the nav becomes a fixed
+     frosted bar — hidden while scrolling down, revealed on any upward
+     scroll. Colors come from the sampled surface (lib/shyNav.ts), the SSR
+     role at page top; the bar's tint and blur track --bg so it stays
+     legible over dark, light, and brand surfaces. */
+  .navigation {
+    transition:
+      transform var(--motion-standard) var(--motion-ease-out),
+      color var(--motion-quick) linear;
+  }
+  .navigation.is-shy {
+    position: fixed;
+    transform: translateY(-110%);
+    /* Barely-there surface tint + heavy blur; the hairline below the bar
+       uses the shared border recipe (1px, fg at 20%). */
+    background: color-mix(in srgb, var(--bg) 10%, transparent);
+    backdrop-filter: blur(var(--frosted-layer-blur));
+    -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
+    border-bottom: 1px solid var(--fg-20);
+  }
+  .navigation.is-shy.is-revealed {
+    transform: translateY(0);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .compact-toggle__icon,
     .compact-toggle__icon::before,
     .compact-toggle__icon::after {
+      transition: none;
+    }
+
+    /* Reduced motion keeps the shy show/hide behavior but drops the slide
+       and color tweens. */
+    .navigation {
       transition: none;
     }
   }

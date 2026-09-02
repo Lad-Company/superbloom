@@ -33,16 +33,8 @@ export const POINTER = {
   lagDeep: 0.9,
 } as const
 
-export const POINTER_TRAIL = {
-  maxAlive: 4,
-  spawnDistance: 150,
-  hold: 0.6,
-  exitDuration: 0.08,
-  enterScale: 0.5,
-  exitScale: 0.92,
-} as const
-
-/** Parallax Field (HomeParallax / ZineLandingIntro): a persistent scattered
+/** Parallax Field (the shared ParallaxStatement section: home parallax, zine
+ *  landing intro, Who We Are intro): a persistent scattered
  *  media composition whose items sit at random depths. Depth drives the
  *  pointer push-away (closer items are repelled harder and settle faster),
  *  the scroll scrub (closer sweeps more of its own height), and the static

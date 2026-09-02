@@ -1,45 +1,16 @@
 ---
-import PointerFollowMedia from '../PointerFollowMedia.astro';
-import { type Media } from '../MediaFrame.astro';
+import {type Media} from '../MediaFrame.astro';
+import ParallaxStatement from '../ParallaxStatement.astro';
 
+/* Thin wrapper around the shared ParallaxStatement section (see D2): the
+   Who We Are intro adopts the home/zine ParallaxField look; the old
+   PointerFollowMedia cursor-trailing cluster is sunset. */
 interface Props {
   statement: string;
   media?: (Media | null)[];
+  showImageLayers?: boolean | null;
 }
-
-const { statement, media = [] } = Astro.props;
+const { statement, media = [], showImageLayers } = Astro.props;
 ---
 
-<div class="intro" data-pointer-scope>
-  <p class="intro-statement type-h4">{statement}</p>
-  <PointerFollowMedia media={media} />
-</div>
-
-<style>
-  .intro {
-    position: relative;
-    padding: var(--space-4xl) var(--page-inset);
-    overflow: hidden;
-  }
-
-  .intro-statement {
-    position: relative;
-    z-index: 1;
-    margin: 0;
-    /* Statement wraps at a shared 34ch cap — the same measure as the
-       Home parallax and Zine landing intro siblings. */
-    max-width: 34ch;
-  }
-
-  /* The pointer-follow cluster trails the cursor behind the statement, not
-     over it. */
-  .intro :global(.pointer-follow) {
-    z-index: 0;
-  }
-
-  @media (--bp-small) {
-    .intro {
-      padding: var(--space-2xl) var(--space-3xs);
-    }
-  }
-</style>
+<ParallaxStatement role="dark" headline={statement} media={media} showLayers={showImageLayers} />

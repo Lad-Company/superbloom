@@ -77,8 +77,9 @@ const href = issue?.slug
   @media (--bp-small) {
     .home-zine {
       /* 32 top/bottom pairs with the neighbouring sections' 32 for the
-         consistent 64px mobile hand-off. */
-      padding: var(--space-xs) var(--page-inset);
+         consistent 64px mobile hand-off; sides use the shared 12px mobile
+         gutter (matching HomeWhy above and HomePressCta below). */
+      padding: var(--space-xs) var(--space-3xs);
     }
   }
 </style>

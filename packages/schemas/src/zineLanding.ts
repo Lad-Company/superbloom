@@ -36,6 +36,14 @@ export const zineLanding = defineType({
             'Five to ten decorative layers scattered at random depths, rendered at their native aspect ratios. They drift with scroll and are pushed away by the cursor.',
         }),
         defineField({
+          name: 'showImageLayers',
+          title: 'Show Image Layers',
+          type: 'boolean',
+          initialValue: true,
+          description:
+            'Toggles the scattered image layers on desktop. Layers never render on mobile, regardless of this setting.',
+        }),
+        defineField({
           name: 'ctaLabel',
           title: 'CTA Label',
           type: 'string',
