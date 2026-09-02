@@ -104,12 +104,25 @@ const renderLayers = (showLayers ?? true) && layers.length > 0
     text-transform: uppercase;
   }
 
+  /* Mobile statements drop to the page-header size (the type-h1 floor) and
+     wrap with the hero's preferences — no 34ch cap, long words stay inside
+     the section instead of overflowing it. */
+  @media (--bp-below-desktop) {
+    h2 {
+      max-width: none;
+    }
+  }
+
   @media (--bp-small) {
     .parallax-statement {
       /* Layers are hidden on mobile, so the min-height canvas goes with
          them — the section collapses to content plus mirrored 2xl padding. */
       min-height: 0;
       padding: var(--space-2xl) var(--space-3xs);
+    }
+
+    h2 {
+      font-size: var(--type-h1);
     }
 
     /* No parallax image layers on mobile, even when the CMS toggle is on;

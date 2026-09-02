@@ -17,7 +17,12 @@ const {issues} = Astro.props;
 
 {
   issues.length > 0 && (
-    <nav class="past-issues" aria-labelledby="past-issues-heading">
+    <nav
+      class="past-issues"
+      aria-labelledby="past-issues-heading"
+      data-surface-role="dark"
+      style="--bg:#000000;--fg:#ffffff"
+    >
       <h2 id="past-issues-heading" class="type-h3">Past Zines</h2>
       <ul>
         {issues.map((issue) => (
@@ -116,7 +121,9 @@ const {issues} = Astro.props;
 
   @media (--bp-small) {
     .past-issues {
-      padding-top: var(--space-xs);
+      /* Bottom 32 pairs with the next section's (ContactBand) 32 top for
+         the consistent 64px mobile rhythm. */
+      padding: var(--space-xs) 0;
     }
 
     a {

@@ -293,6 +293,12 @@ const currentYear = new Date().getFullYear()
       padding-bottom: var(--space-xl);
       margin-bottom: var(--space-xl);
     }
+    /* Mobile newsletter heading steps down to the type-h2 ramp, matching the
+       "What they're saying" (HomePressCta) header size; the h3 floor
+       overflowed small phones. */
+    .nl-heading {
+      font-size: var(--type-h2);
+    }
     .nl-form {
       align-items: stretch;
     }

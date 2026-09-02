@@ -29,16 +29,48 @@ let listening = false
 
 const desktop = window.matchMedia(DESKTOP_QUERY)
 
-/* The revealed nav samples the surface just below its own bottom edge. */
+/* Media-covered stages (Capes, media heroes) can't carry inline --bg/--fg
+   vars — their own CSS consumes those vars with inverted meaning — so they
+   declare data-nav-surface instead, resolved through this map. */
+const NAV_SURFACE_COLORS: Record<string, {bg: string; fg: string}> = {
+  dark: {bg: '#000000', fg: '#ffffff'},
+  light: {bg: '#ffffff', fg: '#000000'},
+}
+
+const setColors = (bg: string, fg: string) => {
+  if (!nav) return
+  nav.style.setProperty('--bg', bg)
+  nav.style.setProperty('--fg', fg)
+}
+
+/* The revealed nav samples the surface just below its own bottom edge,
+   walking up from the hit element: an explicit data-nav-surface wins, then
+   any [data-surface-role] ancestor contributes its computed --bg/--fg
+   (SurfaceSection sets them inline; plain dark sections like advantages set
+   them in CSS). With no stamped ancestor the last colors stay. */
 const applySurfaceColors = () => {
   if (!nav) return
-  const sample = document.elementFromPoint(window.innerWidth / 2, nav.offsetHeight + 8)
-  const surface = sample?.closest<HTMLElement>('[data-surface-role]')
-  if (!surface) return
-  const bg = surface.style.getPropertyValue('--bg')
-  const fg = surface.style.getPropertyValue('--fg')
-  if (bg) nav.style.setProperty('--bg', bg)
-  if (fg) nav.style.setProperty('--fg', fg)
+  let el: Element | null = document.elementFromPoint(window.innerWidth / 2, nav.offsetHeight + 8)
+  while (el && el !== document.documentElement) {
+    if (el instanceof HTMLElement) {
+      const explicit = el.dataset.navSurface
+      if (explicit && NAV_SURFACE_COLORS[explicit]) {
+        const {bg, fg} = NAV_SURFACE_COLORS[explicit]
+        setColors(bg, fg)
+        return
+      }
+      if (el.dataset.surfaceRole) {
+        const computed = getComputedStyle(el)
+        const bg = computed.getPropertyValue('--bg').trim()
+        const fg = computed.getPropertyValue('--fg').trim()
+        if (bg && fg) {
+          setColors(bg, fg)
+          return
+        }
+      }
+    }
+    el = el.parentElement
+  }
 }
 
 /* Back at page top the SSR role vars (the nav's inline style attribute) take

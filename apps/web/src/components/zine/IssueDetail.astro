@@ -85,7 +85,7 @@ const readZineHref = issue.issuuUrl && issue.slug ? `/zine/issues/${issue.slug}/
 
   {
     issue.editorLetter && (
-      <section class="editor-letter" aria-labelledby="editor-letter-heading">
+      <section class="editor-letter" aria-labelledby="editor-letter-heading" data-nav-surface="light">
         <div class="editor-letter-media">
           <MediaFrame
             media={issue.editorLetter.media ?? issue.heroMedia}

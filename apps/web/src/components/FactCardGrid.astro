@@ -119,6 +119,9 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
     :global(.fact-card) {
       min-height: 320px;
       padding: var(--space-xs) var(--space-3xs);
+      /* Minimum label→body gap on mobile: the clients list fills the card,
+         so space-between alone leaves the header flush against the list. */
+      gap: var(--space-xs);
     }
   }
 </style>

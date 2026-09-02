@@ -63,9 +63,9 @@ const { items } = Astro.props;
     .row {
       flex-direction: column;
       gap: var(--space-3xs);
-      /* Mobile keeps its pre-existing compact centered stack; the desktop
-         alignment and 32px row padding above don't apply here. */
-      align-items: center;
+      /* Mobile stacks full-width and left-aligned, matching the page rhythm;
+         the desktop 32px row padding above doesn't apply here. */
+      align-items: stretch;
       padding: var(--space-3xs) 0;
     }
     .description {

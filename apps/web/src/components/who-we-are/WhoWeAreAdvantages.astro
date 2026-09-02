@@ -16,7 +16,9 @@ interface Props {
 const { headline, blocks } = Astro.props;
 ---
 
-<section class="advantages-section">
+  {/* data-surface-role stamps the dark theme for the shy nav's surface
+      sampling; the section's --bg/--fg come from its CSS below. */}
+<section class="advantages-section" data-surface-role="dark">
   <div class="advantages-header">
     <p class="type-h3">{headline}</p>
   </div>
