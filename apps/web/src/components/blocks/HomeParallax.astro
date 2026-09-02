@@ -52,8 +52,11 @@ const layers = (images ?? []).filter((entry): entry is Media => Boolean(entry?.a
   }
 
   h2 {
+    /* Full-width statement, matching the Zine landing intro sibling: no
+       character cap, so the wrap follows the page inset on all viewports. */
+    width: 100%;
+    max-width: none;
     margin: 0;
-    max-width: 14ch;
     font-family: var(--font-display-tight);
     /* Statement rides the shared type-h3 ramp — same size as its sibling
        Zine statement (spec §3.4). */
