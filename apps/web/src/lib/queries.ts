@@ -214,9 +214,13 @@ export const workIndexQuery = defineQuery(`
   }
 `)
 
+// No server-side slice: the All section order comes from the Work Index
+// itemOverrides list (applied client-side before pagination), so the page
+// needs the full set. Date desc stays as the fallback order behind
+// overridden items.
 export const caseStudiesNewestQuery = defineQuery(`
   *[_type == "caseStudy" && !(_id in $featuredIds)]
-    | order(publicationDate desc)[$offset...$end] {
+    | order(publicationDate desc) {
     _id,
     title,
     "slug": slug.current,
