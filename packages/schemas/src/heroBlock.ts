@@ -16,6 +16,13 @@ export const heroBlock = defineType({
       rows: 2,
     }),
     defineField({
+      name: 'showSubheading',
+      title: 'Show subheading',
+      type: 'boolean',
+      description: 'Toggle the hero subcopy on or off without deleting the text.',
+      initialValue: true,
+    }),
+    defineField({
       name: 'heroMedia',
       title: 'Background Media',
       type: 'mediaBox',

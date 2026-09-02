@@ -79,6 +79,7 @@ export const homepageQuery = defineQuery(`
     hero{
       heading,
       subheading,
+      showSubheading,
       "heroMedia": heroMedia${mediaProjection}
     },
     capabilities{

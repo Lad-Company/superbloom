@@ -4574,6 +4574,13 @@
           },
           "optional": true
         },
+        "showSubheading": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "boolean"
+          },
+          "optional": true
+        },
         "heroMedia": {
           "type": "objectAttribute",
           "value": {
