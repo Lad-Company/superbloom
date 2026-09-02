@@ -12,26 +12,36 @@ gsap.registerPlugin(ScrollTrigger)
  * fact cards and the Case Study Results stats. Under reduced motion
  * nothing is hidden and no timeline runs.
  *
+ * Pass `entrance: false` to skip the rise-in movement and keep only the
+ * count-up (Who We Are fact cards sit static; the stats still animate).
+ *
  * Returns a cleanup that kills the triggers/tweens; wire it to
  * `astro:before-swap`. Triggers are `once`, so they self-kill after firing.
  */
-export function revealStats(container: HTMLElement, itemSelector: string): () => void {
+export function revealStats(
+  container: HTMLElement,
+  itemSelector: string,
+  options: {entrance?: boolean} = {},
+): () => void {
   if (prefersReducedMotion()) return () => {}
 
   const items = Array.from(container.querySelectorAll<HTMLElement>(itemSelector))
   if (!items.length) return () => {}
 
-  const entrance = gsap.fromTo(
-    items,
-    {y: 40},
-    {
-      y: 0,
-      duration: MOTION.quick,
-      stagger: STAGGER.standard,
-      ease: EASE.snap,
-      scrollTrigger: {trigger: container, start: 'top 80%', once: true},
-    },
-  )
+  const entrance =
+    options.entrance === false
+      ? null
+      : gsap.fromTo(
+          items,
+          {y: 40},
+          {
+            y: 0,
+            duration: MOTION.quick,
+            stagger: STAGGER.standard,
+            ease: EASE.snap,
+            scrollTrigger: {trigger: container, start: 'top 80%', once: true},
+          },
+        )
 
   const counters: gsap.core.Tween[] = []
   items.forEach((item) => {
@@ -65,8 +75,8 @@ export function revealStats(container: HTMLElement, itemSelector: string): () =>
   })
 
   return () => {
-    entrance.scrollTrigger?.kill()
-    entrance.kill()
+    entrance?.scrollTrigger?.kill()
+    entrance?.kill()
     counters.forEach((tween) => {
       tween.scrollTrigger?.kill()
       tween.kill()

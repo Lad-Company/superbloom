@@ -47,7 +47,8 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
     document.querySelectorAll<HTMLElement>('[data-fact-card-grid]').forEach((grid) => {
       if (grid.dataset.statsInitialized) return;
       grid.dataset.statsInitialized = 'true';
-      const destroy = revealStats(grid, '.fact-card');
+      // Static cards: skip the slide-up entrance, keep the stat count-up.
+      const destroy = revealStats(grid, '.fact-card', {entrance: false});
       cleanups.push(() => {
         destroy();
         delete grid.dataset.statsInitialized;
