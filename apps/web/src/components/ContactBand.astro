@@ -17,7 +17,7 @@ const {role} = Astro.props
   <section class="contact-band" aria-labelledby="contact-heading">
     <PageGrid class="contact-grid">
       <div class="page-grid-item contact-left">
-        <h2 id="contact-heading" class="type-h5">
+        <h2 id="contact-heading" class="type-h3">
           Ready? We are.
         </h2>
       </div>
@@ -148,8 +148,9 @@ const {role} = Astro.props
   .contact-left {
     padding-right: var(--space-xl);
   }
-  /* Headline rides the shared fluid type-h5 ramp via the Uno class. */
-  .type-h5 {
+  /* Headline rides the shared fluid type-h3 ramp via the Uno class — same
+     size as the zine signup headline (HomeZine). */
+  .type-h3 {
     margin: 0;
   }
   .contact-form,

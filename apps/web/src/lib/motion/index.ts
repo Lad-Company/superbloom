@@ -3,7 +3,7 @@
 // into the SSR server graph and 500 the Vercel function at module load.
 // Frontmatter that needs motion constants imports from './config' directly.
 // CI enforces this via `pnpm --filter web check:ssr` (scripts/check-ssr-imports.mjs).
-export { MOTION, EASE, STAGGER, SCROLL, POINTER, POINTER_TRAIL, PARALLAX_FIELD, REDUCED_MOTION_QUERY, reducedMotionQuery, prefersReducedMotion } from './config';
+export { MOTION, EASE, STAGGER, SCROLL, POINTER, PARALLAX_FIELD, REDUCED_MOTION_QUERY, reducedMotionQuery, prefersReducedMotion } from './config';
 export { splitText, type SplitHandle, type SplitUnit } from './splitText';
 export { revealText, type RevealOptions, type RevealHandle } from './reveal';
 export { revealStats } from './statReveal';

@@ -29,7 +29,9 @@ const currentYear = new Date().getFullYear()
 <SurfaceSection role="dark" class="footer-surface">
   <footer class="footer type-eyebrow">
     <div class="newsletter">
-      <p class="type-h3 nl-heading">Subscribe to The Microdose</p>
+      {/* nbsp binds "The Microdose" so "The" can't orphan onto its own line
+          at small mobile widths (~390px and below). */}
+      <p class="type-h3 nl-heading">Subscribe to The&nbsp;Microdose</p>
       <form class="nl-form" id="newsletter-form">
         <label class="sr-only" for="newsletter-email">Email address</label>
         <input

@@ -55,7 +55,16 @@ export const whoWeAre = defineType({
       type: 'array',
       of: [{type: 'mediaBox'}],
       validation: (rule) => rule.max(4),
-      description: 'Up to four images that fan around and follow the cursor across the intro section.',
+      description:
+        'Up to four images scattered around the intro statement at random depths. They drift with scroll and are pushed away by the cursor.',
+    }),
+    defineField({
+      name: 'showImageLayers',
+      title: 'Show Intro Image Layers',
+      type: 'boolean',
+      initialValue: true,
+      description:
+        'Toggles the intro section image layers on desktop. Layers never render on mobile, regardless of this setting.',
     }),
     defineField({
       name: 'statCards',

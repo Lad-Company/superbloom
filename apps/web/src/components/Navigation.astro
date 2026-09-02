@@ -86,10 +86,17 @@ const links = [
 <script>
   import { navigate } from 'astro:transitions/client'
   import {initDropdownDismiss} from '../lib/dropdownDismiss'
+  import {initShyNav} from '../lib/shyNav'
 
   // Compact menu shares the site-wide dropdown dismissal (outside pointer,
   // Escape).
   initDropdownDismiss()
+
+  // Desktop shy nav: hides on scroll down, re-appears on any scroll up, and
+  // re-colors to the surface beneath it while revealed. Rebound after each
+  // view-transition swap.
+  initShyNav()
+  document.addEventListener('astro:page-load', initShyNav)
 
   const updateCartLinks = (itemCount: number) => {
     const isActive = itemCount > 0
@@ -338,10 +345,36 @@ const links = [
     }
   }
 
+  /* Shy nav, desktop only: past the page top the nav becomes a fixed bar —
+     hidden while scrolling down, revealed on any upward scroll. Colors come
+     from the sampled surface (lib/shyNav.ts), the SSR role at page top. */
+  @media (--bp-desktop) {
+    .navigation {
+      transition:
+        transform var(--motion-standard) var(--motion-ease-out),
+        color var(--motion-quick) linear;
+    }
+    .navigation.is-shy {
+      position: fixed;
+      transform: translateY(-110%);
+    }
+    .navigation.is-shy.is-revealed {
+      transform: translateY(0);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .compact-toggle__icon,
     .compact-toggle__icon::before,
     .compact-toggle__icon::after {
+      transition: none;
+    }
+  }
+
+  /* Reduced motion keeps the shy show/hide behavior but drops the slide and
+     color tweens. */
+  @media (--bp-desktop) and (prefers-reduced-motion: reduce) {
+    .navigation {
       transition: none;
     }
   }

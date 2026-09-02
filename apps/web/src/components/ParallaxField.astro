@@ -98,9 +98,9 @@ const layout = (items: Media[]): PlacedItem[] => {
 }
 
 const placed = layout(entries)
-// Items run 10–20vw wide (clamped in CSS); on mobile they ride the same vw
-// ramp, so the split plan's 100vw floor below --bp-small covers them — the
-// same contract PointerFollowMedia used for its tracer layers.
+// Items run 10–20vw wide (clamped in CSS); on viewports where the field
+// renders they ride the same vw ramp, so the split plan's 100vw floor below
+// --bp-small covers them. (Sections hide the field entirely below --bp-small.)
 const placement = {context: 'split', collapseAt: 'small', vw: 30} as const
 ---
 
@@ -137,8 +137,9 @@ const placement = {context: 'split', collapseAt: 'small', vw: 30} as const
   // are repelled harder and settle faster. See PARALLAX_FIELD in
   // lib/motion/config.ts.
 
-  // Push-away only makes sense with a fine pointer; scroll scrub runs
-  // everywhere (touch included).
+  // Push-away only makes sense with a fine pointer. Layers never render at
+  // mobile widths (the sections hide the field below --bp-small, 768px), so
+  // no layer motion runs there either — scrub or push-away.
   const finePointer = window.matchMedia('(pointer: fine)')
 
   const cleanups: Array<() => void> = []
@@ -155,7 +156,7 @@ const placement = {context: 'split', collapseAt: 'small', vw: 30} as const
       const scope = root.closest<HTMLElement>('[data-pointer-scope]') ?? root
       const motion = gsap.matchMedia()
 
-      motion.add('(prefers-reduced-motion: no-preference)', () => {
+      motion.add('(prefers-reduced-motion: no-preference) and (min-width: 768px)', () => {
         const tweens = items.map((item) => {
           const depth = clamp01(Number(item.dataset.depth ?? 0))
           return gsap.fromTo(
