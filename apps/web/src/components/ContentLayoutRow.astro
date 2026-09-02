@@ -200,6 +200,12 @@ const placementFor = (width?: ContentLayoutWidth | null): MediaPlacement => {
   .content-layout-text {
     overflow-wrap: anywhere;
   }
+  /* Headings inside rich text keep UA margins (h3 ≈ 22px), which dropped the
+     copy below the media top in split rows. Strip the first block's top
+     margin so copy top-aligns with the media beside it. */
+  .content-layout-text :global(.portable-text > :first-child) {
+    margin-block-start: 0;
+  }
   .content-layout-text :global(a:focus-visible) {
     outline: 2px solid currentColor;
     outline-offset: 3px;
