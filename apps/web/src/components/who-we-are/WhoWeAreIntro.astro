@@ -10,12 +10,15 @@ interface Props {
   statement: string;
   media?: (Media | null)[];
   showImageLayers?: boolean | null;
+  /* CMS black/white toggle for the section surface. Unset (existing
+     documents) defaults to dark, preserving the pre-toggle appearance. */
+  theme?: 'light' | 'dark' | null;
 }
-const { statement, media = [], showImageLayers } = Astro.props;
+const { statement, media = [], showImageLayers, theme } = Astro.props;
 ---
 
 <ParallaxStatement
-  role="dark"
+  role={theme ?? 'dark'}
   headline={statement}
   media={media}
   showLayers={showImageLayers}

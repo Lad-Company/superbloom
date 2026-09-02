@@ -249,7 +249,7 @@
           },
           "optional": true
         },
-        "videos": {
+        "media": {
           "type": "objectAttribute",
           "value": {
             "type": "array",
@@ -1575,6 +1575,23 @@
             "type": "boolean"
           },
           "optional": true
+        },
+        "theme": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "light"
+              },
+              {
+                "type": "string",
+                "value": "dark"
+              }
+            ]
+          },
+          "optional": true
         }
       }
     }
@@ -2123,6 +2140,23 @@
               "type": "objectAttribute",
               "value": {
                 "type": "boolean"
+              },
+              "optional": true
+            },
+            "theme": {
+              "type": "objectAttribute",
+              "value": {
+                "type": "union",
+                "of": [
+                  {
+                    "type": "string",
+                    "value": "light"
+                  },
+                  {
+                    "type": "string",
+                    "value": "dark"
+                  }
+                ]
               },
               "optional": true
             },
@@ -3495,6 +3529,23 @@
         "type": "objectAttribute",
         "value": {
           "type": "boolean"
+        },
+        "optional": true
+      },
+      "introTheme": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "union",
+          "of": [
+            {
+              "type": "string",
+              "value": "light"
+            },
+            {
+              "type": "string",
+              "value": "dark"
+            }
+          ]
         },
         "optional": true
       },

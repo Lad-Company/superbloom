@@ -68,7 +68,7 @@ describe('Content Layout Row rendering contract', () => {
       'width',
       'aspectRatio',
       'text',
-      'videos',
+      'media',
       'playbackId',
       'altText',
       'decorative',

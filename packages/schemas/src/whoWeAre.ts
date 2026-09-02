@@ -67,6 +67,21 @@ export const whoWeAre = defineType({
         'Toggles the intro section image layers on desktop. Layers never render on mobile, regardless of this setting.',
     }),
     defineField({
+      name: 'introTheme',
+      title: 'Intro Background',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'White', value: 'light'},
+          {title: 'Black', value: 'dark'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'dark',
+      description:
+        'Intro section background and ink color. Unset (existing content) renders Black.',
+    }),
+    defineField({
       name: 'statCards',
       title: 'Stat Cards',
       type: 'array',

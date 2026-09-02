@@ -2,7 +2,7 @@
 import type {TypedObject} from 'astro-portabletext/types'
 import MediaFrame, {type Media, type MediaPlaybackProfile, type MediaRatio} from './MediaFrame.astro'
 import PortableText from './PortableText.astro'
-import VideoCarousel, {type CarouselLayout} from './VideoCarousel.astro'
+import Carousel, {type CarouselLayout} from './Carousel.astro'
 import {
   getContentLayoutRowClassNames,
   isContentLayoutFullBleed,
@@ -39,7 +39,7 @@ type CarouselBlock = {
   _key?: string | null
   layout?: CarouselLayout | null
   text?: TypedObject[] | null
-  videos?: Array<Media | null> | null
+  media?: Array<Media | null> | null
 }
 
 export interface ContentLayoutRowValue {
@@ -75,7 +75,7 @@ const fullBleed = isContentLayoutFullBleed({
 // Full-width carousels render edge-to-edge: a lone full-layout carousel
 // block escapes the content gutter at every breakpoint. Split layouts
 // (textRight/textLeft) keep the row inset — the carousel overflows only the
-// edge farthest from its text box, handled inside VideoCarousel.
+// edge farthest from its text box, handled inside Carousel.
 const carouselBleed =
   blocks.length === 1 &&
   blocks[0]?._type === 'contentLayoutCarousel' &&
@@ -110,8 +110,8 @@ const placementFor = (width?: ContentLayoutWidth | null): MediaPlacement => {
             </div>
           )}
           {block._type === 'contentLayoutCarousel' && (
-            <VideoCarousel
-              videos={block.videos}
+            <Carousel
+              media={block.media}
               label={mediaTitle}
               layout={block.layout}
               text={block.text}

@@ -104,7 +104,7 @@ controls?: 'none' | 'compact' | 'full'   // 'none' = Ambient; 'full' = Presented
 | Home hero (3:2), Zine hero (16:9) | `PageHero.astro` media mode | **Presented (`full`)** |
 | Who We Are featured media | `WhoWeAreFeaturedMedia.astro` | **Presented (`full`)** — upgrade current `compact` |
 | Case Study lead media | `CaseStudyComposition.astro` | **Presented (`full`)** if full-bleed video; else Ambient |
-| Case Study section media | `ContentLayoutRow.astro` via `CaseStudyNarrativeSection` / `Results` (`mediaControls="full"`); `VideoCarousel.astro` | **Presented (`full`)** for every `mux.video` block |
+| Case Study section media | `ContentLayoutRow.astro` via `CaseStudyNarrativeSection` / `Results` (`mediaControls="full"`); `Carousel.astro` | **Presented (`full`)** for every `mux.video` block |
 | All Content Cards / grids | `HomeWork`, `EditorialCard`, `WorkCard` media, `TwoUp`, `MediaSection`, `ArticleMediaSection`, `ContentLayoutRow` (article body rows), `HomeZine`, `HomeWhy`, `PastIssues` | **Ambient** |
 | Pointer-follow cluster | `PointerFollowMedia.astro` | **Ambient** (decorative, no controls) |
 | Capes pinned stack | `Capes.astro` | **Ambient, excluded from controls** — playback is scroll-driven storytelling, not a watchable clip; see §7 |

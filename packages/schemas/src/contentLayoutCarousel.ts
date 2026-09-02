@@ -1,10 +1,6 @@
 import {defineField, defineType} from 'sanity'
 import {validatePortableTextNonEmpty} from './articleContract'
 
-type CarouselVideo = {
-  asset?: Array<{_type?: string}>
-}
-
 export const CAROUSEL_LAYOUTS = ['full', 'textRight', 'textLeft'] as const
 export type CarouselLayout = (typeof CAROUSEL_LAYOUTS)[number]
 
@@ -18,7 +14,8 @@ const LAYOUT_TITLES: Record<CarouselLayout, string> = {
 }
 
 /**
- * Video Carousel Block — three to ten videos in one of three layouts:
+ * Carousel Block — three to ten media items (images and/or videos) in one of
+ * three layouts:
  *
  * - **Full width** (`full`): the track bleeds edge-to-edge; prev/next controls
  *   sit centered below the carousel.
@@ -30,17 +27,17 @@ const LAYOUT_TITLES: Record<CarouselLayout, string> = {
  *   carousel on the right 3/4 with controls at its bottom left, overflowing
  *   only the right edge.
  *
- * Split layouts open on the first video, anchored to the track edge beside
- * the text; upcoming videos trail in the direction opposite the text.
+ * Split layouts open on the first item, anchored to the track edge beside
+ * the text; upcoming items trail in the direction opposite the text.
  *
- * Every video renders at its intrinsic aspect ratio, height-capped at the
- * 16:9 height so portrait videos narrow instead of standing taller. Carousels
+ * Every item renders at its intrinsic aspect ratio, height-capped at the
+ * 16:9 height so portrait media narrows instead of standing taller. Carousels
  * have no width control: they always span the full row, so a carousel must be
  * the only block in its Content Layout Row (enforced in contentLayoutContract).
  */
 export const contentLayoutCarousel = defineType({
   name: 'contentLayoutCarousel',
-  title: 'Video Carousel Block',
+  title: 'Carousel Block',
   type: 'object',
   fields: [
     defineField({
@@ -55,20 +52,11 @@ export const contentLayoutCarousel = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
-      name: 'videos',
-      title: 'Videos',
+      name: 'media',
+      title: 'Media',
       type: 'array',
       of: [{type: 'mediaBox'}],
-      validation: (rule) => [
-        rule.required().min(3).max(10),
-        rule.custom((videos) => {
-          if (!Array.isArray(videos)) return true
-          const hasNonVideo = (videos as CarouselVideo[]).some(
-            (video) => video?.asset?.[0]?._type !== 'mux.video',
-          )
-          return hasNonVideo ? 'Every Video Carousel item must be a video.' : true
-        }),
-      ],
+      validation: (rule) => rule.required().min(3).max(10),
     }),
     defineField({
       name: 'text',
@@ -112,10 +100,10 @@ export const contentLayoutCarousel = defineType({
     }),
   ],
   preview: {
-    select: {videos: 'videos', layout: 'layout'},
-    prepare: ({videos, layout}: {videos?: unknown[]; layout?: CarouselLayout}) => ({
-      title: 'Video Carousel',
-      subtitle: `${Array.isArray(videos) ? videos.length : 0} video(s) · ${LAYOUT_TITLES[layout ?? 'full']}`,
+    select: {media: 'media', layout: 'layout'},
+    prepare: ({media, layout}: {media?: unknown[]; layout?: CarouselLayout}) => ({
+      title: 'Carousel',
+      subtitle: `${Array.isArray(media) ? media.length : 0} item(s) · ${LAYOUT_TITLES[layout ?? 'full']}`,
     }),
   },
 })

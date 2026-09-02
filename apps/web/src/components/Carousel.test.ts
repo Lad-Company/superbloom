@@ -1,14 +1,23 @@
 import {readFileSync} from 'node:fs'
 import {describe, expect, it} from 'vitest'
 
-const source = readFileSync(new URL('./VideoCarousel.astro', import.meta.url), 'utf8')
+const source = readFileSync(new URL('./Carousel.astro', import.meta.url), 'utf8')
 const rowSource = readFileSync(new URL('./ContentLayoutRow.astro', import.meta.url), 'utf8')
 
-describe('Video Carousel', () => {
-  it('renders every video at its intrinsic ratio with full playback controls', () => {
+describe('Carousel', () => {
+  it('renders every item at its intrinsic ratio, videos with full playback controls', () => {
     expect(source).toContain('ratio="intrinsic"')
-    expect(source).toContain('controls="full"')
+    expect(source).toContain("controls={item.asset?._type === 'mux.video' ? 'full' : 'none'}")
     expect(source).toContain('--ratio:')
+  })
+
+  it('accepts both image and video items', () => {
+    expect(source).toContain("item?.asset?._type === 'mux.video' && Boolean(item.asset.playbackId)")
+    expect(source).toContain("item?.asset?._type === 'image' && Boolean(item.asset.asset?._ref)")
+    // Image ratios come from the projected width/height metadata; videos
+    // parse Mux's "W:H" aspect_ratio.
+    expect(source).toContain('return width / height')
+    expect(source).toContain('asset.aspectRatio?.match')
   })
 
   it('plays only the centered video, keeping neighbours paused until active', () => {
@@ -16,17 +25,17 @@ describe('Video Carousel', () => {
     expect(source).toContain("toggleAttribute('active', isActive)")
   })
 
-  it('opens the full layout on the second video, flanked on both sides', () => {
-    expect(source).toContain("layout === 'full' ? (playable.length > 1 ? 1 : 0)")
+  it('opens the full layout on the second item, flanked on both sides', () => {
+    expect(source).toContain("layout === 'full' ? (items.length > 1 ? 1 : 0)")
     expect(source).toContain('data-active={index === initialIndex')
     expect(source).toContain("this.scrollToSlide(initialIndex, 'auto')")
   })
 
-  it('opens split layouts on the first video, anchored to the text-side edge', () => {
-    // textLeft keeps authored order (first video at DOM index 0); textRight
-    // renders the track reversed so the first video sits at the right edge.
+  it('opens split layouts on the first item, anchored to the text-side edge', () => {
+    // textLeft keeps authored order (first item at DOM index 0); textRight
+    // renders the track reversed so the first item sits at the right edge.
     expect(source).toContain("layout === 'textRight' ? ordered.length - 1 : 0")
-    expect(source).toContain('[...playable].reverse()')
+    expect(source).toContain('[...items].reverse()')
     expect(source).toContain("this.layout === 'textRight'")
     expect(source).toContain('? this.slides.length - 1')
   })
@@ -35,13 +44,13 @@ describe('Video Carousel', () => {
     expect(source).toContain('scroll-snap-type: x mandatory')
     expect(source).toContain('scroll-snap-align: center')
     expect(source).toContain("--bp-desktop")
-    expect(source).toContain(".video-carousel[data-layout='textRight'] .slide")
+    expect(source).toContain(".carousel[data-layout='textRight'] .slide")
     expect(source).toContain('scroll-snap-align: end')
-    expect(source).toContain(".video-carousel[data-layout='textLeft'] .slide")
+    expect(source).toContain(".carousel[data-layout='textLeft'] .slide")
     expect(source).toContain('scroll-snap-align: start')
   })
 
-  it('moves the track padding to the far edge so upcoming videos trail past the gutter', () => {
+  it('moves the track padding to the far edge so upcoming items trail past the gutter', () => {
     expect(source).toContain('--ratio-first')
     expect(source).toContain('--ratio-last')
     expect(source).toContain(
@@ -82,12 +91,12 @@ describe('Video Carousel', () => {
     expect(source).toContain('.slide[data-active] .slide-inner')
   })
 
-  it('caps every video at the 16:9 slide height, whatever its ratio', () => {
+  it('caps every item at the 16:9 slide height, whatever its ratio', () => {
     expect(source).toContain('--cap-h: calc(var(--slide-w) * 9 / 16)')
     expect(source).toContain('width: min(var(--slide-w), calc(var(--cap-h) * var(--ratio)))')
   })
 
-  it('pushes the active video slightly forward in space', () => {
+  it('pushes the active item slightly forward in space', () => {
     expect(source).toContain('transform: scale(0.92)')
     expect(source).toContain('.slide[data-active]')
   })
@@ -111,11 +120,11 @@ describe('Video Carousel', () => {
   })
 
   it('places the controls per layout: centered, or at the carousel bottom inner corner', () => {
-    expect(source).toContain(".video-carousel[data-layout='full'] .controls")
+    expect(source).toContain(".carousel[data-layout='full'] .controls")
     expect(source).toContain('justify-content: center')
-    expect(source).toContain(".video-carousel[data-layout='textRight'] .controls")
+    expect(source).toContain(".carousel[data-layout='textRight'] .controls")
     expect(source).toContain('justify-content: flex-end')
-    expect(source).toContain(".video-carousel[data-layout='textLeft'] .controls")
+    expect(source).toContain(".carousel[data-layout='textLeft'] .controls")
     expect(source).toContain('justify-content: flex-start')
   })
 
@@ -134,9 +143,9 @@ describe('Video Carousel', () => {
   })
 
   it('overflows only the edge farthest from the text, past the page gutter', () => {
-    expect(source).toContain(".video-carousel[data-layout='textRight'] .stage")
+    expect(source).toContain(".carousel[data-layout='textRight'] .stage")
     expect(source).toContain('margin-left: calc(-1 * var(--page-inset))')
-    expect(source).toContain(".video-carousel[data-layout='textLeft'] .stage")
+    expect(source).toContain(".carousel[data-layout='textLeft'] .stage")
     expect(source).toContain('margin-right: calc(-1 * var(--page-inset))')
   })
 
@@ -151,17 +160,14 @@ describe('Video Carousel', () => {
     expect(rowSource).toContain("(blocks[0].layout ?? 'full') === 'full'")
   })
 
-  it('passes the layout and text box content through from the row block', () => {
+  it('passes the media, layout, and text box content through from the row block', () => {
+    expect(rowSource).toContain('media={block.media}')
     expect(rowSource).toContain('layout={block.layout}')
     expect(rowSource).toContain('text={block.text}')
   })
 
-  it('renders video assets only, matching the schema contract', () => {
-    expect(source).toContain("video?.asset?._type === 'mux.video'")
-  })
-
   it('is wired into Content Layout Rows as a block', () => {
     expect(rowSource).toContain("block._type === 'contentLayoutCarousel'")
-    expect(rowSource).toContain('<VideoCarousel')
+    expect(rowSource).toContain('<Carousel')
   })
 })

@@ -6,8 +6,8 @@ import type {TypedObject} from 'astro-portabletext/types'
 export type CarouselLayout = 'full' | 'textRight' | 'textLeft'
 
 interface Props {
-  videos?: Array<Media | null> | null
-  /** Accessible name for the carousel region; defaults to "Video carousel". */
+  media?: Array<Media | null> | null
+  /** Accessible name for the carousel region; defaults to "Carousel". */
   label?: string | null
   /** Display variant: 'full' bleeds edge-to-edge with the controls centered
    *  below; 'textRight'/'textLeft' give the carousel 3/4 of the row with a
@@ -19,55 +19,67 @@ interface Props {
   text?: TypedObject[] | null
 }
 
-const {videos, label, text} = Astro.props
+const {media, label, text} = Astro.props
 const layout: CarouselLayout =
   Astro.props.layout === 'textRight' || Astro.props.layout === 'textLeft'
     ? Astro.props.layout
     : 'full'
 
-// Defensive: schema validation already requires video assets, but stale or
-// in-flight content could still hold an image — the carousel only plays video.
-const playable = (videos ?? []).filter(
-  (video): video is Media =>
-    video?.asset?._type === 'mux.video' && Boolean(video.asset.playbackId),
+// Defensive: schema validation already requires one asset per item, but stale
+// or in-flight content could still hold an empty mediaBox — keep only items
+// MediaFrame can actually render (image with a ref, or video with a playback
+// id).
+const items = (media ?? []).filter(
+  (item): item is Media =>
+    (item?.asset?._type === 'mux.video' && Boolean(item.asset.playbackId)) ||
+    (item?.asset?._type === 'image' && Boolean(item.asset.asset?._ref)),
 )
 
-/** Mux stores aspect_ratio as "W:H" ("16:9", "640:360", ...). The ratio sizes
- *  each slide so the video keeps its intrinsic shape while a height cap
- *  narrows tall videos instead of letting them stand taller than a 16:9
- *  slide. */
-const intrinsicRatio = (video: Media): number => {
-  const value = video.asset?._type === 'mux.video' ? video.asset.aspectRatio : null
-  const match = value?.match(/^(\d+):(\d+)$/)
-  if (!match) return 16 / 9
-  const w = Number(match[1])
-  const h = Number(match[2])
-  return w > 0 && h > 0 ? w / h : 16 / 9
+/** Each slide keeps its media's intrinsic shape while a height cap narrows
+ *  tall media instead of letting it stand taller than a 16:9 slide. Mux
+ *  stores aspect_ratio as "W:H" ("16:9", "640:360", ...); images carry
+ *  explicit width/height metadata. */
+const intrinsicRatio = (item: Media): number => {
+  const asset = item.asset
+  if (asset?._type === 'mux.video') {
+    const match = asset.aspectRatio?.match(/^(\d+):(\d+)$/)
+    if (match) {
+      const w = Number(match[1])
+      const h = Number(match[2])
+      if (w > 0 && h > 0) return w / h
+    }
+    return 16 / 9
+  }
+  if (asset?._type === 'image') {
+    const {width, height} = asset
+    if (width && height && width > 0 && height > 0) return width / height
+  }
+  return 16 / 9
 }
 
 // Split layouts anchor the active slide to the track edge beside the text and
-// trail upcoming videos past the opposite page gutter — the sequence flows
-// away from the text. textRight reverses the track so the first video sits at
+// trail upcoming items past the opposite page gutter — the sequence flows
+// away from the text. textRight reverses the track so the first item sits at
 // the right edge with the rest flowing left; textLeft keeps authored order.
-const ordered = layout === 'textRight' ? [...playable].reverse() : playable
+const ordered = layout === 'textRight' ? [...items].reverse() : items
 const ratios = ordered.map(intrinsicRatio)
-const ariaLabel = label?.trim() ? `${label} video carousel` : 'Video carousel'
-const multiple = playable.length > 1
-// The full-width layout opens on the second video so the active slide is
-// flanked by neighbours on both sides; split layouts open on the first video,
-// anchored to the edge beside the text (the schema requires ≥ three videos).
+const ariaLabel = label?.trim() ? `${label} carousel` : 'Carousel'
+const multiple = items.length > 1
+// The full-width layout opens on the second item so the active slide is
+// flanked by neighbours on both sides; split layouts open on the first item,
+// anchored to the edge beside the text (the schema requires ≥ three items).
 const initialIndex =
-  layout === 'full' ? (playable.length > 1 ? 1 : 0) : layout === 'textRight' ? ordered.length - 1 : 0
-// Slide numbering follows the authored video order, not the DOM order (the
+  layout === 'full' ? (items.length > 1 ? 1 : 0) : layout === 'textRight' ? ordered.length - 1 : 0
+// Slide numbering follows the authored item order, not the DOM order (the
 // textRight track renders reversed).
 const slideNumber = (index: number) =>
   layout === 'textRight' ? ordered.length - index : index + 1
 ---
 
 {
-  playable.length > 0 && (
-    <video-carousel
-      class="video-carousel"
+  items.length > 0 && (
+    <media-carousel
+      class="carousel"
       data-layout={layout}
       aria-label={ariaLabel}
       style={`--ratio-first: ${ratios[0]}; --ratio-last: ${ratios[ratios.length - 1]};`}
@@ -79,7 +91,7 @@ const slideNumber = (index: number) =>
       )}
       <div class="stage">
         <div class="track" role="region" tabindex="0" aria-label={ariaLabel}>
-          {ordered.map((video, index) => (
+          {ordered.map((item, index) => (
             <div
               class="slide"
               data-slide
@@ -97,13 +109,13 @@ const slideNumber = (index: number) =>
                   Bar) under the track. */}
               <div class="slide-inner">
                 <MediaFrame
-                  media={video}
+                  media={item}
                   ratio="intrinsic"
-                  controls="full"
+                  controls={item.asset?._type === 'mux.video' ? 'full' : 'none'}
                   placement={{context: 'layoutBlock', width: 'full'}}
                   active={index === initialIndex}
                   priority={index === initialIndex}
-                  title={video.altText}
+                  title={item.altText}
                 />
               </div>
             </div>
@@ -115,7 +127,7 @@ const slideNumber = (index: number) =>
               type="button"
               class="control previous surface-wipe"
               data-motion-control
-              aria-label="Previous video"
+              aria-label="Previous slide"
             >
               <span class="control__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -127,7 +139,7 @@ const slideNumber = (index: number) =>
               type="button"
               class="control next surface-wipe"
               data-motion-control
-              aria-label="Next video"
+              aria-label="Next slide"
             >
               <span class="control__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -143,12 +155,12 @@ const slideNumber = (index: number) =>
           <PortableText value={text ?? []} />
         </div>
       )}
-    </video-carousel>
+    </media-carousel>
   )
 }
 
 <script>
-  class VideoCarouselElement extends HTMLElement {
+  class CarouselElement extends HTMLElement {
     private track: HTMLElement | null = null
     private slides: HTMLElement[] = []
     private prev: HTMLButtonElement | null = null
@@ -160,7 +172,7 @@ const slideNumber = (index: number) =>
     private targetIndex: number | null = null
     private targetTimer: ReturnType<typeof setTimeout> | null = null
     // Matches --bp-below-desktop: split layouts stack there and behave like
-    // the full-width layout (centered slides, second-video start).
+    // the full-width layout (centered slides, second-item start).
     private belowDesktop = window.matchMedia('(max-width: 1023.98px)')
 
     /** Split layouts anchor the active slide to the track edge beside the
@@ -170,7 +182,7 @@ const slideNumber = (index: number) =>
     }
 
     /** Logical navigation direction in DOM order: the textRight track renders
-     *  reversed, so the next video is the previous DOM sibling. */
+     *  reversed, so the next item is the previous DOM sibling. */
     private get navDir() {
       return this.layout === 'textRight' ? -1 : 1
     }
@@ -227,8 +239,8 @@ const slideNumber = (index: number) =>
         slide.addEventListener('click', handler)
       })
 
-      // Open on the authored first video in split layouts (anchored to the
-      // text-side edge), otherwise on the second video so the active slide is
+      // Open on the authored first item in split layouts (anchored to the
+      // text-side edge), otherwise on the second item so the active slide is
       // flanked on both sides; the jump is instant, before the first paint.
       const initialIndex = this.anchored
         ? this.layout === 'textRight'
@@ -328,7 +340,7 @@ const slideNumber = (index: number) =>
       if (!this.prev || !this.next) return
       const last = this.slides.length - 1
       // The textRight track renders reversed, so the authored first/last
-      // videos sit at the opposite DOM ends and the disabled ends swap.
+      // items sit at the opposite DOM ends and the disabled ends swap.
       this.prev.disabled =
         this.layout === 'textRight' ? this.activeIndex >= last : this.activeIndex <= 0
       this.next.disabled =
@@ -357,19 +369,19 @@ const slideNumber = (index: number) =>
         this.targetTimer = null
       }, 800)
       this.scrollToSlide(clamped, reduced ? 'auto' : 'smooth')
-      // Reflect the destination immediately (starts the video); the scroll
+      // Reflect the destination immediately (starts a video); the scroll
       // listener stays authoritative if the gesture is interrupted.
       this.setActive(clamped)
     }
   }
 
-  if (!customElements.get('video-carousel')) {
-    customElements.define('video-carousel', VideoCarouselElement)
+  if (!customElements.get('media-carousel')) {
+    customElements.define('media-carousel', CarouselElement)
   }
 </script>
 
 <style>
-  .video-carousel {
+  .carousel {
     display: block;
     position: relative;
   }
@@ -377,8 +389,8 @@ const slideNumber = (index: number) =>
   /* Split layouts: the carousel block always spans the row's full width, so
      this inner 12-column grid (same gutter) aligns with the page grid — the
      stage takes 3/4, the text box 1/4, top-aligned. */
-  .video-carousel[data-layout='textRight'],
-  .video-carousel[data-layout='textLeft'] {
+  .carousel[data-layout='textRight'],
+  .carousel[data-layout='textLeft'] {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: var(--page-gutter);
@@ -394,29 +406,29 @@ const slideNumber = (index: number) =>
     position: relative;
     min-width: 0;
     /* Slide width: the smaller of the carousel share and the height cap
-       expressed through the video's own ratio, so every video renders at its
-       intrinsic aspect ratio. The cap is the height a 16:9 video has at full
-       slide width — no video ever stands taller than that, whatever its
+       expressed through the media's own ratio, so every item renders at its
+       intrinsic aspect ratio. The cap is the height a 16:9 item has at full
+       slide width — no item ever stands taller than that, whatever its
        ratio. */
     --slide-w: 76cqw;
     --cap-h: calc(var(--slide-w) * 9 / 16);
   }
 
-  .video-carousel[data-layout='textRight'] .stage {
+  .carousel[data-layout='textRight'] .stage {
     grid-column: 1 / 10;
     margin-left: calc(-1 * var(--page-inset));
   }
 
-  .video-carousel[data-layout='textRight'] .aside {
+  .carousel[data-layout='textRight'] .aside {
     grid-column: 10 / -1;
   }
 
-  .video-carousel[data-layout='textLeft'] .stage {
+  .carousel[data-layout='textLeft'] .stage {
     grid-column: 4 / -1;
     margin-right: calc(-1 * var(--page-inset));
   }
 
-  .video-carousel[data-layout='textLeft'] .aside {
+  .carousel[data-layout='textLeft'] .aside {
     grid-column: 1 / 4;
   }
 
@@ -450,23 +462,23 @@ const slideNumber = (index: number) =>
 
   /* Split layouts (desktop): the active slide anchors to the text-side track
      edge, so the padding moves to the far edge — that is what lets the last
-     upcoming video reach the anchor while the rest trail past the gutter.
+     upcoming item reach the anchor while the rest trail past the gutter.
      textRight anchors right (its track renders reversed); textLeft anchors
      left. */
   @media (--bp-desktop) {
-    .video-carousel[data-layout='textRight'] .track {
+    .carousel[data-layout='textRight'] .track {
       padding-inline: calc(100cqw - min(var(--slide-w), calc(var(--cap-h) * var(--ratio-first)))) 0;
     }
 
-    .video-carousel[data-layout='textLeft'] .track {
+    .carousel[data-layout='textLeft'] .track {
       padding-inline: 0 calc(100cqw - min(var(--slide-w), calc(var(--cap-h) * var(--ratio-last))));
     }
 
-    .video-carousel[data-layout='textRight'] .slide {
+    .carousel[data-layout='textRight'] .slide {
       scroll-snap-align: end;
     }
 
-    .video-carousel[data-layout='textLeft'] .slide {
+    .carousel[data-layout='textLeft'] .slide {
       scroll-snap-align: start;
     }
   }
@@ -478,7 +490,7 @@ const slideNumber = (index: number) =>
     position: relative;
   }
 
-  /* Receded state: neighbours shrink and dim so the anchored video sits
+  /* Receded state: neighbours shrink and dim so the anchored item sits
      slightly forward in space. The transform must stay on this inner
      wrapper — on the slide it would distort the scroll-snap area (see the
      slide-inner comment in the markup). */
@@ -499,7 +511,7 @@ const slideNumber = (index: number) =>
     opacity: 1;
   }
 
-  /* Only the anchored video shows its Media Control Bar and receives
+  /* Only the anchored item shows its Media Control Bar and receives
      pointer input; trailing slides are click-to-anchor surfaces. */
   .slide:not([data-active]) {
     cursor: pointer;
@@ -525,19 +537,19 @@ const slideNumber = (index: number) =>
     margin-top: var(--space-xs);
   }
 
-  .video-carousel[data-layout='full'] .controls {
+  .carousel[data-layout='full'] .controls {
     justify-content: center;
   }
 
-  .video-carousel[data-layout='textRight'] .controls {
+  .carousel[data-layout='textRight'] .controls {
     justify-content: flex-end;
   }
 
-  .video-carousel[data-layout='textLeft'] .controls {
+  .carousel[data-layout='textLeft'] .controls {
     justify-content: flex-start;
   }
 
-  video-carousel:not([data-enhanced]) .controls {
+  media-carousel:not([data-enhanced]) .controls {
     display: none;
   }
 
@@ -579,8 +591,8 @@ const slideNumber = (index: number) =>
   }
 
   /* Without the carousel enhancement, native scroll + snap still browse the
-     videos; show every slide plainly. */
-  video-carousel:not([data-enhanced]) .slide-inner {
+     items; show every slide plainly. */
+  media-carousel:not([data-enhanced]) .slide-inner {
     transform: none;
     opacity: 1;
   }
@@ -593,24 +605,24 @@ const slideNumber = (index: number) =>
     /* Split layouts stack in authored order (left-hand text above the
        carousel, right-hand text below it); the track then bleeds both edges
        and the controls center, matching the full-width layout. */
-    .video-carousel[data-layout='textRight'],
-    .video-carousel[data-layout='textLeft'] {
+    .carousel[data-layout='textRight'],
+    .carousel[data-layout='textLeft'] {
       grid-template-columns: 1fr;
     }
 
-    .video-carousel[data-layout='textRight'] .stage,
-    .video-carousel[data-layout='textLeft'] .stage {
+    .carousel[data-layout='textRight'] .stage,
+    .carousel[data-layout='textLeft'] .stage {
       grid-column: 1 / -1;
       margin-inline: calc(-1 * var(--page-inset));
     }
 
-    .video-carousel[data-layout='textRight'] .aside,
-    .video-carousel[data-layout='textLeft'] .aside {
+    .carousel[data-layout='textRight'] .aside,
+    .carousel[data-layout='textLeft'] .aside {
       grid-column: 1 / -1;
     }
 
-    .video-carousel[data-layout='textRight'] .controls,
-    .video-carousel[data-layout='textLeft'] .controls {
+    .carousel[data-layout='textRight'] .controls,
+    .carousel[data-layout='textLeft'] .controls {
       justify-content: center;
     }
   }

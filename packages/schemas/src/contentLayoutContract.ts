@@ -67,7 +67,7 @@ export const validateContentLayoutRow = (value: unknown): true | string => {
   if (blocks.some(isCarouselBlock)) {
     return blocks.length === 1
       ? true
-      : 'A Video Carousel Block always spans the full row. Remove the other blocks from this row.'
+      : 'A Carousel Block always spans the full row. Remove the other blocks from this row.'
   }
 
   if (blocks.some((block) => !block.width)) {

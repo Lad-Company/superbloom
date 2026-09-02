@@ -28,6 +28,20 @@ export const homeParallaxBlock = defineType({
       description:
         'Toggles the scattered image layers on desktop. Layers never render on mobile, regardless of this setting.',
     }),
+    defineField({
+      name: 'theme',
+      title: 'Background',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'White', value: 'light'},
+          {title: 'Black', value: 'dark'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'light',
+      description: 'Section background and ink color. Unset (existing content) renders White.',
+    }),
   ],
   preview: {
     select: {title: 'headline'},

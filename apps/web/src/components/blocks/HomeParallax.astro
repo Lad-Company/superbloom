@@ -7,9 +7,17 @@ interface Props {
   headline?: string | null
   images?: (Media | null)[] | null
   showImageLayers?: boolean | null
+  /* CMS black/white toggle for the section surface. Unset (existing
+     documents) defaults to light, preserving the pre-toggle appearance. */
+  theme?: 'light' | 'dark' | null
 }
 
-const {headline, images, showImageLayers} = Astro.props
+const {headline, images, showImageLayers, theme} = Astro.props
 ---
 
-<ParallaxStatement role="light" headline={headline} media={images} showLayers={showImageLayers} />
+<ParallaxStatement
+  role={theme ?? 'light'}
+  headline={headline}
+  media={images}
+  showLayers={showImageLayers}
+/>

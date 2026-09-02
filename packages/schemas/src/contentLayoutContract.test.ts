@@ -137,7 +137,7 @@ describe('Content Layout Row contract', () => {
     })).toBe(true)
   })
 
-  it('registers Media, Text, Spacer, and Video Carousel blocks and removes legacy layout types', () => {
+  it('registers Media, Text, Spacer, and Carousel blocks and removes legacy layout types', () => {
     const blocks = contentLayoutRow.fields.find((field) => field.name === 'blocks')
     expect(blocks?.type).toBe('array')
     const ofType = (blocks as {of?: Array<{type: string}>} | undefined)?.of
@@ -183,13 +183,13 @@ describe('Content Layout Row contract', () => {
     expect(resultsOf?.map((member) => member.type)).toEqual(['contentLayoutRow'])
   })
 
-  it('allows a lone Video Carousel block with no width', () => {
+  it('allows a lone Carousel block with no width', () => {
     expect(validateContentLayoutRow({
       blocks: [{_type: 'contentLayoutCarousel'}],
     })).toBe(true)
   })
 
-  it('rejects a Video Carousel sharing its row, from either validator', () => {
+  it('rejects a Carousel sharing its row, from either validator', () => {
     const row = {
       blocks: [
         {_type: 'contentLayoutCarousel'},
@@ -201,14 +201,14 @@ describe('Content Layout Row contract', () => {
     expect(validateRowBlockWidths(row.blocks)).toBe(true)
   })
 
-  it('gives the Video Carousel Block videos and no width control', () => {
+  it('gives the Carousel Block media items and no width control', () => {
     const fieldNames = contentLayoutCarousel.fields.map((field) => field.name)
     expect(fieldNames).not.toContain('width')
-    const videos = contentLayoutCarousel.fields.find((field) => field.name === 'videos')
-    expect(videos?.type).toBe('array')
-    expect((videos as {of?: Array<{type: string}>} | undefined)?.of?.map((member) => member.type))
+    const media = contentLayoutCarousel.fields.find((field) => field.name === 'media')
+    expect(media?.type).toBe('array')
+    expect((media as {of?: Array<{type: string}>} | undefined)?.of?.map((member) => member.type))
       .toEqual(['mediaBox'])
-    expect(videos?.validation).toBeTypeOf('function')
+    expect(media?.validation).toBeTypeOf('function')
   })
 
   it('offers the three carousel layouts with a split-only rich text box', () => {

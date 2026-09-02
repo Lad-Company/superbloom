@@ -125,7 +125,8 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
     pointer movement, focus, or pause; always visible under reduced-motion user
     intent and when the user is paused. Today: WhoWeAre featured media and
     every Case Study video — lead media, narrative/results row media
-    (`ContentLayoutRow mediaControls="full"`), and the video carousel.
+    (`ContentLayoutRow mediaControls="full"`), and the Carousel block's video
+    slides.
     Editorial article body rows keep the Ambient default.
 
     > Surface assignment deviation from the spec: `docs/media-playback-spec.md`
@@ -205,25 +206,26 @@ Media 1/3 + Media 1/3, aligning media under the section copy). A single narrow
 block aligns left/center/right; rows may be full-bleed eligible. Distinct from
 Content Card — it does not use card width/ratio/info controls.
 
-A fourth block, **Video Carousel** (`contentLayoutCarousel`), holds 3–10
-videos (`mediaBox`, video assets only) in one of three layouts: **full width**
+A fourth block, **Carousel** (`contentLayoutCarousel`), holds 3–10 media
+items (`mediaBox`, images and/or videos) in one of three layouts: **full width**
 (the track bleeds edge-to-edge with no gutters at every breakpoint, controls
 centered below), **text right**, or **text left** (the carousel takes 3/4 of
 the row with a descriptive rich-text box in the remaining 1/4, top-aligned;
 controls sit at the carousel's bottom inner corner). Carousels have no width
 control, so a carousel must be its row's only block. The full-width layout
-opens on the second video so the active slide is flanked on both sides, with
-neighbours peeking at both edges. Split layouts open on the first video,
-anchored to the track edge beside the text; upcoming videos trail in the
+opens on the second item so the active slide is flanked on both sides, with
+neighbours peeking at both edges. Split layouts open on the first item,
+anchored to the track edge beside the text; upcoming items trail in the
 direction opposite the text and overflow only that far edge, flowing past the
 page gutter to the viewport edge (the textRight track renders reversed so the
 sequence flows left). Below desktop, split layouts stack and behave like the
-full-width layout. The active video renders at its intrinsic aspect ratio
-(height-capped at the 16:9 slide height, so portrait videos narrow rather than
-stand taller) with the full Media Control Bar; trailing videos are dimmed and
-scaled down so the current video sits slightly forward. Scroll-snap browsing
+full-width layout. Every item renders at its intrinsic aspect ratio
+(height-capped at the 16:9 slide height, so portrait media narrows rather than
+stands taller); videos carry the full Media Control Bar while images render
+plain, and trailing slides are dimmed and
+scaled down so the current item sits slightly forward. Scroll-snap browsing
 with Card Carousel-styled prev/next controls, click-to-anchor on trailing
-videos, and arrow-key steering from the region.
+items, and arrow-key steering from the region.
 
 ### Article (unified editorial model)
 

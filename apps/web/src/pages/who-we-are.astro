@@ -65,7 +65,12 @@ const faqs = page?.faqs ?? [];
 
   {/* WhoWeAreIntro renders its own SurfaceSection via the shared
       ParallaxStatement section component. */}
-  <WhoWeAreIntro statement={introStatement} media={introMedia} showImageLayers={page?.showImageLayers} />
+  <WhoWeAreIntro
+    statement={introStatement}
+    media={introMedia}
+    showImageLayers={page?.showImageLayers}
+    theme={page?.introTheme}
+  />
 
   {statCards.length > 0 && (
     <FactCardGrid cards={statCards} />

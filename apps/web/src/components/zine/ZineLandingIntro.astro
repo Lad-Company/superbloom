@@ -11,9 +11,20 @@ interface Props {
   ctaLabel?: string | null
   ctaHref: string
   showImageLayers?: boolean | null
+  /* CMS black/white toggle for the section surface. Unset (existing
+     documents) defaults to dark, preserving the pre-toggle appearance. */
+  theme?: 'light' | 'dark' | null
 }
 
-const {heading, imageLayers, fallbackMedia = [], ctaLabel, ctaHref, showImageLayers} = Astro.props
+const {
+  heading,
+  imageLayers,
+  fallbackMedia = [],
+  ctaLabel,
+  ctaHref,
+  showImageLayers,
+  theme,
+} = Astro.props
 const resolvedHeading =
   heading ??
   'Original stories, interviews, and visual essays from the creative collective on what helps ideas grow.'
@@ -22,7 +33,7 @@ const resolvedCtaLabel = ctaLabel ?? 'Explore the issue'
 ---
 
 <ParallaxStatement
-  role="dark"
+  role={theme ?? 'dark'}
   headline={resolvedHeading}
   media={layers}
   ctaLabel={resolvedCtaLabel}

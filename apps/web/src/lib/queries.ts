@@ -52,7 +52,7 @@ export const contentLayoutRowsProjection = `
     _type == "contentLayoutCarousel" => {
       layout,
       text,
-      "videos": videos[]${mediaProjection}
+      "media": media[]${mediaProjection}
     }
   }
 `
@@ -102,7 +102,8 @@ export const homepageQuery = defineQuery(`
     parallax{
       headline,
       "images": images[]${mediaProjection},
-      showImageLayers
+      showImageLayers,
+      theme
     },
     work{
       headline,
@@ -152,6 +153,7 @@ export const whoWeAreQuery = defineQuery(`
     introStatement,
     "introMedia": introMedia[]${mediaProjection},
     showImageLayers,
+    introTheme,
     statCards[]{
       _key,
       label,
@@ -421,7 +423,8 @@ export const zineLandingQuery = defineQuery(`
       heading,
       "imageLayers": imageLayers[]${mediaProjection},
       ctaLabel,
-      showImageLayers
+      showImageLayers,
+      theme
     }
   }
 `)
