@@ -147,6 +147,7 @@ const links = [
     width: 100%;
     color: var(--fg);
     --fg-12: color-mix(in srgb, var(--fg) 12%, transparent);
+    --fg-20: color-mix(in srgb, var(--fg) 20%, transparent);
     --fg-60: color-mix(in srgb, var(--fg) 60%, transparent);
   }
   .logo,
@@ -324,6 +325,7 @@ const links = [
       background: transparent;
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
+      border-bottom-color: transparent;
     }
     .navigation:has(.compact-menu[open]) .logo {
       position: relative;
@@ -362,9 +364,12 @@ const links = [
   .navigation.is-shy {
     position: fixed;
     transform: translateY(-110%);
-    background: color-mix(in srgb, var(--bg) 72%, transparent);
+    /* Barely-there surface tint + heavy blur; the hairline below the bar
+       uses the shared border recipe (1px, fg at 20%). */
+    background: color-mix(in srgb, var(--bg) 20%, transparent);
     backdrop-filter: blur(var(--frosted-layer-blur));
     -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
+    border-bottom: 1px solid var(--fg-20);
   }
   .navigation.is-shy.is-revealed {
     transform: translateY(0);
