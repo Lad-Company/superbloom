@@ -341,9 +341,11 @@ Hero → News → Parallax → Capabilities (Capes) → Our Work → Creative Co
   bottom-right.
 - **Parallax** (`HomeParallax.astro` + `ParallaxField.astro`) — statement
   headline over a CMS-editable field of 5–10 media items rendered at native
-  aspect ratios, scattered at random depths (deterministic seed). Closer items
-  render larger and sit higher in z. Items plant past the section edges and
-  clip against them, reading as sliding under the neighbors. Motion: scroll
+  aspect ratios, scattered at random depths (deterministic seed). The field
+  occupies only the section's right half (the copy owns the left) and plants
+  25% below the top edge, clipping at the midline and the section bounds;
+  the scrub carries items back up under the section above. Closer items
+  render larger and sit higher in z. Motion: scroll
   scrub plus a pointer push-away that repels items from the cursor, both
   scaled by depth. The same field renders the Zine landing intro
   (`ZineLandingIntro.astro`).

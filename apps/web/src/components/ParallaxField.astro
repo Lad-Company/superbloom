@@ -38,9 +38,11 @@ function shuffled<T>(list: T[], rand: () => number): T[] {
 
 interface PlacedItem {
   entry: Media
-  /** Top-left anchor, % of the section box; the ranges below deliberately
-   *  reach past the edges so items clip against the section bounds and read
-   *  as sliding under the sections above and below. */
+  /** Top-left anchor, % of the field box (the section's right half — see
+   *  the .parallax-field rule below). The vertical range is biased 25 points
+   *  down so items plant clear of the top edge (the copy zone) and instead
+   *  may reach past the bottom edge, clipping against the section bounds;
+   *  the scroll scrub carries them back up under the section above. */
   left: number
   top: number
   /** Width in vw, scaled by depth so closer items render larger. */
@@ -78,7 +80,10 @@ const layout = (items: Media[]): PlacedItem[] => {
     const jitterX = (rand() - 0.5) * (72 / cols)
     const jitterY = (rand() - 0.5) * (72 / rows)
     const left = Math.min(96, Math.max(-8, ((cells[i].col + 0.5) / cols) * 100 + jitterX - widthVw / 2))
-    const top = Math.min(88, Math.max(-14, ((cells[i].row + 0.5) / rows) * 100 + jitterY - 18))
+    // The vertical scatter sits 25 points lower than the original -14..88
+    // range (bias -18 → +7, both clamps +25): placements start away from the
+    // top edge and may plant past the bottom edge instead.
+    const top = Math.min(113, Math.max(11, ((cells[i].row + 0.5) / rows) * 100 + jitterY + 7))
     const roundedLeft = Math.round(left * 10) / 10
     const roundedTop = Math.round(top * 10) / 10
     const roundedWidth = Math.round(widthVw * 10) / 10
@@ -259,7 +264,13 @@ const placement = {context: 'split', collapseAt: 'small', vw: 30} as const
 <style>
   .parallax-field {
     position: absolute;
-    inset: 0;
+    /* The field occupies only the section's right half; the statement copy
+       owns the left. overflow: clip holds the scatter — and its scroll and
+       pointer motion — at the midline, so items never cross into the copy's
+       half. The top/right/bottom edges coincide with the section box, which
+       clips there too. */
+    inset: 0 0 0 50%;
+    overflow: clip;
     pointer-events: none;
   }
 
