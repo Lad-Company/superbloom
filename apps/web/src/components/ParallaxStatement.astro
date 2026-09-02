@@ -21,18 +21,33 @@ interface Props {
      never render on mobile (see the --bp-small rule below). Unset (existing
      documents) defaults to on, preserving the pre-toggle appearance. */
   showLayers?: boolean | null
+  /* Headline ramp step. 'default' rides type-h3 (home, zine); 'compact' drops
+     one step to type-h4 (Who We Are intro). */
+  headlineSize?: 'default' | 'compact'
   class?: string
 }
 
-const {headline, media, ctaLabel, ctaHref, role = 'light', showLayers, class: className} =
-  Astro.props
+const {
+  headline,
+  media,
+  ctaLabel,
+  ctaHref,
+  role = 'light',
+  showLayers,
+  headlineSize = 'default',
+  class: className,
+} = Astro.props
 const layers = (media ?? []).filter((entry): entry is Media => Boolean(entry?.asset)).slice(0, 10)
 const renderLayers = (showLayers ?? true) && layers.length > 0
 ---
 
 <SurfaceSection
   role={role}
-  class:list={['parallax-statement', {'has-layers': renderLayers}, className]}
+  class:list={[
+    'parallax-statement',
+    {'has-layers': renderLayers, 'statement-compact': headlineSize === 'compact'},
+    className,
+  ]}
   data-pointer-scope
 >
   {renderLayers && <ParallaxField media={layers} />}
@@ -90,13 +105,13 @@ const renderLayers = (showLayers ?? true) && layers.length > 0
   }
 
   h2 {
-    /* Statement wraps at a shared 34ch cap — the same measure across the
-       home, zine, and who-we-are instances. */
+    /* Statement wraps at a 34ch cap on the default size (home, zine); the
+       compact variant widens it in lockstep (see below). */
     width: 100%;
     max-width: 34ch;
     margin: 0;
     font-family: var(--font-display-tight);
-    /* Statement rides the shared type-h3 ramp on every instance. */
+    /* Statement rides the shared type-h3 ramp by default. */
     font-size: var(--type-h3);
     font-weight: 750;
     line-height: 0.88;
@@ -104,9 +119,18 @@ const renderLayers = (showLayers ?? true) && layers.length > 0
     text-transform: uppercase;
   }
 
-  /* Mobile statements drop to the page-header size (the type-h1 floor) and
-     wrap with the hero's preferences — no 34ch cap, long words stay inside
-     the section instead of overflowing it. */
+  /* Compact variant (Who We Are intro): one ramp step down, h3 → h4, with
+     the measure widening in lockstep — 34ch + 15 = 49ch. Holds at every
+     viewport — h4's 40px floor needs no mobile override the way h3's 80px
+     floor does — and the class selector outranks the mobile h2 rules below. */
+  .statement-compact h2 {
+    font-size: var(--type-h4);
+    max-width: 49ch;
+  }
+
+  /* Mobile statements at the default size drop to the page-header size (the
+     type-h1 floor) and wrap with the hero's preferences — no 34ch cap, long
+     words stay inside the section instead of overflowing it. */
   @media (--bp-below-desktop) {
     h2 {
       max-width: none;

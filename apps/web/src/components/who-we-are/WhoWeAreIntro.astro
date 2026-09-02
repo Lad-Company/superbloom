@@ -4,7 +4,8 @@ import ParallaxStatement from '../ParallaxStatement.astro';
 
 /* Thin wrapper around the shared ParallaxStatement section (see D2): the
    Who We Are intro adopts the home/zine ParallaxField look; the old
-   PointerFollowMedia cursor-trailing cluster is sunset. */
+   PointerFollowMedia cursor-trailing cluster is sunset. Unlike home/zine,
+   its headline takes the compact size — one ramp step down (h3 → h4). */
 interface Props {
   statement: string;
   media?: (Media | null)[];
@@ -13,4 +14,10 @@ interface Props {
 const { statement, media = [], showImageLayers } = Astro.props;
 ---
 
-<ParallaxStatement role="dark" headline={statement} media={media} showLayers={showImageLayers} />
+<ParallaxStatement
+  role="dark"
+  headline={statement}
+  media={media}
+  showLayers={showImageLayers}
+  headlineSize="compact"
+/>
