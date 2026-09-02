@@ -317,9 +317,13 @@ const links = [
       color: #fff;
     }
 
-    /* Flip logo + toggle to white so they read on the black overlay. */
+    /* Flip logo + toggle to white so they read on the black overlay; the
+       shy bar's tint/blur would read as a stray strip over the panel. */
     .navigation:has(.compact-menu[open]) {
       color: #fff;
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
     .navigation:has(.compact-menu[open]) .logo {
       position: relative;
@@ -345,22 +349,25 @@ const links = [
     }
   }
 
-  /* Shy nav, desktop only: past the page top the nav becomes a fixed bar —
-     hidden while scrolling down, revealed on any upward scroll. Colors come
-     from the sampled surface (lib/shyNav.ts), the SSR role at page top. */
-  @media (--bp-desktop) {
-    .navigation {
-      transition:
-        transform var(--motion-standard) var(--motion-ease-out),
-        color var(--motion-quick) linear;
-    }
-    .navigation.is-shy {
-      position: fixed;
-      transform: translateY(-110%);
-    }
-    .navigation.is-shy.is-revealed {
-      transform: translateY(0);
-    }
+  /* Shy nav, all breakpoints: past the page top the nav becomes a fixed
+     frosted bar — hidden while scrolling down, revealed on any upward
+     scroll. Colors come from the sampled surface (lib/shyNav.ts), the SSR
+     role at page top; the bar's tint and blur track --bg so it stays
+     legible over dark, light, and brand surfaces. */
+  .navigation {
+    transition:
+      transform var(--motion-standard) var(--motion-ease-out),
+      color var(--motion-quick) linear;
+  }
+  .navigation.is-shy {
+    position: fixed;
+    transform: translateY(-110%);
+    background: color-mix(in srgb, var(--bg) 72%, transparent);
+    backdrop-filter: blur(var(--frosted-layer-blur));
+    -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
+  }
+  .navigation.is-shy.is-revealed {
+    transform: translateY(0);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -369,11 +376,9 @@ const links = [
     .compact-toggle__icon::after {
       transition: none;
     }
-  }
 
-  /* Reduced motion keeps the shy show/hide behavior but drops the slide and
-     color tweens. */
-  @media (--bp-desktop) and (prefers-reduced-motion: reduce) {
+    /* Reduced motion keeps the shy show/hide behavior but drops the slide
+       and color tweens. */
     .navigation {
       transition: none;
     }

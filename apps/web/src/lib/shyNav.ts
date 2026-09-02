@@ -1,7 +1,8 @@
-/* Shy nav (desktop only): the nav rides `position: absolute` at page top.
-   Once it has scrolled off, any upward scroll reveals it as a fixed bar and
-   any downward scroll dismisses it again — pages keep persistent navigation
-   without a return to the top.
+/* Shy nav: the nav rides `position: absolute` at page top. Once it has
+   scrolled off, any upward scroll reveals it as a fixed frosted bar and any
+   downward scroll dismisses it again — pages keep persistent navigation
+   without a return to the top. Runs across breakpoints; while the mobile
+   compact menu is open the nav is the menu's chrome and stays revealed.
 
    Theme awareness: at page top the nav keeps its SSR surface role (Layout's
    navRole). While revealed mid-page it samples the surface section beneath
@@ -11,12 +12,10 @@
    all derive from --bg/--fg, so copying the pair re-themes the whole bar.
 
    Motion: the slide is a CSS transform transition, disabled under
-   prefers-reduced-motion (the show/hide behavior itself still works).
-   Mobile compact nav is untouched — everything below is gated to the
-   --bp-desktop cutoff (1024px). */
+   prefers-reduced-motion (the show/hide behavior itself still works). */
 
-const DESKTOP_QUERY = '(min-width: 1024px)'
-/* Dead zone so sub-pixel scroll noise doesn't flip the state. */
+/* Dead zone so sub-pixel scroll noise (and mobile URL-bar jitter) doesn't
+   flip the state. */
 const MIN_DELTA = 2
 
 type ShyState = 'top' | 'revealed' | 'hidden'
@@ -31,8 +30,6 @@ let listening = false
    nav back to the light :root defaults (black ink on dark heroes). */
 let roleBg = ''
 let roleFg = ''
-
-const desktop = window.matchMedia(DESKTOP_QUERY)
 
 /* Media-covered stages (Capes, media heroes) can't carry inline --bg/--fg
    vars — their own CSS consumes those vars with inverted meaning — so they
@@ -112,22 +109,23 @@ const onScroll = () => {
   requestAnimationFrame(() => {
     ticking = false
     if (!nav) return
-    if (!desktop.matches) {
-      // Below the desktop cutoff the compact nav owns the chrome; make sure
-      // no shy state survives a viewport change.
-      setState('top')
-      lastY = window.scrollY
-      return
-    }
     const y = window.scrollY
     const dy = y - lastY
     lastY = y
+    // While the compact menu is open the nav is the menu's chrome (its
+    // toggle is the only way to close the panel) — keep it revealed.
+    if (nav.querySelector('.compact-menu[open]')) {
+      setState('revealed')
+      return
+    }
     if (y <= MIN_DELTA) {
       setState('top')
       return
     }
     if (dy < -MIN_DELTA) setState('revealed')
-    else if (dy > MIN_DELTA) setState('hidden')
+    // Only dismiss once the absolute nav has fully scrolled off — a small
+    // scroll from the top shouldn't whisk it away.
+    else if (dy > MIN_DELTA && y > nav.offsetHeight) setState('hidden')
     else if (state === 'revealed') applySurfaceColors()
   })
 }
@@ -148,9 +146,6 @@ export const initShyNav = () => {
   if (!listening) {
     listening = true
     window.addEventListener('scroll', onScroll, {passive: true})
-    desktop.addEventListener('change', () => {
-      if (!desktop.matches) setState('top')
-    })
   }
   // Land correctly when the page restores mid-scroll (bfcache, anchors).
   onScroll()

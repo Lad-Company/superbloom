@@ -142,7 +142,9 @@ const {role} = Astro.props
   .contact-band {
     padding-block: var(--space-4xl);
   }
-  .contact-grid {
+  /* contact-grid lives on the child PageGrid's root element, so scoped
+     selectors can't reach it — go :global from the band, which is local. */
+  .contact-band :global(.contact-grid) {
     align-items: start;
   }
   .contact-left {
@@ -210,8 +212,8 @@ const {role} = Astro.props
       padding-block: var(--space-xs);
     }
     /* Match the footer newsletter's mobile inset (12px) so the form fields
-       align with the heading and the sections below. */
-    .contact-grid {
+       align with the heading and the sections below. (:global — see above.) */
+    .contact-band :global(.contact-grid) {
       padding-inline: var(--space-3xs);
     }
     .contact-left {
