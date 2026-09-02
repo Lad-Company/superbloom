@@ -266,6 +266,16 @@ another doc, that doc is authoritative.
   for `articleType: 'news'`; a News item needs only a title, overview, card
   settings, and a destination URL. Editorial and Zine detail pages still
   require one. Amends 0027's required-body clause.
+- **0034 — Work Index `itemOverrides` doubles as the All-section order.**
+  Editors were already dragging the `itemOverrides` array in the Work Index
+  singleton expecting it to reorder `/work`; it only set per-item card
+  settings. The list is now authoritative for the All section: overridden
+  Case Studies lead in list order, the rest follow `publicationDate` desc
+  (full manual order = one override per Case Study, settings optional). The
+  override items also gained a Studio preview showing the referenced Case
+  Study title. Ordering is applied client-side before pagination, so
+  `caseStudiesNewestQuery` no longer slices server-side. Amends 0020's
+  "date-sorted All" clause for Our Work.
 
 **Superseded or amended (kept as guardrails):**
 

@@ -81,6 +81,8 @@ export const workIndex = defineType({
         defineField({
           name: 'itemOverrides',
           title: 'Item Overrides',
+          description:
+            'Per-item card settings. This list is also the All section order: drag to reorder Case Studies on the Work page — listed items lead, the rest follow newest-first.',
           type: 'array',
           of: [
             {
@@ -96,6 +98,10 @@ export const workIndex = defineType({
                 mediaAspectRatioField({partial: true}),
                 infoPositionField({partial: true}),
               ],
+              preview: {
+                select: {title: 'caseStudy.title'},
+                prepare: ({title}) => ({title: title ?? 'Untitled Case Study'}),
+              },
               validation: (rule) => rule.custom(validateResolvedCardOverride),
             },
           ],
