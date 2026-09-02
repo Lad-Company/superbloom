@@ -7,6 +7,9 @@ import {formatPublicationDateIndex} from '../lib/publicationDate'
 interface Props {
   href: string
   title: string | null
+  /** Rendered card header text; falls back to `title` when unset (e.g. the
+   *  Work index shows the client name while `title` stays on media metadata). */
+  headline?: string | null
   media: Media | null
   summary?: string | null
   publicationDate?: string | null
@@ -26,6 +29,7 @@ interface Props {
 const {
   href,
   title,
+  headline,
   media,
   summary,
   publicationDate,
@@ -46,6 +50,7 @@ const resolved = resolveContentCardSettings({
 })
 const placement: MediaPlacement = {context: 'card', settings: resolved, rail}
 const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDate) : null
+const heading = headline ?? title
 ---
 
 <a
@@ -59,7 +64,7 @@ const formattedDate = publicationDate ? formatPublicationDateIndex(publicationDa
     <slot name="overlay" />
   </MediaFrame>
   <div class="content">
-    {title && <p class="headline type-h6 line-clamp-2">{title}</p>}
+    {heading && <p class="headline type-h6 line-clamp-2">{heading}</p>}
     {summary && <p class="summary type-caption line-clamp-1">{summary}</p>}
     {
       formattedDate && (

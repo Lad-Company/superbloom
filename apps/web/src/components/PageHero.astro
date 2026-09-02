@@ -50,7 +50,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
       {eyebrow && <p class="case-eyebrow type-h5">{eyebrow}</p>}
       <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-scroll="false">{heading}</h1>
       {tags && tags.length > 0 && (
-        <ul class="case-tags type-label" aria-label="Capabilities">
+        <ul class="case-tags type-label" aria-label="Tags">
           {tags.map((tag) => (
             <li>{tag}</li>
           ))}

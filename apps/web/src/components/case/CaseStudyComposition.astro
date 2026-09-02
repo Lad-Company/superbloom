@@ -19,8 +19,11 @@ interface Props {
 // Brand color vars are set on <body> by pages/work/[slug].astro (see
 // caseBrandVars) so the Layout-rendered Navigation resolves case tokens too.
 const { caseStudy } = Astro.props;
-const capabilityTitles = (caseStudy.capabilities ?? [])
-  .map((capability) => capability?.title)
+// GROQ `tags[]->` yields null for dangling references (tag deleted or
+// unpublished while still referenced), so entries can be null.
+const tagTitles = (caseStudy.tags ?? [])
+  .filter((tag) => tag != null)
+  .map((tag) => tag.title)
   .filter((title): title is string => Boolean(title));
 ---
 
@@ -30,7 +33,7 @@ const capabilityTitles = (caseStudy.capabilities ?? [])
       <PageHero
         heading={caseStudy.title ?? ''}
         eyebrow={caseStudy.client}
-        tags={capabilityTitles}
+        tags={tagTitles}
       />
     </div>
   </SurfaceSection>

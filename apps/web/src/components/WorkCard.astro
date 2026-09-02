@@ -18,6 +18,7 @@ interface WorkItem {
   _id?: string | null;
   title: string | null;
   slug: string | null;
+  client?: string | null;
   summary: string | null;
   cardWidth?: CardWidth | null;
   mediaAspectRatio?: MediaAspectRatio | null;
@@ -30,18 +31,22 @@ interface Props {
   item: WorkItem;
   class?: string;
   rail?: boolean;
+  /** Show the client name as the card header instead of the case study
+   *  title (Work index); the title stays on media metadata. */
+  clientHeadline?: boolean;
   settings?: PartialContentCardSettings;
   listSettings?: PartialContentCardSettings;
   globalSettings?: PartialContentCardSettings;
 }
 
-const { item, class: className, rail = false, settings, listSettings, globalSettings } = Astro.props;
+const { item, class: className, rail = false, clientHeadline = false, settings, listSettings, globalSettings } = Astro.props;
 const href = item.slug ? `/work/${item.slug}` : '#';
 ---
 
 <EditorialCard
   href={href}
   title={item.title}
+  headline={clientHeadline ? item.client : undefined}
   media={item.media}
   rail={rail}
   contentSettings={item}
