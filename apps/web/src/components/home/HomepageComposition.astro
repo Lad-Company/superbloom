@@ -32,7 +32,7 @@ const moduleSurfaceRoles = {
 {homepage.hero && (
   <PageHero
     heading={homepage.hero.heading ?? ''}
-    subheading={homepage.hero.subheading}
+    subheading={homepage.hero.showSubheading !== false ? homepage.hero.subheading : null}
     media={homepage.hero.heroMedia}
   />
 )}

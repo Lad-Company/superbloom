@@ -11,6 +11,7 @@ import {getSanityClient} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {setContentCache} from '../../lib/cacheHeaders'
 import {workIndexQuery, caseStudiesNewestQuery} from '../../lib/queries'
+import {orderCaseStudiesByOverrides} from '../../lib/workIndexOrder'
 import type {CaseStudiesNewestQueryResult, WorkIndexQueryResult} from '../../sanity.types'
 import type {PartialContentCardSettings} from '../../lib/contentCard'
 
@@ -29,10 +30,16 @@ const featuredIds = featured
   .filter((id): id is string => Boolean(id))
 const fetchedCaseStudies = await client.fetch<CaseStudiesNewestQueryResult>(
   caseStudiesNewestQuery,
-  {featuredIds, offset: 0, end: recordLimit + 1},
+  {featuredIds},
 )
-const caseStudies = fetchedCaseStudies.slice(0, recordLimit)
-const hasMore = fetchedCaseStudies.length > recordLimit
+// CMS order: the Work Index itemOverrides list is the manual All-section
+// order (overridden items lead); the rest follow newest-first.
+const orderedCaseStudies = orderCaseStudiesByOverrides(
+  fetchedCaseStudies,
+  workIndex?.allSection?.itemOverrides,
+)
+const caseStudies = orderedCaseStudies.slice(0, recordLimit)
+const hasMore = orderedCaseStudies.length > recordLimit
 const listSettings = workIndex?.allSection?.listDefaults as PartialContentCardSettings
 const globalSettings = workIndex?.globalCardDefaults as PartialContentCardSettings
 const overrideFor = (id: string) =>
