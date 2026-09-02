@@ -30,7 +30,10 @@ export const article = defineType({
     defineField({
       name: 'slug',
       type: 'slug',
-      options: {source: 'title'},
+      // isUnique disables Sanity's built-in slug check, which enforces global
+      // uniqueness across all article types and double-reports alongside the
+      // scoped custom validator below.
+      options: {source: 'title', isUnique: async () => true},
       hidden: true,
       description:
         'Auto-generated from the title at first publish (unique across News and Editorial, or within Zine) and frozen from then on.',

@@ -89,3 +89,16 @@ export const validateScopedSlugUniqueness = async (
     ? 'Slug already exists for article type "zine".'
     : 'Slug already exists on a News or Editorial article.'
 }
+
+// The slug is frozen once an article is published (stable URLs). But Sanity's
+// Duplicate action copies the hidden slug field verbatim, so a duplicated
+// article arrives at its first publish holding the original's slug. Regenerate
+// in that case instead of blocking; never touch a published article's slug.
+export const shouldRegenerateSlugAtPublish = (options: {
+  hasTitle: boolean
+  currentSlug?: string
+  slugConflict: boolean
+  isFirstPublish: boolean
+}): boolean =>
+  options.hasTitle &&
+  (!options.currentSlug || (options.slugConflict && options.isFirstPublish))

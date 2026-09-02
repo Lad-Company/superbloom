@@ -29,6 +29,7 @@ import {contentLayoutSpacer} from './contentLayoutSpacer'
 import {contentLayoutCarousel} from './contentLayoutCarousel'
 import {contentLayoutRow} from './contentLayoutRow'
 
+export {shouldRegenerateSlugAtPublish} from './articleContract'
 export {migrateLegacyCaseStudyBlock} from './caseStudyMigration'
 export type {LegacyCaseStudyBlock} from './caseStudyMigration'
 export {migrateLegacyArticleBlock} from './articleMigration'

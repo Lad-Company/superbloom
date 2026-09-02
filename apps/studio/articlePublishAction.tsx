@@ -7,6 +7,7 @@ import {
   type Path,
 } from 'sanity'
 import {useDocumentPane} from 'sanity/structure'
+import {shouldRegenerateSlugAtPublish} from '@superbloom/schemas'
 
 const API_VERSION = '2026-07-22'
 
@@ -93,6 +94,11 @@ const uniqueScopedSlug = async (
  * so publishers can control card dates and sort order. Replaces the default
  * publish action so the hidden, required slug field does not block the very
  * publish that generates it.
+ *
+ * Duplicated articles arrive with the original's slug already set (Duplicate
+ * copies the hidden field verbatim). On their first publish, a conflicting
+ * slug is regenerated from the title instead of blocking; slugs of articles
+ * that have been published before are never rewritten.
  */
 export const articlePublishAction: DocumentActionComponent = (props) => {
   const {patch, publish} = useDocumentOperation(props.id, props.type)
@@ -121,7 +127,13 @@ export const articlePublishAction: DocumentActionComponent = (props) => {
   )
 
   const onHandle = useCallback(async () => {
-    if (blockingErrors.length > 0) {
+    // A slug conflict on a never-published article means it was duplicated
+    // from another article; heal it by regenerating from the title. Conflicts
+    // on an already-published article still block (its URL is live).
+    const slugConflicts = blockingErrors.filter((marker) => marker.path[0] === 'slug')
+    const otherErrors = blockingErrors.filter((marker) => marker.path[0] !== 'slug')
+    const canHealSlug = !props.published && Boolean(draft?.title) && Boolean(draft?.slug?.current)
+    if (otherErrors.length > 0 || (slugConflicts.length > 0 && !canHealSlug)) {
       setShowErrors(true)
       return
     }
@@ -132,13 +144,20 @@ export const articlePublishAction: DocumentActionComponent = (props) => {
       if (!draft?.publicationDate) {
         sets.publicationDate = new Date().toISOString()
       }
-      if (draft?.title && !draft?.slug?.current) {
+      if (
+        shouldRegenerateSlugAtPublish({
+          hasTitle: Boolean(draft?.title),
+          currentSlug: draft?.slug?.current,
+          slugConflict: slugConflicts.length > 0,
+          isFirstPublish: !props.published,
+        })
+      ) {
         sets.slug = {
           _type: 'slug',
           current: await uniqueScopedSlug(
             client,
-            slugify(draft.title),
-            draft.articleType ?? 'editorial',
+            slugify(draft?.title ?? ''),
+            draft?.articleType ?? 'editorial',
             props.id,
           ),
         }
@@ -149,7 +168,7 @@ export const articlePublishAction: DocumentActionComponent = (props) => {
     } finally {
       setPublishing(false)
     }
-  }, [blockingErrors.length, client, draft, patch, publish, props])
+  }, [blockingErrors, client, draft, patch, publish, props])
 
   return {
     label: publishing ? 'Publishing…' : 'Publish',

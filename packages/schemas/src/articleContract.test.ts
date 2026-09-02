@@ -1,5 +1,6 @@
 import {describe, expect, it, vi} from 'vitest'
 import {
+  shouldRegenerateSlugAtPublish,
   validateArticleBody,
   validateRelatedItems,
   validateScopedSlugUniqueness,
@@ -73,5 +74,62 @@ describe('Article contract validators', () => {
       publishedId: 'article-2',
       draftId: 'drafts.article-2',
     })
+  })
+})
+
+describe('shouldRegenerateSlugAtPublish', () => {
+  it('generates a slug on first publish when none exists', () => {
+    expect(
+      shouldRegenerateSlugAtPublish({
+        hasTitle: true,
+        currentSlug: undefined,
+        slugConflict: false,
+        isFirstPublish: true,
+      }),
+    ).toBe(true)
+  })
+
+  it('keeps an existing conflict-free slug on first publish', () => {
+    expect(
+      shouldRegenerateSlugAtPublish({
+        hasTitle: true,
+        currentSlug: 'rare-blooms',
+        slugConflict: false,
+        isFirstPublish: true,
+      }),
+    ).toBe(false)
+  })
+
+  it('regenerates a conflicting slug on a duplicated article that was never published', () => {
+    expect(
+      shouldRegenerateSlugAtPublish({
+        hasTitle: true,
+        currentSlug: '1-800-flowers',
+        slugConflict: true,
+        isFirstPublish: true,
+      }),
+    ).toBe(true)
+  })
+
+  it('never rewrites the slug of an already-published article, even on conflict', () => {
+    expect(
+      shouldRegenerateSlugAtPublish({
+        hasTitle: true,
+        currentSlug: '1-800-flowers',
+        slugConflict: true,
+        isFirstPublish: false,
+      }),
+    ).toBe(false)
+  })
+
+  it('does nothing without a title', () => {
+    expect(
+      shouldRegenerateSlugAtPublish({
+        hasTitle: false,
+        currentSlug: undefined,
+        slugConflict: true,
+        isFirstPublish: true,
+      }),
+    ).toBe(false)
   })
 })
