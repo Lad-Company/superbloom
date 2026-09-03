@@ -1,5 +1,6 @@
 import {useCallback, useState} from 'react'
 import {
+  getDraftId,
   useClient,
   useDocumentOperation,
   useValidationStatus,
@@ -103,9 +104,13 @@ const uniqueScopedSlug = async (
 export const articlePublishAction: DocumentActionComponent = (props) => {
   const {patch, publish} = useDocumentOperation(props.id, props.type)
   const client = useClient({apiVersion: API_VERSION}).withConfig({perspective: 'raw'})
+  // Validate the draft, not the published snapshot: a bare id makes
+  // useValidationStatus target the published document, so errors already
+  // fixed in the draft would keep blocking publish. Sanity's own publish
+  // action passes getDraftId(id) for the same reason.
   // `requirePublishedReferences: true` matches the default publish action:
   // publishing is blocked when the article references unpublished documents.
-  const validationStatus = useValidationStatus(props.id, props.type, true)
+  const validationStatus = useValidationStatus(getDraftId(props.id), props.type, true)
   const {onFocus, onPathOpen, schemaType, value} = useDocumentPane()
   const [publishing, setPublishing] = useState(false)
   const [showErrors, setShowErrors] = useState(false)
