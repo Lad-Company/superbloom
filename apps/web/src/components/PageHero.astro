@@ -118,6 +118,10 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     .hero-media.ratio-16-9 {
       aspect-ratio: 16 / 9;
       max-height: 90svh;
+      /* Definite width: aspect-ratio transfers a max-height constraint to an
+         automatic width (acting as max-width: 160svh), which shrank the hero
+         off the right edge on viewports wider than 1.6:1 (white strip). */
+      width: 100%;
     }
   }
 
