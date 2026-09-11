@@ -73,12 +73,12 @@ content, and experiential campaigns for brand clients.
 - **News** — press, announcements, and coverage of Superbloom; a full Article
   Detail page like Editorial (lead media optional — News usually links out to
   external coverage rather than hosting its own), plus a required Destination
-  powering a footer CTA and an optional Source naming the outlet. _Avoid_:
+  powering a footer CTA and an optional CTA Label. _Avoid_:
   blog, posts.
 - **Destination** — the required outbound URL a News article's footer CTA links
   to.
-- **Source** — the optional outlet name on a News article (e.g. "Vogue"); the
-  footer CTA reads "Read on {Source}".
+- **CTA Label** — the optional footer CTA copy on a News article (stored in the
+  `source` field, e.g. "Read on Vogue"); falls back to "Read the full story".
 - **Editorial Article** — a standalone long-form, non-Zine editorial identity.
   _Avoid_: Zine Article, News.
 - **Article** — the shared CMS document storing News, Editorial Articles, and Zine

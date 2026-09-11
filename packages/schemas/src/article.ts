@@ -127,10 +127,10 @@ export const article = defineType({
     }),
     defineField({
       name: 'source',
-      title: 'Source',
+      title: 'CTA Label',
       type: 'string',
       description:
-        'News only. Optional outlet name (e.g. "Vogue"); the footer CTA reads "Read on {source}".',
+        'News only. Optional; the full footer CTA copy (e.g. "Read on Vogue"). Falls back to "Read the full story" when empty.',
       hidden: ({document}) => document?.articleType !== 'news',
     }),
     defineField({

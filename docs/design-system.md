@@ -234,8 +234,8 @@ Articles**, discriminated by a visible, required `articleType` select. The
 discriminator selects the Studio field set, route, and content adapter:
 
 - News → `/articles/[slug]` — a full Article Detail page whose footer CTA links
-  to the required external Destination URL ("Read on {Source}", opening in a
-  new tab).
+  to the required external Destination URL (copy from the optional CTA Label
+  field, falling back to "Read the full story", opening in a new tab).
 - Editorial → `/articles/[slug]`.
 - Zine → `/zine/issues/[issue-slug]/[article-slug]` (resolved only through issue
   membership).
