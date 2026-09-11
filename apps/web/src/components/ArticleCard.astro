@@ -2,7 +2,7 @@
 import EditorialCard from './EditorialCard.astro'
 import TagList from './TagList.astro'
 import type {Media} from './MediaFrame.astro'
-import {ARTICLE_TYPE_LABELS, type ArticleTypeFilter} from '../lib/articleTypes'
+import {type ArticleTypeFilter} from '../lib/articleTypes'
 import {
   type CardWidth,
   type InfoPosition,
@@ -57,7 +57,6 @@ const summary = item.overview
   ?.flatMap((block) => block.children?.map((child) => child.text ?? '') ?? [])
   .join(' ')
   .trim()
-const typeLabel = item.articleType ? ARTICLE_TYPE_LABELS[item.articleType] : 'Editorial'
 ---
 
 <EditorialCard
@@ -74,5 +73,5 @@ const typeLabel = item.articleType ? ARTICLE_TYPE_LABELS[item.articleType] : 'Ed
   class={className}
   cardId={item._id}
 >
-  <TagList slot="overlay" tags={item.tags} typeLabel={typeLabel} maxTags={1} />
+  <TagList slot="overlay" tags={item.tags} maxTags={1} />
 </EditorialCard>

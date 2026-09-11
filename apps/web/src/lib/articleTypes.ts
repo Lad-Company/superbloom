@@ -4,9 +4,10 @@ export const ARTICLE_TYPES = ['news', 'editorial'] as const
 
 export type ArticleTypeFilter = (typeof ARTICLE_TYPES)[number]
 
-// Labels match the Type badge shown on cards. Zine is included because
-// curated sections (e.g. the Index page's Featured) can still render a Zine
-// Article card.
+// Labels are used by the /index TypeFilter UI. Cards no longer show a type
+// badge — they render tags only when an editor picks them in the CMS. Zine is
+// included because curated sections (e.g. the Index page's Featured) can
+// still render a Zine Article card.
 export const ARTICLE_TYPE_LABELS: Record<ArticleTypeFilter | 'zine', string> = {
   news: 'News',
   editorial: 'Editorial',
