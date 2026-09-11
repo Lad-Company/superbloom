@@ -207,9 +207,10 @@ another doc, that doc is authoritative.
   are full detail pages at `/articles/[slug]` like Editorial (required
   leadMedia + body, relatedItems available, one shared `ArticleCard` adapter
   linking cards internally; `NewsCard` deleted). The required `destination`
-  URL becomes a footer CTA on the article page — "Read on {source}", falling
-  back to "Read the full story", opening in a new tab — instead of the card
-  link, and `source` leaves the card. Slug uniqueness spans News + Editorial
+  URL becomes a footer CTA on the article page — copy authored in the CMS
+  "CTA Label" field (stored as `source`), falling back to "Read the full
+  story", opening in a new tab — instead of the card link, and `source`
+  leaves the card. Slug uniqueness spans News + Editorial
   (shared `/articles/` route); Zine stays scoped per type. Amends 0022's
   card-only-News clause; its required-leadMedia clause is amended by 0029.
 - **0028 — Observability: Sentry error aggregation with a Discord drain.**

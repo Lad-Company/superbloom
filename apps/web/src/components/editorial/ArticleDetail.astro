@@ -54,10 +54,9 @@ const {article} = Astro.props
 const body = article.body ?? []
 const relatedItems = article.relatedItems ?? []
 // News-only footer CTA: destination/source are News-only CMS fields, so this
-// never renders for Editorial or Zine articles.
-const destinationCtaLabel = article.source
-  ? `Read on ${article.source}`
-  : 'Read the full story'
+// never renders for Editorial or Zine articles. The CMS "CTA Label" field
+// (stored as `source`) is the full CTA copy, not just an outlet name.
+const destinationCtaLabel = article.source ?? 'Read the full story'
 ---
 
 <article class="article-detail">
