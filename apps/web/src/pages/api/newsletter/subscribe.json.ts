@@ -104,6 +104,32 @@ export const POST: APIRoute = async ({request}) => {
     )
 
     if (mailchimpResponse.ok) {
+      // Welcome email: trigger the Automation flow (Customer Journeys API).
+      // A journey failure must not fail the subscription, which already
+      // succeeded above, so this only logs.
+      const journeyId = import.meta.env.MAILCHIMP_WELCOME_JOURNEY_ID
+      const journeyStepId = import.meta.env.MAILCHIMP_WELCOME_JOURNEY_STEP_ID
+      if (journeyId && journeyStepId) {
+        try {
+          const journeyResponse = await fetch(
+            `https://${dataCenter}.api.mailchimp.com/3.0/customer-journeys/journeys/${journeyId}/steps/${journeyStepId}/actions/trigger`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: authorization,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({email_address: email}),
+              signal: AbortSignal.timeout(10_000),
+            },
+          )
+          if (!journeyResponse.ok) {
+            console.error('Welcome journey trigger failed', {status: journeyResponse.status})
+          }
+        } catch {
+          console.error('Welcome journey trigger failed', {status: 'request-error'})
+        }
+      }
       return response(true)
     }
 
