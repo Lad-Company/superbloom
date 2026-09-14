@@ -125,7 +125,6 @@ export const homepageQuery = defineQuery(`
       headline,
       body,
       ctaLabel,
-      ctaHref,
       "media": media${mediaProjection}
     },
     "fallbackCreativeMedia": *[_type == "whoWeAre"][0].featuredMedia.media${mediaProjection},

@@ -1630,13 +1630,6 @@
           },
           "optional": true
         },
-        "ctaHref": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "string"
-          },
-          "optional": true
-        },
         "media": {
           "type": "objectAttribute",
           "value": {

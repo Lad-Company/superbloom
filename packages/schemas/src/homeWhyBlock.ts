@@ -20,11 +20,8 @@ export const homeWhyBlock = defineType({
       name: 'ctaLabel',
       title: 'CTA Label',
       type: 'string',
-    }),
-    defineField({
-      name: 'ctaHref',
-      title: 'CTA URL',
-      type: 'string',
+      description:
+        'Label only — the CTA always links to the contact form with the Creative Collective inquiry pre-selected.',
     }),
     defineField({
       name: 'media',

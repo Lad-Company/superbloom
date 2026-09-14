@@ -105,6 +105,26 @@ const {role} = Astro.props
   const status = document.getElementById('contact-status')
   const startedAt = form?.elements.namedItem('startedAt') as HTMLInputElement | null
 
+  // CTAs elsewhere on the page (e.g. the Creative Collective block) deep-link
+  // here with href="#contact" plus data-contact-inquiry="<option value>".
+  // Apply the preset by clicking the matching option, so SelectDropdown's own
+  // delegated handler writes the hidden input and syncs the trigger label.
+  // Delegated from document and queried at click time so it keeps working
+  // across ClientRouter swaps.
+  document.addEventListener('click', (event) => {
+    const trigger = (event.target as Element | null)?.closest('[data-contact-inquiry]')
+    const value = trigger?.getAttribute('data-contact-inquiry')
+    if (!value) return
+    const inquiryInput = document
+      .getElementById('contact-form')
+      ?.querySelector('[data-select-dropdown-input][name="inquiryType"]')
+    inquiryInput
+      ?.closest('[data-select-dropdown]')
+      ?.querySelector<HTMLElement>(`[data-option-value="${CSS.escape(value)}"]`)
+      ?.click()
+  })
+
+
   if (startedAt) startedAt.value = String(Date.now())
 
   form?.addEventListener('submit', async (event) => {
