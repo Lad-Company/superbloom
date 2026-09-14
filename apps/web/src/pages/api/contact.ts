@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { APIRoute } from 'astro';
 import { createClient } from '@sanity/client';
 
@@ -89,9 +90,9 @@ export const POST: APIRoute = async ({ request }) => {
     submissionId = submission._id;
 
     const authorization = `Basic ${Buffer.from(`mailchimp:${apiKey}`).toString('base64')}`;
-    const subscriberHash = await crypto.subtle
-      .digest('SHA-256', new TextEncoder().encode(email))
-      .then((hash) => Array.from(new Uint8Array(hash), (byte) => byte.toString(16).padStart(2, '0')).join(''));
+    // Mailchimp keys list members by the MD5 hash of the lowercased email
+    // address; any other digest makes member lookups 404 and updates 400.
+    const subscriberHash = createHash('md5').update(email).digest('hex');
     const memberUrl = `https://${dataCenter}.api.mailchimp.com/3.0/lists/${audienceId}/members/${subscriberHash}`;
     const memberResponse = await fetch(memberUrl, {
       method: 'PUT',

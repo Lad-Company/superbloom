@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto'
 import type {APIRoute} from 'astro'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -15,9 +16,10 @@ function response(success: boolean, error?: NewsletterError, status = 200) {
   })
 }
 
-async function subscriberHash(email: string) {
-  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email))
-  return Array.from(new Uint8Array(hash), (byte) => byte.toString(16).padStart(2, '0')).join('')
+// Mailchimp keys list members by the MD5 hash of the lowercased email
+// address; any other digest makes member lookups 404 and updates 400.
+function subscriberHash(email: string) {
+  return createHash('md5').update(email).digest('hex')
 }
 
 export const POST: APIRoute = async ({request}) => {
