@@ -114,6 +114,7 @@ export const homepageQuery = defineQuery(`
         "item": caseStudy->{
           _id,
           title,
+          client,
           "slug": slug.current,
           summary,
           tags[]->{ title, color },

@@ -13,6 +13,7 @@ import {
 interface WorkItem {
   _id: string | null
   title: string | null
+  client: string | null
   slug: string | null
   summary: string | null
   tags: Array<{title: string | null; color: string | null}> | null
@@ -133,7 +134,7 @@ const anchoredAtEdge = (index: number): boolean => {
                   <TagList slot="overlay" tags={item.tags} />
                 </MediaFrame>
                 <div class:list={captionClassList}>
-                  {item.title && <p class="headline type-h6 line-clamp-2">{item.title}</p>}
+                  {item.client && <p class="headline type-h6 line-clamp-2">{item.client}</p>}
                   {item.summary && <p class="summary type-caption line-clamp-2">{item.summary}</p>}
                 </div>
               </a>
