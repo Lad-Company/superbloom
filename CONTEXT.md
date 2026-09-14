@@ -102,8 +102,8 @@ content, and experiential campaigns for brand clients.
 
 ## Forms
 
-- **Form Submission** — a contact/inquiry entry, stored as a Sanity record and
-  routed via Mailchimp. _Avoid_: lead, contact (for the stored record).
+- **Form Submission** — a contact/inquiry entry, stored as a Sanity record.
+  _Avoid_: lead, contact (for the stored record).
 
 ## Shop
 

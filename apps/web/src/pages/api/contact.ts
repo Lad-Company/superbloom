@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import type { APIRoute } from 'astro';
 import { createClient } from '@sanity/client';
 
@@ -57,13 +56,8 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const sanityToken = import.meta.env.SANITY_API_TOKEN;
-  const apiKey = import.meta.env.MAILCHIMP_KEY;
-  const audienceId = import.meta.env.MAILCHIMP_AUDIENCE_ID;
-  const journeyId = import.meta.env.MAILCHIMP_CONTACT_JOURNEY_ID;
-  const journeyStepId = import.meta.env.MAILCHIMP_CONTACT_JOURNEY_STEP_ID;
-  const dataCenter = apiKey?.split('-').at(-1);
 
-  if (!sanityToken || !apiKey || !audienceId || !journeyId || !journeyStepId || !dataCenter) {
+  if (!sanityToken) {
     console.error('Contact form integration is not configured');
     return error('unavailable', 503);
   }
@@ -88,60 +82,6 @@ export const POST: APIRoute = async ({ request }) => {
       submittedAt: new Date().toISOString(),
     });
     submissionId = submission._id;
-
-    const authorization = `Basic ${Buffer.from(`mailchimp:${apiKey}`).toString('base64')}`;
-    // Mailchimp keys list members by the MD5 hash of the lowercased email
-    // address; any other digest makes member lookups 404 and updates 400.
-    const subscriberHash = createHash('md5').update(email).digest('hex');
-    const memberUrl = `https://${dataCenter}.api.mailchimp.com/3.0/lists/${audienceId}/members/${subscriberHash}`;
-    const memberResponse = await fetch(memberUrl, {
-      method: 'PUT',
-      headers: {
-        Authorization: authorization,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email_address: email,
-        status_if_new: 'transactional',
-        merge_fields: {FNAME: name},
-      }),
-      signal: AbortSignal.timeout(10_000),
-    });
-
-    if (!memberResponse.ok) {
-      throw new Error(`Mailchimp member request failed: ${memberResponse.status}`);
-    }
-
-    const tagResponse = await fetch(`${memberUrl}/tags`, {
-      method: 'POST',
-      headers: {
-        Authorization: authorization,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({tags: [{name: 'contact-form', status: 'active'}]}),
-      signal: AbortSignal.timeout(10_000),
-    });
-
-    if (!tagResponse.ok) {
-      throw new Error(`Mailchimp tag request failed: ${tagResponse.status}`);
-    }
-
-    const journeyResponse = await fetch(
-      `https://${dataCenter}.api.mailchimp.com/3.0/customer-journeys/journeys/${journeyId}/steps/${journeyStepId}/actions/trigger`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: authorization,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({email_address: email}),
-        signal: AbortSignal.timeout(10_000),
-      },
-    );
-
-    if (!journeyResponse.ok) {
-      throw new Error(`Mailchimp journey request failed: ${journeyResponse.status}`);
-    }
   } catch (caughtError) {
     const message = caughtError instanceof Error ? caughtError.message : 'Unknown failure';
     console.error('Contact form submission failed', {submissionId, message});

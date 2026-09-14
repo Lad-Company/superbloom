@@ -394,9 +394,9 @@ first-class `/shop` route, not a settings link.
 
 ### Forms and observability
 
-- The contact form creates a Sanity `formSubmission` record and routes a Mailchimp
-  `contact-form` notification. It **must not** auto-subscribe the submitter; the
-  newsletter is a separate email-only Mailchimp subscribe.
+- The contact form creates a Sanity `formSubmission` record only — no Mailchimp
+  involvement, and it **must not** auto-subscribe the submitter. The newsletter is
+  a separate email-only Mailchimp subscribe.
 - **Never log** customer PII (email, address, phone, payment) or the cart ID to
   Sentry.
 - `/cart` is `noindex`; the current Zine issue archive URL redirects to `/zine` and

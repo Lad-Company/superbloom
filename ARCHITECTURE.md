@@ -46,8 +46,8 @@ API glue (`apps/web/src/pages/api/*`).
 | Editorial content + images | Sanity | `lib/sanity.ts`, `lib/queries.ts` (GROQ) |
 | Video | Mux | `mux.video` in `mediaBox`, `<mux-player>` in `MediaFrame` |
 | Commerce (products, cart, checkout) | Shopify Storefront API | `lib/shopify.ts`, `lib/shopify-cart.ts`, `pages/api/shop/*` |
-| Email (newsletter + contact routing) | Mailchimp | `pages/api/contact.ts`, `pages/api/newsletter/*` |
-| Form records | Sanity | `formSubmission` document |
+| Email (newsletter) | Mailchimp | `pages/api/newsletter/*` |
+| Form records (contact inquiries) | Sanity | `formSubmission` document via `pages/api/contact.ts` |
 | Hosting / SSR | Vercel | `@astrojs/vercel` |
 
 ## 4. `apps/web` layers
@@ -115,7 +115,9 @@ another doc, that doc is authoritative.
 - **0005 — Monorepo (web + studio + schemas).** Independent Studio deploys; one
   typed schema source. Rejected bundling Studio into Astro.
 - **0006 — Mailchimp only, no Resend.** Client already on Mailchimp; avoid a second
-  email vendor.
+  email vendor. Scope narrowed 2026-09: Mailchimp handles the newsletter only;
+  contact form submissions are stored as Sanity `formSubmission` records with no
+  Mailchimp involvement.
 - **0008 — Hybrid SSR.** `output: 'server'`; content SSR per-request, static
   surfaces opt into prerender. Rejected pure-static+rebuild and ISR. Its
   60s-edge-cache clause is superseded by 0031 (content HTML is no longer
