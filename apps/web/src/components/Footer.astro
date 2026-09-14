@@ -221,6 +221,9 @@ const currentYear = new Date().getFullYear()
     margin: 0;
     font-family: var(--font-body);
     font-size: 15px;
+    /* Footer root is type-eyebrow (uppercase); status messages read better in
+       sentence case, matching the contact form's status line. */
+    text-transform: none;
   }
   .nl-status--ok {
     color: var(--fg-60);

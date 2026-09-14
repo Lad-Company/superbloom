@@ -42,6 +42,21 @@ export const POST: APIRoute = async ({request}) => {
     !emailPattern.test(email) ||
     email.length > 254
   ) {
+    // Log the rejection reason (never the email) so real users blocked by
+    // spam-trap false positives, e.g. autofill populating the honeypot, are
+    // distinguishable from bots in the function logs.
+    const reason = honeypot
+      ? 'honeypot'
+      : !Number.isFinite(startedAt)
+        ? 'started-at-missing'
+        : elapsed < minimumFillTimeMs
+          ? 'fill-too-fast'
+          : elapsed > maximumFillTimeMs
+            ? 'fill-too-slow'
+            : !emailPattern.test(email)
+              ? 'email-format'
+              : 'email-length'
+    console.error('Newsletter signup rejected', {reason})
     return response(false, 'invalid', 400)
   }
 
@@ -69,6 +84,7 @@ export const POST: APIRoute = async ({request}) => {
         return response(false, 'duplicate', 200)
       }
     } else if (existingMember.status !== 404) {
+      console.error('Mailchimp member lookup failed', {status: existingMember.status})
       return response(false, 'network', 502)
     }
 
@@ -90,8 +106,21 @@ export const POST: APIRoute = async ({request}) => {
     }
 
     if (mailchimpResponse.status === 400) {
+      // Surface Mailchimp's reason (fake-looking address, previously
+      // unsubscribed, etc.) in the function logs with the email redacted;
+      // the client still sees the generic 'invalid' response.
+      const providerError = (await mailchimpResponse.json().catch(() => null)) as {
+        title?: string
+        detail?: string
+      } | null
+      console.error('Newsletter signup rejected by Mailchimp', {
+        title: providerError?.title,
+        detail: providerError?.detail?.replaceAll(email, '[redacted]'),
+      })
       return response(false, 'invalid', 400)
     }
+
+    console.error('Mailchimp subscribe request failed', {status: mailchimpResponse.status})
   } catch {
     // Provider failures intentionally exclude submission data from logs.
   }
