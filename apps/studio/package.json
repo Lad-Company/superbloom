@@ -26,6 +26,8 @@
     "migrate:article-body": "sanity exec migrations/migrate-article-body.ts",
     "migrate:standardize-article": "sanity exec migrations/standardize-article.ts",
     "migrate:prune-empty-mediabox-assets": "sanity exec migrations/prune-empty-mediabox-assets.ts",
+    "backup:article-cta-labels": "sanity exec migrations/backup-article-cta-labels.ts --with-user-token",
+    "migrate:article-cta-labels": "pnpm run backup:article-cta-labels && sanity exec migrations/migrate-article-cta-labels.ts --with-user-token",
     "backup:home-why-cta-href": "sanity exec migrations/backup-home-why-cta-href.ts --with-user-token",
     "migrate:home-why-cta-href": "pnpm run backup:home-why-cta-href && sanity exec migrations/remove-home-why-cta-href.ts --with-user-token",
     "migrate:carousel-media": "sanity exec migrations/migrate-carousel-media.ts --with-user-token",
