@@ -1,0 +1,307 @@
+<!doctype html>
+<html
+  lang="en"
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+>
+  <!--
+  The Microdose — newsletter welcome email
+  Source design: Figma "Superbloom Library" frame 6970:2564 (Mail, 660px)
+  https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6970-2564
+
+  Usage: Mailchimp Customer Journey welcome email → paste as custom HTML.
+  Assets (header/footer PNGs + woff2 fonts) are served from
+  superbloomhouse.com, so the site must be deployed with
+  apps/web/public/emails/* before sending. Header and footer typography is
+  baked into PNG slices (see emails/src/ for render sources); the content
+  section is live text with Arial Narrow / Arial fallbacks in clients that
+  block custom fonts.
+
+  TODO before sending:
+  - Replace the placeholder headline/body copy in the content section.
+  - Mailchimp requires an unsubscribe link; add *|UNSUB|* to the footer
+    contact row if the journey doesn't append one automatically.
+-->
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>Welcome to The Microdose</title>
+    <!--[if mso]>
+      <xml>
+        <o:OfficeDocumentSettings>
+          <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+      </xml>
+    <![endif]-->
+    <!-- @font-face lives inside a media query so Outlook desktop ignores it
+       (it would otherwise render Times New Roman). -->
+    <style>
+      @media screen {
+        @font-face {
+          font-family: 'PP Neue Corp';
+          font-style: normal;
+          font-weight: 750;
+          font-display: swap;
+          src: url('https://www.superbloomhouse.com/fonts/PPNeueCorp-TightUltrabold.woff2')
+            format('woff2');
+        }
+        @font-face {
+          font-family: 'Graphik';
+          font-style: normal;
+          font-weight: 500;
+          font-display: swap;
+          src: url('https://www.superbloomhouse.com/fonts/Graphik-Medium.woff2') format('woff2');
+        }
+      }
+    </style>
+    <style>
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100% !important;
+        width: 100% !important;
+      }
+      * {
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+      }
+      table,
+      td {
+        mso-table-lspace: 0pt !important;
+        mso-table-rspace: 0pt !important;
+        border-collapse: collapse !important;
+      }
+      img {
+        -ms-interpolation-mode: bicubic;
+        border: 0;
+        height: auto;
+        line-height: 100%;
+        outline: none;
+        text-decoration: none;
+      }
+      a {
+        text-decoration: underline;
+      }
+      a[x-apple-data-detectors] {
+        color: inherit !important;
+        text-decoration: none !important;
+        font-size: inherit !important;
+        font-family: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+      }
+      @media only screen and (max-width: 639px) {
+        .container {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+        .px {
+          padding-left: 16px !important;
+          padding-right: 16px !important;
+        }
+        .header-img,
+        .footer-img {
+          width: 100% !important;
+          height: auto !important;
+        }
+        .content-heading {
+          font-size: 40px !important;
+          line-height: 36px !important;
+        }
+        .measure {
+          width: 100% !important;
+        }
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; word-spacing: normal; background-color: #ffffff">
+    <!-- Preheader: inbox preview text, hidden in the body. -->
+    <div
+      style="
+        display: none;
+        font-size: 1px;
+        line-height: 1px;
+        max-height: 0;
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        mso-hide: all;
+      "
+    >
+      Welcome to The Microdose — a SuperBloom House newsletter.
+      &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+    </div>
+    <div role="article" aria-roledescription="email" lang="en" style="background-color: #ffffff">
+      <!--[if mso]>
+    <table role="presentation" align="center" width="660" cellpadding="0" cellspacing="0" border="0"><tr><td>
+    <![endif]-->
+      <table
+        role="presentation"
+        align="center"
+        width="100%"
+        cellpadding="0"
+        cellspacing="0"
+        border="0"
+        class="container"
+        style="width: 100%; max-width: 660px; margin: 0 auto"
+      >
+        <!-- ============ Top section (black) ============ -->
+        <tr>
+          <td bgcolor="#000000" style="background-color: #000000; padding: 0">
+            <!-- Full-bleed header image (headline + A / logo / Newsletter row):
+                 PP Neue Corp Tight Ultrabold has no acceptable fallback in
+                 Gmail/Outlook, and the exact type is the point of the design.
+                 Alt text covers images-off. 1320x714 asset renders at
+                 660x357 (2x). Regenerate from emails/src/header.html. -->
+            <img
+              class="header-img"
+              src="https://www.superbloomhouse.com/emails/microdose-header.png"
+              width="660"
+              height="357"
+              alt="Welcome to The Microdose — A SuperBloom House Newsletter"
+              style="display: block; width: 660px; max-width: 100%; height: auto"
+            />
+          </td>
+        </tr>
+
+        <!-- ============ Content section (white) ============ -->
+        <tr>
+          <td
+            class="px"
+            style="
+              padding: 59px 24px;
+              border-bottom: 1px solid #808080;
+              border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+            "
+          >
+            <table
+              role="presentation"
+              width="500"
+              cellpadding="0"
+              cellspacing="0"
+              border="0"
+              class="measure"
+              style="width: 500px"
+            >
+              <!-- TODO: replace placeholder headline + body with final copy. -->
+              <tr>
+                <td
+                  class="content-heading"
+                  style="
+                    font-family: 'PP Neue Corp', 'Arial Narrow', Impact, sans-serif;
+                    font-size: 56px;
+                    line-height: 49px;
+                    mso-line-height-rule: exactly;
+                    font-weight: bold;
+                    color: #000000;
+                    text-transform: uppercase;
+                  "
+                >
+                  Lorem ipsum
+                </td>
+              </tr>
+              <tr>
+                <td
+                  style="
+                    padding-top: 12px;
+                    font-family: 'Graphik', Helvetica, Arial, sans-serif;
+                    font-size: 17px;
+                    line-height: 22px;
+                    letter-spacing: -0.34px;
+                    color: #000000;
+                  "
+                >
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                  exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+                  irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+                  pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
+                  officia deserunt mollit anim id est laborum.
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ============ Footer ============ -->
+        <tr>
+          <td class="px" style="padding: 29px 24px">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <!-- Addresses as an image (Label type, no email-safe fallback).
+                   Regenerate from emails/src/footer-addresses.html. -->
+              <tr>
+                <td>
+                  <img
+                    class="footer-img"
+                    src="https://www.superbloomhouse.com/emails/microdose-footer-addresses.png"
+                    width="612"
+                    height="51"
+                    alt="LA — 5768 West Adams Blvd, Los Angeles, CA 90016. NYC — 77 10th Street, Floor 3, Brooklyn, NY 11215"
+                    style="display: block; width: 612px; max-width: 100%; height: auto"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td height="64" style="height: 64px; line-height: 64px; font-size: 64px">&nbsp;</td>
+              </tr>
+              <!-- Contact links: one linked image slice per word so the type
+                   matches the design and every link stays clickable. Image
+                   maps are unreliable in email clients, hence slices.
+                   Regenerate from emails/src/footer-contact.html. -->
+              <tr>
+                <td>
+                  <table
+                    role="presentation"
+                    width="100%"
+                    cellpadding="0"
+                    cellspacing="0"
+                    border="0"
+                  >
+                    <tr>
+                      <td width="295" style="width: 295px">
+                        <a href="mailto:hello@superbloomhouse.com" style="text-decoration: none"
+                          ><img
+                            src="https://www.superbloomhouse.com/emails/microdose-footer-email.png"
+                            width="35"
+                            alt="e-mail"
+                            style="display: block; width: 35px; height: auto; border: 0"
+                        /></a>
+                      </td>
+                      <td width="294" style="width: 294px">
+                        <a href="tel:+13109135312" style="text-decoration: none"
+                          ><img
+                            src="https://www.superbloomhouse.com/emails/microdose-footer-phone.png"
+                            width="34"
+                            alt="phone"
+                            style="display: block; width: 34px; height: auto; border: 0"
+                        /></a>
+                      </td>
+                      <td align="right">
+                        <a href="https://www.superbloomhouse.com" style="text-decoration: none"
+                          ><img
+                            src="https://www.superbloomhouse.com/emails/microdose-footer-web.png"
+                            width="23"
+                            alt="web"
+                            style="display: block; width: 23px; height: auto; border: 0"
+                        /></a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <!--[if mso]>
+    </td></tr></table>
+    <![endif]-->
+    </div>
+  </body>
+</html>
