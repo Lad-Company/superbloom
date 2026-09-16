@@ -1,5 +1,9 @@
-// Pure validators for the Shop Page singleton's optional Featured Item.
+// Pure validators for the Shop Page singleton.
 import {WIDTH_COLUMNS, FULL_WIDTH_COLUMNS} from './contentLayoutContract'
+
+/** Shopify handles (products, collections) are lowercase alphanumeric with
+   hyphen separators — the resource's URL slug. */
+export const SHOPIFY_HANDLE_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 type FeaturedBlock = {width?: string}
 type ShopFeatured = {

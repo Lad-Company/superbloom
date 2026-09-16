@@ -379,7 +379,17 @@ first-class `/shop` route, not a settings link.
 ### Shop (functional; no approved visual design yet)
 
 - **Shopify is the source of truth for products** — there is no Sanity product
-  schema.
+  schema. The `shopPage` singleton holds a single `collectionHandle`: when set,
+  the grid reads that Shopify collection in its own sort order (manual
+  collections = Shopify admin drag order); empty falls back to all products,
+  alphabetical. Merchandising/order lives in Shopify admin, not Sanity.
+- **Grid hover:** the media box wipes up with the CMS `hoverColor` behind the
+  image (Surface Wipe mechanics, scaleY from the bottom edge) while a black
+  marquee band slides in 12px off the bottom edge, scrolling the product name
+  in the Wide marquee cut (fixed white-on-black, independent of the fill).
+  Keyboard focus mirrors hover; reduced motion reveals both without motion.
+- The page heading is CMS-controlled (`shopPage.heading`, falls back to
+  "Shop").
 - **Cart:** store only the Shopify cart ID in an encrypted, HttpOnly, Secure,
   SameSite=Lax first-party cookie. No server session or DB. An invalid/expired ID
   silently creates a new cart. **Never expose or log** the cart `id` or

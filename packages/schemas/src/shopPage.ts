@@ -1,11 +1,25 @@
 import {defineField, defineType} from 'sanity'
-import {validateShopFeaturedWidths} from './shopPageContract'
+import {SHOPIFY_HANDLE_PATTERN, validateShopFeaturedWidths} from './shopPageContract'
 
 export const shopPage = defineType({
   name: 'shopPage',
   title: 'Shop Page',
   type: 'document',
   fields: [
+    defineField({
+      name: 'heading',
+      title: 'Page Heading',
+      type: 'string',
+      description: 'Shown in the hero. Falls back to "Shop" when empty.',
+    }),
+    defineField({
+      name: 'collectionHandle',
+      title: 'Collection Handle',
+      type: 'string',
+      description:
+        'Shopify collection powering the product grid (the collection\u2019s URL slug, e.g. "frontpage"). The grid follows the collection\u2019s own sort order — reorder products in Shopify admin. Empty = all products, alphabetical.',
+      validation: (rule) => rule.regex(SHOPIFY_HANDLE_PATTERN, {name: 'Shopify handle'}),
+    }),
     defineField({
       name: 'featured',
       title: 'Featured Item',
@@ -41,6 +55,14 @@ export const shopPage = defineType({
         }),
       ],
       validation: (rule) => rule.custom(validateShopFeaturedWidths),
+    }),
+    defineField({
+      name: 'hoverColor',
+      title: 'Hover Fill',
+      type: 'color',
+      options: {disableAlpha: true},
+      description:
+        'Fill color that wipes up behind the product image on hover. Empty = the neutral gray stays.',
     }),
   ],
   preview: {

@@ -209,8 +209,28 @@ function normalizeCart(cart: RawCart): ShopifyCart {
   };
 }
 
-export async function listProducts(after: string | null) {
-  const data = await request<{ products: { nodes: Array<Omit<Product, 'variants'> & { variants: { nodes: ProductVariant[] } }>; pageInfo: PageInfo } }>(
+type ProductConnection = {
+  nodes: Array<Omit<Product, 'variants'> & { variants: { nodes: ProductVariant[] } }>;
+  pageInfo: PageInfo;
+};
+
+/** With a collection handle the grid follows the collection's own sort
+   order (manual collections = Shopify admin drag order); without one it
+   falls back to every product, alphabetical. A missing collection behaves
+   like an empty one — the grid renders empty rather than erroring. */
+export async function listProducts(after: string | null, collection: string | null = null) {
+  if (collection) {
+    const data = await request<{ collection: { products: ProductConnection } | null }>(
+      `query CollectionProducts($handle: String!, $after: String) { collection(handle: $handle) { products(first: 24, after: $after) { nodes { ${productFields} } pageInfo { hasNextPage endCursor } } } }`,
+      { handle: collection, after },
+    );
+    const connection = data.collection?.products;
+    return {
+      products: (connection?.nodes ?? []).map(normalizeProduct),
+      pageInfo: connection?.pageInfo ?? { hasNextPage: false, endCursor: null },
+    };
+  }
+  const data = await request<{ products: ProductConnection }>(
     `query Products($after: String) { products(first: 24, after: $after, sortKey: TITLE) { nodes { ${productFields} } pageInfo { hasNextPage endCursor } } }`,
     { after },
   );

@@ -97,4 +97,15 @@ describe('shop page document validation', () => {
       ),
     ).toEqual([])
   })
+
+  it('accepts a valid collection handle', async () => {
+    expect(await errorMarkers(baseShopPage({collectionHandle: 'frontpage'}))).toEqual([])
+  })
+
+  it('rejects a malformed collection handle', async () => {
+    const markers = await errorMarkers(baseShopPage({collectionHandle: 'Front Page!'}))
+    expect(markers).toEqual([
+      {path: ['collectionHandle'], message: expect.stringContaining('Shopify handle')},
+    ])
+  })
 })

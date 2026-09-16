@@ -9,28 +9,28 @@ import {getSanityClient} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {shopPageQuery} from '../../lib/queries'
 
+// CMS page settings (heading, grid collection, hover fill, optional feature
+// above the grid); a CMS outage never takes the shop down with it — the grid
+// just falls back to all products, alphabetical.
+const shopPage = await getSanityClient(isPreviewRequest(Astro.cookies))
+  .fetch(shopPageQuery)
+  .catch(() => null)
+const collectionHandle = shopPage?.collectionHandle ?? null
+
 const cursor = Astro.url.searchParams.get('after')
 let result: Awaited<ReturnType<typeof listProducts>> | null = null
 let error = false
 try {
-  result = await listProducts(cursor)
+  result = await listProducts(cursor, collectionHandle)
 } catch {
   error = true
 }
-
-// Optional CMS feature above the product grid; a CMS outage never takes
-// the shop down with it.
-async function fetchFeatured() {
-  const shopPage = await getSanityClient(isPreviewRequest(Astro.cookies)).fetch(shopPageQuery)
-  return shopPage?.featured ?? null
-}
-const featured = await fetchFeatured().catch(() => null)
 ---
 
 <Layout title="Shop | Superbloom House" navRole="dark">
   <main>
-    <PageHero heading="Shop" />
-    <ShopFeature featured={featured} />
+    <PageHero heading={shopPage?.heading ?? 'Shop'} />
+    <ShopFeature featured={shopPage?.featured ?? null} />
     {
       error ? (
         <p class="message">Unable to load products. Please try again.</p>
@@ -40,6 +40,8 @@ const featured = await fetchFeatured().catch(() => null)
             products={result.products}
             nextCursor={result.pageInfo.endCursor}
             hasNextPage={result.pageInfo.hasNextPage}
+            hoverColor={shopPage?.hoverColor ?? null}
+            collectionHandle={collectionHandle}
           />
         )
       )

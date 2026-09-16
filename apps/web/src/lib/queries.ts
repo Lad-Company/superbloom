@@ -509,11 +509,16 @@ export const indexViewAllOldestQuery = defineQuery(`
   }
 `)
 
-// Optional 50/50-style feature above the shop product grid. Reuses the
-// case-study content blocks (media + text with CMS widths) plus a CTA; the
-// schema requires all three once the section exists.
+// Shop page singleton: CMS heading, the Shopify collection powering the
+// grid (its manual order wins), the hover fill color, and the optional
+// 50/50-style feature above the grid. The feature reuses the case-study
+// content blocks (media + text with CMS widths) plus a CTA; the schema
+// requires all three once the section exists.
 export const shopPageQuery = defineQuery(`
   *[_id == "shopPage"][0]{
+    heading,
+    collectionHandle,
+    "hoverColor": hoverColor.hex,
     featured{
       ctaLabel,
       ctaHref,

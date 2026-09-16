@@ -6,22 +6,39 @@ interface Props {
   products: Product[]
   nextCursor: string | null
   hasNextPage: boolean
+  /** CMS fill that wipes up behind the product image on hover. */
+  hoverColor?: string | null
+  /** Shopify collection the grid is reading; Load More stays in it. */
+  collectionHandle?: string | null
 }
 
-const {products, nextCursor, hasNextPage} = Astro.props
+const {products, nextCursor, hasNextPage, hoverColor = null, collectionHandle = null} = Astro.props
+
 const money = (value: Product['priceRange']['minVariantPrice']) =>
   new Intl.NumberFormat('en-US', {style: 'currency', currency: value.currencyCode}).format(
     Number(value.amount),
   )
+
+// The band is only a few product-box widths wide, so the name repeats to
+// give each seamless set enough runway; the trailing NBSP keeps the wrap
+// point spaced like every other seam (a trailing plain space is trimmed).
+const MARQUEE_REPEATS = 6
+const marqueeText = (title: string) =>
+  `${Array(MARQUEE_REPEATS).fill(title).join(' ')}\u00A0`
 ---
 
-<section class="shop-grid" data-product-grid>
+<section
+  class="shop-grid"
+  data-product-grid
+  data-hover-color={hoverColor ?? undefined}
+  data-collection-handle={collectionHandle ?? undefined}
+>
   <div class="products" data-products>
     {
       products.map((product) => (
         <article class="product">
           <a href={`/shop/products/${product.handle}`}>
-            <div class="product-media">
+            <div class="product-media" style={hoverColor ? `--hover-bg: ${hoverColor}` : null}>
               {product.featuredImage ? (
                 <img
                   src={product.featuredImage.url}
@@ -36,6 +53,12 @@ const money = (value: Product['priceRange']['minVariantPrice']) =>
                   <TagList typeLabel="Sold out" />
                 </div>
               )}
+              <div class="product-marquee" aria-hidden="true">
+                <div class="product-marquee-content">
+                  <span class="product-marquee-set">{marqueeText(product.title)}</span>
+                  <span class="product-marquee-set">{marqueeText(product.title)}</span>
+                </div>
+              </div>
             </div>
             <h2 class="type-h7">{product.title}</h2>
             <p>{money(product.priceRange.minVariantPrice)}</p>
@@ -60,6 +83,12 @@ const money = (value: Product['priceRange']['minVariantPrice']) =>
           <div class="product-badge" style="display: none;">
             <TagList typeLabel="Sold out" />
           </div>
+          <div class="product-marquee" aria-hidden="true">
+            <div class="product-marquee-content">
+              <span class="product-marquee-set product-marquee-text"></span>
+              <span class="product-marquee-set product-marquee-text"></span>
+            </div>
+          </div>
         </div>
         <h2 class="type-h7 product-title"></h2>
         <p class="product-price"></p>
@@ -69,66 +98,85 @@ const money = (value: Product['priceRange']['minVariantPrice']) =>
 </section>
 
 <script>
-  const grid = document.querySelector<HTMLElement>('[data-product-grid]')
-  const button = grid?.querySelector<HTMLAnchorElement>('[data-load-more]')
-  const template = document.querySelector<HTMLTemplateElement>('#product-card-template')
-  const money = (amount: string, currencyCode: string) =>
-    new Intl.NumberFormat('en-US', {style: 'currency', currency: currencyCode}).format(
-      Number(amount),
-    )
+  const MARQUEE_REPEATS = 6
 
-  button?.addEventListener('click', async (event) => {
-    event.preventDefault()
-    const cursor = new URL(button.href).searchParams.get('after')
-    if (!cursor) return
-    button.textContent = 'Loading…'
-    try {
-      const response = await fetch(`/api/shop/products.json?after=${encodeURIComponent(cursor)}`)
-      if (!response.ok) throw new Error()
-      const {products, pageInfo} = await response.json()
-      const container = grid?.querySelector<HTMLElement>('[data-products]')
-      products.forEach((product: any) => {
-        if (!template) return
-        const clone = template.content.cloneNode(true) as DocumentFragment
-        const link = clone.querySelector<HTMLAnchorElement>('.product-link')
-        const image = clone.querySelector<HTMLImageElement>('.product-image')
-        const placeholder = clone.querySelector<HTMLElement>('.placeholder')
-        const badge = clone.querySelector<HTMLElement>('.product-badge')
-        const title = clone.querySelector<HTMLElement>('.product-title')
-        const price = clone.querySelector<HTMLElement>('.product-price')
+  function initProductGrid() {
+    const grid = document.querySelector<HTMLElement>('[data-product-grid]')
+    if (!grid || grid.dataset.bound) return
+    grid.dataset.bound = 'true'
 
-        if (link) link.href = `/shop/products/${product.handle}`
-        if (title) title.textContent = product.title
-        if (price)
-          price.textContent = money(
-            product.priceRange.minVariantPrice.amount,
-            product.priceRange.minVariantPrice.currencyCode,
-          )
+    const button = grid.querySelector<HTMLAnchorElement>('[data-load-more]')
+    const template = document.querySelector<HTMLTemplateElement>('#product-card-template')
+    const hoverColor = grid.dataset.hoverColor || null
+    const collectionHandle = grid.dataset.collectionHandle || null
+    const money = (amount: string, currencyCode: string) =>
+      new Intl.NumberFormat('en-US', {style: 'currency', currency: currencyCode}).format(
+        Number(amount),
+      )
 
-        if (product.featuredImage) {
-          if (image) {
-            image.src = product.featuredImage.url
-            image.alt = product.featuredImage.altText ?? product.title
+    button?.addEventListener('click', async (event) => {
+      event.preventDefault()
+      const cursor = new URL(button.href).searchParams.get('after')
+      if (!cursor) return
+      button.textContent = 'Loading…'
+      try {
+        const params = new URLSearchParams({after: cursor})
+        if (collectionHandle) params.set('collection', collectionHandle)
+        const response = await fetch(`/api/shop/products.json?${params}`)
+        if (!response.ok) throw new Error()
+        const {products, pageInfo} = await response.json()
+        const container = grid.querySelector<HTMLElement>('[data-products]')
+        products.forEach((product: any) => {
+          if (!template) return
+          const clone = template.content.cloneNode(true) as DocumentFragment
+          const link = clone.querySelector<HTMLAnchorElement>('.product-link')
+          const media = clone.querySelector<HTMLElement>('.product-media')
+          const image = clone.querySelector<HTMLImageElement>('.product-image')
+          const placeholder = clone.querySelector<HTMLElement>('.placeholder')
+          const badge = clone.querySelector<HTMLElement>('.product-badge')
+          const title = clone.querySelector<HTMLElement>('.product-title')
+          const price = clone.querySelector<HTMLElement>('.product-price')
+          const marqueeSets = clone.querySelectorAll<HTMLElement>('.product-marquee-text')
+
+          if (link) link.href = `/shop/products/${product.handle}`
+          if (title) title.textContent = product.title
+          if (price)
+            price.textContent = money(
+              product.priceRange.minVariantPrice.amount,
+              product.priceRange.minVariantPrice.currencyCode,
+            )
+
+          if (media && hoverColor) media.style.setProperty('--hover-bg', hoverColor)
+          const repeated = `${Array(MARQUEE_REPEATS).fill(product.title).join(' ')}\u00A0`
+          marqueeSets.forEach((set) => (set.textContent = repeated))
+
+          if (product.featuredImage) {
+            if (image) {
+              image.src = product.featuredImage.url
+              image.alt = product.featuredImage.altText ?? product.title
+            }
+            placeholder?.remove()
+          } else {
+            image?.remove()
           }
-          placeholder?.remove()
-        } else {
-          image?.remove()
-        }
 
-        if (!product.availableForSale) {
-          if (badge) badge.style.display = 'block'
-        }
+          if (!product.availableForSale) {
+            if (badge) badge.style.display = 'block'
+          }
 
-        container?.appendChild(clone)
-      })
-      if (pageInfo.hasNextPage && pageInfo.endCursor)
-        button.href = `/shop?after=${encodeURIComponent(pageInfo.endCursor)}`
-      else button.remove()
-      if (button.isConnected) button.textContent = 'Load more'
-    } catch {
-      button.textContent = 'Could not load more. Try again.'
-    }
-  })
+          container?.appendChild(clone)
+        })
+        if (pageInfo.hasNextPage && pageInfo.endCursor)
+          button.href = `/shop?after=${encodeURIComponent(pageInfo.endCursor)}`
+        else button.remove()
+        if (button.isConnected) button.textContent = 'Load more'
+      } catch {
+        button.textContent = 'Could not load more. Try again.'
+      }
+    })
+  }
+
+  document.addEventListener('astro:page-load', initProductGrid)
 </script>
 
 <style>
@@ -148,14 +196,83 @@ const money = (value: Product['priceRange']['minVariantPrice']) =>
   }
   .product-media {
     position: relative;
+    overflow: clip;
+    border-radius: var(--radius-media);
+    background: var(--fg-12);
+    transition: background-color var(--motion-quick) var(--motion-ease-out);
+  }
+  /* Color fill rides the Surface Wipe mechanics (motion.css): a ::before
+     scaling up from the bottom edge, with the media box's own background
+     flipping to the fill color on the same timing so the radius clip's
+     anti-aliased seam never peeks through. 1px overscan matches the wipe. */
+  .product-media::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: var(--hover-bg, var(--fg-12));
+    transform: scaleY(0);
+    transform-origin: bottom center;
+    transition: transform var(--motion-quick) var(--motion-ease-out);
+  }
+  .product a:hover .product-media,
+  .product a:focus-visible .product-media {
+    background: var(--hover-bg, var(--fg-12));
+  }
+  .product a:hover .product-media::before,
+  .product a:focus-visible .product-media::before {
+    transform: scaleY(1);
   }
   .product img,
   .placeholder {
+    /* Positioned so the image/placeholder stacks above the ::before wipe —
+       the fill stays behind the product, per design. */
+    position: relative;
     aspect-ratio: 1;
     width: 100%;
     object-fit: cover;
-    background: var(--fg-12);
     border-radius: var(--radius-media);
+  }
+  /* Name marquee floating just off the bottom edge of the media box
+     (12px clearspace): a black band with the product name in the Wide
+     marquee cut, sliding in with the color fill on hover/focus. The palette
+     is fixed (white on black), independent of the CMS fill color. */
+  .product-marquee {
+    position: absolute;
+    inset: auto 0 var(--space-3xs) 0;
+    overflow: hidden;
+    background: #000000;
+    color: #ffffff;
+    opacity: 0;
+    transform: translateY(calc(100% + var(--space-3xs)));
+    transition:
+      opacity var(--motion-quick) var(--motion-ease-out),
+      transform var(--motion-quick) var(--motion-ease-out);
+  }
+  .product a:hover .product-marquee,
+  .product a:focus-visible .product-marquee {
+    opacity: 1;
+    transform: none;
+  }
+  .product-marquee-content {
+    display: flex;
+    width: max-content;
+    animation: product-marquee-scroll 28s linear infinite;
+    will-change: transform;
+  }
+  .product-marquee-set {
+    padding: var(--space-3xs) 0;
+    font-family: var(--font-marquee);
+    font-weight: 750;
+    font-variation-settings: 'wdth' 750;
+    font-size: clamp(32px, 4.5vw, 72px);
+    line-height: 0.8;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  @keyframes product-marquee-scroll {
+    to {
+      transform: translateX(-50%);
+    }
   }
   .product h2,
   .product p {
@@ -173,6 +290,17 @@ const money = (value: Product['priceRange']['minVariantPrice']) =>
     color: var(--bg);
     text-decoration: none;
     border-radius: var(--radius-control);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* Reveal stays instant; the name stays readable instead of scrolling. */
+    .product-marquee-content {
+      animation-play-state: paused;
+    }
+    .product-media,
+    .product-media::before,
+    .product-marquee {
+      transition: none;
+    }
   }
   @media (--bp-small) {
     /* 32 above/below pairs with the hero's 32 bottom and the footer's 32
