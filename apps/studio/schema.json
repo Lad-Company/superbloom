@@ -887,6 +887,13 @@
         },
         "optional": true
       },
+      "showFaq": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "boolean"
+        },
+        "optional": true
+      },
       "cardDefaults": {
         "type": "objectAttribute",
         "value": {

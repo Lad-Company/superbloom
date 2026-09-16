@@ -41,6 +41,9 @@ const advantageBlocks = page?.advantageBlocks ?? [];
 const disciplines = page?.disciplines ?? [];
 const ctas = page?.ctas ?? [];
 const faqs = page?.faqs ?? [];
+// Site Settings toggle; undefined means the doc predates the field, so keep
+// rendering (matches the schema's initialValue: true).
+const showFaq = page?.showFaq ?? true;
 
 ---
 
@@ -94,7 +97,7 @@ const faqs = page?.faqs ?? [];
     </SurfaceSection>
   )}
 
-  {faqs.length > 0 && (
+  {showFaq && faqs.length > 0 && (
     <SurfaceSection role="dark">
       <Faq items={faqs} />
     </SurfaceSection>

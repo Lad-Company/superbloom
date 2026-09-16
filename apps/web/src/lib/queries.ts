@@ -185,7 +185,8 @@ export const whoWeAreQuery = defineQuery(`
       _key,
       question,
       answer
-    }
+    },
+    "showFaq": *[_type == "siteSettings"][0].showFaq
   }
 `)
 

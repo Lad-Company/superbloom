@@ -30,6 +30,14 @@ export const siteSettings = defineType({
       type: 'url',
       validation: (rule) => rule.required().uri({scheme: ['http', 'https']}),
     }),
+    defineField({
+      name: 'showFaq',
+      title: 'Show FAQ',
+      type: 'boolean',
+      initialValue: true,
+      description:
+        'Toggle the FAQ section on the Who We Are page on or off without deleting the questions.',
+    }),
     ...cardSettingsFieldGroup({
       title: 'Global Card Defaults',
       collapsed: true,
