@@ -44,6 +44,7 @@ const faqs = page?.faqs ?? [];
 // Site Settings toggle; undefined means the doc predates the field, so keep
 // rendering (matches the schema's initialValue: true).
 const showFaq = page?.showFaq ?? true;
+const faqVisible = showFaq && faqs.length > 0;
 
 ---
 
@@ -92,12 +93,12 @@ const showFaq = page?.showFaq ?? true;
   )}
 
   {ctas.length > 0 && (
-    <SurfaceSection role="dark">
+    <SurfaceSection role="dark" class:list={[!faqVisible && 'ctas-pad-bottom']}>
       <TwoUp items={ctas} />
     </SurfaceSection>
   )}
 
-  {showFaq && faqs.length > 0 && (
+  {faqVisible && (
     <SurfaceSection role="dark">
       <Faq items={faqs} />
     </SurfaceSection>
@@ -114,6 +115,20 @@ const showFaq = page?.showFaq ?? true;
        single 4xl (2xl on mobile via TwoUp) is the intended inter-section
        spacing. */
     padding: var(--space-4xl) 0 0;
+  }
+
+  /* TwoUp keeps zero bottom padding because the FAQ below it carries the
+     inter-section gap as top padding. When the FAQ is hidden (Site Settings
+     toggle or no questions), that gap would land inside ContactBand's accent
+     surface and leave this dark section flush with the boundary — restore
+     the FAQ's share (4xl desktop, 2xl mobile) here instead. */
+  .ctas-pad-bottom {
+    padding-bottom: var(--space-4xl);
+  }
+  @media (--bp-small) {
+    .ctas-pad-bottom {
+      padding-bottom: var(--space-2xl);
+    }
   }
 
   /* The header (dark) and the lead media (accent) are separate colored

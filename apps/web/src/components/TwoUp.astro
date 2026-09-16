@@ -38,9 +38,10 @@ const {items} = Astro.props
   .two-up {
     display: flex;
     gap: var(--page-gutter);
-    /* No bottom padding: the next section (Faq, or ContactBand when no
-       faqs) carries its own 4xl top padding, so a bottom pad here would
-       double the gap to 400px. */
+    /* No bottom padding: the next section (Faq) carries the inter-section
+       gap as its own 4xl top padding, so a bottom pad here would double the
+       gap to 400px. When the FAQ is hidden, who-we-are restores the gap on
+       this section via .ctas-pad-bottom. */
     padding: var(--space-4xl) var(--space-xs) 0;
     align-items: flex-start;
   }
