@@ -2,7 +2,7 @@
 import Layout from '../../../../layouts/Layout.astro'
 import Footer from '../../../../components/Footer.astro'
 import IssuuEmbed from '../../../../components/zine/IssuuEmbed.astro'
-import {getSanityClient} from '../../../../lib/sanity'
+import {fetchSafe, getSanityClient} from '../../../../lib/sanity'
 import {isPreviewRequest} from '../../../../lib/preview'
 import {setContentCache} from '../../../../lib/cacheHeaders'
 import {issueBySlugQuery} from '../../../../lib/queries'
@@ -10,7 +10,12 @@ import {issueBySlugQuery} from '../../../../lib/queries'
 const issueSlug = Astro.params.issueSlug
 const preview = isPreviewRequest(Astro.cookies)
 const client = getSanityClient(preview)
-const issue = await client.fetch(issueBySlugQuery, {slug: issueSlug})
+const issue = await fetchSafe(client, issueBySlugQuery, {slug: issueSlug})
+
+if (issue === undefined) {
+  Astro.response.status = 500
+  return Astro.rewrite('/500')
+}
 
 if (!issue?.issuuUrl) {
   Astro.response.status = 404

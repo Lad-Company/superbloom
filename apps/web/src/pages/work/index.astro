@@ -7,7 +7,7 @@ import ContactBand from '../../components/ContactBand.astro'
 import ContentCardList from '../../components/ContentCardList.astro'
 import WorkCard from '../../components/WorkCard.astro'
 import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro'
-import {getSanityClient} from '../../lib/sanity'
+import {fetchSafe, getSanityClient} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {setContentCache} from '../../lib/cacheHeaders'
 import {workIndexQuery, caseStudiesNewestQuery} from '../../lib/queries'
@@ -23,15 +23,20 @@ const BATCH_SIZE = 12
 const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') ?? '1', 10)
 const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
 const recordLimit = page * BATCH_SIZE
-const workIndex = await client.fetch<WorkIndexQueryResult>(workIndexQuery)
+const workIndex = await fetchSafe<WorkIndexQueryResult>(client, workIndexQuery)
 const featured = workIndex?.featured?.filter((entry) => entry?.item) ?? []
 const featuredIds = featured
   .map((entry) => entry.item?._id)
   .filter((id): id is string => Boolean(id))
-const fetchedCaseStudies = await client.fetch<CaseStudiesNewestQueryResult>(
+const fetchedCaseStudies = await fetchSafe<CaseStudiesNewestQueryResult>(
+  client,
   caseStudiesNewestQuery,
   {featuredIds},
 )
+if (workIndex === undefined || fetchedCaseStudies === undefined) {
+  Astro.response.status = 500
+  return Astro.rewrite('/500')
+}
 // CMS order: the Work Index itemOverrides list is the manual All-section
 // order (overridden items lead); the rest follow newest-first.
 const orderedCaseStudies = orderCaseStudiesByOverrides(

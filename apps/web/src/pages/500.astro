@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ServerErrorPage from '../components/ServerErrorPage.astro';
+
+// Astro passes the triggering error as a prop when this page renders from its
+// error fallback; content routes also rewrite here after a failed CMS fetch
+// (no error prop in that case). Never render the error — internals stay out
+// of the response; Sentry already has it.
+---
+
+<Layout title="Something Went Wrong" navRole="dark">
+  <ServerErrorPage />
+</Layout>

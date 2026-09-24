@@ -4,7 +4,7 @@ import Footer from '../../../../components/Footer.astro'
 import ContactBand from '../../../../components/ContactBand.astro'
 import ArticleDetail from '../../../../components/editorial/ArticleDetail.astro'
 import ZineStoriesRail from '../../../../components/zine/ZineStoriesRail.astro'
-import {getSanityClient} from '../../../../lib/sanity'
+import {fetchSafe, getSanityClient} from '../../../../lib/sanity'
 import {isPreviewRequest} from '../../../../lib/preview'
 import {setContentCache} from '../../../../lib/cacheHeaders'
 import {zineArticleBySlugQuery} from '../../../../lib/queries'
@@ -14,7 +14,12 @@ const issueSlug = Astro.params.issueSlug
 const articleSlug = Astro.params.articleSlug
 const preview = isPreviewRequest(Astro.cookies)
 const client = getSanityClient(preview)
-const result = await client.fetch(zineArticleBySlugQuery, {issueSlug, articleSlug})
+const result = await fetchSafe(client, zineArticleBySlugQuery, {issueSlug, articleSlug})
+
+if (result === undefined) {
+  Astro.response.status = 500
+  return Astro.rewrite('/500')
+}
 
 if (!result?.article || !result.issueSlug) {
   Astro.response.status = 404

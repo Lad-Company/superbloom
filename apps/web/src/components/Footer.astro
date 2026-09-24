@@ -1,7 +1,7 @@
 ---
 import SurfaceSection from './SurfaceSection.astro'
 import Button from './Button.astro'
-import {getSanityClient} from '../lib/sanity'
+import {fetchSafe, getSanityClient} from '../lib/sanity'
 import {isPreviewRequest} from '../lib/preview'
 import {siteSettingsQuery} from '../lib/queries'
 import type {SiteSettingsQueryResult} from '../sanity.types'
@@ -14,9 +14,12 @@ const nav = [
   {label: 'Shop', href: '/shop'},
   {label: 'Edit', href: 'https://superbloom-cms.sanity.studio', external: true},
 ]
-const siteSettings = await getSanityClient(
-  isPreviewRequest(Astro.cookies),
-).fetch<SiteSettingsQueryResult>(siteSettingsQuery)
+// Social links are decorative: a CMS outage drops them, never the page (the
+// 500 page renders this footer during exactly that outage).
+const siteSettings = await fetchSafe<SiteSettingsQueryResult>(
+  getSanityClient(isPreviewRequest(Astro.cookies)),
+  siteSettingsQuery,
+)
 const social = [
   {label: 'Instagram', href: siteSettings?.instagramUrl},
   {label: 'LinkedIn', href: siteSettings?.linkedInUrl},
