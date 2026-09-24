@@ -275,6 +275,12 @@ Vercel project settings for deployed environments.
 
 ## 8. Plan-tier constraints (Hobby)
 
+> Hosting-plan context (2026-09-24): `lad-company` stays on Hobby through
+> launch; the project + domain transfer to an SBH-owned Pro team post-launch
+> (see the DNS Cutover Runbook in the KB). The Hobby constraints below are
+> therefore interim, and the Pro swap noted here becomes available after that
+> transfer — still optional, no relay contract change either way.
+
 - No Vercel Account Webhooks, Drains, or Audit Log Drains — hence
   GitHub-sourced deploy events and no login/audit coverage. Upgrading to Pro
   later would allow swapping the deploy source to Vercel webhooks and adding
