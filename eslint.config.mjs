@@ -22,6 +22,17 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   ...astro.configs["flat/recommended"],
   {
+    // eslint-plugin-astro parses the .astro shell but delegates the frontmatter
+    // script to whatever parserOptions.parser names; without this it falls back
+    // to espree and every TS-typed frontmatter fails with parsing errors.
+    files: ["**/*.astro"],
+    languageOptions: {
+      parserOptions: {
+        parser: tseslint.parser,
+      },
+    },
+  },
+  {
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
     },
