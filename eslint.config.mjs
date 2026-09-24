@@ -15,7 +15,6 @@ export default tseslint.config(
       "**/seed/cache/**",
       "**/*.d.ts",
       "apps/studio/schema.json",
-      "test.ts",
     ],
   },
   js.configs.recommended,

@@ -505,5 +505,5 @@ Study Spine (those use Content Layout Row).
   pages. Needs a new block type. (A `TwoUp.astro` exists but is the Who We Are CTA
   module, not this pattern.)
 - **Text-Media 50/50 ("Home-Why")** — homepage text+media split (headline, body,
-  CTA, 4:5 media). Would need a new `homepage` block type. (`HomeFeature.astro`
-  exists but is unwired — see the code-drift list.)
+  CTA, 4:5 media). Would need a new `homepage` block type. (The unwired
+  `HomeFeature.astro` was removed as dead code.)
