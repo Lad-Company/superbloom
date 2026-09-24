@@ -26,13 +26,6 @@ export const SCROLL = {
   scrubLag: 0.6,
 } as const
 
-export const POINTER = {
-  frontTravel: 0.55,
-  depthFalloff: 0.6,
-  lagFront: 0.35,
-  lagDeep: 0.9,
-} as const
-
 /** Parallax Field (the shared ParallaxStatement section: home parallax, zine
  *  landing intro, Who We Are intro): a persistent scattered
  *  media composition whose items sit at random depths. Depth drives the
