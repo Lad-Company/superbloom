@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro'
 import ContactBand from '../../components/ContactBand.astro'
 import Footer from '../../components/Footer.astro'
 import CaseStudyComposition from '../../components/case/CaseStudyComposition.astro'
-import {getSanityClient} from '../../lib/sanity'
+import {fetchSafe, getSanityClient} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {setContentCache} from '../../lib/cacheHeaders'
 import {caseBrandVars} from '../../lib/caseBrandVars'
@@ -14,7 +14,12 @@ import type {CaseStudyBySlugQueryResult} from '../../sanity.types'
 const {slug} = Astro.params
 const preview = isPreviewRequest(Astro.cookies)
 const client = getSanityClient(preview)
-const caseStudy: CaseStudyBySlugQueryResult = await client.fetch(caseStudyBySlugQuery, {slug})
+const caseStudy = await fetchSafe<CaseStudyBySlugQueryResult>(client, caseStudyBySlugQuery, {slug})
+
+if (caseStudy === undefined) {
+  Astro.response.status = 500
+  return Astro.rewrite('/500')
+}
 
 if (!caseStudy) {
   Astro.response.status = 404

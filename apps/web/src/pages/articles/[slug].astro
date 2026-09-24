@@ -3,7 +3,7 @@ import Layout from '../../layouts/Layout.astro'
 import Footer from '../../components/Footer.astro'
 import ContactBand from '../../components/ContactBand.astro'
 import ArticleDetail from '../../components/editorial/ArticleDetail.astro'
-import {getSanityClient} from '../../lib/sanity'
+import {fetchSafe, getSanityClient} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {setContentCache} from '../../lib/cacheHeaders'
 import {articleBySlugQuery} from '../../lib/queries'
@@ -12,7 +12,12 @@ import {seoDescription, seoImage} from '../../lib/seo'
 const {slug} = Astro.params
 const preview = isPreviewRequest(Astro.cookies)
 const client = getSanityClient(preview)
-const article = await client.fetch(articleBySlugQuery, {slug})
+const article = await fetchSafe(client, articleBySlugQuery, {slug})
+
+if (article === undefined) {
+  Astro.response.status = 500
+  return Astro.rewrite('/500')
+}
 
 if (!article) {
   Astro.response.status = 404

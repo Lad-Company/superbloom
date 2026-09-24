@@ -1,0 +1,47 @@
+---
+import ContactBand from './ContactBand.astro'
+import Footer from './Footer.astro'
+import SurfaceSection from './SurfaceSection.astro'
+
+// Rendered both by Astro's error fallback and by content routes rewriting to
+// /500 when a CMS fetch fails (see fetchSafe in lib/sanity). Must never throw
+// during a Sanity outage: no fetches here, ContactBand is fetch-free, and
+// Footer degrades to no social links on its own.
+---
+
+<SurfaceSection role="dark">
+  <main class="server-error">
+    <h1 class="type-h1">Something went wrong</h1>
+    <p class="type-h4">
+      This page hit an unexpected error. Try reloading, or head back to our
+      <a href="/">homepage</a>.
+    </p>
+  </main>
+</SurfaceSection>
+<ContactBand role="brand-deep" />
+<Footer />
+
+<style>
+  .server-error {
+    display: grid;
+    min-height: 70vh;
+    align-content: center;
+    gap: var(--space-xs);
+    padding: var(--space-4xl) var(--page-inset);
+  }
+  h1,
+  p {
+    margin: 0;
+  }
+  p {
+    max-width: 28ch;
+  }
+  a {
+    text-underline-offset: 0.15em;
+  }
+  @media (--bp-small) {
+    .server-error {
+      padding: var(--space-3xl) var(--space-3xs);
+    }
+  }
+</style>

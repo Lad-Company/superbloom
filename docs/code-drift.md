@@ -7,21 +7,6 @@ code, not in docs. The design docs (`docs/design-system.md`, `ARCHITECTURE.md`,
 
 When you fix one, delete its entry.
 
-## Deadweight (unwired code)
-
-- **`homeFeatureBlock` — dead schema + component.** The schema
-  (`packages/schemas/src/homeFeatureBlock.ts`) is not registered in
-  `packages/schemas/src/index.ts`, and `apps/web/src/components/blocks/HomeFeature.astro`
-  is imported nowhere. Remove both, or wire the "Home-Why" text-media block into
-  `homepage` if it's still wanted (see `docs/design-system.md` §6).
-- **`homeTestimonialsBlock` — orphaned schema + component.** Registered in
-  `index.ts` but not used by `homepage.ts`, and
-  `apps/web/src/components/blocks/HomeTestimonials.astro` is imported nowhere.
-  Remove or wire in.
-- **Leftover motion prototype.** `apps/web/src/pages/prototype/motion.astro` and
-  `apps/web/src/components/prototype/MotionLanguagePrototype.astro` remain; the
-  motion work's "remove the prototype route" step was never completed.
-
 ## Schema / component mismatches
 
 - **Content Layout Row block count.** `packages/schemas/src/contentLayoutRow.ts`
