@@ -38,10 +38,10 @@ The primary design file is
   at a 360px viewport to its cap at 1440px, then plateauing — h1 64→200,
   h2 48→140, h3 80→120, h4 40→80, h5 / section-heading 32→56. No component
   hand-rolls a `vw` font-size; floors are QA-tunable in one place.
-  (`docs/css-standardization-spec.md` §3.)
+  (ARCHITECTURE.md ADR-0024.)
 - The marquee rides the same ramp shape via `--type-marquee` (cap 200, floor held
   at 80) but keeps its own face: the PP Neue Corp variable cut, morphing
-  Condensed → Wide on hover/focus (`docs/marquee-variable-font-morph-spec.md`).
+  Condensed → Wide on hover/focus (ARCHITECTURE.md ADR-0025).
 - Fixed steps (fluid type would fight user zoom): `editorial-title` — Graphik
   38 / 24. `h6` 24. `h7` 32. `body` 19. `caption` 17. `label`/`eyebrow` 17
   (PP Tight).
@@ -60,7 +60,7 @@ The primary design file is
   `--space-3xl` 96→160, `--space-4xl` 120→200, scaling from a 768px viewport to
   1440px on one shared curve (floor below 768, plateau past 1440). Everything 96
   and below stays fixed so component spacing and touch targets don't fight the
-  viewport. (`docs/css-standardization-spec.md` §4.)
+  viewport. (ARCHITECTURE.md ADR-0024.)
 - **Mobile section rhythm (≤767px) is a fixed 64px** between sections, built as
   32 + 32: each section pads `--space-xs` on the side facing a neighbour, and a
   section following a flush or media-hero hand-off owns the full `--space-m` 64
@@ -89,7 +89,7 @@ The primary design file is
   `(--bp-960)` carousel), resolved by postcss-custom-media. The cascade is
   desktop-first: every max-width boundary uses `.98` (767.98 / 1023.98) so
   ranges can't overlap or gap at the exact px.
-  (`docs/css-standardization-spec.md` §5.)
+  (ARCHITECTURE.md ADR-0024.)
 - Below 1024px: ordinary Content Cards go full-width, Info below; two-block detail
   rows stack in authored order; explicit carousels remain narrow.
 
@@ -129,8 +129,9 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
     slides.
     Editorial article body rows keep the Ambient default.
 
-    > Surface assignment deviation from the spec: `docs/media-playback-spec.md`
-    > §2 lists the **Home hero (3:2)** and the **Zine hero (16:9)** as
+    > Surface assignment deviation from the original playback spec (folded into
+    > ARCHITECTURE.md ADR-0035): it listed the **Home hero (3:2)** and the
+    > **Zine hero (16:9)** as
     > Presented. They ship as Ambient today. Decision rationale: the hero is
     > an art-directed poster canvas, not a watchable clip — a play/pause or
     > scrubber would compete with the headline/CTA composition that already
@@ -486,7 +487,7 @@ Named Content Card recipes:
   is systemic, never per-card. The video's own ready-fade
   (`--motion-standard`) composes underneath. Reduced motion removes the
   zoom/fade; the state change survives as an instant swap. Playback
-  contract: `docs/card-poster-reveal-spec.md`.
+  contract: ARCHITECTURE.md ADR-0036.
 
 **Reduced motion** preserves state changes, color changes, and link underlines while
 removing pinning, scrubbing, parallax, blur, and delayed/staggered reveals.

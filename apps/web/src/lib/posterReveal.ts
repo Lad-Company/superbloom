@@ -1,5 +1,5 @@
 /**
- * Card Poster Reveal wiring (docs/card-poster-reveal-spec.md §4).
+ * Card Poster Reveal wiring (ARCHITECTURE.md ADR-0036).
  *
  * A card whose mediaBox pairs a Poster Image with a video renders a Gated
  * `media-frame` (see MediaFrame.astro). The whole card is one link, so the

@@ -4,7 +4,7 @@ import type {DocumentLocationResolver, DocumentLocationResolverObject} from 'san
 import {catchError, map, of} from 'rxjs'
 import {ARTICLE_LOCATIONS_QUERY, resolveArticleLocations} from './articleLocations'
 
-// Draft preview (docs/content-preview-spec.md): the Presentation pane and
+// Draft preview (ARCHITECTURE.md ADR-0026): the Presentation pane and
 // share links both run through the site's /api/preview/enable route, which
 // validates the dataset-stored secret (sanity.previewUrlSecret documents,
 // created by the Studio) and sets the sb_preview cookie. There is no shared
@@ -67,7 +67,7 @@ export const presentation = presentationTool({
     // this map the pane is empty by construction ("No matching documents"):
     // its only other feed is overlay-reported stega/data-sanity refs, which
     // this site deliberately does not emit (no Visual Editing overlays,
-    // docs/content-preview-spec.md §2.4). Locations below are the reverse
+    // ARCHITECTURE.md ADR-0026). Locations below are the reverse
     // direction (document → URL) and cannot populate the pane.
     mainDocuments: defineDocuments([
       {route: '/', type: 'homepage'},

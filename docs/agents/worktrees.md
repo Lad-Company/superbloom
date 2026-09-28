@@ -28,7 +28,7 @@ curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:<port><dep-url>"
 ```sh
 # stop the dev server, then:
 rm -rf apps/web/node_modules/.vite
-pnpm dev   # deps re-optimize fresh on first request
+pnpm web   # deps re-optimize fresh on first request
 ```
 
 **Prevention:** don't kill a dev server during its first page load (that is when
@@ -54,7 +54,7 @@ Gotchas seen in practice:
    `envDir: '../..'` in `apps/web/astro.config.mjs`; the file is gitignored so
    worktrees don't get it automatically.
 3. `pnpm install` in the worktree — `node_modules` is not shared.
-4. `pnpm dev` auto-increments when a port is taken (4321, 4322, ...). Read the
+4. `pnpm web` auto-increments when a port is taken (4321, 4322, ...). Read the
    actual URL from the server log and report that one, not the requested port.
 5. Before handing a server to a human, probe one `@mux/mux-player` and one
    `gsap` dep URL (above) and confirm 200 — this is the fast check that video

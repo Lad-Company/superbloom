@@ -1,6 +1,6 @@
 /* Design tokens transcribed from Figma R3 variables. Source of truth for the Uno theme. */
 
-/* Canonical breakpoints (docs/css-standardization-spec.md §5). Media queries
+/* Canonical breakpoints (ARCHITECTURE.md ADR-0024). Media queries
    can't read var(), so breakpoints are defined once here as custom media and
    resolved by postcss-custom-media (see apps/web/postcss.config.mjs). Scoped
    CSS writes `@media (--bp-small)` etc. The cascade stays desktop-first: every
@@ -35,7 +35,7 @@
   --control-fg: #ffffff;
   --surface-wipe-outline: #000000;
 
-  /* Fluid display type (css-standardization-spec.md §3). One shared ramp:
+  /* Fluid display type (ARCHITECTURE.md ADR-0024). One shared ramp:
      every step scales linearly from its floor at a 360px viewport to its cap
      at 1440px, then plateaus. All clamps are generated from a single curve,
      B(vw) = (cap − floor) / 10.8 and A(px) = floor − (cap − floor) / 3, and

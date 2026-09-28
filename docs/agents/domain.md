@@ -19,7 +19,11 @@ If any of these files don't exist, proceed silently.
 ├── ARCHITECTURE.md     — architecture + decision log
 ├── docs/
 │   ├── design-system.md
+│   ├── *-spec.md       — specs for work in flight; landed specs are folded
+│   │                     into ARCHITECTURE.md ADRs and deleted
 │   └── agents/
+├── packages/
+│   └── schemas/        — shared Sanity schemas + contract/migration tests
 └── apps/
     ├── web/            — Astro app
     └── studio/         — Sanity Studio

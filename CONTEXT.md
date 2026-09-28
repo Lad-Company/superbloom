@@ -90,8 +90,9 @@ content, and experiential campaigns for brand clients.
   excludes Zine Articles, which live under `/zine`, and Case Studies). _Avoid_:
   All Work, Blog.
 - **Publication Date** — the date used to sort Articles and Case Studies.
-  Auto-stamped at an Article's first publish, then frozen; Article cards display
-  it, Case Study cards do not. _Avoid_: manual rank.
+  Visible and editable on all Article types; auto-stamps at first publish only
+  when left empty, and publishing never overwrites an editor-set value. Article
+  cards display it, Case Study cards do not. _Avoid_: manual rank.
 - **Tag** — a reusable optional editorial label on Articles and Case Studies.
   Optional and uncapped on Articles (the Article Type chip is automatic); capped
   at two on Case Studies. Cards render a capped subset regardless of how many are

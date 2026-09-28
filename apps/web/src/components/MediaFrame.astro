@@ -33,7 +33,7 @@ export type ProjectedAsset = ImageProjection | VideoProjection
 
 export interface Media {
   asset?: ProjectedAsset | null
-  /** Curated still for a video asset (card-poster-reveal-spec §2). When set
+  /** Curated still for a video asset (ARCHITECTURE.md ADR-0036). When set
    *  on a `mux.video` asset the frame becomes Gated Ambient: dormant until
    *  the visitor reveals it (hover/focus/tap), at which point the poster
    *  zooms in and fades out. When unset the video keeps today's Ambient
@@ -43,7 +43,7 @@ export interface Media {
   decorative?: boolean | null
 }
 
-/** Playback profiles covered by `media-playback-spec.md`:
+/** Playback profiles (ARCHITECTURE.md ADR-0035):
  *  - `'none'` (Ambient — cards, background, scroll-driven) renders no controls
  *    and is the default. Visibility-gated muted loop, paused when offscreen,
  *    background-tab, reduced-motion, or `active=false`.
@@ -123,7 +123,7 @@ const videoPoster =
 const isVideo = asset?._type === 'mux.video' && Boolean(asset.playbackId)
 const showControls = isVideo && controls !== 'none'
 const isFullControls = isVideo && controls === 'full'
-// Gated Ambient (card-poster-reveal-spec §3): a curated poster on a video
+// Gated Ambient (ARCHITECTURE.md ADR-0036): a curated poster on a video
 // asset turns the frame dormant until the card link toggles `revealed`.
 const poster = media?.poster
 const posterRendering =
@@ -450,8 +450,8 @@ const imageRendering =
       // Single host-element activity tracker — pointermove and focusin
       // bubble up from any control or scrubber inside the frame, so the
       // entire bar (and any future overlays) shows on hover-or-focus and
-      // re-schedules the auto-hide in one place. See media-playback-spec
-      // §5.1 / OQ4 — "auto-hide after inactivity, hover/focus/pause to show."
+      // re-schedules the auto-hide in one place. See ARCHITECTURE.md
+      // ADR-0035 — auto-hide after inactivity, hover/focus/pause to show.
       this.addEventListener('pointermove', this.handleActivity)
       this.addEventListener('pointerdown', this.handleActivity)
       this.addEventListener('focusin', this.handleActivity)
@@ -783,7 +783,7 @@ const imageRendering =
         this.autoHideTimer = null
       }
       if (!this.isFullControls || !this.player) return
-      // Always show while paused — see media-playback-spec §5.1 / §9.
+      // Always show while paused — see ARCHITECTURE.md ADR-0035.
       if (this.player.paused) {
         this.showControlsBar()
         return
