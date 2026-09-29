@@ -260,9 +260,13 @@ const gaMode = preview
 
       // Two thresholds (design-system §4, Three-Phase Loading). If critical
       // media lands almost at once (warm cache) the veil was never perceptibly
-      // visible, so lift immediately: the hero only registers as LCP once the
-      // veil lifts (Chrome excludes the opacity-0 reveal-gated paint), and a
-      // flat floor here was 280ms of LCP on every repeat visit for nothing.
+      // visible, so lift immediately; a flat floor here was 280ms of pointless
+      // veil time on every repeat visit. The veil does not gate LCP: Chrome
+      // does no occlusion test, so posters under it register at first paint
+      // regardless. (The full-viewport hero on `/` and `/zine` is excluded as
+      // an LCP candidate because Chrome ignores elements covering the full
+      // viewport — web.dev/articles/lcp — and with the H1 at opacity 0 for
+      // the Type Reveal, LCP there falls to the nav logo or the kicker text.)
       // Past that point the user has seen the veil, so hold it to the 400ms
       // beat: it reads as a deliberate moment rather than a flicker, and on a
       // cold load the media wait usually exceeds it anyway. The clock starts at
