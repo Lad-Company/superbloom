@@ -8,13 +8,18 @@
 }
 /* Marquee-only variable cut (ARCHITECTURE.md ADR-0025):
    wdth axis 190 (Condensed) → 750 (Wide), weight/slant pinned in the file
-   (wght 750, slnt 0). Drives the hover width morph; not used site-wide. */
+   (wght 750, slnt 0). Drives the hover width morph; not used site-wide.
+   Subset (pyftsubset) to Latin + general punctuation + euro, keeping the
+   wdth axis and kern: 167 KB → 62 KB. Regenerate with:
+     pyftsubset PPNeueCorp-VariableUltrabold.woff2 --flavor=woff2 \
+       --layout-features='kern' --unicodes=U+0000-00FF,U+2000-206F,U+20AC */
 @font-face {
   font-family: 'PP Neue Corp Variable';
   src: url('/fonts/PPNeueCorp-VariableUltrabold.woff2') format('woff2');
   font-weight: 750;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+2000-206F, U+20AC;
 }
 
 /* Graphik — licensed web font (Commercial Type) */

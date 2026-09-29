@@ -1,5 +1,21 @@
 import {initPressFeedback} from './hover'
 import {revealText, type RevealHandle} from './reveal'
+import {BREAKPOINTS} from '../breakpoints'
+
+type Unit = 'lines' | 'words' | 'chars'
+
+/**
+ * Resolve the split unit for a reveal target. `data-unit-mobile` overrides
+ * `data-unit` below the desktop grid: char splits are the most expensive part
+ * of the bootup budget, so the hero falls back to words on smaller screens
+ * where the per-char stagger is barely perceptible anyway.
+ */
+export function resolveRevealUnit(el: HTMLElement): Unit {
+  const unit = (el.dataset.unit as Unit) || 'lines'
+  const mobile = el.dataset.unitMobile as Unit | undefined
+  if (mobile && window.innerWidth <= BREAKPOINTS.belowDesktopMax) return mobile
+  return unit
+}
 
 /**
  * Per-page motion bootstrap. Wires Contained Control press feedback and the
@@ -20,7 +36,7 @@ export function initMotion(): () => void {
     if (el.dataset.motionInit) return
     el.dataset.motionInit = '1'
     revealText(el, {
-      unit: (el.dataset.unit as 'lines' | 'words' | 'chars') || 'lines',
+      unit: resolveRevealUnit(el),
       scroll: el.dataset.scroll !== 'false',
       start: el.dataset.start || undefined,
     }).then((handle) => handles.push(handle))
