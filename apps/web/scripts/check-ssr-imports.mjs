@@ -20,7 +20,7 @@ import {fileURLToPath} from 'node:url'
 const functionsDir = fileURLToPath(new URL('../.vercel/output/functions', import.meta.url))
 
 /** Packages that must never appear in the SSR module graph. */
-const CLIENT_ONLY = ['gsap', 'lenis', 'split-type', '@mux/mux-player', '@mux/mux-video']
+const CLIENT_ONLY = ['gsap', 'lenis', 'split-type', '@mux/mux-video']
 const pattern = new RegExp(
   String.raw`(?:from|import)\s*\(?\s*['"](${CLIENT_ONLY.join('|')})(/[^'"]*)?['"]`,
   'g',

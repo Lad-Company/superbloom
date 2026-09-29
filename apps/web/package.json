@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@astrojs/vercel": "^10.0.8",
-    "@mux/mux-video": "^0.28.2",
+    "@mux/mux-video": "^0.31.4",
     "@sanity/client": "^7.26.2",
     "@sanity/image-url": "^2.1.1",
     "@sanity/preview-url-secret": "^4.1.4",

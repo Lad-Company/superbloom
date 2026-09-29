@@ -151,14 +151,6 @@ const posterRendering =
       })
     : null
 const isGated = Boolean(isVideo && posterRendering?.src)
-// Warm the Mux hosts once per request, from the first video frame on the
-// page. Component <link> tags are not hoisted to <head>, so without the
-// locals flag every video frame would repeat the pair (13x on the home
-// page). Pages without video skip the sockets entirely (Lighthouse flagged
-// the old unconditional Layout preconnects as unused on /index and /zine).
-const muxLocals = Astro.locals as Record<string, unknown>
-const emitMuxPreconnect = isVideo && !muxLocals.__sbhMuxPreconnect
-if (emitMuxPreconnect) muxLocals.__sbhMuxPreconnect = true
 const imageRendering =
   asset?._type === 'image' && asset.asset?._ref
     ? buildImageRendering({
@@ -203,17 +195,6 @@ const imageRendering =
     )
   }
   {
-    /* Video frames warm the Mux hosts (poster thumbnails + HLS manifests) so
-       the player doesn't pay a fresh DNS+TLS round trip on upgrade. Emitted
-       once per page by the first video frame (see frontmatter). */
-    emitMuxPreconnect && (
-      <>
-        <link rel="preconnect" href="https://image.mux.com" crossorigin />
-        <link rel="preconnect" href="https://stream.mux.com" crossorigin />
-      </>
-    )
-  }
-  {
     /* The player poster covers the gap between the overlay poster's fade and
        the first painted video frame (visual QA: poster="" flashed a blank
        frame there). The attribute takes no srcset, so it gets the small fixed
@@ -227,7 +208,6 @@ const imageRendering =
         stream-type="on-demand"
         muted
         loop
-        default-hidden-captions
         max-resolution={plan.maxResolution}
         preload={plan.preload}
       />
@@ -368,14 +348,26 @@ const imageRendering =
   const SCRUBBER_READY_EPSILON_S = 0.05
 
   /** The `<mux-video>` surface we drive; `_hlsConfig` is the mux-video /
-   *  playback-core hook for hls.js options. */
-  type MuxVideoElement = HTMLVideoElement & {_hlsConfig?: Record<string, unknown>}
+   *  playback-core hook for hls.js options, `_hls` the live hls.js instance
+   *  (undefined under native HLS, i.e. Safari/iOS). */
+  type MuxVideoElement = HTMLVideoElement & {
+    _hlsConfig?: Record<string, unknown>
+    _hls?: {config: Record<string, unknown>}
+  }
 
   /** Ambient loops are short and cyclic, so the hls.js defaults (30s forward
    *  buffer, unbounded cap growth) download far more of the stream than the
-   *  loop can ever show. Presented media (controls != 'none') keeps the
-   *  defaults — scrubbing wants the deeper buffer. */
-  const AMBIENT_HLS_CONFIG = {maxBufferLength: 10, maxMaxBufferLength: 20}
+   *  loop can ever show. `capLevelToPlayerSize` additionally clamps the
+   *  rendition to the frame's rendered size × DPR, so a phone-width hero never
+   *  pulls the 1080p ceiling `max-resolution` allows. Presented media
+   *  (controls != 'none') keeps the defaults — scrubbing wants the deeper
+   *  buffer. Safari/iOS play HLS natively and ignore all of this; only the
+   *  `max-resolution` URL param applies there. */
+  const AMBIENT_HLS_CONFIG = {
+    maxBufferLength: 10,
+    maxMaxBufferLength: 20,
+    capLevelToPlayerSize: true,
+  }
 
   /** How far below the viewport a frame may sit before we fetch the mux
    *  chunk — roughly one viewport of scroll runway. */
@@ -551,6 +543,27 @@ const imageRendering =
           // paused before first frame) hold the adaptive still; the player's
           // own small poster covers the fade-to-first-frame gap.
           this.player.addEventListener('playing', this.handleReady)
+
+          if (import.meta.env.DEV && this.dataset.controls === 'none') {
+            // The buffer cap rides on `_hlsConfig` being read as an own
+            // property before upgrade (see connectedCallback). That contract
+            // is mux-video internals, so surface a break in dev instead of
+            // silently regressing to 30s buffers. `_hls` is undefined under
+            // native HLS (Safari), where the cap does not apply anyway.
+            this.player.addEventListener(
+              'playing',
+              () => {
+                const hlsConfig = this.player?._hls?.config
+                if (hlsConfig && hlsConfig.maxBufferLength !== AMBIENT_HLS_CONFIG.maxBufferLength) {
+                  console.warn(
+                    '[media-frame] ambient hls.js buffer cap not applied; check the _hlsConfig hook against the installed @mux/mux-video',
+                    hlsConfig,
+                  )
+                }
+              },
+              {once: true},
+            )
+          }
 
           if (this.isFullControls) {
             this.player.addEventListener('timeupdate', this.handleTimeUpdate)
