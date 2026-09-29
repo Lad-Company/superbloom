@@ -826,6 +826,14 @@ const imageRendering =
     --media-object-fit: cover;
   }
 
+  /* Browsers paint alt text into a sized <img> box while it is still
+     downloading (lazy cards scrolling in, slow networks). The frame already
+     shows its placeholder gradient underneath, so keep the text for assistive
+     tech but never render it. */
+  .media-frame img {
+    color: transparent;
+  }
+
   .media-frame.intrinsic img {
     height: auto;
   }

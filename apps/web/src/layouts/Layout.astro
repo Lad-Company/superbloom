@@ -185,13 +185,23 @@ const gaMode = preview
 
       const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 
-      // Resolve once fonts and every above-the-fold media element (the eager /
-      // high-priority images, which include each video frame's poster) are in,
-      // capped so a slow asset can never strand the veil.
+      // Resolve once fonts and every above-the-fold media element are in,
+      // capped so a slow asset can never strand the veil. "Above the fold" is
+      // the eager / high-priority images (each video frame's poster included)
+      // plus any lazy image whose box intersects the initial viewport: card
+      // grids mark only their lead card eager, so without the rect check the
+      // veil lifted onto neighbouring cards still painting alt text.
       const whenCriticalMediaReady = (timeoutMs: number) => {
-        const imgs = Array.from(
-          document.querySelectorAll<HTMLImageElement>('img[fetchpriority="high"], img[loading="eager"]'),
-        ).filter((img) => !img.complete);
+        const viewportH = window.innerHeight;
+        const inInitialViewport = (img: HTMLImageElement) => {
+          const rect = img.getBoundingClientRect();
+          return rect.bottom > 0 && rect.top < viewportH && rect.width > 0 && rect.height > 0;
+        };
+        const imgs = Array.from(document.querySelectorAll<HTMLImageElement>('img')).filter(
+          (img) =>
+            !img.complete &&
+            (img.fetchPriority === 'high' || img.loading === 'eager' || inInitialViewport(img)),
+        );
         const imgReady = imgs.map(
           (img) =>
             new Promise<void>((resolve) => {
@@ -203,18 +213,26 @@ const gaMode = preview
         return Promise.race([Promise.all([...imgReady, fontsReady]), wait(timeoutMs)]);
       };
 
+      // Two thresholds (design-system §4, Three-Phase Loading). If critical
+      // media lands almost at once (warm cache) the veil was never perceptibly
+      // visible, so lift immediately: the hero only registers as LCP once the
+      // veil lifts (Chrome excludes the opacity-0 reveal-gated paint), and a
+      // flat floor here was 280ms of LCP on every repeat visit for nothing.
+      // Past that point the user has seen the veil, so hold it to the 400ms
+      // beat: it reads as a deliberate moment rather than a flicker, and on a
+      // cold load the media wait usually exceeds it anyway. The clock starts at
+      // script start, later than first paint, so the imperceptible window is
+      // conservative.
+      const VEIL_IMPERCEPTIBLE_MS = 100;
+      const VEIL_BEAT_MS = 400;
       const runPageLoader = async (loader: HTMLElement) => {
-        // Anti-flash floor only: when everything is cached the veil would lift
-        // within a frame and read as a flash, so keep a small minimum. It is
-        // not a design beat — the hero only registers as LCP once the veil
-        // lifts (Chrome excludes the opacity-0 reveal-gated paint), so a long
-        // floor directly delays LCP. The clock starts at script start (before
-        // the media wait), so on a slow network the media wait absorbs it.
-        const minVisibleMs = prefersReducedMotion() ? 0 : 120;
         const start = performance.now();
         await whenCriticalMediaReady(4000);
-        const remaining = minVisibleMs - (performance.now() - start);
-        if (remaining > 0) await wait(remaining);
+        const elapsed = performance.now() - start;
+        if (!prefersReducedMotion() && elapsed > VEIL_IMPERCEPTIBLE_MS) {
+          const remaining = VEIL_BEAT_MS - elapsed;
+          if (remaining > 0) await wait(remaining);
+        }
         loader.setAttribute('data-loader-done', '');
       };
       // Recorded on astro:before-preparation so page-load can tell fresh
