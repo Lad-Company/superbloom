@@ -53,7 +53,7 @@ const gaMode = preview
 ---
 
 <!doctype html>
-<html lang="en" data-preview={preview || undefined}>
+<html lang="en" data-preview={preview || undefined} data-ga-id={gaMode !== 'off' ? 'G-M4H5NZVDCB' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -116,7 +116,10 @@ const gaMode = preview
             }
           } catch (e) {}
         `}></script>
-        <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-M4H5NZVDCB"></script>
+        {/* The gtag/js library (~170 KB gz) is injected from the client on
+           idle or first interaction (see the body script below) so it never
+           competes with first paint. The config calls below only push onto
+           dataLayer, so they queue safely until the library arrives. */}
         <script is:inline set:html={`
           gtag('js', new Date());
           gtag('config', 'G-M4H5NZVDCB', {
@@ -176,6 +179,38 @@ const gaMode = preview
       import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
       initAnalytics();
+
+      // Lazy gtag/js: the library is ~170 KB gz and only ever receives queued
+      // dataLayer pushes, so it loads on idle (or first interaction, whichever
+      // comes first) instead of blocking the critical path. Injected once per
+      // session; bundled scripts persist across View Transitions, so the
+      // module-level flag is enough. No-op when gaMode is 'off' (the attribute
+      // is absent).
+      const gaId = document.documentElement.dataset.gaId;
+      let gtagRequested = false;
+      const loadGtag = () => {
+        if (gtagRequested || !gaId) return;
+        gtagRequested = true;
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+        document.head.appendChild(script);
+      };
+      if (gaId) {
+        const idle = (
+          window as Window & {
+            requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+          }
+        ).requestIdleCallback;
+        if (idle) {
+          idle(loadGtag, { timeout: 3000 });
+        } else {
+          window.setTimeout(loadGtag, 2000);
+        }
+        for (const eventName of ['pointerdown', 'keydown', 'scroll'] as const) {
+          window.addEventListener(eventName, loadGtag, { once: true, passive: true });
+        }
+      }
 
       let destroyMotion = () => {};
       let destroySmoothScroll = () => {};
