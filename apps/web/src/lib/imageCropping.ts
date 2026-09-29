@@ -1,8 +1,13 @@
 import imageUrlBuilder from '@sanity/image-url'
 import type {MediaAspectRatio} from '@superbloom/schemas/mediaAspectRatio'
 import {sanityClient} from './sanity'
+import {IMAGE_LADDER} from './imageLadder'
 
 const builder = imageUrlBuilder(sanityClient)
+
+// Re-exported so existing importers (and imageCropping.test.ts) keep working;
+// new client-side code should import from './imageLadder' directly.
+export {IMAGE_LADDER}
 
 export interface ImageSource {
   asset?: {_ref?: string | null; _type?: string | null} | null
@@ -39,10 +44,8 @@ const RATIO_VALUE: Record<FixedRatio, number> = {
   '2:1': 2 / 1,
 }
 
-// The 192 rung exists for fixed 96px slots (zine Past Issues thumbnails):
-// 96 CSS px × DPR 2 = 192, and without it the smallest candidate is 320 —
-// one rung too large, which Lighthouse flags as image-delivery waste.
-export const IMAGE_LADDER = [192, 320, 640, 960, 1280, 1600, 1920, 2560] as const
+// See ./imageLadder for why the ladder lives in its own module (and why 192
+// exists).
 
 export interface ImageRendering {
   src: string

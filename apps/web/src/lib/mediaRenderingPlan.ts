@@ -1,7 +1,7 @@
 import {BREAKPOINTS} from './breakpoints'
 import type {ContentCardSettings, CardWidth} from './contentCard'
 import type {ContentLayoutWidth} from './contentLayout'
-import {IMAGE_LADDER} from './imageCropping'
+import {IMAGE_LADDER} from './imageLadder'
 
 /**
  * Placement — where a Media Asset sits in a page composition (CONTEXT.md).
