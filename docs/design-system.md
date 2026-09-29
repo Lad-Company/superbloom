@@ -375,7 +375,10 @@ Persistent structure composed around each page's unique content: `Navigation`,
 `ContactBand`, `Footer`. `Navigation` is rendered once by `Layout` via the
 page's `navRole` prop; pages no longer hand-render it. `siteSettings` supplies
 the four social links (Instagram, LinkedIn, Vimeo, YouTube). Shop is a
-first-class `/shop` route, not a settings link.
+first-class `/shop` route, not a settings link. Exception: `/500` drops
+`Footer` (whose social links come from a Sanity fetch) so the page renders
+fetch-free during the CMS outage it reports; `ContactBand` is fetch-free and
+stays.
 
 ### Shop (functional; no approved visual design yet)
 

@@ -76,7 +76,9 @@ API glue (`apps/web/src/pages/api/*`).
 - `/zine`, `/zine/issues/[slug]`, `/zine/issues/[slug]/[article]`
 - `/shop`, `/shop/products/[handle]`, `/cart` (`/shop` optionally leads with a
   CMS-authored Featured Item from the `shopPage` singleton)
-- `robots.txt`, `sitemap.xml`, `404`
+- `robots.txt`, `sitemap.xml`, `404`, `500` — error pages share `ErrorPage.astro`;
+  content routes guard Sanity reads with `fetchSafe` and rewrite to `/500`
+  (status 500) on outage
 - `/debug/sentry` — secret-gated Sentry smoke-test page (`?secret=$CRON_SECRET`;
   404s without it, `noindex`)
 
