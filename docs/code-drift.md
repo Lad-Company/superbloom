@@ -16,3 +16,5 @@ When you fix one, delete its entry.
 - **Unused `tag.color`.** `packages/schemas/src/tag.ts` defines a `color` (hex)
   field that `apps/web/src/components/*TagList*` never renders. Remove the field or
   use it.
+- **Empty `components/article/` directory.** `apps/web/src/components/article/`
+  contains no files (surfaced in the September 2026 ARCHITECTURE.md audit). Delete it.

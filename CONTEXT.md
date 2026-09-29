@@ -10,24 +10,6 @@ Superbloom is a production company that blends an internal creative team with a
 curated external Creative Collective to produce branded entertainment, social
 content, and experiential campaigns for brand clients.
 
-## People and Collective
-
-- **Creative Collective** — Superbloom's curated network of external Creators; a
-  core business differentiator, not a department or internal team. Currently
-  surfaced as a homepage section only. _Avoid_: agency network, freelancer pool.
-
-## Offerings
-
-- **Capability** — a named service offering. Current set: Creative, Branded
-  Entertainment, Social Studios, All-Media Productions, Brand Salon. Modeled as
-  `capability` documents. _Avoid_: service, offering, practice area.
-- **Discipline** — a granular area of expertise shown on Who We Are (strategy,
-  creative, experiential, social, production, etc.). A bespoke list on the
-  `whoWeAre` singleton, distinct from Capability. _Avoid_: Capability.
-- **Brand Salon** — a Capability: a structured live workshop (~4h) bringing the
-  Creative Collective and a client team together to solve a brief in real time.
-  Always a Capability entry, never a standalone type. _Avoid_: Workshop, Salon.
-
 ## Content
 
 - **Media Asset** — a reusable image or Mux video from a Media field. _Avoid_:
@@ -117,22 +99,3 @@ content, and experiential campaigns for brand clients.
 - **Cart** — a visitor's selected Variants and quantities before checkout.
   _Avoid_: basket.
 
-## Deferred / not built
-
-These are part of Superbloom's model or roadmap but have no schema or route yet.
-Do not describe them as implemented.
-
-- **Team Member / People page** — internal staff directory.
-- **Creator / Creators page** — a roster of Creative Collective members.
-- **Case Study → Creators** — crediting contributing Creators on a Case Study.
-- **Video Library** — a dedicated reusable-video workspace; today video is
-  selected or uploaded per Media field.
-
-## Example dialogue
-
-> **Dev:** Is Brand Salon its own nav section? — **Expert:** No, it's a Capability.
-> **Dev:** Does `/index` include Zine Articles? — **Expert:** No: News and
-> Editorial only. Zine Articles live under `/zine`, and Case Studies live in
-> Work.
-> **Dev:** Where do we link the Shop? — **Expert:** Main nav. It's a first-class
-> section, not an external link.

@@ -20,21 +20,22 @@ A pnpm workspaces monorepo:
 | Package | Path | What it is |
 | --- | --- | --- |
 | `web` | `apps/web` | Public site. Astro (SSR via Vercel adapter) + UnoCSS + GSAP/Lenis. |
-| `studio` | `apps/studio` | Sanity Studio CMS (project `l9mhqdtj`, dataset `production`). |
+| `studio` | `apps/studio` | Sanity Studio CMS (project `l9mhqdtj`, dataset `production`). Deploys independently. |
 | `@superbloom/schemas` | `packages/schemas` | Shared Sanity schemas + contract/migration test suite. |
 
 `packages/schemas` is the single typed source of content shape; `apps/web` runs
-`typegen` from it (`apps/web/src/sanity.types.ts`). Studio deploys independently.
+`typegen` from it (`apps/web/src/sanity.types.ts`).
 
 ## 2. Rendering and hosting
 
-- `astro.config.mjs`: `output: 'server'`, `@astrojs/vercel` adapter, `UnoCSS`
-  integration, `site: https://superbloomhouse.com`, `envDir: '../..'` (env read
-  from repo root).
+- `astro.config.mjs`: `output: 'server'`, `@astrojs/vercel` adapter, UnoCSS and
+  `@sentry/astro` integrations, `site: https://superbloomhouse.com`,
+  `vite.envDir: '../..'` (env read from repo root).
 - Content routes are **SSR per-request** from Sanity so editor changes are live;
-  static/utility surfaces opt into `prerender = true` (ADR-0008).
+  static/utility surfaces opt into `prerender = true` (ADR-0008). Content HTML is
+  never shared-cached (ADR-0031).
 - Styling is UnoCSS over CSS custom properties in `apps/web/src/styles/tokens.css`
-  as the token source of truth (ADR-0009). Token/type specifics: `docs/design-system.md` §1.
+  as the token source of truth (ADR-0009). Token specifics: `docs/design-system.md` §1.
 
 ## 3. No database — SaaS-owned persistence (ADR-0003)
 
@@ -45,26 +46,28 @@ API glue (`apps/web/src/pages/api/*`).
 | --- | --- | --- |
 | Editorial content + images | Sanity | `lib/sanity.ts`, `lib/queries.ts` (GROQ) |
 | Video | Mux | `mux.video` in `mediaBox`, `<mux-player>` in `MediaFrame` |
-| Commerce (products, cart, checkout) | Shopify Storefront API | `lib/shopify.ts`, `lib/shopify-cart.ts`, `pages/api/shop/*` |
+| Commerce (products, cart, checkout) | Shopify Storefront API | `lib/shopify*.ts`, `pages/api/shop/*` |
 | Email (newsletter) | Mailchimp | `pages/api/newsletter/*` |
 | Form records (contact inquiries) | Sanity | `formSubmission` document via `pages/api/contact.ts` |
 | Hosting / SSR | Vercel | `@astrojs/vercel` |
 
 ## 4. `apps/web` layers
 
-- **`pages/`** — routes (see §5) and API endpoints (`api/contact.ts`,
-  `api/newsletter/*`, `api/shop/*`, `api/hooks/*` observability relay, ADR-0028).
-- **`components/`** — primitives, blocks, and per-surface compositions
-  (`home/`, `case/`, `who-we-are/`, `shop/`, `cart/`, `blocks/`, `motion/`).
-  Boundaries and primitives: `docs/design-system.md` §2.
+- **`pages/`** — routes (see §5) and API endpoints: `api/contact.ts`,
+  `api/newsletter/*`, `api/shop/*`, `api/preview/*` (draft-mode toggle, ADR-0026),
+  `api/hooks/*` + `api/debug/*` (observability relay, ADR-0028).
+- **`components/`** — primitives, blocks, and per-surface compositions (`home/`,
+  `case/`, `who-we-are/`, `editorial/`, `zine/`, `shop/`, `cart/`, `blocks/`,
+  `motion/`). Boundaries and primitives: `docs/design-system.md` §2.
 - **`lib/`** — data + logic: `queries.ts` (GROQ), `shopify.ts`, `surfaceRole.ts` +
   `luminance.ts` (role → token + WCAG foreground), `contentCard.ts` /
   `contentLayout.ts` (settings resolution), `imageCropping.ts`, `seo.ts`,
-  `publicationDate.ts`, and `motion/` (the motion system).
+  `publicationDate.ts`, `mediaRenderingPlan.ts`, `posterReveal.ts`, and `motion/`.
 - **`lib/motion/`** — `config.ts` (tokens), `smoothScroll.ts` (Lenis), `reveal.ts`,
-  `pinnedStory.ts`, `depthLayer.ts`, `horizontalRail.ts`, `routeTransition.ts`,
-  `hover.ts`, `bootstrap.ts`. Motion contract: `docs/design-system.md` §5.
-- **`layouts/`**, **`styles/`** (`tokens.css`).
+  `pinnedStory.ts`, `depthLayer.ts`, `horizontalRail.ts`, `hover.ts`, `splitText.ts`,
+  `statReveal.ts`, `loading.ts`, `bootstrap.ts` (wired through `index.ts`).
+  Motion contract: `docs/design-system.md` §5.
+- **`layouts/`**, **`styles/`** (`tokens.css` plus feature-level CSS).
 
 ## 5. Routes
 
@@ -73,12 +76,13 @@ API glue (`apps/web/src/pages/api/*`).
 - `/work`, `/work/[slug]` — Case Study browse + detail
 - `/who-we-are` — Fixed art-directed page (`whoWeAre` singleton)
 - `/articles/[slug]` — News / Editorial Article detail
-- `/zine`, `/zine/issues/[slug]`, `/zine/issues/[slug]/[article]`
+- `/zine`, `/zine/issues/[slug]`, `/zine/issues/[slug]/read` (Issuu flipbook for
+  full issues; embed-only issues redirect back), `/zine/issues/[slug]/[article]`
 - `/shop`, `/shop/products/[handle]`, `/cart` (`/shop` optionally leads with a
   CMS-authored Featured Item from the `shopPage` singleton)
 - `robots.txt`, `sitemap.xml`, `404`, `500` — error pages share `ErrorPage.astro`;
-  content routes guard Sanity reads with `fetchSafe` and rewrite to `/500`
-  (status 500) on outage
+  content routes guard Sanity reads with `fetchSafe` (from `lib/sanity.ts`) and
+  rewrite to `/500` (status 500) on outage
 - `/debug/sentry` — secret-gated Sentry smoke-test page (`?secret=$CRON_SECRET`;
   404s without it, `noindex`)
 
@@ -89,263 +93,60 @@ Authoritative shape lives in `packages/schemas/src`; the intent is in
 
 - **Singletons:** `homepage`, `whoWeAre`, `siteSettings`, `workIndex`, `indexPage`,
   `zineLanding`, `shopPage`.
-- **Documents:** `caseStudy`, `article` (unified News/Editorial/Zine via a
-  visible, required `articleType` select), `zineIssue`, `capability`, `tag`,
-  `formSubmission`.
-- **Shared objects:** card settings (`cardSettings`), content composition
-  (`contentLayoutRow` + `contentLayoutMedia`/`contentLayoutText`/
-  `contentLayoutSpacer`/`contentLayoutCarousel`), `mediaBox`, homepage blocks.
-- Each content type ships a `*Contract` validator and, where relevant, a
-  `*Migration` module, with co-located tests.
+- **Documents:** `caseStudy`, `article` (unified News/Editorial/Zine via a visible,
+  required `articleType` select), `zineIssue`, `capability`, `tag`, `formSubmission`.
+- **Shared objects:** `cardSettings`, content composition (`contentLayoutRow` +
+  media/text/spacer/carousel items), `mediaBox`, homepage blocks.
+- Major content types ship a `*Contract` validator and, where relevant, a
+  `*Migration` module, with co-located tests; `homepage`'s contract is a
+  source-assertion test rather than a validator module.
 
 ---
 
 ## 7. Decisions (collapsed ADR log)
 
-One line per decision. "Superseded" clauses are kept for the guardrail they
-provide (do not re-litigate the settled part). Where a topic is now owned by
-another doc, that doc is authoritative.
+One entry per decision; full rationale lives in git history and the referenced
+docs. "Superseded" clauses are kept as guardrails (do not re-litigate the
+settled part). Where another doc owns the topic, that doc is authoritative.
 
 **Current, in force:**
 
-- **0001 — Astro over Next.js.** Content-heavy site with few interactive islands;
-  Next.js over-provisioned.
-- **0002 — Sanity as CMS.** One editor surface (Mux + Shopify Connect), strong
-  migration path. Rejected Directus/Payload/Contentful.
-- **0003 — No database.** All persistence via SaaS; avoids backups/migrations/
-  uptime for zero benefit at this scale. Rejected Postgres/Supabase/SQLite.
-- **0004 — Mux for video.** First-party Sanity plugin, cheap, AV1 + thumbnails, no
-  YouTube-iframe SEO cost. Rejected Bunny/Cloudflare/Vimeo/YouTube-embed.
-- **0005 — Monorepo (web + studio + schemas).** Independent Studio deploys; one
-  typed schema source. Rejected bundling Studio into Astro.
-- **0006 — Mailchimp only, no Resend.** Client already on Mailchimp; avoid a second
-  email vendor. Scope narrowed 2026-09: Mailchimp handles the newsletter only;
-  contact form submissions are stored as Sanity `formSubmission` records with no
-  Mailchimp involvement.
-- **0008 — Hybrid SSR.** `output: 'server'`; content SSR per-request, static
-  surfaces opt into prerender. Rejected pure-static+rebuild and ISR. Its
-  60s-edge-cache clause is superseded by 0031 (content HTML is no longer
-  shared-cached).
-- **0009 — UnoCSS styling.** Utility velocity + on-demand engine; CSS custom
-  properties (Figma tokens) are the source of truth. Rejected Tailwind v4 /
-  CSS Modules / vanilla scoped CSS. *(Token specifics: `docs/design-system.md` §1.)*
-- **0014 — Semantic Surface Roles over hue-named themes.** Components express color
-  by role; templates own role→token mapping; WCAG-AA advisory. Authoritative color
-  model; supersedes 0013 §3 and 0010's role vocabulary. *(`docs/design-system.md` §1.)*
-- **0019 — Shopify Storefront API.** Headless, Shopify-hosted checkout, cart ID in
-  an encrypted HttpOnly cookie, no cart DB; functional-only (no approved Shop
-  visual design). Rejected Admin API+custom checkout, Buy Button, Snipcart.
-  *(`docs/design-system.md` §4.)*
-- **0020 — Unified CMS content composition.** Two shared compositions — Content
-  Card (listings) and Content Layout Row (detail bodies + all 5 Spine sections);
-  unified `article` doc; Index (all article types) and
-  Our Work (Case Studies) both Featured + date-sorted All. Authoritative content
-  model; fully supersedes 0018, partially supersedes 0011/0012/0016/0017, amends
-  0015; its hidden-`articleType` clause is amended by 0022.
-  *(`docs/design-system.md` §3.)*
-- **0022 — Standardized Article model.** One Studio Articles list with a visible,
-  required `articleType` select at the top of the form; News is pared to an
-  outbound-link card (required `destination` URL + optional `source` outlet label;
-  no body, leadMedia, or relatedItems, replacing `externalCoverage` +
-  `cardDestination`); slug is hidden, auto-generated at first publish and
-  frozen thereafter; the `/news/[slug]` detail route is
-  removed. Amends 0020's hidden-`articleType` clause and 0011's composite-News
-  clause; its card-only-News clause is amended by 0027 and its
-  hidden/frozen-`publicationDate` clause by 0032.
-- **0021 — Adopt Lenis smooth scroll.** Lenis global, synced to `gsap.ticker` +
-  `ScrollTrigger.update`, `lerp 0.1`, disabled for reduced-motion / no-JS.
-  Supersedes the no-Lenis clause of 0007. *(`docs/design-system.md` §5.)*
-- **0023 — Allow the `null` CORS origin for the dashboard-hosted Studio.** The Studio
-  is served through the Sanity dashboard (`www.sanity.io/@.../studio/...`; the
-  `superbloom-cms.sanity.studio` host redirects into it), which runs the editor in a
-  sandboxed context. Its crop/hotspot canvas reads assets via a `crossorigin` fetch
-  carrying `Origin: null`; the image CDN 403s any present, non-allowlisted origin,
-  blanking every cropped image (Firefox surfaces it as `NS_BINDING_ABORTED`;
-  `localhost` was already allowlisted, so local dev was unaffected). Fix: allowlist
-  `null` **without credentials** (anonymous read only) plus `https://www.sanity.io`
-  **with credentials** for the dashboard shell. Acceptable because the `production`
-  dataset holds no sensitive data and assets are already publicly fetchable; revoke
-  with `sanity cors delete null` if that changes. Not a code bug — `MediaFrame`, the
-  generated URLs, and the `srcset` comma theory were all ruled out.
-- **0024 — Fluid display ramp, fluid vertical rhythm, canonical breakpoints.**
-  `tokens.css` is the single source of truth: display type rides one shared
-  `clamp()` ramp (floor @360 → cap @1440 per step, QA-tunable floors), the top
-  three spacing steps are fluid (768 → 1440), and breakpoints are canonical
-  (768/1024, carousel 600/960) defined once as `@custom-media` with desktop-first
-  `.98` max-width boundaries, resolved by postcss-custom-media. Uno shortcuts and
-  `theme.spacing` *reference* the token vars instead of re-hardcoding literals
-  (fixing the spacing-literal duplication). Components never hand-roll `vw`
-  font-size coefficients; `tokens.test.ts` re-derives every fluid token from the
-  two curve formulas. Rejected: mobile-first cascade flip (too large a rewrite),
-  fluid body/UI type (fights user zoom), fluidizing spacing ≤96.
-  *(`docs/design-system.md` §1.)*
-- **0025 — Variable font for the marquee only.** The PP Neue Corp collection VF
-  powers only the Who We Are marquee, where the `wdth` axis genuinely animates
-  (Condensed 190 → Wide 750 on hover/focus, `--motion-standard` ease-out, frozen
-  under reduced-motion); weight/slant are pinned in the shipped file
-  (`PPNeueCorp-VariableUltrabold.woff2`, instanced at wght 750 / slnt 0). Static
-  Tight Ultrabold stays the site-wide face; the static Compact cut is retired.
-  Site-wide VF adoption rejected: fluid `clamp()` already delivers resize
-  smoothness with static fonts, and the VF is the heavier render-critical
-  payload for zero gain at the site's single instance.
-- **0026 — Draft preview via Presentation + cookie-gated draft mode on the
-  production URL.** Editors preview unpublished drafts rendered by the real
-  site: the Studio Presentation pane and shareable links both run through
-  `/api/preview/enable|disable`, which validate the dataset-stored
-  `sanity.previewUrlSecret` and set an `sb_preview` session cookie
-  (`SameSite=None; Secure`, required inside the Studio's cross-origin iframe).
-  Preview requests swap the Sanity client (`perspective: 'drafts'`,
-  `useCdn: false`, viewer-scoped `SANITY_API_READ_TOKEN`) and send
-  `Cache-Control: no-store` — the edge cache keys by URL, not cookie, and
-  would otherwise serve drafts publicly. Preview forces GA off and runs full
-  motion (a visible `PreviewBar` with an Exit affordance plus an 8-hour
-  cookie `Max-Age` replaced the original quiet-motion-in-preview design,
-  which silently disabled pinned sections for cookie-holding editors).
-  `data-preview` on `<html>` marks the request; motion no longer reads it. The Studio's preview origin is env-driven across dev, staging, and
-  prod (`SANITY_STUDIO_PREVIEW_ORIGIN(S)`); pre-launch the deployed Studio
-  defaults to the Vercel staging hostname because superbloomhouse.com still
-  serves the legacy Netlify site. There is no shared env secret: rotation is
-  toggling Share access in the Presentation tool. Rejected: staging
-  dataset/hostname, Visual Editing overlays (needs a stega audit across
-  `lib/` first).*
-- **0027 — News as a full article with an outbound footer CTA.** News articles
-  are full detail pages at `/articles/[slug]` like Editorial (required
-  leadMedia + body, relatedItems available, one shared `ArticleCard` adapter
-  linking cards internally; `NewsCard` deleted). The required `destination`
-  URL becomes a footer CTA on the article page — copy authored in the CMS
-  "CTA Label" field (stored as `source`), falling back to "Read the full
-  story", opening in a new tab — instead of the card link, and `source`
-  leaves the card. Slug uniqueness spans News + Editorial
-  (shared `/articles/` route); Zine stays scoped per type. Amends 0022's
-  card-only-News clause; its required-leadMedia clause is amended by 0029.
-- **0028 — Observability: Sentry error aggregation with a Discord drain.**
-  Errors aggregate in a new Sentry project (`sbh-web`) in the existing
-  business org via `@sentry/astro` (production-only, `dataCollection` privacy
-  limits, commit-SHA releases with source maps) and alert to Discord
-  `#site-alerts` through Sentry's native integration. Everything else flows
-  through a thin relay in `apps/web/src/pages/api/hooks/*`: production deploys
-  from GitHub `deployment_status` events (Hobby plan has no Account Webhooks),
-  content publishes from a GROQ-filtered Sanity webhook (allowlist of
-  page-owning types; `formSubmission` permanently excluded), and a daily GA4
-  traffic digest via Vercel Cron. Every Discord post is sanitized by
-  construction (field allowlists, `allowed_mentions: []`, 2000-char cap).
-  Logins, signup/form events, Shopify/Mux activity, and preview deploys are
-  out of scope. *(docs/observability-pipeline-spec.md.)*
-- **0029 — News leadMedia optional.** News articles link out to external
-  coverage and typically carry no internal lead media, so `leadMedia` is no
-  longer required for `articleType: 'news'`; Editorial and Zine detail pages
-  still require it. Corrupt mediaBox asset arrays (stray empty members ahead
-  of the real asset) are filtered in the shared GROQ media projection and
-  pruned at the data level by `migrate:prune-empty-mediabox-assets`. Amends
-  0027's required-leadMedia clause.
-- **0030 — Zine Articles leave the Index browse.** `/index` is News + Editorial
-  only; the All queries and the visitor-facing Type filter drop `zine`, and
-  Zine Articles surface under `/zine`. The Index page's Featured section stays
-  CMS-curated, so a Zine Article can still be featured there deliberately.
-  Amends 0020's "Index (all article types)" clause.
-- **0031 — Content HTML is never shared-cached.** Cookie-gated draft preview
-  (0026) proved incompatible with Vercel's URL-keyed edge cache: cached
-  published pages were served to `sb_preview`-cookie requests, hijacking the
-  Presentation pane ("Unable to connect", empty document list) and share
-  links (published content, no preview bar), and the 24h
-  stale-while-revalidate window kept each hijacked URL broken for up to a
-  day. Content routes now send `private, no-cache` (preview stays
-  `no-store`); cookie-independent endpoints (sitemap) keep the public edge
-  cache. Measured cost before deciding: an edge HIT saved ~80ms over warm
-  SSR (~100ms vs ~180ms); the real loss is cold-start masking (~2s blank tab
-  for the first visitor after idle), accepted pre-launch. If that trade
-  reverses at launch, the path back is ISR + `bypassToken` (Vercel's
-  platform-native draft bypass), not shorter TTLs — any nonzero shared cache
-  reintroduces the hijack. Amends 0008's per-request-SSR clause (the 60s
-  edge cache is gone) and 0026's cache-safety clause (no-store on preview
-  responses was necessary but not sufficient).
-- **0032 — Editable article `publicationDate`.** `publicationDate` leaves the
-  hidden/readOnly auto-stamp and becomes a visible, editable datetime on all
-  article types so publishers can backdate or reorder News, Editorial, and
-  Zine items; the field still auto-stamps at first publish when left empty
-  and the publish action never overwrites an editor-set value. Cards, the
-  Studio Articles list ordering, and the Index/related GROQ queries already
-  read and sort by this field, so no web change is needed. Amends 0022's
-  hidden/frozen-`publicationDate` clause.
-- **0033 — News body removed.** News articles link out to external coverage
-  and carry no internal body, so `body` is hidden and no longer validated
-  for `articleType: 'news'`; a News item needs only a title, overview, card
-  settings, and a destination URL. Editorial and Zine detail pages still
-  require one. Amends 0027's required-body clause.
-- **0034 — Work Index `itemOverrides` doubles as the All-section order.**
-  Editors were already dragging the `itemOverrides` array in the Work Index
-  singleton expecting it to reorder `/work`; it only set per-item card
-  settings. The list is now authoritative for the All section: overridden
-  Case Studies lead in list order, the rest follow `publicationDate` desc
-  (full manual order = one override per Case Study, settings optional). The
-  override items also gained a Studio preview showing the referenced Case
-  Study title. Ordering is applied client-side before pagination, so
-  `caseStudiesNewestQuery` no longer slices server-side. Amends 0020's
-  "date-sorted All" clause for Our Work.
-- **0035 — Media playback profiles: Ambient / Presented.** Every `mux.video`
-  frame resolves to exactly one profile. Both are visibility-gated muted loops
-  (play only when `active && intersecting && document-visible &&
-  !reduced-motion`) with a real `<img>` poster (Mux `time=0` thumbnail)
-  painted beneath the player so a frame is never a gray box. **Ambient**
-  (default: cards, grids, background, scroll-driven media) renders no
-  controls and is never focusable. **Presented** (`controls="full"`: Who We
-  Are featured media and every Case Study video — lead, narrative/results row
-  media, Carousel video slides) adds a Media Control Bar overlaid on the
-  video: the existing play/pause button, a token-styled scrubber (ARIA
-  slider, keyboard seek, ≥24px hit target), and a mute toggle. The bar is a
-  user-override surface — ambient gating still applies, an explicit
-  play/pause sets a sticky `userIntent` that survives reduced-motion, and the
-  bar auto-hides after 2.5s idle while playing. `controls` became an enum
-  (`'none' | 'compact' | 'full'`, boolean coerced for back-compat). Capes is
-  deliberately excluded: its playhead is the scroll position, so controls
-  would misrepresent the interaction. Home and Zine heroes deviate from the
-  original surface assignment and ship Ambient — the hero is an art-directed
-  poster canvas, not a watchable clip (rationale recorded in
-  `docs/design-system.md` §2). *(Control design + tokens:
-  `docs/design-system.md` §2; motion: §5.)*
-- **0036 — Gated Ambient: curated poster reveal for video cards.** `mediaBox`
-  gains an optional `poster` image, visible and valid only on `mux.video`
-  assets and reusing the mediaBox `altText`. When set, the card is dormant —
-  no Mux requests — until hover/focus/tap reveals it: the poster zooms
-  `scale(1)` → `scale(1.12)` then fades out (the "Poster Punch": 800ms
-  `--motion-deliberate` zoom, 560ms fade on a 120ms `--motion-instant` delay,
-  `--motion-ease-out` both directions, frame clipped with `overflow: clip`),
-  the video plays, and on leave/blur the poster settles back and the video
-  pauses while staying loaded, so re-reveal is instant. On touch, the first
-  tap reveals and the second navigates. When `poster` is unset the card keeps
-  plain Ambient autoplay — the feature is opt-in per card with no migration,
-  and grids may mix gated and ambient cards. Under reduced-motion the poster
-  swap is instant and hover/focus reveal does not autoplay; a tap counts as
-  `userIntent` and plays. Amends 0035's profile set with the Gated Ambient
-  variant (a playback gate, not a new `controls` value). *(Motion recipe:
-  `docs/design-system.md` §5.)*
+- **0001 — Astro over Next.js.** Content-heavy site with few interactive islands; Next.js over-provisioned.
+- **0002 — Sanity as CMS.** One editor surface (Mux + Shopify Connect), strong migration path. Rejected Directus/Payload/Contentful.
+- **0003 — No database.** All persistence via SaaS; no backups/migrations/uptime burden at this scale. Rejected Postgres/Supabase/SQLite.
+- **0004 — Mux for video.** First-party Sanity plugin, cheap, AV1 + thumbnails, no YouTube-iframe SEO cost. Rejected Bunny/Cloudflare/Vimeo/YouTube-embed.
+- **0005 — Monorepo (web + studio + schemas).** Independent Studio deploys; one typed schema source. Rejected bundling Studio into Astro.
+- **0006 — Mailchimp only, no Resend.** Client already on Mailchimp; avoid a second email vendor. Narrowed 2026-09 to newsletter only — contact submissions are Sanity `formSubmission` records with no Mailchimp involvement.
+- **0008 — Hybrid SSR.** `output: 'server'`; content SSR per-request, static surfaces opt into prerender. Rejected pure-static+rebuild and ISR. Its 60s-edge-cache clause is superseded by 0031.
+- **0009 — UnoCSS styling.** Utility velocity + on-demand engine; CSS custom properties (Figma tokens) are the source of truth. Rejected Tailwind v4 / CSS Modules / scoped CSS. *(Token specifics: `docs/design-system.md` §1.)*
+- **0014 — Semantic Surface Roles over hue-named themes.** Components express color by role; templates own role→token mapping; WCAG-AA advisory. Authoritative color model; supersedes 0013 §3 and 0010's role vocabulary. *(`docs/design-system.md` §1.)*
+- **0019 — Shopify Storefront API.** Headless, Shopify-hosted checkout, cart ID in an encrypted HttpOnly cookie, no cart DB; functional-only (no approved Shop visual design). Rejected Admin API+custom checkout, Buy Button, Snipcart. *(`docs/design-system.md` §4.)*
+- **0020 — Unified CMS content composition.** Two shared compositions — Content Card (listings) and Content Layout Row (detail bodies + all 5 Spine sections); unified `article` doc; Index and Our Work are both Featured + date-sorted All. Authoritative content model; fully supersedes 0018, partially supersedes 0011/0012/0016/0017, amends 0015; amended by 0022, 0027, 0030, 0034. *(`docs/design-system.md` §3.)*
+- **0021 — Adopt Lenis smooth scroll.** Lenis global, synced to `gsap.ticker` + `ScrollTrigger.update`, `lerp 0.1`, disabled for reduced-motion / no-JS. Supersedes 0007's no-Lenis clause. *(`docs/design-system.md` §5.)*
+- **0022 — Standardized Article model.** One Studio Articles list with a visible, required `articleType` select; slug is hidden, auto-generated at first publish and frozen thereafter; `/news/[slug]` removed. Amends 0020's hidden-`articleType` clause and 0011's composite-News clause; amended by 0027 (News body/CTA) and 0032 (`publicationDate`).
+- **0023 — Allow the `null` CORS origin for the dashboard-hosted Studio.** The dashboard Studio's sandboxed crop/hotspot canvas fetches assets with `Origin: null`, which the image CDN 403s, blanking cropped images. Fix: allowlist `null` **without credentials** plus `https://www.sanity.io` **with credentials**. Acceptable while the dataset holds no sensitive data and assets are public; revoke with `sanity cors delete null`. Not a code bug.
+- **0024 — Fluid display ramp, fluid vertical rhythm, canonical breakpoints.** `tokens.css` is the single source: display type rides one shared `clamp()` ramp (floor @360 → cap @1440), the top three spacing steps are fluid, breakpoints are canonical (768/1024, carousel 600/960) as `@custom-media` with desktop-first `.98` max-width bounds. Uno shortcuts and `theme.spacing` reference the token vars; components never hand-roll `vw` coefficients; `tokens.test.ts` re-derives every fluid token. Rejected: mobile-first cascade flip, fluid body/UI type, fluidizing spacing ≤96. *(`docs/design-system.md` §1.)*
+- **0025 — Variable font for the marquee only.** The PP Neue Corp VF powers only the Who We Are marquee, where `wdth` animates 190 → 750 on hover/focus (frozen under reduced-motion); weight/slant pinned in `PPNeueCorp-VariableUltrabold.woff2` (wght 750 / slnt 0). Static Tight Ultrabold stays site-wide; the static Compact cut is retired. Site-wide VF rejected: heavier render-critical payload for zero gain at the site's single instance.
+- **0026 — Draft preview via Presentation + cookie-gated draft mode.** The Studio Presentation pane and share links run through `/api/preview/enable|disable`, which validate `sanity.previewUrlSecret` and set an `sb_preview` session cookie (`SameSite=None; Secure`, required in the cross-origin iframe). Preview swaps the Sanity client (`perspective: 'drafts'`, `useCdn: false`, viewer-scoped `SANITY_API_READ_TOKEN`), sends `Cache-Control: no-store`, forces GA off, and runs full motion behind a `PreviewBar` with an Exit affordance (8-hour cookie `Max-Age`). The Studio's preview origin is env-driven (`SANITY_STUDIO_PREVIEW_ORIGIN(S)`); pre-launch it defaults to the Vercel staging hostname because superbloomhouse.com still serves the legacy Netlify site. Rejected: staging dataset/hostname; click-to-edit overlays (the visual-editing comlink channel runs so the tool connects, but overlays stay inert — no stega encoding).
+- **0027 — News as a full article with an outbound footer CTA.** News articles are full detail pages at `/articles/[slug]` like Editorial (one shared `ArticleCard`; `NewsCard` deleted). The required `destination` URL becomes a footer CTA — label from the CMS "CTA Label" field (stored as `source`), fallback "Read the full story", opens in a new tab. Slug uniqueness spans News + Editorial; Zine stays scoped per type. Amends 0022; amended by 0029 (leadMedia) and 0033 (body).
+- **0028 — Observability: Sentry error aggregation with a Discord drain.** Errors aggregate in Sentry project `sbh-web` via `@sentry/astro` (production-only, privacy limits, commit-SHA releases with source maps) and alert to Discord `#site-alerts`. Everything else flows through a thin relay in `api/hooks/*`: production deploys from GitHub `deployment_status` events, content publishes from a GROQ-filtered Sanity webhook (`formSubmission` permanently excluded), and a daily GA4 digest via Vercel Cron. Every Discord post is sanitized by construction (field allowlists, `allowed_mentions: []`, 2000-char cap). Logins, form events, Shopify/Mux activity, and preview deploys are out of scope. *(`docs/observability-pipeline-spec.md`.)*
+- **0029 — News leadMedia optional.** News links out to external coverage and typically carries no internal lead media, so `leadMedia` is not required for `articleType: 'news'`; Editorial and Zine still require it. Corrupt mediaBox asset arrays are filtered in the shared GROQ media projection and pruned by `migrate:prune-empty-mediabox-assets`.
+- **0030 — Zine Articles leave the Index browse.** `/index` is News + Editorial only; Zine Articles surface under `/zine`. The Index Featured section stays CMS-curated, so a Zine Article can still be featured there deliberately. Amends 0020's "Index (all article types)" clause.
+- **0031 — Content HTML is never shared-cached.** Cookie-gated preview (0026) is incompatible with Vercel's URL-keyed edge cache: cached published pages were served to `sb_preview` requests, hijacking the Presentation pane and share links for up to the 24h stale-while-revalidate window. Content routes now send `private, no-cache` (preview stays `no-store`); cookie-independent endpoints (sitemap) keep the public edge cache. Measured cost: a warm edge HIT saved ~80ms (~100ms vs ~180ms SSR); the real loss is cold-start masking (~2s blank tab after idle), accepted pre-launch. The path back is ISR + `bypassToken`, never shorter TTLs — any nonzero shared cache reintroduces the hijack. Amends 0008 and 0026.
+- **0032 — Editable article `publicationDate`.** Visible, editable datetime on all article types so publishers can backdate or reorder items; still auto-stamps at first publish when left empty and never overwrites an editor-set value. Cards, the Studio Articles list, and the Index/related queries already sort by this field. Amends 0022's hidden/frozen clause.
+- **0033 — News body removed.** News links out and carries no internal body, so `body` is hidden and not validated for `articleType: 'news'`; a News item needs only title, overview, card settings, and a destination URL. Editorial and Zine still require one. Amends 0027.
+- **0034 — Work Index `itemOverrides` doubles as the All-section order.** The `workIndex` singleton's `itemOverrides` array is authoritative for `/work`'s All section: overridden Case Studies lead in list order, the rest follow `publicationDate` desc (full manual order = one override per Case Study, settings optional). Ordering is applied client-side before pagination, so `caseStudiesNewestQuery` no longer slices server-side. Amends 0020's "date-sorted All" clause for Our Work.
+- **0035 — Media playback profiles: Ambient / Presented.** Every `mux.video` frame resolves to one profile; both are visibility-gated muted loops with a real `<img>` poster (Mux `time=0` thumbnail) painted beneath the player. **Ambient** (default: cards, grids, background, scroll-driven media) renders no controls and is never focusable. **Presented** (`controls="full"`: Who We Are featured media and every Case Study video) adds a Media Control Bar — play/pause, token-styled ARIA scrubber (keyboard seek, ≥24px hit target), mute toggle; explicit play/pause sets a sticky `userIntent` that survives reduced-motion; the bar auto-hides after 2.5s idle while playing. `controls` is an enum (`'none' | 'compact' | 'full'`, boolean coerced for back-compat). Capes is excluded (its playhead is scroll position); Home and Zine heroes ship Ambient by design (art-directed poster canvas). *(`docs/design-system.md` §2, §5.)*
+- **0036 — Gated Ambient: curated poster reveal for video cards.** `mediaBox` gains an optional `poster` image (valid only on `mux.video`, reusing the mediaBox `altText`). When set, the card is dormant — no Mux requests — until hover/focus/tap reveals it: the poster runs the Poster Punch (800ms zoom to `scale(1.12)`, 560ms fade on a 120ms delay, `--motion-ease-out`, frame clipped with `overflow: clip`), the video plays, and on leave/blur the poster settles back while the video pauses but stays loaded. On touch, the first tap reveals and the second navigates. Unset poster = plain Ambient; grids may mix gated and ambient cards. Reduced-motion: instant swap, no hover autoplay, but a tap counts as `userIntent` and plays. Amends 0035 (a playback gate, not a new `controls` value). *(`docs/design-system.md` §5.)*
 
 **Superseded or amended (kept as guardrails):**
 
-- **0007 — GSAP + ScrollTrigger only, no Motion.** *Still in force* for the GSAP
-  stack, no Motion/Framer, and mandatory reduced-motion policy. Its **no-Lenis
-  clause is superseded by 0021** (Lenis is now global).
-- **0010 — Section theming via scoped `--bg`/`--fg`.** The scoping *mechanism*
-  stands; its hue-named/editor-selectable role vocabulary is superseded by 0014.
-- **0011 — News as a single composite type.** Composite News identity, external
-  coverage, and Tag taxonomy stand, but there is no standalone `news` doc — News is
-  now part of the unified `article` model (0020).
-- **0012 — Work index card model.** Case Study card media, adapter, and Tags stand;
-  the shared `Card.astro`/`cardSize`/full-half rows/`orderRank` are gone, replaced
-  by Content Cards (0020).
-- **0013 — Who We Are model + Discipline.** The `whoWeAre` singleton with named
-  fields and the Discipline≠Capability distinction stand; its hue-named brand roles
-  are superseded by 0014.
-- **0015 — Figma-first evidence + motion reset.** Code-as-inventory and the "don't
-  anchor to accidental motion" stance stand; CMS-composition evidence authority
-  passed to 0020, and the motion contract now lives in `docs/design-system.md` §5.
-- **0016 — Compositional design-system boundaries.** Core boundaries
-  (`SurfaceSection`/`PageGrid`/`MediaFrame`/shell, no universal model) stand;
-  terminology and shared compositions updated by 0017 and 0020.
-- **0017 — Case Study Spine (fixed named sections).** The 5 fixed ordered sections
-  and Results stats stand; section-local media layouts are now the shared Content
-  Layout Row (0020).
-- **0018 — Editorial Article as a separate type.** **Fully superseded by 0020** —
-  News/Editorial/Zine share one `article` doc with an `articleType`
-  discriminator (the very thing 0018 rejected); the discriminator became visible
-  and editor-facing under 0022.
+- **0007 — GSAP + ScrollTrigger only, no Motion.** The GSAP stack, no Motion/Framer, and the mandatory reduced-motion policy stand; the no-Lenis clause is superseded by 0021.
+- **0010 — Section theming via scoped `--bg`/`--fg`.** The scoping mechanism stands; its hue-named/editor-selectable role vocabulary is superseded by 0014.
+- **0011 — News as a single composite type.** Composite News identity, external coverage, and Tag taxonomy stand; News is part of the unified `article` model (0020), not a standalone doc.
+- **0012 — Work index card model.** Case Study card media, adapter, and Tags stand; the shared `Card.astro`/`cardSize`/full-half rows/`orderRank` are gone, replaced by Content Cards (0020).
+- **0013 — Who We Are model + Discipline.** The `whoWeAre` singleton with named fields and the Discipline≠Capability distinction stand; its hue-named brand roles are superseded by 0014.
+- **0015 — Figma-first evidence + motion reset.** Code-as-inventory and "don't anchor to accidental motion" stand; composition evidence authority passed to 0020, motion contract lives in `docs/design-system.md` §5.
+- **0016 — Compositional design-system boundaries.** Core boundaries (`SurfaceSection`/`PageGrid`/`MediaFrame`/shell, no universal model) stand; terminology and compositions updated by 0017 and 0020.
+- **0017 — Case Study Spine (fixed named sections).** The 5 fixed ordered sections and Results stats stand; section-local media layouts are now the shared Content Layout Row (0020).
+- **0018 — Editorial Article as a separate type.** Fully superseded by 0020 — News/Editorial/Zine share one `article` doc with an `articleType` discriminator; the discriminator became visible and editor-facing under 0022.

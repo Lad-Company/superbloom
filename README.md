@@ -1,6 +1,6 @@
 # Superbloom House
 
-Website redesign and rebuild for [Superbloom House](https://superbloomhouse.com), a production company that blends an internal creative team with a curated external Creative Collective.
+Website for Superbloom House.
 
 This is a pnpm monorepo containing the public website, the Sanity CMS that powers it, and the shared content schemas used by both.
 
