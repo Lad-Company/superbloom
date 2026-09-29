@@ -66,12 +66,13 @@ const heroHeading = workIndex?.heroHeading ?? 'Unexpected minds. Unignorable wor
       featured.length > 0 && (
         <section class="featured-work" aria-label="Featured work">
           <ContentCardList featured>
-            {featured.map((entry) => (
+            {featured.map((entry, i) => (
               <WorkCard
                 item={entry.item!}
                 settings={entry as PartialContentCardSettings}
                 globalSettings={globalSettings}
                 clientHeadline
+                priority={i === 0}
               />
             ))}
           </ContentCardList>
@@ -82,13 +83,14 @@ const heroHeading = workIndex?.heroHeading ?? 'Unexpected minds. Unignorable wor
     <div class="all-work">
       <ContentCardList class="all-card-list">
         {
-          caseStudies.map((cs) => (
+          caseStudies.map((cs, i) => (
             <WorkCard
               item={cs}
               settings={overrideFor(cs._id)}
               listSettings={listSettings}
               globalSettings={globalSettings}
               clientHeadline
+              priority={featured.length === 0 && i === 0}
             />
           ))
         }

@@ -75,10 +75,9 @@ const gaMode = preview
       type="font/woff2"
       crossorigin
     />
-    {/* Warm the Mux hosts (poster thumbnails + HLS manifests) so video frames
-       don't pay a fresh DNS+TLS round trip when the player upgrades. */}
-    <link rel="preconnect" href="https://image.mux.com" crossorigin />
-    <link rel="preconnect" href="https://stream.mux.com" crossorigin />
+    {/* Mux preconnects live in MediaFrame.astro, gated on the frame actually
+       being a video — pages without video (index, zine text layouts) were
+       paying for unused sockets (Lighthouse unused-preconnect). */}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {gaMode !== 'off' && (
       <>

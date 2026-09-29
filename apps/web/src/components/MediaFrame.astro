@@ -4,6 +4,7 @@ import {
   muxPosterRendering,
   planMediaRendering,
   type MediaPlacement,
+  type MuxMaxResolution,
 } from '../lib/mediaRenderingPlan'
 
 export type MediaRatio = CropRatio
@@ -67,6 +68,9 @@ interface Props {
   /** Overrides the placement's load-priority default (heroes eager,
    *  everything else lazy). */
   priority?: boolean
+  /** Overrides the placement's Mux rendition cap (ADR-0035) — e.g. Capes
+   *  stacks full-viewport ambient loops that never need 1080p. */
+  maxResolution?: MuxMaxResolution
   active?: boolean
   controls?: MediaPlaybackProfile
   class?: string
@@ -78,6 +82,7 @@ const {
   placement,
   title,
   priority: priorityProp,
+  maxResolution,
   active = true,
   controls = 'none',
   class: className,
@@ -85,7 +90,12 @@ const {
 
 const plan = planMediaRendering(
   placement,
-  priorityProp === undefined ? undefined : {priority: priorityProp},
+  priorityProp === undefined && maxResolution === undefined
+    ? undefined
+    : {
+        ...(priorityProp === undefined ? {} : {priority: priorityProp}),
+        ...(maxResolution === undefined ? {} : {maxResolution}),
+      },
 )
 const frameSizes = plan.sizes
 
@@ -141,6 +151,14 @@ const posterRendering =
       })
     : null
 const isGated = Boolean(isVideo && posterRendering?.src)
+// Warm the Mux hosts once per request, from the first video frame on the
+// page. Component <link> tags are not hoisted to <head>, so without the
+// locals flag every video frame would repeat the pair (13x on the home
+// page). Pages without video skip the sockets entirely (Lighthouse flagged
+// the old unconditional Layout preconnects as unused on /index and /zine).
+const muxLocals = Astro.locals as Record<string, unknown>
+const emitMuxPreconnect = isVideo && !muxLocals.__sbhMuxPreconnect
+if (emitMuxPreconnect) muxLocals.__sbhMuxPreconnect = true
 const imageRendering =
   asset?._type === 'image' && asset.asset?._ref
     ? buildImageRendering({
@@ -160,6 +178,7 @@ const imageRendering =
 <media-frame
   active={active ? true : undefined}
   gated={isGated ? true : undefined}
+  data-priority={plan.priority ? true : undefined}
   class:list={[
     'media-frame',
     className,
@@ -184,19 +203,32 @@ const imageRendering =
     )
   }
   {
+    /* Video frames warm the Mux hosts (poster thumbnails + HLS manifests) so
+       the player doesn't pay a fresh DNS+TLS round trip on upgrade. Emitted
+       once per page by the first video frame (see frontmatter). */
+    emitMuxPreconnect && (
+      <>
+        <link rel="preconnect" href="https://image.mux.com" crossorigin />
+        <link rel="preconnect" href="https://stream.mux.com" crossorigin />
+      </>
+    )
+  }
+  {
     /* The player poster covers the gap between the overlay poster's fade and
        the first painted video frame (visual QA: poster="" flashed a blank
-       frame there). One placement-sized URL — the attribute takes no srcset —
-       and it overrides mux-player's built-in full-res poster fetch. */
+       frame there). The attribute takes no srcset, so it gets the small fixed
+       rung (muxPosterRendering.playerSrc) — the placement-sized rung belongs
+       to the overlay <img>, which has a srcset. */
     isVideo && (
-      <mux-player
+      <mux-video
         playback-id={asset?._type === 'mux.video' ? asset.playbackId ?? undefined : undefined}
-        poster={videoPoster?.src}
+        poster={videoPoster?.playerSrc}
         metadata-video-title={title ?? undefined}
         stream-type="on-demand"
         muted
         loop
         default-hidden-captions
+        max-resolution={plan.maxResolution}
         preload={plan.preload}
       />
     )
@@ -335,11 +367,27 @@ const imageRendering =
   /** Time outside [0, duration] that we consider the player still settling. */
   const SCRUBBER_READY_EPSILON_S = 0.05
 
+  /** The `<mux-video>` surface we drive; `_hlsConfig` is the mux-video /
+   *  playback-core hook for hls.js options. */
+  type MuxVideoElement = HTMLVideoElement & {_hlsConfig?: Record<string, unknown>}
+
+  /** Ambient loops are short and cyclic, so the hls.js defaults (30s forward
+   *  buffer, unbounded cap growth) download far more of the stream than the
+   *  loop can ever show. Presented media (controls != 'none') keeps the
+   *  defaults — scrubbing wants the deeper buffer. */
+  const AMBIENT_HLS_CONFIG = {maxBufferLength: 10, maxMaxBufferLength: 20}
+
+  /** How far below the viewport a frame may sit before we fetch the mux
+   *  chunk — roughly one viewport of scroll runway. */
+  const LOAD_ROOT_MARGIN = '100% 0px'
+
   class MediaFrameElement extends HTMLElement {
     static observedAttributes = ['active', 'revealed']
 
     private observer: IntersectionObserver | null = null
-    private player: HTMLVideoElement | null = null
+    private loadObserver: IntersectionObserver | null = null
+    private playerLoading: Promise<void> | null = null
+    private player: MuxVideoElement | null = null
     private curatedPoster: HTMLImageElement | null = null
     private control: HTMLButtonElement | null = null
     private motionPreference: MediaQueryList | null = null
@@ -389,14 +437,15 @@ const imageRendering =
     private handleScrubberPointerDown = (event: PointerEvent) => this.startScrub(event)
     private handleScrubberKey = (event: KeyboardEvent) => this.onScrubberKey(event)
 
-    async connectedCallback() {
-      const player = this.querySelector('mux-player') as HTMLVideoElement | null
-      if (player) {
-        // Image-only frames skip the mux chunk entirely.
-        await import('@mux/mux-player')
-        if (!this.isConnected) return
+    connectedCallback() {
+      const playerElement = this.querySelector('mux-video') as MuxVideoElement | null
+      if (playerElement && this.dataset.controls === 'none') {
+        // Assign before the element upgrades so the value lands as an own
+        // property and playback-core reads it when it builds hls.js — the
+        // prototype accessor only exists after `@mux/mux-video` defines the
+        // element, which happens on the deferred import below.
+        playerElement._hlsConfig = AMBIENT_HLS_CONFIG
       }
-      this.player = player
       this.curatedPoster = this.querySelector(
         '.media-frame__curated-poster',
       ) as HTMLImageElement | null
@@ -412,25 +461,6 @@ const imageRendering =
       this.knob = this.querySelector('[data-scrubber-knob]') as HTMLElement | null
       this.trackElement = this.querySelector('[data-scrubber-track]') as HTMLElement | null
       this.mute = this.querySelector('[data-media-mute]') as HTMLButtonElement | null
-
-      if (this.player) {
-        this.player.addEventListener('play', this.handlePlay)
-        this.player.addEventListener('pause', this.handlePause)
-        this.player.addEventListener('volumechange', this.handleVolumeChange)
-        // Keep the static poster painted until playback actually starts
-        // ('playing', not 'canplay') so non-playing frames (reduced motion,
-        // paused before first frame) hold the adaptive still; the player's
-        // own placement-sized poster covers the fade-to-first-frame gap.
-        this.player.addEventListener('playing', this.handleReady)
-
-        if (this.isFullControls) {
-          this.player.addEventListener('timeupdate', this.handleTimeUpdate)
-          this.player.addEventListener('durationchange', this.handleDurationChange)
-          this.player.addEventListener('loadedmetadata', this.handleLoadedMeta)
-          this.player.addEventListener('progress', this.handleProgress)
-          this.player.addEventListener('seeked', this.handleSeeked)
-        }
-      }
 
       if (this.control) {
         this.control.addEventListener('click', this.handleControlClick)
@@ -456,7 +486,7 @@ const imageRendering =
       this.addEventListener('pointerdown', this.handleActivity)
       this.addEventListener('focusin', this.handleActivity)
 
-      if (!this.player) return
+      if (!playerElement) return
 
       this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
       this.observer = new IntersectionObserver(
@@ -471,8 +501,72 @@ const imageRendering =
       document.addEventListener('visibilitychange', this.handleVisibilityChange)
       this.motionPreference.addEventListener('change', this.handleMotionChange)
 
-      this.updatePlayback()
-      this.refreshScrubber()
+      // The mux-video chunk (~1MB raw with media-chrome on mux-player) is the
+      // largest JS cost on media pages, so it loads lazily: priority frames
+      // (heroes) fetch it immediately, gated frames on reveal (ADR-0036 — a
+      // dormant frame must not fetch anything), everything else about one
+      // viewport before it can scroll in.
+      const isGated = this.hasAttribute('gated')
+      if (isGated) {
+        if (this.hasAttribute('revealed')) void this.loadPlayer()
+      } else if (this.hasAttribute('data-priority')) {
+        void this.loadPlayer()
+      } else {
+        this.loadObserver = new IntersectionObserver(
+          ([entry]) => {
+            if (!entry.isIntersecting) return
+            this.loadObserver?.disconnect()
+            this.loadObserver = null
+            void this.loadPlayer()
+          },
+          {rootMargin: LOAD_ROOT_MARGIN},
+        )
+        this.loadObserver.observe(this)
+      }
+    }
+
+    /** Imports the mux-video chunk and wires the player. Idempotent; safe to
+     *  call from the load observer, the reveal hook, or connectedCallback. */
+    private loadPlayer(): Promise<void> {
+      if (!this.playerLoading) {
+        this.playerLoading = (async () => {
+          // `/base` is mux-video without the CastableMediaMixin / media-tracks
+          // wrappers — we drive the plain HTMLVideoElement surface only, and
+          // the full build still pulled gstatic cast_sender.js. Base doesn't
+          // self-define, so register the element here.
+          const {MuxVideoBaseElement} = await import('@mux/mux-video/base')
+          if (!customElements.get('mux-video')) {
+            customElements.define('mux-video', MuxVideoBaseElement)
+          }
+          if (!this.isConnected) return
+          const player = this.querySelector('mux-video') as MuxVideoElement | null
+          if (!player) return
+          this.player = player
+
+          this.player.addEventListener('play', this.handlePlay)
+          this.player.addEventListener('pause', this.handlePause)
+          this.player.addEventListener('volumechange', this.handleVolumeChange)
+          // Keep the static poster painted until playback actually starts
+          // ('playing', not 'canplay') so non-playing frames (reduced motion,
+          // paused before first frame) hold the adaptive still; the player's
+          // own small poster covers the fade-to-first-frame gap.
+          this.player.addEventListener('playing', this.handleReady)
+
+          if (this.isFullControls) {
+            this.player.addEventListener('timeupdate', this.handleTimeUpdate)
+            this.player.addEventListener('durationchange', this.handleDurationChange)
+            this.player.addEventListener('loadedmetadata', this.handleLoadedMeta)
+            this.player.addEventListener('progress', this.handleProgress)
+            this.player.addEventListener('seeked', this.handleSeeked)
+          }
+
+          this.updateControl()
+          this.updateMute()
+          this.updatePlayback()
+          this.refreshScrubber()
+        })()
+      }
+      return this.playerLoading
     }
 
     attributeChangedCallback(name: string) {
@@ -484,6 +578,8 @@ const imageRendering =
           'aria-hidden',
           String(this.hasAttribute('revealed')),
         )
+        // A gated frame's first reveal is also what fetches the mux chunk.
+        if (this.hasAttribute('revealed')) void this.loadPlayer()
       }
       this.updatePlayback()
     }
@@ -499,6 +595,7 @@ const imageRendering =
 
     disconnectedCallback() {
       this.observer?.disconnect()
+      this.loadObserver?.disconnect()
       document.removeEventListener('visibilitychange', this.handleVisibilityChange)
       this.motionPreference?.removeEventListener('change', this.handleMotionChange)
       this.player?.removeEventListener('play', this.handlePlay)
@@ -564,7 +661,13 @@ const imageRendering =
     }
 
     private togglePlayback() {
-      if (!this.player) return
+      if (!this.player) {
+        // The chunk can still be in flight on a lazy frame; treat the click
+        // as play intent so the video starts as soon as the player wires up.
+        this.userIntent = 'playing'
+        void this.loadPlayer()
+        return
+      }
 
       if (this.player.paused) {
         this.userIntent = 'playing'
@@ -690,7 +793,7 @@ const imageRendering =
     private startScrub(event: PointerEvent) {
       if (!this.player || !this.scrubberRoot || !this.trackElement) return
       if (this.durationS <= SCRUBBER_READY_EPSILON_S) {
-        // Scrubber has no timeline yet (poster showing, mux-player still
+        // Scrubber has no timeline yet (poster showing, mux-video still
         // fetching metadata). Ignore the gesture rather than confusing the
         // user with a no-op seek.
         return
@@ -818,7 +921,7 @@ const imageRendering =
   }
 
   .media-frame img,
-  .media-frame :global(mux-player) {
+  .media-frame :global(mux-video) {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -833,7 +936,7 @@ const imageRendering =
   /* Video frames stack a static poster under the player so the frame paints an
      image at first load instead of a blank box; the poster fades out once
      playback starts (see `data-video-ready`). */
-  .media-frame :global(mux-player),
+  .media-frame :global(mux-video),
   .media-frame__poster {
     position: absolute;
     inset: 0;

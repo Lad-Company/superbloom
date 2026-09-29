@@ -57,7 +57,7 @@ const {class: className, featured = false, columnPack = false} = Astro.props;
 
     private watchLeadMedia(leadMedia: HTMLElement) {
       const assets = Array.from(
-        leadMedia.querySelectorAll('img, mux-player'),
+        leadMedia.querySelectorAll('img, mux-video'),
       ) as HTMLElement[];
       assets.forEach((asset) => {
         if (asset instanceof HTMLImageElement) {

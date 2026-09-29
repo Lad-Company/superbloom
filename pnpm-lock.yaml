@@ -37,7 +37,7 @@ importers:
         version: 6.1.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sanity@6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3))(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
       '@sanity/orderable-document-list':
         specifier: ^2.0.20
-        version: 2.0.20(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sanity@6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3))(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
+        version: 2.0.20(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sanity@6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3))(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
       '@superbloom/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
@@ -78,9 +78,9 @@ importers:
       '@astrojs/vercel':
         specifier: ^10.0.8
         version: 10.0.8(astro@6.4.8(@types/node@25.9.5)(@vercel/functions@3.7.6(ws@8.21.3))(jiti@2.7.0)(lightningcss@1.33.0)(rollup@4.62.3)(tsx@4.23.12)(yaml@2.9.0))(react@19.2.8)(rollup@4.62.3)(ws@8.21.3)
-      '@mux/mux-player':
-        specifier: ^3.13.0
-        version: 3.13.2(react@19.2.8)
+      '@mux/mux-video':
+        specifier: ^0.28.2
+        version: 0.28.2
       '@sanity/client':
         specifier: ^7.26.2
         version: 7.26.2
@@ -147,7 +147,7 @@ importers:
     dependencies:
       '@sanity/orderable-document-list':
         specifier: ^2.0.20
-        version: 2.0.20(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sanity@6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3))(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
+        version: 2.0.20(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sanity@6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3))(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
       sanity:
         specifier: '*'
         version: 6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3)
@@ -2088,6 +2088,9 @@ packages:
     peerDependencies:
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
 
+  '@mux/mux-data-google-ima@0.2.8':
+    resolution: {integrity: sha512-0ZEkHdcZ6bS8QtcjFcoJeZxJTpX7qRIledf4q1trMWPznugvtajCjCM2kieK/pzkZj1JM6liDRFs1PJSfVUs2A==}
+
   '@mux/mux-data-google-ima@0.3.17':
     resolution: {integrity: sha512-4wpH6dYybyZhqLn9qGn/+67Z8MZnQRAdqTFEEZw2bx61M9q01uPYYHxd8qwOnYtUGEeafsdTwVHVxKHGD3oc1A==}
 
@@ -2107,8 +2110,14 @@ packages:
   '@mux/mux-player@3.13.2':
     resolution: {integrity: sha512-qYOYK4/vAr0VEs5SoC8KRieKm3VSgXJpyuERvOIDYvomIVGVpeqGzhjeDeZ7XKQBH3swg0RdAT3kZaTWXe5s9Q==}
 
+  '@mux/mux-video@0.28.2':
+    resolution: {integrity: sha512-+ij1EOI7Tx2zYAzIXAIbZJzxqISmIIz3f7aE/R5JFt9dcPxCNIN6/iXGJikiD1JQ4S3T7Mco8bHXaf1S0CJbIQ==}
+
   '@mux/mux-video@0.31.2':
     resolution: {integrity: sha512-waahxlrat1PpRzcY2pwMQJ5Gyhos+D6iRyKnYzF0wBf4SESfBtunSBj3EuKuljypm8bamh9gWnlA0LSzm5Pz1w==}
+
+  '@mux/playback-core@0.31.4':
+    resolution: {integrity: sha512-qQrNAAdJ7vjr1XEObE1hOUmuYngk/fjwmtYhpzkX4jJZwUC8I0rHjeFv7LXuCQD1D/mYJlWEpuyA0gPd6Y2eQw==}
 
   '@mux/playback-core@0.35.2':
     resolution: {integrity: sha512-AsMV0LMwJm9T1ig6BBYSddeMlkzz+2RGcd6dkOgYk+L5Hx477ovbTxJZJ/vTW+rZjNWHcG3BvgNbSLgiubyZhw==}
@@ -5608,6 +5617,9 @@ packages:
   mux-embed@5.18.1:
     resolution: {integrity: sha512-ePsHjiEKY+FgrSBiMmaF+LOtTQSSBWv/1zqpREQFN96JE93xlsArT/MEi30yKOE06MgjOlL70YI750molu3y7g==}
 
+  mux-embed@5.9.0:
+    resolution: {integrity: sha512-wmunL3uoPhma/tWy8PrDPZkvJpXvSFBwbD3KkC4PG8Ztjfb1X3hRJwGUAQyRz7z99b/ovLm2UTTitrkvStjH4w==}
+
   nano-pubsub@3.0.0:
     resolution: {integrity: sha512-zoTNyBafxG0+F5PP3T3j1PKMr7gedriSdYRhLFLRFCz0OnQfQ6BkVk9peXVF30hz633Bw0Zh5McleOrXPjWYCQ==}
     engines: {node: '>=18'}
@@ -6343,6 +6355,7 @@ packages:
   sanity@6.9.2:
     resolution: {integrity: sha512-1HCdwyzo4xUxHnpO/dulWafnVJaOL008pfod8nQb1NE3D0wtEt3lbsS2A5v9ea2cTFWZYYmZ5JTXzN9KbEZRVQ==}
     engines: {node: '>=22.12'}
+    deprecated: 'This version of Sanity Studio has a potential data-loss bug when working with Portable Text fields. This issue is resolved in 6.14.1. Upgrade with: npm install sanity@latest. See https://www.sanity.io/docs/studio/upgrade'
     hasBin: true
     peerDependencies:
       react: ^19.2.2
@@ -7572,7 +7585,7 @@ snapshots:
   '@apm-js-collab/tracing-hooks@0.13.0':
     dependencies:
       '@apm-js-collab/code-transformer': 0.18.1
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       module-details-from-path: 1.0.4
     transitivePeerDependencies:
       - supports-color
@@ -7841,7 +7854,7 @@ snapshots:
       '@babel/types': 7.29.7
       '@jridgewell/remapping': 2.3.5
       convert-source-map: 2.0.0
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -8556,7 +8569,7 @@ snapshots:
       '@babel/parser': 7.29.7
       '@babel/template': 7.29.7
       '@babel/types': 7.29.7
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -9463,6 +9476,10 @@ snapshots:
       - utf-8-validate
       - vue-tsc
 
+  '@mux/mux-data-google-ima@0.2.8':
+    dependencies:
+      mux-embed: 5.9.0
+
   '@mux/mux-data-google-ima@0.3.17':
     dependencies:
       mux-embed: 5.18.1
@@ -9487,6 +9504,14 @@ snapshots:
     transitivePeerDependencies:
       - react
 
+  '@mux/mux-video@0.28.2':
+    dependencies:
+      '@mux/mux-data-google-ima': 0.2.8
+      '@mux/playback-core': 0.31.4
+      castable-video: 1.1.16
+      custom-media-element: 1.4.6
+      media-tracks: 0.3.5
+
   '@mux/mux-video@0.31.2':
     dependencies:
       '@mux/mux-data-google-ima': 0.3.17
@@ -9495,6 +9520,11 @@ snapshots:
       castable-video: 1.1.16
       custom-media-element: 1.4.6
       media-tracks: 0.3.5
+
+  '@mux/playback-core@0.31.4':
+    dependencies:
+      hls.js: 1.6.16
+      mux-embed: 5.18.1
 
   '@mux/playback-core@0.35.2':
     dependencies:
@@ -10483,7 +10513,7 @@ snapshots:
       - '@types/react'
       - supports-color
 
-  '@sanity/orderable-document-list@2.0.20(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sanity@6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3))(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))':
+  '@sanity/orderable-document-list@2.0.20(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sanity@6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3))(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))':
     dependencies:
       '@hello-pangea/dnd': 18.0.1(@types/react@19.2.17)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@sanity/client': 7.26.2
@@ -10493,7 +10523,7 @@ snapshots:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
       sanity: 6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3)
-      sanity-plugin-utils: 2.0.15(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sanity@6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3))(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
+      sanity-plugin-utils: 2.0.15(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sanity@6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3))(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
       styled-components: 6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
     transitivePeerDependencies:
       - '@types/react'
@@ -11487,7 +11517,7 @@ snapshots:
 
   agent-base@6.0.2:
     dependencies:
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -12050,6 +12080,10 @@ snapshots:
   date-fns@4.4.0: {}
 
   debounce@1.2.1: {}
+
+  debug@4.4.3:
+    dependencies:
+      ms: 2.1.3
 
   debug@4.4.3(supports-color@8.1.1):
     dependencies:
@@ -12857,14 +12891,14 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
   https-proxy-agent@7.0.6:
     dependencies:
       agent-base: 7.1.4
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
 
@@ -13608,7 +13642,7 @@ snapshots:
   micromark@4.0.2:
     dependencies:
       '@types/debug': 4.1.13
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       decode-named-character-reference: 1.3.0
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.3
@@ -13706,6 +13740,8 @@ snapshots:
   mute-stream@3.0.0: {}
 
   mux-embed@5.18.1: {}
+
+  mux-embed@5.9.0: {}
 
   nano-pubsub@3.0.0: {}
 
@@ -14355,7 +14391,7 @@ snapshots:
 
   require-in-the-middle@8.0.1:
     dependencies:
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       module-details-from-path: 1.0.4
     transitivePeerDependencies:
       - supports-color
@@ -14510,7 +14546,7 @@ snapshots:
       - '@types/react-dom'
       - react-dom
 
-  sanity-plugin-utils@2.0.15(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sanity@6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3))(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)):
+  sanity-plugin-utils@2.0.15(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sanity@6.9.2(@babel/core@7.29.7)(@babel/runtime@7.29.7)(@noble/hashes@2.2.0)(@rolldown/plugin-babel@0.2.3(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.3)(vite@8.2.1(@types/node@25.9.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0)))(@sanity/sdk@2.1.2(@types/react@19.2.17)(react@19.2.8)(use-sync-external-store@1.6.0(react@19.2.8)))(@types/node@25.9.5)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(esbuild@0.28.2)(jiti@2.7.0)(prismjs@1.30.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(rolldown@1.2.3)(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@6.0.3))(styled-components@6.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)):
     dependencies:
       '@sanity/asset-utils': 2.3.0
       '@sanity/icons': 5.2.1(react@19.2.8)
@@ -15329,7 +15365,7 @@ snapshots:
   vite-node@1.6.1(@types/node@25.9.5)(lightningcss@1.33.0):
     dependencies:
       cac: 6.7.14
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       pathe: 1.1.2
       picocolors: 1.1.1
       vite: 5.4.21(@types/node@25.9.5)(lightningcss@1.33.0)
@@ -15419,7 +15455,7 @@ snapshots:
       '@vitest/utils': 1.6.1
       acorn-walk: 8.3.5
       chai: 4.5.0
-      debug: 4.4.3(supports-color@8.1.1)
+      debug: 4.4.3
       execa: 8.0.1
       local-pkg: 0.5.1
       magic-string: 0.30.21

@@ -34,12 +34,14 @@ interface Props {
   /** Show the client name as the card header instead of the case study
    *  title (Work index); the title stays on media metadata. */
   clientHeadline?: boolean;
+  /** Lead card above the fold (LCP candidate) — see EditorialCard. */
+  priority?: boolean;
   settings?: PartialContentCardSettings;
   listSettings?: PartialContentCardSettings;
   globalSettings?: PartialContentCardSettings;
 }
 
-const { item, class: className, rail = false, clientHeadline = false, settings, listSettings, globalSettings } = Astro.props;
+const { item, class: className, rail = false, clientHeadline = false, priority, settings, listSettings, globalSettings } = Astro.props;
 const href = item.slug ? `/work/${item.slug}` : '#';
 ---
 
@@ -49,6 +51,7 @@ const href = item.slug ? `/work/${item.slug}` : '#';
   headline={clientHeadline ? item.client : undefined}
   media={item.media}
   rail={rail}
+  priority={priority}
   contentSettings={item}
   settings={settings}
   listSettings={listSettings}

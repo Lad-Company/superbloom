@@ -20,6 +20,9 @@ interface Props {
    *  Carousel) — rail cards render at literal viewport fractions and
    *  collapse to one narrow width, so the media plan differs from grids. */
   rail?: boolean
+  /** Overrides the card placement's lazy default for above-the-fold lead
+   *  cards (LCP candidates): /index lead, first /work card. */
+  priority?: boolean
   contentSettings?: PartialContentCardSettings
   settings?: PartialContentCardSettings
   listSettings?: PartialContentCardSettings
@@ -37,6 +40,7 @@ const {
   ctaLabel,
   cardId,
   rail = false,
+  priority,
   contentSettings,
   settings,
   listSettings,
@@ -60,7 +64,7 @@ const heading = headline ?? title
   data-info-position={resolved.infoPosition}
   data-content-card-id={cardId}
 >
-  <MediaFrame media={media} ratio={resolved.mediaAspectRatio} placement={placement} title={title}>
+  <MediaFrame media={media} ratio={resolved.mediaAspectRatio} placement={placement} title={title} priority={priority}>
     <slot name="overlay" />
   </MediaFrame>
   <div class="content">

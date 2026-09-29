@@ -12,7 +12,9 @@ const {media, ratio = '16:9', title, controls = 'full'} = Astro.props
 ---
 
 <section class="featured-media">
-  <MediaFrame media={media} ratio={ratio} placement={{context: 'layoutBlock', width: 'full'}} title={title} controls={controls} />
+  {/* The featured media is the page's LCP candidate — its poster must load
+      eager/high (layoutBlock defaults lazy, which pushed LCP to ~5s). */}
+  <MediaFrame media={media} ratio={ratio} placement={{context: 'layoutBlock', width: 'full'}} title={title} controls={controls} priority />
 </section>
 
 <style>

@@ -45,7 +45,7 @@ API glue (`apps/web/src/pages/api/*`).
 | Concern | Service | Integration |
 | --- | --- | --- |
 | Editorial content + images | Sanity | `lib/sanity.ts`, `lib/queries.ts` (GROQ) |
-| Video | Mux | `mux.video` in `mediaBox`, `<mux-player>` in `MediaFrame` |
+| Video | Mux | `mux.video` in `mediaBox`, `<mux-video>` in `MediaFrame` |
 | Commerce (products, cart, checkout) | Shopify Storefront API | `lib/shopify*.ts`, `pages/api/shop/*` |
 | Email (newsletter) | Mailchimp | `pages/api/newsletter/*` |
 | Form records (contact inquiries) | Sanity | `formSubmission` document via `pages/api/contact.ts` |

@@ -29,6 +29,8 @@ interface Props {
   }
   issueSlug: string
   rail?: boolean
+  /** Lead card above the fold (LCP candidate) — see EditorialCard. */
+  priority?: boolean
   settings?: PartialContentCardSettings
   listSettings?: PartialContentCardSettings
   globalSettings?: PartialContentCardSettings
@@ -39,6 +41,7 @@ const {
   article,
   issueSlug,
   rail = false,
+  priority,
   settings,
   listSettings,
   globalSettings,
@@ -55,6 +58,7 @@ const summary = article.overview
   title={article.title ?? null}
   media={article.cardMedia ?? null}
   rail={rail}
+  priority={priority}
   contentSettings={article}
   settings={settings}
   listSettings={listSettings}

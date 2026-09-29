@@ -36,10 +36,12 @@ const SIDE_SETTINGS = {
       <div class="stick">
         <div class="grid">
           <div class="lead">
+            {/* The lead card owns the /index LCP — load its media eager. */}
             <MixedArticleCard
               item={lead}
               settings={LEAD_SETTINGS}
               globalSettings={globalSettings}
+              priority
               minimal
             />
           </div>
