@@ -8,6 +8,7 @@ import {isPreviewRequest} from '../../lib/preview'
 import {setContentCache} from '../../lib/cacheHeaders'
 import {caseBrandVars} from '../../lib/caseBrandVars'
 import {caseStudyBySlugQuery} from '../../lib/queries'
+import {containsMuxVideo} from '../../lib/containsMuxVideo'
 import {seoDescription, seoImage} from '../../lib/seo'
 import type {CaseStudyBySlugQueryResult} from '../../sanity.types'
 
@@ -32,6 +33,7 @@ setContentCache(Astro.response, preview)
   image={seoImage(caseStudy.leadMedia)}
   navRole="case-primary"
   bodyStyle={caseBrandVars(caseStudy)}
+  hasVideo={containsMuxVideo(caseStudy)}
 >
   <CaseStudyComposition caseStudy={caseStudy} />
   <ContactBand role="brand-deep" />

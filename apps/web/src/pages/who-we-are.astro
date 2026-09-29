@@ -16,6 +16,7 @@ import { fetchSafe, getSanityClient, rewriteToServerError } from '../lib/sanity'
 import { isPreviewRequest } from '../lib/preview';
 import { setContentCache } from '../lib/cacheHeaders';
 import { whoWeAreQuery } from '../lib/queries';
+import { containsMuxVideo } from '../lib/containsMuxVideo';
 import { seoImage } from '../lib/seo';
 import type { WhoWeAreQueryResult } from '../sanity.types';
 
@@ -49,7 +50,7 @@ const faqVisible = showFaq && faqs.length > 0;
 
 ---
 
-<Layout title="Who We Are" description={introStatement} image={seoImage(featuredMedia)} navRole="dark">
+<Layout title="Who We Are" description={introStatement} image={seoImage(featuredMedia)} navRole="dark" hasVideo={containsMuxVideo(page)}>
   <SurfaceSection role="dark">
     <div class="who-hero-pad">
       <PageHero heading={heroHeading} />

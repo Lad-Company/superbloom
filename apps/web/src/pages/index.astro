@@ -6,6 +6,7 @@ import {fetchSafe, getSanityClient, rewriteToServerError} from '../lib/sanity'
 import {isPreviewRequest} from '../lib/preview'
 import {setContentCache} from '../lib/cacheHeaders'
 import {homepageQuery} from '../lib/queries'
+import {containsMuxVideo} from '../lib/containsMuxVideo'
 import type {HomepageQueryResult} from '../sanity.types'
 
 const preview = isPreviewRequest(Astro.cookies)
@@ -16,7 +17,7 @@ const homepage = await fetchSafe<HomepageQueryResult>(client, homepageQuery)
 if (homepage === undefined) return rewriteToServerError(Astro)
 ---
 
-<Layout navRole="dark">
+<Layout navRole="dark" hasVideo={containsMuxVideo(homepage)}>
   {homepage && <HomepageComposition homepage={homepage} />}
   <Footer />
 </Layout>

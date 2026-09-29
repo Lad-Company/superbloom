@@ -7,6 +7,7 @@ import {fetchSafe, getSanityClient, rewriteToServerError} from '../../lib/sanity
 import {isPreviewRequest} from '../../lib/preview'
 import {setContentCache} from '../../lib/cacheHeaders'
 import {articleBySlugQuery} from '../../lib/queries'
+import {containsMuxVideo} from '../../lib/containsMuxVideo'
 import {seoDescription, seoImage} from '../../lib/seo'
 
 const {slug} = Astro.params
@@ -29,6 +30,7 @@ setContentCache(Astro.response, preview)
   description={seoDescription(article.overview)}
   image={seoImage(article.leadMedia)}
   navRole="light"
+  hasVideo={containsMuxVideo(article)}
 >
   <ArticleDetail article={article} />
   <ContactBand role="brand-deep" />

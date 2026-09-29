@@ -20,6 +20,10 @@ interface Props {
   image?: string;
   navRole?: SurfaceRole;
   bodyStyle?: string;
+  /** Page renders Mux video somewhere; warms the Mux poster/stream hosts with
+     a preconnect. Pages without video skip it so Lighthouse doesn't flag an
+     unused preconnect (and the browser doesn't burn an idle connection). */
+  hasVideo?: boolean;
 }
 
 const {
@@ -29,6 +33,7 @@ const {
   image,
   navRole,
   bodyStyle,
+  hasVideo = false,
 } = Astro.props;
 
 const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
@@ -76,9 +81,15 @@ const gaMode = preview
       crossorigin
     />
     {/* Warm the Mux hosts (poster thumbnails + HLS manifests) so video frames
-       don't pay a fresh DNS+TLS round trip when the player upgrades. */}
-    <link rel="preconnect" href="https://image.mux.com" crossorigin />
-    <link rel="preconnect" href="https://stream.mux.com" crossorigin />
+       don't pay a fresh DNS+TLS round trip when the player upgrades. Only on
+       pages that actually render Mux video — an unused preconnect is flagged
+       by Lighthouse and holds an idle connection. */}
+    {hasVideo && (
+      <>
+        <link rel="preconnect" href="https://image.mux.com" crossorigin />
+        <link rel="preconnect" href="https://stream.mux.com" crossorigin />
+      </>
+    )}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {gaMode !== 'off' && (
       <>
