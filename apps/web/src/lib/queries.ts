@@ -17,7 +17,8 @@ const mediaProjection = `{
     },
     _type == "mux.video" => {
       "playbackId": asset->playbackId,
-      "aspectRatio": asset->data.aspect_ratio
+      "aspectRatio": asset->data.aspect_ratio,
+      "thumbTime": asset->thumbTime
     }
   },
   "poster": poster{
