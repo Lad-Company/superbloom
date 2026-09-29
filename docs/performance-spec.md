@@ -1,6 +1,8 @@
 # Performance Spec — Media pop-in + motion jank (homepage)
 
-Status: proposed (spec only, no implementation). Follows PR #92
+Status: partially implemented. Landed: the `image.mux.com` / `stream.mux.com`
+preconnects (RC1 aggravator) in `Layout.astro`. The remaining root-cause fixes
+are unverified — re-audit against current code before scheduling. Follows PR #92
 (`perf: edge-cache content SSR and load mux-player only on video frames`).
 
 ## Problem

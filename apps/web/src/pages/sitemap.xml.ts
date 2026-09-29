@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { sitemapQuery } from '../lib/queries';
-import { sanityClient } from '../lib/sanity';
+import { fetchSafe, sanityClient } from '../lib/sanity';
 import { setPublicCache } from '../lib/cacheHeaders';
 
 const escapeXml = (value: string) =>
@@ -18,7 +18,7 @@ interface SitemapEntry {
 }
 
 export const GET: APIRoute = async ({ site }) => {
-  const content = await sanityClient.fetch<{
+  const content = await fetchSafe<{
     caseStudies: SitemapEntry[];
     articles: SitemapEntry[];
     pastIssues: SitemapEntry[];
@@ -27,7 +27,11 @@ export const GET: APIRoute = async ({ site }) => {
       updatedAt?: string;
       articles: Array<{ slug?: string; updatedAt?: string } | null>;
     }>;
-  }>(sitemapQuery);
+  }>(sanityClient, sitemapQuery);
+
+  if (content === undefined) {
+    return new Response('Unable to generate sitemap', { status: 500 });
+  }
 
   const entries: SitemapEntry[] = [
     { path: '/' },

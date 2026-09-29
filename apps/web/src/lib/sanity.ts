@@ -1,4 +1,7 @@
+import type { AstroGlobal } from 'astro';
 import { createClient } from '@sanity/client';
+import type { ClientReturn, QueryParams, SanityClient } from '@sanity/client';
+import * as Sentry from '@sentry/astro';
 
 const config = {
   projectId: 'l9mhqdtj',
@@ -22,4 +25,51 @@ export function getSanityClient(preview: boolean) {
     perspective: 'drafts',
     token: import.meta.env.SANITY_API_READ_TOKEN,
   });
+}
+
+const FETCH_TIMEOUT_MS = 6_000;
+const RETRY_DELAY_MS = 250;
+
+// The Sanity client has no default timeout, so a hung request burns the whole
+// Vercel function budget and surfaces as Vercel's generic error page.
+// fetchSafe bounds each attempt, retries once on transient failures (network
+// or 5xx — a 4xx means the query itself is wrong and retrying won't help),
+// reports the final failure to Sentry, and returns `undefined`.
+//
+// Routes read the result as tri-state: `undefined` = fetch failed (render the
+// branded 500), `null` = query matched nothing (existing 404 / CMS-fallback
+// handling), anything else = success.
+export async function fetchSafe<R = unknown, const G extends string = string>(
+  client: SanityClient,
+  query: G,
+  params: QueryParams = {},
+): Promise<ClientReturn<G, R> | undefined> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      // The cast is sound: G is the caller's query literal, so the typegen
+      // map resolves the same way it would for a direct client.fetch call.
+      // TS just can't prove it while G is still generic inside this body.
+      const result = await client.fetch(query, params, { timeout: FETCH_TIMEOUT_MS });
+      return result as ClientReturn<G, R>;
+    } catch (error) {
+      const status = (error as { statusCode?: number })?.statusCode;
+      const retryable = status === undefined || status >= 500;
+      if (attempt === 0 && retryable) {
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+        continue;
+      }
+      Sentry.captureException(error);
+      return undefined;
+    }
+  }
+  return undefined;
+}
+
+// Every content route pairs fetchSafe with this guard: `undefined` means the
+// fetch failed, so set the 500 status and rewrite to the branded error page.
+// Centralized so the outage policy (status + target) lives in exactly one
+// place; `null` handling (404 / CMS fallback) stays per-route.
+export function rewriteToServerError(astro: AstroGlobal): Response | Promise<Response> {
+  astro.response.status = 500;
+  return astro.rewrite('/500');
 }

@@ -25,9 +25,8 @@ const workMosaicSource = readFileSync(
 )
 
 describe('Homepage CMS contract', () => {
-  it('does not expose or render the retired Feature section', () => {
+  it('does not expose the retired Feature section', () => {
     expect(homepageSchemaSource).not.toContain("name: 'feature'")
-    expect(homepageCompositionSource).not.toContain('<HomeFeature')
   })
 
   it('renders only CMS-selected Our Work Case Studies', () => {

@@ -76,7 +76,11 @@ API glue (`apps/web/src/pages/api/*`).
 - `/zine`, `/zine/issues/[slug]`, `/zine/issues/[slug]/[article]`
 - `/shop`, `/shop/products/[handle]`, `/cart` (`/shop` optionally leads with a
   CMS-authored Featured Item from the `shopPage` singleton)
-- `robots.txt`, `sitemap.xml`, `404`
+- `robots.txt`, `sitemap.xml`, `404`, `500` — error pages share `ErrorPage.astro`;
+  content routes guard Sanity reads with `fetchSafe` and rewrite to `/500`
+  (status 500) on outage
+- `/debug/sentry` — secret-gated Sentry smoke-test page (`?secret=$CRON_SECRET`;
+  404s without it, `noindex`)
 
 ## 6. Content model (schemas)
 
@@ -174,7 +178,7 @@ another doc, that doc is authoritative.
   font-size coefficients; `tokens.test.ts` re-derives every fluid token from the
   two curve formulas. Rejected: mobile-first cascade flip (too large a rewrite),
   fluid body/UI type (fights user zoom), fluidizing spacing ≤96.
-  *(`docs/css-standardization-spec.md`; `docs/design-system.md` §1.)*
+  *(`docs/design-system.md` §1.)*
 - **0025 — Variable font for the marquee only.** The PP Neue Corp collection VF
   powers only the Who We Are marquee, where the `wdth` axis genuinely animates
   (Condensed 190 → Wide 750 on hover/focus, `--motion-standard` ease-out, frozen
@@ -184,7 +188,6 @@ another doc, that doc is authoritative.
   Site-wide VF adoption rejected: fluid `clamp()` already delivers resize
   smoothness with static fonts, and the VF is the heavier render-critical
   payload for zero gain at the site's single instance.
-  *(`docs/marquee-variable-font-morph-spec.md`.)*
 - **0026 — Draft preview via Presentation + cookie-gated draft mode on the
   production URL.** Editors preview unpublished drafts rendered by the real
   site: the Studio Presentation pane and shareable links both run through
@@ -204,7 +207,7 @@ another doc, that doc is authoritative.
   serves the legacy Netlify site. There is no shared env secret: rotation is
   toggling Share access in the Presentation tool. Rejected: staging
   dataset/hostname, Visual Editing overlays (needs a stega audit across
-  `lib/` first). *(`docs/content-preview-spec.md`.)*
+  `lib/` first).*
 - **0027 — News as a full article with an outbound footer CTA.** News articles
   are full detail pages at `/articles/[slug]` like Editorial (required
   leadMedia + body, relatedItems available, one shared `ArticleCard` adapter
@@ -279,6 +282,43 @@ another doc, that doc is authoritative.
   Study title. Ordering is applied client-side before pagination, so
   `caseStudiesNewestQuery` no longer slices server-side. Amends 0020's
   "date-sorted All" clause for Our Work.
+- **0035 — Media playback profiles: Ambient / Presented.** Every `mux.video`
+  frame resolves to exactly one profile. Both are visibility-gated muted loops
+  (play only when `active && intersecting && document-visible &&
+  !reduced-motion`) with a real `<img>` poster (Mux `time=0` thumbnail)
+  painted beneath the player so a frame is never a gray box. **Ambient**
+  (default: cards, grids, background, scroll-driven media) renders no
+  controls and is never focusable. **Presented** (`controls="full"`: Who We
+  Are featured media and every Case Study video — lead, narrative/results row
+  media, Carousel video slides) adds a Media Control Bar overlaid on the
+  video: the existing play/pause button, a token-styled scrubber (ARIA
+  slider, keyboard seek, ≥24px hit target), and a mute toggle. The bar is a
+  user-override surface — ambient gating still applies, an explicit
+  play/pause sets a sticky `userIntent` that survives reduced-motion, and the
+  bar auto-hides after 2.5s idle while playing. `controls` became an enum
+  (`'none' | 'compact' | 'full'`, boolean coerced for back-compat). Capes is
+  deliberately excluded: its playhead is the scroll position, so controls
+  would misrepresent the interaction. Home and Zine heroes deviate from the
+  original surface assignment and ship Ambient — the hero is an art-directed
+  poster canvas, not a watchable clip (rationale recorded in
+  `docs/design-system.md` §2). *(Control design + tokens:
+  `docs/design-system.md` §2; motion: §5.)*
+- **0036 — Gated Ambient: curated poster reveal for video cards.** `mediaBox`
+  gains an optional `poster` image, visible and valid only on `mux.video`
+  assets and reusing the mediaBox `altText`. When set, the card is dormant —
+  no Mux requests — until hover/focus/tap reveals it: the poster zooms
+  `scale(1)` → `scale(1.12)` then fades out (the "Poster Punch": 800ms
+  `--motion-deliberate` zoom, 560ms fade on a 120ms `--motion-instant` delay,
+  `--motion-ease-out` both directions, frame clipped with `overflow: clip`),
+  the video plays, and on leave/blur the poster settles back and the video
+  pauses while staying loaded, so re-reveal is instant. On touch, the first
+  tap reveals and the second navigates. When `poster` is unset the card keeps
+  plain Ambient autoplay — the feature is opt-in per card with no migration,
+  and grids may mix gated and ambient cards. Under reduced-motion the poster
+  swap is instant and hover/focus reveal does not autoplay; a tap counts as
+  `userIntent` and plays. Amends 0035's profile set with the Gated Ambient
+  variant (a playback gate, not a new `controls` value). *(Motion recipe:
+  `docs/design-system.md` §5.)*
 
 **Superseded or amended (kept as guardrails):**
 

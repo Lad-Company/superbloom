@@ -191,19 +191,6 @@ export type IndexPage = {
   }
 }
 
-export type HomeTestimonialsBlock = {
-  _type: 'homeTestimonialsBlock'
-  headline?: string
-  items?: Array<{
-    quote?: string
-    attribution?: string
-    _type: 'testimonialItem'
-    _key: string
-  }>
-  ctaLabel?: string
-  ctaHref?: string
-}
-
 export type HomeParallaxBlock = {
   _type: 'homeParallaxBlock'
   headline?: string
@@ -1002,7 +989,6 @@ export type AllSanitySchemaTypes =
   | ArticleReference
   | TagReference
   | IndexPage
-  | HomeTestimonialsBlock
   | HomeParallaxBlock
   | HomeWhyBlock
   | CaseStudyReference

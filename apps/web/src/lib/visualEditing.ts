@@ -1,4 +1,4 @@
-// Sanity Presentation connection (docs/content-preview-spec.md). The
+// Sanity Presentation connection (ARCHITECTURE.md ADR-0026). The
 // Presentation tool drives the preview iframe over a comlink channel named
 // "visual-editing"; without this script the tool times out with "Unable to
 // connect" and can never populate "Documents on this page". Layout.astro

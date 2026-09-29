@@ -1,7 +1,5 @@
 > **Where things live** - Client: Lad | Bucket: `clients/Lad/` | Dropbox: `_Clients/Lad/Superbloom/` | Registry: `~/Code/toolhub/CoS/REGISTRY.md`
 
-@import /Users/pete/Code/.agent/conventions.md
-
 # Superbloom House — Agent Instructions
 
 Website redesign and rebuild for SuperBloom House (superbloomhouse.com) via Lad Company.

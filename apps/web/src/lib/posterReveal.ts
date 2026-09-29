@@ -1,5 +1,5 @@
 /**
- * Card Poster Reveal wiring (docs/card-poster-reveal-spec.md §4).
+ * Card Poster Reveal wiring (ARCHITECTURE.md ADR-0036).
  *
  * A card whose mediaBox pairs a Poster Image with a video renders a Gated
  * `media-frame` (see MediaFrame.astro). The whole card is one link, so the
@@ -86,7 +86,7 @@ function bindCard(card: HTMLAnchorElement) {
   })
 
   // Touch: first tap reveals (and is explicit play intent — honored even
-  // under reduced-motion, card-poster-reveal §6); second tap navigates.
+  // under reduced-motion, ARCHITECTURE.md ADR-0036); second tap navigates.
   card.addEventListener('click', (event) => {
     if (lastPointerType !== 'touch' || isRevealed()) return
     event.preventDefault()

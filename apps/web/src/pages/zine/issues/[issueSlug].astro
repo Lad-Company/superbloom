@@ -4,7 +4,7 @@ import Footer from '../../../components/Footer.astro'
 import ContactBand from '../../../components/ContactBand.astro'
 import IssueDetail from '../../../components/zine/IssueDetail.astro'
 import IssuuEmbed from '../../../components/zine/IssuuEmbed.astro'
-import {getSanityClient} from '../../../lib/sanity'
+import {fetchSafe, getSanityClient, rewriteToServerError} from '../../../lib/sanity'
 import {isPreviewRequest} from '../../../lib/preview'
 import {setContentCache} from '../../../lib/cacheHeaders'
 import {issueArchiveQuery, issueBySlugQuery, zineLandingQuery} from '../../../lib/queries'
@@ -13,7 +13,9 @@ import {seoDescription, seoImage} from '../../../lib/seo'
 const issueSlug = Astro.params.issueSlug
 const preview = isPreviewRequest(Astro.cookies)
 const client = getSanityClient(preview)
-const issue = await client.fetch(issueBySlugQuery, {slug: issueSlug})
+const issue = await fetchSafe(client, issueBySlugQuery, {slug: issueSlug})
+
+if (issue === undefined) return rewriteToServerError(Astro)
 
 if (!issue) {
   Astro.response.status = 404
@@ -25,7 +27,9 @@ if (!issue) {
 const isEmbedOnly = issue.issueMode === 'embed'
 
 if (!isEmbedOnly) {
-  const zineLanding = await client.fetch(zineLandingQuery)
+  const zineLanding = await fetchSafe(client, zineLandingQuery)
+
+  if (zineLanding === undefined) return rewriteToServerError(Astro)
 
   if (zineLanding?.currentIssue?.slug === issue.slug) {
     return Astro.redirect('/zine', 302)
@@ -34,7 +38,9 @@ if (!isEmbedOnly) {
 
 setContentCache(Astro.response, preview)
 
-const pastIssues = isEmbedOnly ? [] : await client.fetch(issueArchiveQuery, {slug: issue.slug})
+const pastIssues = isEmbedOnly ? [] : await fetchSafe(client, issueArchiveQuery, {slug: issue.slug})
+
+if (pastIssues === undefined) return rewriteToServerError(Astro)
 ---
 
 <Layout

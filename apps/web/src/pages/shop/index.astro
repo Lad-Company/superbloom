@@ -5,16 +5,18 @@ import PageHero from '../../components/PageHero.astro'
 import ProductGrid from '../../components/shop/ProductGrid.astro'
 import ShopFeature from '../../components/shop/ShopFeature.astro'
 import {listProducts} from '../../lib/shopify'
-import {getSanityClient} from '../../lib/sanity'
+import {fetchSafe, getSanityClient} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {shopPageQuery} from '../../lib/queries'
 
 // CMS page settings (heading, grid collection, hover fill, optional feature
 // above the grid); a CMS outage never takes the shop down with it — the grid
-// just falls back to all products, alphabetical.
-const shopPage = await getSanityClient(isPreviewRequest(Astro.cookies))
-  .fetch(shopPageQuery)
-  .catch(() => null)
+// just falls back to all products, alphabetical. fetchSafe still reports the
+// outage to Sentry so the silent degradation is visible.
+const shopPage = await fetchSafe(
+  getSanityClient(isPreviewRequest(Astro.cookies)),
+  shopPageQuery,
+)
 const collectionHandle = shopPage?.collectionHandle ?? null
 
 const cursor = Astro.url.searchParams.get('after')

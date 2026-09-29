@@ -1,4 +1,4 @@
-// Cookie-gated draft preview (docs/content-preview-spec.md). The enable route
+// Cookie-gated draft preview (ARCHITECTURE.md ADR-0026). The enable route
 // sets the cookie after validating a Studio-signed preview URL; SSR content
 // routes, the Footer, and the Layout read it to switch the Sanity client,
 // cache headers, motion, and analytics.

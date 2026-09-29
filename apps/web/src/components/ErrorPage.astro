@@ -1,0 +1,51 @@
+---
+import ContactBand from './ContactBand.astro'
+import Footer from './Footer.astro'
+import SurfaceSection from './SurfaceSection.astro'
+
+interface Props {
+  title: string
+  // Set false on the 500 page: it renders during a possible Sanity outage,
+  // and the footer's site-settings fetch would add the fetchSafe timeout to
+  // every error response. ContactBand is fetch-free, so it always renders.
+  withFooter?: boolean
+}
+
+const {title, withFooter = true} = Astro.props
+---
+
+<SurfaceSection role="dark">
+  <main class="error-page">
+    <h1 class="type-h1">{title}</h1>
+    <p class="type-h4"><slot /></p>
+  </main>
+</SurfaceSection>
+<ContactBand role="brand-deep" />
+{withFooter && <Footer />}
+
+<style>
+  .error-page {
+    display: grid;
+    min-height: 70vh;
+    align-content: center;
+    gap: var(--space-xs);
+    padding: var(--space-4xl) var(--page-inset);
+  }
+  h1,
+  p {
+    margin: 0;
+  }
+  p {
+    max-width: 28ch;
+  }
+  /* Slot content comes from the calling page, outside this component's style
+     scope — match its links explicitly. */
+  p :global(a) {
+    text-underline-offset: 0.15em;
+  }
+  @media (--bp-small) {
+    .error-page {
+      padding: var(--space-3xl) var(--space-3xs);
+    }
+  }
+</style>

@@ -19,7 +19,6 @@ import {homeZine} from './homeZine'
 import {homeWorkBlock} from './homeWorkBlock'
 import {homeWhyBlock} from './homeWhyBlock'
 import {homeParallaxBlock} from './homeParallaxBlock'
-import {homeTestimonialsBlock} from './homeTestimonialsBlock'
 import {indexPage} from './indexPage'
 import {shopPage} from './shopPage'
 import {siteSettings} from './siteSettings'
@@ -62,7 +61,6 @@ export const schemaTypes = [
   homeWorkBlock,
   homeWhyBlock,
   homeParallaxBlock,
-  homeTestimonialsBlock,
   indexPage,
   shopPage,
   siteSettings,

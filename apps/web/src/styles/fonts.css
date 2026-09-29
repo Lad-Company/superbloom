@@ -6,7 +6,7 @@
   font-style: normal;
   font-display: swap;
 }
-/* Marquee-only variable cut (docs/marquee-variable-font-morph-spec.md):
+/* Marquee-only variable cut (ARCHITECTURE.md ADR-0025):
    wdth axis 190 (Condensed) → 750 (Wide), weight/slant pinned in the file
    (wght 750, slnt 0). Drives the hover width morph; not used site-wide. */
 @font-face {

@@ -7,7 +7,7 @@
 // cookie, so a cached published page gets served to requests carrying the
 // sb_preview draft cookie — silently hijacking preview sessions (and the
 // stale-while-revalidate window kept each hijacked URL broken for up to a
-// day). See docs/content-preview-spec.md §11.
+// day). See ARCHITECTURE.md ADR-0031.
 export function setPublicCache(res: {headers: Headers}, seconds = 60, swr = 86400) {
   res.headers.set('Cache-Control', `public, s-maxage=${seconds}, stale-while-revalidate=${swr}`)
 }
