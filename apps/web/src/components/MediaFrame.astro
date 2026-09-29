@@ -415,6 +415,7 @@ const imageRendering =
     private handleActivity = () => this.markActivity()
     private handleControlClick = () => this.togglePlayback()
     private handleReady = () => this.setAttribute('data-video-ready', '')
+    private handleSourceReady = () => this.updatePlayback()
     private handleMuteClick = () => this.toggleMute()
     private handleVolumeChange = () => this.updateMute()
 
@@ -543,6 +544,12 @@ const imageRendering =
           // paused before first frame) hold the adaptive still; the player's
           // own small poster covers the fade-to-first-frame gap.
           this.player.addEventListener('playing', this.handleReady)
+          // playback-core attaches hls.js to the <video> asynchronously after
+          // upgrade. A play() issued before that attach is voided by the media
+          // load algorithm (paused resets to true, the promise rejects), so a
+          // visible frame would sit on its poster until the next intersection
+          // change. Re-evaluate once the source is really in.
+          this.player.addEventListener('loadedmetadata', this.handleSourceReady)
 
           if (import.meta.env.DEV && this.dataset.controls === 'none') {
             // The buffer cap rides on `_hlsConfig` being read as an own
@@ -614,6 +621,7 @@ const imageRendering =
       this.player?.removeEventListener('play', this.handlePlay)
       this.player?.removeEventListener('pause', this.handlePause)
       this.player?.removeEventListener('playing', this.handleReady)
+      this.player?.removeEventListener('loadedmetadata', this.handleSourceReady)
       this.player?.removeEventListener('volumechange', this.handleVolumeChange)
       this.player?.removeEventListener('timeupdate', this.handleTimeUpdate)
       this.player?.removeEventListener('durationchange', this.handleDurationChange)
