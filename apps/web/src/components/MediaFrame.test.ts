@@ -176,6 +176,16 @@ describe('MediaFrame playback profiles', () => {
     expect(source).toContain('data-srcset={deferPoster ? videoPoster.srcset : undefined}')
     expect(source).toContain('public promotePoster()')
   })
+
+  it('pins the ambient hls.js start level to the lowest-bitrate rung', () => {
+    // hls.js's default 500kbps estimate rejects every Mux rung (ladder floor
+    // ~1.2Mbps), so firstAutoLevel fell back to first-in-playlist — a 1.6MB
+    // 540p first segment on the home hero. The pin starts low; the first
+    // fragment is hls.js's bandwidth test, so ABR climbs right after.
+    expect(source).toContain('pinAmbientStartLevel')
+    expect(source).toContain("hls.on('hlsManifestParsed'")
+    expect(source).toContain('hls.startLevel = lowest')
+  })
 })
 
 describe('MediaFrame consumers conform to the new controls enum', () => {
