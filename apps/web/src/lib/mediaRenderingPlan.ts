@@ -170,15 +170,10 @@ export interface MuxPosterRendering {
   /** Placement-rung URL — the poster `<img src>` fallback under the srcset. */
   src: string
   srcset: string
-  /** The `<mux-video poster>` attribute takes exactly one URL (no srcset) and
-   *  is only ever glimpsed behind the overlay poster's fade-to-first-frame,
-   *  so it rides the smallest useful rung rather than the placement rung —
-   *  a 1440px thumbnail fetched for a mobile card is pure waste. */
-  playerSrc: string
 }
 
-const muxPosterUrl = (playbackId: string, width: number): string =>
-  `https://image.mux.com/${playbackId}/thumbnail.webp?width=${width}&time=0`
+const muxPosterUrl = (playbackId: string, width: number, time: number): string =>
+  `https://image.mux.com/${playbackId}/thumbnail.webp?width=${width}&time=${time}`
 
 /** The single-URL poster can't adapt per viewport, so estimate the rendered
  *  width once: viewport-fraction placements at a nominal desktop viewport,
@@ -212,24 +207,26 @@ const posterTargetPx = (placement: MediaPlacement): number => {
 const posterRung = (targetPx: number): number =>
   IMAGE_LADDER.find((width) => width >= targetPx) ?? IMAGE_LADDER[IMAGE_LADDER.length - 1]
 
-/** The player poster flashes for a frame or two at most, under the overlay
- *  poster's fade — 640px covers even that glimpse on any placement. */
-const PLAYER_POSTER_RUNG = 640
-
 /**
  * Sized Mux poster thumbnails riding the shared width ladder; the poster
  * `<img sizes>` comes from the same plan as the frame, so the browser picks
  * a rung matching the placement instead of downloading a full-res frame.
- * `src` rides the placement's own rung as the no-srcset fallback; the player
- * `poster` attribute gets the small fixed rung (see `playerSrc`).
+ * `src` rides the placement's own rung as the no-srcset fallback.
+ *
+ * `thumbTime` is the poster frame the editors picked on the Mux asset in
+ * Sanity (the mux input plugin's `thumbTime`, default 0). It matters beyond
+ * taste: time=0 of an edited video can be a glitch/strobe leader frame that
+ * reads wrong as a still and compresses terribly — the Who We Are lead's
+ * time=0 frame was 263KB at the 960 rung where every other frame is 15-70KB.
  */
 export const muxPosterRendering = (
   playbackId: string,
   placement: MediaPlacement,
+  thumbTime?: number | null,
 ): MuxPosterRendering => {
+  const time = thumbTime ?? 0
   return {
-    src: muxPosterUrl(playbackId, posterRung(posterTargetPx(placement))),
-    srcset: IMAGE_LADDER.map((w) => `${muxPosterUrl(playbackId, w)} ${w}w`).join(', '),
-    playerSrc: muxPosterUrl(playbackId, PLAYER_POSTER_RUNG),
+    src: muxPosterUrl(playbackId, posterRung(posterTargetPx(placement)), time),
+    srcset: IMAGE_LADDER.map((w) => `${muxPosterUrl(playbackId, w, time)} ${w}w`).join(', '),
   }
 }

@@ -228,19 +228,18 @@ describe('muxPosterRendering', () => {
     )
   })
 
-  it('gives the player poster attribute a small fixed rung, not the placement rung', () => {
-    // The <mux-video poster> takes one URL and only shows behind the overlay
-    // poster's fade-to-first-frame — a placement-sized thumbnail there is
-    // wasted bytes (mobile fetched width=1600 posters for every video).
-    expect(muxPosterRendering('abc123', {context: 'hero'}).playerSrc).toBe(
-      'https://image.mux.com/abc123/thumbnail.webp?width=640&time=0',
+  it('threads the editor-picked Sanity thumbTime through every URL', () => {
+    // time=0 of an edited video can be a glitch/strobe leader frame that
+    // compresses terribly (the Who We Are lead was 263KB at 960w), so the
+    // mux plugin's thumbTime wins when set.
+    const timed = muxPosterRendering('abc123', {context: 'hero'}, 0.5)
+    expect(timed.src).toBe('https://image.mux.com/abc123/thumbnail.webp?width=1600&time=0.5')
+    expect(timed.srcset).toContain('https://image.mux.com/abc123/thumbnail.webp?width=640&time=0.5 640w')
+    expect(timed.srcset).not.toContain('time=0 ')
+    // Null (asset has no thumbTime) falls back to the first frame.
+    expect(muxPosterRendering('abc123', {context: 'hero'}, null).src).toBe(
+      'https://image.mux.com/abc123/thumbnail.webp?width=1600&time=0',
     )
-    expect(
-      muxPosterRendering('abc123', {
-        context: 'card',
-        settings: {cardWidth: '1/3', mediaAspectRatio: '16:9', infoPosition: 'below'},
-      }).playerSrc,
-    ).toBe('https://image.mux.com/abc123/thumbnail.webp?width=640&time=0')
   })
 
   it('offers the full width ladder as srcset', () => {

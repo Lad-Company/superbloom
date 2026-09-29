@@ -27,7 +27,12 @@ const displayedCapabilities = capabilities.slice(0, 8);
       {
         displayedCapabilities.map((cap, i) => (
           <div class:list={['frame', { 'is-active': i === 0 }]} data-capes-frame>
-            <MediaFrame media={cap.media} ratio="fill" placement={{context: 'layoutBlock', width: 'full'}} active={i === 0} maxResolution="720p">
+            {/* deferPoster on the inactive frames: the pinned stack sits
+                inside the browser's lazy-load threshold, so without it all
+                eight posters fetch at first layout, ahead of the LCP. The
+                active frame's poster loads normally; activateFrame()
+                promotes each poster as its chapter shows. */}
+            <MediaFrame media={cap.media} ratio="fill" placement={{context: 'layoutBlock', width: 'full'}} active={i === 0} maxResolution="720p" deferPoster={i > 0}>
               <div class="scrim"></div>
             </MediaFrame>
           </div>
@@ -232,6 +237,13 @@ const displayedCapabilities = capabilities.slice(0, 8);
     let hoverIndex: number | null = null;
     let previous = 0;
 
+    // Deferred posters render src-less (MediaFrame deferPoster); promote the
+    // shown frame's poster and prefetch the next chapter's so the still is
+    // in hand before its fade-in.
+    const promotePoster = (idx: number) =>
+      (frames[idx]?.querySelector('media-frame') as (HTMLElement & {promotePoster?: () => void}) | null)
+        ?.promotePoster?.();
+
     const activateFrame = (i: number) => {
       frames.forEach((frame, idx) => {
         const isActive = idx === i;
@@ -239,6 +251,8 @@ const displayedCapabilities = capabilities.slice(0, 8);
         frame.style.zIndex = isActive ? '2' : idx === previous ? '1' : '0';
         frame.querySelector('media-frame')?.toggleAttribute('active', isActive);
       });
+      promotePoster(i);
+      promotePoster(i + 1);
       previous = i;
     };
 
