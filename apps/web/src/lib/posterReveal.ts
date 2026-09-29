@@ -86,7 +86,7 @@ function bindCard(card: HTMLAnchorElement) {
   })
 
   // Touch: first tap reveals (and is explicit play intent — honored even
-  // under reduced-motion, card-poster-reveal §6); second tap navigates.
+  // under reduced-motion, ARCHITECTURE.md ADR-0036); second tap navigates.
   card.addEventListener('click', (event) => {
     if (lastPointerType !== 'touch' || isRevealed()) return
     event.preventDefault()

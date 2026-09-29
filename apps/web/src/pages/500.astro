@@ -1,13 +1,19 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import ServerErrorPage from '../components/ServerErrorPage.astro';
+import ErrorPage from '../components/ErrorPage.astro';
 
 // Astro passes the triggering error as a prop when this page renders from its
 // error fallback; content routes also rewrite here after a failed CMS fetch
 // (no error prop in that case). Never render the error — internals stay out
 // of the response; Sentry already has it.
+// withFooter=false keeps the page fetch-free by construction: it renders
+// during a Sanity outage, and the footer's site-settings fetch would add the
+// fetchSafe timeout to every error response. ContactBand is fetch-free.
 ---
 
 <Layout title="Something Went Wrong" navRole="dark">
-  <ServerErrorPage />
+  <ErrorPage title="Something went wrong" withFooter={false}>
+    This page hit an unexpected error. Try reloading, or head back to our
+    <a href="/">homepage</a>.
+  </ErrorPage>
 </Layout>

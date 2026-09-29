@@ -1,3 +1,4 @@
+import type { AstroGlobal } from 'astro';
 import { createClient } from '@sanity/client';
 import type { ClientReturn, QueryParams, SanityClient } from '@sanity/client';
 import * as Sentry from '@sentry/astro';
@@ -62,4 +63,13 @@ export async function fetchSafe<R = unknown, const G extends string = string>(
     }
   }
   return undefined;
+}
+
+// Every content route pairs fetchSafe with this guard: `undefined` means the
+// fetch failed, so set the 500 status and rewrite to the branded error page.
+// Centralized so the outage policy (status + target) lives in exactly one
+// place; `null` handling (404 / CMS fallback) stays per-route.
+export function rewriteToServerError(astro: AstroGlobal): Response | Promise<Response> {
+  astro.response.status = 500;
+  return astro.rewrite('/500');
 }

@@ -1,8 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import NotFoundPage from '../components/NotFoundPage.astro';
+import ErrorPage from '../components/ErrorPage.astro';
 ---
 
 <Layout title="Page Not Found" navRole="dark">
-  <NotFoundPage />
+  <ErrorPage title="Page not found">
+    Try visiting our <a href="/">homepage</a> or <a href="/work">our work</a>.
+  </ErrorPage>
 </Layout>

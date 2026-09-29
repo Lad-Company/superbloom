@@ -478,8 +478,8 @@ const imageRendering =
     attributeChangedCallback(name: string) {
       if (name === 'revealed') {
         // The poster conveys the same content as the video it covers, so it
-        // leaves the accessibility tree while revealed (card-poster-reveal
-        // §6). The reveal transition itself is attribute-driven CSS.
+        // leaves the accessibility tree while revealed (ARCHITECTURE.md
+        // ADR-0036). The reveal transition itself is attribute-driven CSS.
         this.curatedPoster?.setAttribute(
           'aria-hidden',
           String(this.hasAttribute('revealed')),
@@ -491,7 +491,7 @@ const imageRendering =
     /** Card-link hook (EditorialCard / HomeWork): a touch tap that reveals a
      *  gated poster is explicit play intent, honored even under
      *  reduced-motion — same rule as the Presented play button
-     *  (card-poster-reveal §6). */
+     *  (ARCHITECTURE.md ADR-0036). */
     public revealWithIntent() {
       this.userIntent = 'playing'
       this.setAttribute('revealed', '')
@@ -539,7 +539,7 @@ const imageRendering =
       const isDocVisible = document.visibilityState === 'visible'
       const prefersReducedMotion = this.motionPreference?.matches ?? false
       const isPaused = this.player.paused ?? true
-      // Gated Ambient (card-poster-reveal §3): a poster card is dormant until
+      // Gated Ambient (ARCHITECTURE.md ADR-0036): a poster card is dormant until
       // the card link toggles `revealed`; with preload="none" and no play()
       // call, Mux fetches no segments before the first reveal.
       const isGated = this.hasAttribute('gated')
@@ -808,7 +808,7 @@ const imageRendering =
     display: block;
     position: relative;
     /* Clip (not hidden) so the scaling curated poster never paints outside
-       the card during the Poster Punch (card-poster-reveal §5). */
+       the card during the Poster Punch (ARCHITECTURE.md ADR-0036). */
     overflow: clip;
     border-radius: var(--radius-media);
     /* Placeholder gradient's dimmer step, derived locally (nav/cart precedent)

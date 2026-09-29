@@ -12,7 +12,7 @@ import TypeFilter from '../../components/TypeFilter.astro'
 import SurfaceSection from '../../components/SurfaceSection.astro'
 import {parseArticleTypeFilter} from '../../lib/articleTypes'
 import {indexPageQuery, indexViewAllNewestQuery, indexViewAllOldestQuery} from '../../lib/queries'
-import {fetchSafe, getSanityClient} from '../../lib/sanity'
+import {fetchSafe, getSanityClient, rewriteToServerError} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {setContentCache} from '../../lib/cacheHeaders'
 import type {
@@ -34,10 +34,7 @@ const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requeste
 const recordLimit = page * BATCH_SIZE
 
 const indexPage = await fetchSafe<IndexPageQueryResult>(client, indexPageQuery)
-if (indexPage === undefined) {
-  Astro.response.status = 500
-  return Astro.rewrite('/500')
-}
+if (indexPage === undefined) return rewriteToServerError(Astro)
 const pageHeader = indexPage?.header ?? "What they've been saying"
 const featuredItems = (indexPage?.featured ?? []).flatMap((entry) =>
   entry?.item ? [entry.item] : [],
@@ -53,10 +50,7 @@ const fetchedItems = await fetchSafe<
   offset: 0,
   end: recordLimit + 1,
 })
-if (fetchedItems === undefined) {
-  Astro.response.status = 500
-  return Astro.rewrite('/500')
-}
+if (fetchedItems === undefined) return rewriteToServerError(Astro)
 const items = fetchedItems.slice(0, recordLimit)
 const hasMore = fetchedItems.length > recordLimit
 const listSettings = indexPage?.allSection?.listDefaults as PartialContentCardSettings

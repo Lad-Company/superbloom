@@ -7,7 +7,7 @@ import ContactBand from '../../components/ContactBand.astro'
 import ContentCardList from '../../components/ContentCardList.astro'
 import WorkCard from '../../components/WorkCard.astro'
 import ProgressiveLoadMore from '../../components/ProgressiveLoadMore.astro'
-import {fetchSafe, getSanityClient} from '../../lib/sanity'
+import {fetchSafe, getSanityClient, rewriteToServerError} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {setContentCache} from '../../lib/cacheHeaders'
 import {workIndexQuery, caseStudiesNewestQuery} from '../../lib/queries'
@@ -33,10 +33,7 @@ const fetchedCaseStudies = await fetchSafe<CaseStudiesNewestQueryResult>(
   caseStudiesNewestQuery,
   {featuredIds},
 )
-if (workIndex === undefined || fetchedCaseStudies === undefined) {
-  Astro.response.status = 500
-  return Astro.rewrite('/500')
-}
+if (workIndex === undefined || fetchedCaseStudies === undefined) return rewriteToServerError(Astro)
 // CMS order: the Work Index itemOverrides list is the manual All-section
 // order (overridden items lead); the rest follow newest-first.
 const orderedCaseStudies = orderCaseStudiesByOverrides(

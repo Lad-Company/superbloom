@@ -14,8 +14,9 @@ const nav = [
   {label: 'Shop', href: '/shop'},
   {label: 'Edit', href: 'https://superbloom-cms.sanity.studio', external: true},
 ]
-// Social links are decorative: a CMS outage drops them, never the page (the
-// 500 page renders this footer during exactly that outage).
+// Social links are decorative: a CMS outage drops them, never the page. The
+// 500 page skips this footer entirely so it stays fetch-free (ErrorPage
+// withFooter={false}).
 const siteSettings = await fetchSafe<SiteSettingsQueryResult>(
   getSanityClient(isPreviewRequest(Astro.cookies)),
   siteSettingsQuery,
