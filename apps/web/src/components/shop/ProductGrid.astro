@@ -1,6 +1,8 @@
 ---
 import TagList from '../TagList.astro'
-import type {Product} from '../../lib/shopify'
+import type {Product, ProductImage} from '../../lib/shopify'
+import {shopifyImageRendering} from '../../lib/shopifyImages'
+import {BREAKPOINTS} from '../../lib/breakpoints'
 
 interface Props {
   products: Product[]
@@ -13,6 +15,14 @@ interface Props {
 }
 
 const {products, nextCursor, hasNextPage, hoverColor = null, collectionHandle = null} = Astro.props
+
+// Card width in CSS px: 2-up on phones (12px side padding + one 24px gap),
+// 3-up above (32px page insets + two 24px gaps). `sizes` can't read CSS
+// vars, so the literals mirror the .products rules below (48 = 2×12 + 24,
+// 112 = 2×32 + 2×24); the breakpoint mirrors tokens.css via BREAKPOINTS.
+const CARD_SIZES = `(max-width: ${BREAKPOINTS.smallMax}px) calc((100vw - 48px) / 2), calc((100vw - 112px) / 3)`
+const cardImage = (image: ProductImage) =>
+  shopifyImageRendering(image.url, {nativeWidth: image.width})
 
 const money = (value: Product['priceRange']['minVariantPrice']) =>
   new Intl.NumberFormat('en-US', {style: 'currency', currency: value.currencyCode}).format(
@@ -35,14 +45,20 @@ const marqueeText = (title: string) =>
 >
   <div class="products" data-products>
     {
-      products.map((product) => (
+      products.map((product) => {
+        const image = product.featuredImage ? cardImage(product.featuredImage) : null
+        return (
         <article class="product">
           <a href={`/shop/products/${product.handle}`}>
             <div class="product-media" style={hoverColor ? `--hover-bg: ${hoverColor}` : null}>
-              {product.featuredImage ? (
+              {product.featuredImage && image ? (
                 <img
-                  src={product.featuredImage.url}
+                  src={image.src}
+                  srcset={image.srcset}
+                  sizes={CARD_SIZES}
                   alt={product.featuredImage.altText ?? product.title}
+                  width={product.featuredImage.width ?? undefined}
+                  height={product.featuredImage.height ?? undefined}
                   loading="lazy"
                 />
               ) : (
@@ -64,7 +80,8 @@ const marqueeText = (title: string) =>
             <p>{money(product.priceRange.minVariantPrice)}</p>
           </a>
         </article>
-      ))
+        )
+      })
     }
   </div>
   {
@@ -78,7 +95,9 @@ const marqueeText = (title: string) =>
     <article class="product">
       <a class="product-link" href="">
         <div class="product-media">
-          <img class="product-image" src="" alt="" loading="lazy" />
+          {/* sizes rides the template so cloned cards inherit it; src/srcset
+              are filled from shopifyImageRendering in the Load More path. */}
+          <img class="product-image" src="" alt="" loading="lazy" sizes={CARD_SIZES} />
           <div class="placeholder" aria-hidden="true"></div>
           <div class="product-badge" style="display: none;">
             <TagList typeLabel="Sold out" />
@@ -98,6 +117,8 @@ const marqueeText = (title: string) =>
 </section>
 
 <script>
+  import {shopifyImageRendering} from '../../lib/shopifyImages'
+
   const MARQUEE_REPEATS = 6
 
   function initProductGrid() {
@@ -152,7 +173,15 @@ const marqueeText = (title: string) =>
 
           if (product.featuredImage) {
             if (image) {
-              image.src = product.featuredImage.url
+              const rendering = shopifyImageRendering(product.featuredImage.url, {
+                nativeWidth: product.featuredImage.width,
+              })
+              // srcset before src so the no-srcset fallback never wins a
+              // fetch; sizes is already on the cloned template node.
+              image.srcset = rendering.srcset
+              image.src = rendering.src
+              if (product.featuredImage.width) image.width = product.featuredImage.width
+              if (product.featuredImage.height) image.height = product.featuredImage.height
               image.alt = product.featuredImage.altText ?? product.title
             }
             placeholder?.remove()

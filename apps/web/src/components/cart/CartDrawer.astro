@@ -19,6 +19,8 @@ import {vars} from '../../lib/surfaceRole'
 </aside>
 
 <script>
+  import {shopifyImageRendering} from '../../lib/shopifyImages'
+
   const money = (value: {amount: string; currencyCode: string}) =>
     new Intl.NumberFormat('en-US', {style: 'currency', currency: value.currencyCode}).format(
       Number(value.amount),
@@ -50,7 +52,11 @@ import {vars} from '../../lib/surfaceRole'
       const image = line.merchandise.image
       if (image) {
         const img = document.createElement('img')
-        img.src = image.url
+        // Line thumbs render at 64px (4rem); two small rungs cover DPR 2-3.
+        const rendering = shopifyImageRendering(image.url, {widths: [192, 320]})
+        img.srcset = rendering.srcset
+        img.src = rendering.src
+        img.sizes = '64px'
         img.alt = image.altText ?? line.merchandise.product.title
         img.loading = 'lazy'
         item.append(img)

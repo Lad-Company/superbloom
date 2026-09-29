@@ -24,6 +24,9 @@ interface Props {
      a preconnect. Pages without video skip it so Lighthouse doesn't flag an
      unused preconnect (and the browser doesn't burn an idle connection). */
   hasVideo?: boolean;
+  /** Extra origins to warm with a preconnect (e.g. cdn.shopify.com on the
+     shop pages). Keep page-scoped for the same reason as hasVideo. */
+  preconnects?: string[];
 }
 
 const {
@@ -34,6 +37,7 @@ const {
   navRole,
   bodyStyle,
   hasVideo = false,
+  preconnects = [],
 } = Astro.props;
 
 const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
@@ -96,6 +100,9 @@ const gaMode = preview
         <link rel="preconnect" href="https://stream.mux.com" crossorigin />
       </>
     )}
+    {preconnects.map((origin) => (
+      <link rel="preconnect" href={origin} crossorigin />
+    ))}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {gaMode !== 'off' && (
       <>

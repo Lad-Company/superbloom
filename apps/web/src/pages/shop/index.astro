@@ -30,7 +30,12 @@ try {
 }
 ---
 
-<Layout title="Shop | Superbloom House" navRole="dark" hasVideo={containsMuxVideo(shopPage)}>
+<Layout
+  title="Shop | Superbloom House"
+  navRole="dark"
+  hasVideo={containsMuxVideo(shopPage)}
+  preconnects={['https://cdn.shopify.com']}
+>
   <main>
     <PageHero heading={shopPage?.heading ?? 'Shop'} />
     <ShopFeature featured={shopPage?.featured ?? null} />
