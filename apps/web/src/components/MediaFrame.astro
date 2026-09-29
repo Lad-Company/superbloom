@@ -352,7 +352,12 @@ const imageRendering =
    *  (undefined under native HLS, i.e. Safari/iOS). */
   type MuxVideoElement = HTMLVideoElement & {
     _hlsConfig?: Record<string, unknown>
-    _hls?: {config: Record<string, unknown>}
+    _hls?: {
+      config: Record<string, unknown>
+      levels?: Array<{bitrate?: number}>
+      on?: (event: string, cb: () => void) => void
+      startLevel?: number
+    }
   }
 
   /** Ambient loops are short and cyclic, so the hls.js defaults (30s forward
@@ -536,6 +541,8 @@ const imageRendering =
           if (!player) return
           this.player = player
 
+          if (this.dataset.controls === 'none') this.pinAmbientStartLevel(player)
+
           this.player.addEventListener('play', this.handlePlay)
           this.player.addEventListener('pause', this.handlePause)
           this.player.addEventListener('volumechange', this.handleVolumeChange)
@@ -587,6 +594,43 @@ const imageRendering =
         })()
       }
       return this.playerLoading
+    }
+
+    /** hls.js picks its first fragment via `firstAutoLevel`; the default
+     *  500 kbps estimate rejects every Mux rung (the ladder bottoms out
+     *  around 1.2 Mbps), and the "first in playlist" fallback lands on a
+     *  mid-ladder rung — the home hero opened with a 1.6 MB 540p segment.
+     *  Pin the start to the lowest-bitrate rung instead: that fragment
+     *  doubles as hls.js's bandwidth test, so ABR climbs right after on
+     *  fast connections. `_hls` exists only under MSE (Safari's native HLS
+     *  manages its own ladder), so poll briefly from loadstart;
+     *  MANIFEST_PARSED fires after the manifest fetch, leaving the
+     *  level-playlist round trip as slack before the first segment request. */
+    private pinAmbientStartLevel(player: MuxVideoElement) {
+      let attempts = 0
+      const attach = () => {
+        const hls = player._hls
+        if (!hls?.on) {
+          if (this.isConnected && attempts++ < 40) window.setTimeout(attach, 50)
+          return
+        }
+        hls.on('hlsManifestParsed', () => {
+          const levels = hls.levels ?? []
+          if (levels.length < 2) return
+          let lowest = 0
+          for (let i = 1; i < levels.length; i++) {
+            if ((levels[i].bitrate ?? Infinity) < (levels[lowest].bitrate ?? Infinity)) lowest = i
+          }
+          hls.startLevel = lowest
+          if (import.meta.env.DEV) {
+            console.info(
+              `[media-frame] ambient start pinned to lowest-bitrate level ${lowest + 1}/${levels.length}`,
+            )
+          }
+        })
+      }
+      if (player._hls?.on) attach()
+      else player.addEventListener('loadstart', attach, {once: true})
     }
 
     attributeChangedCallback(name: string) {
