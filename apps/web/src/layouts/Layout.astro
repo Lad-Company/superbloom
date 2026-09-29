@@ -193,7 +193,13 @@ const gaMode = preview
       };
 
       const runPageLoader = async (loader: HTMLElement) => {
-        const minVisibleMs = prefersReducedMotion() ? 0 : 400;
+        // Anti-flash floor only: when everything is cached the veil would lift
+        // within a frame and read as a flash, so keep a small minimum. It is
+        // not a design beat — the hero only registers as LCP once the veil
+        // lifts (Chrome excludes the opacity-0 reveal-gated paint), so a long
+        // floor directly delays LCP. The clock starts at script start (before
+        // the media wait), so on a slow network the media wait absorbs it.
+        const minVisibleMs = prefersReducedMotion() ? 0 : 120;
         const start = performance.now();
         await whenCriticalMediaReady(4000);
         const remaining = minVisibleMs - (performance.now() - start);
