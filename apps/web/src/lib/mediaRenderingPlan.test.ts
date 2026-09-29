@@ -191,6 +191,7 @@ describe('muxPosterRendering', () => {
 
   it('offers the full width ladder as srcset', () => {
     expect(rendering.srcset.split(', ')).toEqual([
+      'https://image.mux.com/abc123/thumbnail.webp?width=192&time=0 192w',
       'https://image.mux.com/abc123/thumbnail.webp?width=320&time=0 320w',
       'https://image.mux.com/abc123/thumbnail.webp?width=640&time=0 640w',
       'https://image.mux.com/abc123/thumbnail.webp?width=960&time=0 960w',
