@@ -100,14 +100,12 @@ export async function revealText(
   // Wrap line hosts so animated units can translate under an overflow clip.
   // The padding/margin pair lifts the clip edge 0.1em above the line box
   // without shifting layout, so the overshoot settle never clips ascenders.
-  // All writes go through one gsap.set so they batch in a single style pass
-  // instead of per-element assignments.
-  gsap.set(split.targets('lines'), {
-    overflow: 'clip',
-    display: 'block',
-    paddingTop: '0.1em',
-    marginTop: '-0.1em',
-  })
+  for (const line of split.targets('lines')) {
+    line.style.overflow = 'clip'
+    line.style.display = 'block'
+    line.style.paddingTop = '0.1em'
+    line.style.marginTop = '-0.1em'
+  }
 
   let tween: gsap.core.Tween | null = null
   let trigger: ScrollTrigger | null = null
@@ -120,7 +118,9 @@ export async function revealText(
   const build = () => {
     tween?.kill()
     const targets = split.targets(unit)
-    gsap.set(targets, {display: 'inline-block'})
+    for (const target of targets) {
+      target.style.display = 'inline-block'
+    }
     if (hasStarted) {
       // Commit the end-state directly so the entrance never replays.
       gsap.set(targets, {
@@ -130,7 +130,7 @@ export async function revealText(
       tween = null
       return
     }
-    gsap.set(targets, {willChange: 'transform'})
+    for (const target of targets) target.style.willChange = 'transform'
     const fromVars: gsap.TweenVars = {
       yPercent: unit === 'lines' ? 110 : 100,
     }
@@ -144,7 +144,7 @@ export async function revealText(
       stagger,
       paused: true,
       onComplete: () => {
-        gsap.set(targets, {willChange: 'auto'})
+        for (const target of targets) target.style.willChange = 'auto'
       },
     })
   }

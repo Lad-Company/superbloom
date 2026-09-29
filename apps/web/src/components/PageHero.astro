@@ -39,7 +39,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
         <div class="overlay">
           <div class="heading-stack">
             {eyebrow && <p class="type-section-heading hero-kicker">{eyebrow}</p>}
-            <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-unit-mobile="words" data-scroll="false">{heading}</h1>
+            <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-scroll="false">{heading}</h1>
           </div>
           {subheading && <p class="type-caption sub">{subheading}</p>}
         </div>
@@ -48,7 +48,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
   ) : isCase ? (
     <header class="hero-case">
       {eyebrow && <p class="case-eyebrow type-h5">{eyebrow}</p>}
-      <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-unit-mobile="words" data-scroll="false">{heading}</h1>
+      <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-scroll="false">{heading}</h1>
       {tags && tags.length > 0 && (
         <ul class="case-tags type-label" aria-label="Tags">
           {tags.map((tag) => (
@@ -59,7 +59,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     </header>
   ) : (
     <section class="hero-text">
-      <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-unit-mobile="words" data-scroll="false">{heading}</h1>
+      <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-scroll="false">{heading}</h1>
     </section>
   )
 }
