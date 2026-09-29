@@ -160,6 +160,22 @@ describe('MediaFrame playback profiles', () => {
     expect(source).toContain('@media (prefers-reduced-motion: reduce)')
     expect(source).toContain('transition: none')
   })
+
+  it('emits no SSR poster attribute on mux-video — the player poster is copied from the overlay img at upgrade', () => {
+    // A SSR `poster` takes one URL (no srcset), so every frame fetched its
+    // thumbnail twice. loadPlayer() copies the overlay poster's currentSrc
+    // instead — guaranteed cache hit.
+    expect(source).not.toMatch(/<mux-video[^>]*\sposter=/s)
+    expect(source).toContain('applyPlayerPoster')
+    expect(source).toContain("this.posterImg?.currentSrc || this.posterImg?.src")
+  })
+
+  it('supports deferPoster: src-less poster with data-* until promotePoster()', () => {
+    expect(source).toContain('deferPoster?: boolean')
+    expect(source).toContain('data-src={deferPoster ? videoPoster.src : undefined}')
+    expect(source).toContain('data-srcset={deferPoster ? videoPoster.srcset : undefined}')
+    expect(source).toContain('public promotePoster()')
+  })
 })
 
 describe('MediaFrame consumers conform to the new controls enum', () => {
@@ -195,5 +211,14 @@ describe('MediaFrame consumers conform to the new controls enum', () => {
       'utf8',
     )
     expect(source).not.toMatch(/<MediaFrame[^>]*\bcontrols=/)
+  })
+
+  it('Capes defers inactive frame posters and promotes them on chapter change', () => {
+    // The pinned stack sits inside the lazy-load threshold, so undeferred
+    // posters all fetch at first layout, ahead of the LCP.
+    const source = readFileSync(new URL('./blocks/Capes.astro', import.meta.url), 'utf8')
+    expect(source).toContain('deferPoster={i > 0}')
+    expect(source).toContain('promotePoster(i)')
+    expect(source).toContain('promotePoster(i + 1)')
   })
 })

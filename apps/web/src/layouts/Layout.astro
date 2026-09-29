@@ -80,6 +80,12 @@ const gaMode = preview
       type="font/woff2"
       crossorigin
     />
+    {/* The logo SVG is only referenced as a CSS mask-image (veil + nav), so
+       it is discovered at style resolution instead of during HTML parsing —
+       and on `/` it IS the LCP element (the full-viewport hero is excluded
+       as an LCP candidate, the H1 is opacity-0 for the Type Reveal). 4KB on
+       every page buys LCP discovery at parse time. */}
+    <link rel="preload" href="/superbloom-house-logo.svg" as="image" type="image/svg+xml" />
     {/* Warm the Mux hosts (poster thumbnails + HLS manifests) so video frames
        don't pay a fresh DNS+TLS round trip when the player upgrades. Only on
        pages that actually render Mux video — an unused preconnect is flagged

@@ -28,6 +28,9 @@ export interface VideoProjection {
   _type: 'mux.video'
   playbackId?: string | null
   aspectRatio?: string | null
+  /** Editor-picked poster frame (seconds) on the Mux asset in Sanity;
+   *  defaults to time=0 (see muxPosterRendering). */
+  thumbTime?: number | null
 }
 
 export type ProjectedAsset = ImageProjection | VideoProjection
@@ -72,6 +75,11 @@ interface Props {
    *  stacks full-viewport ambient loops that never need 1080p. */
   maxResolution?: MuxMaxResolution
   active?: boolean
+  /** Render the overlay poster with no `src`/`srcset` (data-* only) so it
+   *  fetches nothing until `promotePoster()` is called — used by the Capes
+   *  stack, whose eight lazy frames all sit inside the browser's lazy-load
+   *  threshold and would otherwise fetch eight thumbnails at first layout. */
+  deferPoster?: boolean
   controls?: MediaPlaybackProfile
   class?: string
 }
@@ -84,6 +92,7 @@ const {
   priority: priorityProp,
   maxResolution,
   active = true,
+  deferPoster = false,
   controls = 'none',
   class: className,
 } = Astro.props
@@ -128,7 +137,7 @@ const hasAsset =
   (asset?._type === 'mux.video' && Boolean(asset.playbackId))
 const videoPoster =
   asset?._type === 'mux.video' && asset.playbackId
-    ? muxPosterRendering(asset.playbackId, placement)
+    ? muxPosterRendering(asset.playbackId, placement, asset.thumbTime)
     : undefined
 const isVideo = asset?._type === 'mux.video' && Boolean(asset.playbackId)
 const showControls = isVideo && controls !== 'none'
@@ -180,11 +189,18 @@ const imageRendering =
   data-controls={controls}
 >
   {
+    /* Deferred posters render with data-* instead of src/srcset, so they
+       fetch nothing until promotePoster() restores them; a src-less <img>
+       reports complete === true, which keeps it out of the veil's critical-
+       media wait (Layout.astro) as well. `sizes` stays on the element so it
+       is already correct when promotion sets the srcset. */
     isVideo && videoPoster && (
       <img
         class="media-frame__poster"
-        src={videoPoster.src}
-        srcset={videoPoster.srcset}
+        src={deferPoster ? undefined : videoPoster.src}
+        srcset={deferPoster ? undefined : videoPoster.srcset}
+        data-src={deferPoster ? videoPoster.src : undefined}
+        data-srcset={deferPoster ? videoPoster.srcset : undefined}
         sizes={frameSizes}
         alt=""
         loading={plan.loading}
@@ -195,15 +211,15 @@ const imageRendering =
     )
   }
   {
-    /* The player poster covers the gap between the overlay poster's fade and
-       the first painted video frame (visual QA: poster="" flashed a blank
-       frame there). The attribute takes no srcset, so it gets the small fixed
-       rung (muxPosterRendering.playerSrc) — the placement-sized rung belongs
-       to the overlay <img>, which has a srcset. */
+    /* No SSR `poster` attribute: it takes exactly one URL (no srcset), so it
+       fetched a second copy of every frame's thumbnail. loadPlayer() instead
+       copies the overlay poster's resolved currentSrc onto the element
+       before upgrade — guaranteed cache hit — which still covers the
+       fade-to-first-frame gap (visual QA: poster="" flashed a blank frame
+       there). */
     isVideo && (
       <mux-video
         playback-id={asset?._type === 'mux.video' ? asset.playbackId ?? undefined : undefined}
-        poster={videoPoster?.playerSrc}
         metadata-video-title={title ?? undefined}
         stream-type="on-demand"
         muted
@@ -380,6 +396,7 @@ const imageRendering =
     private loadObserver: IntersectionObserver | null = null
     private playerLoading: Promise<void> | null = null
     private player: MuxVideoElement | null = null
+    private posterImg: HTMLImageElement | null = null
     private curatedPoster: HTMLImageElement | null = null
     private control: HTMLButtonElement | null = null
     private motionPreference: MediaQueryList | null = null
@@ -439,6 +456,7 @@ const imageRendering =
         // element, which happens on the deferred import below.
         playerElement._hlsConfig = AMBIENT_HLS_CONFIG
       }
+      this.posterImg = this.querySelector('.media-frame__poster') as HTMLImageElement | null
       this.curatedPoster = this.querySelector(
         '.media-frame__curated-poster',
       ) as HTMLImageElement | null
@@ -528,11 +546,16 @@ const imageRendering =
           // the full build still pulled gstatic cast_sender.js. Base doesn't
           // self-define, so register the element here.
           const {MuxVideoBaseElement} = await import('@mux/mux-video/base')
+          // Set the player poster before upgrade so playback-core forwards
+          // it to the native video element: the overlay poster's resolved
+          // rung, i.e. bytes the frame already fetched (see the mux-video
+          // comment in the template).
+          const player = this.querySelector('mux-video') as MuxVideoElement | null
+          if (player) this.applyPlayerPoster(player)
           if (!customElements.get('mux-video')) {
             customElements.define('mux-video', MuxVideoBaseElement)
           }
           if (!this.isConnected) return
-          const player = this.querySelector('mux-video') as MuxVideoElement | null
           if (!player) return
           this.player = player
 
@@ -587,6 +610,30 @@ const imageRendering =
         })()
       }
       return this.playerLoading
+    }
+
+    /** The player poster is the overlay poster's resolved rung — the same
+     *  bytes, so a cache hit instead of a second thumbnail request. A
+     *  deferred poster has no URL yet; promotePoster() reapplies then. */
+    private applyPlayerPoster(player?: MuxVideoElement | null) {
+      const target = player ?? this.player
+      if (!target || target.hasAttribute('poster')) return
+      const url = this.posterImg?.currentSrc || this.posterImg?.src
+      if (url) target.setAttribute('poster', url)
+    }
+
+    /** Restores a deferred poster's src/srcset so it fetches (see the
+     *  `deferPoster` prop). Idempotent, so callers can prefetch the next
+     *  frame's poster before it is shown. */
+    public promotePoster() {
+      const img = this.posterImg
+      if (!img?.dataset.src) return
+      // srcset before src so the no-srcset fallback never wins a fetch.
+      if (img.dataset.srcset) img.setAttribute('srcset', img.dataset.srcset)
+      img.setAttribute('src', img.dataset.src)
+      delete img.dataset.src
+      delete img.dataset.srcset
+      this.applyPlayerPoster()
     }
 
     attributeChangedCallback(name: string) {
