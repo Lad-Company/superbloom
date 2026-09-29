@@ -6,8 +6,6 @@ import type {ContentLayoutWidth} from './contentLayout'
 // Letter from the Editor, but the column widths are CMS-defined with the
 // case-study Content Layout widths (media + text must total full width).
 export interface ShopFeatureValue {
-  ctaLabel?: string | null
-  ctaHref?: string | null
   media?: {
     width?: ContentLayoutWidth | null
     aspectRatio?: MediaRatio | null
@@ -19,14 +17,9 @@ export interface ShopFeatureValue {
   } | null
 }
 
-/** Sanity blocks publishing a partial Featured Item (all four parts are
+/** Sanity blocks publishing a partial Featured Item (both parts are
    required once the section exists), so a published shop page either has a
    complete feature or none. Anything incomplete is legacy/draft data and
    must not render — nor suppress the Shop header. */
 export const isShopFeatureComplete = (featured: ShopFeatureValue | null | undefined): boolean =>
-  Boolean(
-    featured?.media?.media &&
-      featured?.text?.text?.length &&
-      featured?.ctaLabel &&
-      featured?.ctaHref,
-  )
+  Boolean(featured?.media?.media && featured?.text?.text?.length)

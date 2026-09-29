@@ -25,7 +25,7 @@ export const shopPage = defineType({
       title: 'Featured Item',
       type: 'object',
       description:
-        'Optional 50/50-style feature above the product grid. If you add the section, Media, Text, and the CTA are all required; Media and Text widths must total full width.',
+        'Optional 50/50-style feature above the product grid. If you add the section, Media and Text are both required and their widths must total full width.',
       fields: [
         defineField({
           name: 'media',
@@ -38,20 +38,6 @@ export const shopPage = defineType({
           title: 'Text',
           type: 'contentLayoutText',
           validation: (rule) => rule.required(),
-        }),
-        defineField({
-          name: 'ctaLabel',
-          title: 'CTA Label',
-          type: 'string',
-          validation: (rule) => rule.required(),
-        }),
-        defineField({
-          name: 'ctaHref',
-          title: 'CTA Destination',
-          type: 'url',
-          description: 'Where the CTA links — e.g. /shop/products/some-product or an external URL.',
-          validation: (rule) =>
-            rule.required().uri({allowRelative: true, scheme: ['http', 'https']}),
         }),
       ],
       validation: (rule) => rule.custom(validateShopFeaturedWidths),

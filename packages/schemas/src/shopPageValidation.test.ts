@@ -1,8 +1,8 @@
 /**
  * Document-level validation wiring for the Shop Page singleton, through the
  * real Studio validation engine. The Featured Item is optional, but once
- * present it must be complete: one media block, one text block, and a CTA —
- * with media + text widths totalling full width.
+ * present it must be complete: one media block and one text block, with
+ * media + text widths totalling full width.
  */
 import {describe, expect, it} from 'vitest'
 import {errorMarkers, mediaBoxImage, textBlock} from './validationHarness'
@@ -31,8 +31,6 @@ function baseShopPage(overrides: Record<string, unknown> = {}) {
 const completeFeatured = () => ({
   media: mediaBlock(),
   text: textBlock_(),
-  ctaLabel: 'Shop the drop',
-  ctaHref: '/shop/products/featured-product',
 })
 
 describe('shop page document validation', () => {
@@ -44,21 +42,12 @@ describe('shop page document validation', () => {
     expect(await errorMarkers(baseShopPage({featured: completeFeatured()}))).toEqual([])
   })
 
-  it('accepts a relative or absolute CTA destination', async () => {
-    expect(
-      await errorMarkers(
-        baseShopPage({featured: {...completeFeatured(), ctaHref: 'https://example.com/drop'}}),
-      ),
-    ).toEqual([])
-  })
-
   it('requires every featured field once the section exists', async () => {
-    const markers = await errorMarkers(baseShopPage({featured: {ctaLabel: 'Shop the drop'}}))
+    const markers = await errorMarkers(baseShopPage({featured: {}}))
     expect(markers).toEqual(
       expect.arrayContaining([
         {path: ['featured', 'media'], message: expect.stringContaining('Required')},
         {path: ['featured', 'text'], message: expect.stringContaining('Required')},
-        {path: ['featured', 'ctaHref'], message: expect.stringContaining('Required')},
       ]),
     )
   })

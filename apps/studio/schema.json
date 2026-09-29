@@ -1065,20 +1065,6 @@
                 "name": "contentLayoutText"
               },
               "optional": true
-            },
-            "ctaLabel": {
-              "type": "objectAttribute",
-              "value": {
-                "type": "string"
-              },
-              "optional": true
-            },
-            "ctaHref": {
-              "type": "objectAttribute",
-              "value": {
-                "type": "string"
-              },
-              "optional": true
             }
           }
         },

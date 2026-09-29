@@ -521,8 +521,6 @@ export const shopPageQuery = defineQuery(`
     collectionHandle,
     "hoverColor": hoverColor.hex,
     featured{
-      ctaLabel,
-      ctaHref,
       media{
         width,
         aspectRatio,

@@ -32,6 +32,8 @@
     "migrate:home-why-cta-href": "pnpm run backup:home-why-cta-href && sanity exec migrations/remove-home-why-cta-href.ts --with-user-token",
     "migrate:carousel-media": "sanity exec migrations/migrate-carousel-media.ts --with-user-token",
     "migrate:shop-product-overrides": "sanity exec migrations/remove-shop-product-overrides.ts --with-user-token",
+    "backup:shop-featured-cta": "sanity exec migrations/backup-shop-featured-cta.ts --with-user-token",
+    "migrate:shop-featured-cta": "pnpm run backup:shop-featured-cta && sanity exec migrations/remove-shop-featured-cta.ts --with-user-token",
     "migrate:case-study-rows": "sanity exec migrations/migrate-case-study-narrative-sections.ts",
     "backup:text-block-headings": "sanity exec migrations/backup-text-block-headings.ts --with-user-token",
     "migrate:text-block-headings": "pnpm run backup:text-block-headings && sanity exec migrations/remove-text-block-headings.ts --with-user-token",
