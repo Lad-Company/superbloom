@@ -88,7 +88,9 @@ describe('planMediaRendering — priority bundle', () => {
       priority: true,
       loading: 'eager',
       fetchpriority: 'high',
-      preload: 'auto',
+      // metadata, not auto: fetch the manifest + init segment up front but
+      // let the intersection-driven play() pull the actual media segments.
+      preload: 'metadata',
     })
   })
 
@@ -104,6 +106,43 @@ describe('planMediaRendering — priority bundle', () => {
   it('an explicit priority overrides the placement default (carousel initial slide)', () => {
     expect(planMediaRendering({context: 'split'}, {priority: true}).loading).toBe('eager')
     expect(planMediaRendering({context: 'hero'}, {priority: false}).preload).toBe('none')
+  })
+})
+
+describe('planMediaRendering — maxResolution caps the HLS rendition ladder', () => {
+  it.each<[string, MediaPlacement, '1080p' | '720p']>([
+    ['uncapped hero', {context: 'hero'}, '1080p'],
+    ['capped hero', {context: 'hero', capPx: 1440}, '1080p'],
+    ['split', {context: 'split'}, '1080p'],
+    ['full layout block', {context: 'layoutBlock', width: 'full'}, '1080p'],
+    ['unset-width layout block', {context: 'layoutBlock'}, '1080p'],
+    ['full-bleed layout block', {context: 'layoutBlock', width: 'full', fullBleed: true}, '1080p'],
+    ['grid layout block', {context: 'layoutBlock', width: '1/3'}, '720p'],
+    [
+      'grid card',
+      {context: 'card', settings: {cardWidth: '1/2', mediaAspectRatio: '16:9', infoPosition: 'below'}},
+      '720p',
+    ],
+    [
+      'rail card',
+      {
+        context: 'card',
+        settings: {cardWidth: 'full', mediaAspectRatio: '16:9', infoPosition: 'below'},
+        rail: true,
+      },
+      '720p',
+    ],
+    ['fixed frame', {context: 'fixed', px: {small: 96, large: 210}}, '720p'],
+  ])('%s gets %s', (_name, placement, expected) => {
+    expect(planMediaRendering(placement).maxResolution).toBe(expected)
+  })
+
+  it('an explicit override beats the placement default (Capes ambient stack)', () => {
+    expect(
+      planMediaRendering({context: 'layoutBlock', width: 'full'}, {maxResolution: '720p'})
+        .maxResolution,
+    ).toBe('720p')
+    expect(planMediaRendering({context: 'card', settings: {cardWidth: '1/2', mediaAspectRatio: '16:9', infoPosition: 'below'}}, {maxResolution: '1080p'}).maxResolution).toBe('1080p')
   })
 })
 
@@ -187,6 +226,21 @@ describe('muxPosterRendering', () => {
     expect(muxPosterRendering('abc123', placement).src).toBe(
       `https://image.mux.com/abc123/thumbnail.webp?width=${width}&time=0`,
     )
+  })
+
+  it('gives the player poster attribute a small fixed rung, not the placement rung', () => {
+    // The <mux-video poster> takes one URL and only shows behind the overlay
+    // poster's fade-to-first-frame — a placement-sized thumbnail there is
+    // wasted bytes (mobile fetched width=1600 posters for every video).
+    expect(muxPosterRendering('abc123', {context: 'hero'}).playerSrc).toBe(
+      'https://image.mux.com/abc123/thumbnail.webp?width=640&time=0',
+    )
+    expect(
+      muxPosterRendering('abc123', {
+        context: 'card',
+        settings: {cardWidth: '1/3', mediaAspectRatio: '16:9', infoPosition: 'below'},
+      }).playerSrc,
+    ).toBe('https://image.mux.com/abc123/thumbnail.webp?width=640&time=0')
   })
 
   it('offers the full width ladder as srcset', () => {

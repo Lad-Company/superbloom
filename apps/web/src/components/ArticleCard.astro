@@ -36,6 +36,8 @@ interface Props {
   showCopy?: boolean
   class?: string
   rail?: boolean
+  /** Lead card above the fold (LCP candidate) — see EditorialCard. */
+  priority?: boolean
   settings?: PartialContentCardSettings
   listSettings?: PartialContentCardSettings
   globalSettings?: PartialContentCardSettings
@@ -47,6 +49,7 @@ const {
   showCopy = false,
   class: className,
   rail = false,
+  priority,
   settings,
   listSettings,
   globalSettings,
@@ -64,6 +67,7 @@ const summary = item.overview
   title={item.title}
   media={item.cardMedia}
   rail={rail}
+  priority={priority}
   contentSettings={item}
   settings={settings}
   listSettings={listSettings}

@@ -28,14 +28,23 @@ export type MediaPlacement =
   | {context: 'split'; collapseAt?: 'desktop' | 'small'; vw?: number}
   | {context: 'fixed'; px: {small: number; large: number}}
 
+/** Mux `max_resolution` playback modifier — caps the HLS rendition ladder so
+ *  small frames never pull 4K segments. Large canvas placements (hero,
+ *  split, full layout blocks) keep 1080p; cards and fixed frames render far
+ *  below 720p at any viewport, so 720p is lossless there. */
+export type MuxMaxResolution = '1080p' | '720p'
+
 export interface MediaRenderingPlan {
   sizes: string
   /** Resolved load priority: the placement's default unless overridden. */
   priority: boolean
   loading: 'eager' | 'lazy'
   fetchpriority: 'high' | 'auto'
-  /** `<mux-player preload>` value paired with the priority. */
-  preload: 'auto' | 'none'
+  /** `<mux-video preload>` value paired with the priority. Priority frames
+   *  fetch the manifest and init segment (`metadata`) so `play()` on
+   *  intersection starts fast; `auto` pulled whole renditions up front. */
+  preload: 'metadata' | 'none'
+  maxResolution: MuxMaxResolution
 }
 
 const CARD_WIDTH_FRACTIONS: Record<CardWidth, number> = {
@@ -129,9 +138,22 @@ const sizesFor = (placement: MediaPlacement): string => {
   }
 }
 
+const maxResolutionFor = (placement: MediaPlacement): MuxMaxResolution => {
+  switch (placement.context) {
+    case 'hero':
+    case 'split':
+      return '1080p'
+    case 'layoutBlock':
+      return !placement.width || placement.width === 'full' ? '1080p' : '720p'
+    case 'card':
+    case 'fixed':
+      return '720p'
+  }
+}
+
 export const planMediaRendering = (
   placement: MediaPlacement,
-  options?: {priority?: boolean},
+  options?: {priority?: boolean; maxResolution?: MuxMaxResolution},
 ): MediaRenderingPlan => {
   const priority = options?.priority ?? placement.context === 'hero'
   return {
@@ -139,15 +161,20 @@ export const planMediaRendering = (
     priority,
     loading: priority ? 'eager' : 'lazy',
     fetchpriority: priority ? 'high' : 'auto',
-    preload: priority ? 'auto' : 'none',
+    preload: priority ? 'metadata' : 'none',
+    maxResolution: options?.maxResolution ?? maxResolutionFor(placement),
   }
 }
 
 export interface MuxPosterRendering {
-  /** Placement-rung URL — the `<mux-player poster>` attribute (which takes
-   *  exactly one URL) and the poster `<img src>` fallback under the srcset. */
+  /** Placement-rung URL — the poster `<img src>` fallback under the srcset. */
   src: string
   srcset: string
+  /** The `<mux-video poster>` attribute takes exactly one URL (no srcset) and
+   *  is only ever glimpsed behind the overlay poster's fade-to-first-frame,
+   *  so it rides the smallest useful rung rather than the placement rung —
+   *  a 1440px thumbnail fetched for a mobile card is pure waste. */
+  playerSrc: string
 }
 
 const muxPosterUrl = (playbackId: string, width: number): string =>
@@ -185,12 +212,16 @@ const posterTargetPx = (placement: MediaPlacement): number => {
 const posterRung = (targetPx: number): number =>
   IMAGE_LADDER.find((width) => width >= targetPx) ?? IMAGE_LADDER[IMAGE_LADDER.length - 1]
 
+/** The player poster flashes for a frame or two at most, under the overlay
+ *  poster's fade — 640px covers even that glimpse on any placement. */
+const PLAYER_POSTER_RUNG = 640
+
 /**
  * Sized Mux poster thumbnails riding the shared width ladder; the poster
  * `<img sizes>` comes from the same plan as the frame, so the browser picks
  * a rung matching the placement instead of downloading a full-res frame.
- * `src` rides the placement's own rung because the player poster attribute
- * gets no srcset.
+ * `src` rides the placement's own rung as the no-srcset fallback; the player
+ * `poster` attribute gets the small fixed rung (see `playerSrc`).
  */
 export const muxPosterRendering = (
   playbackId: string,
@@ -199,5 +230,6 @@ export const muxPosterRendering = (
   return {
     src: muxPosterUrl(playbackId, posterRung(posterTargetPx(placement))),
     srcset: IMAGE_LADDER.map((w) => `${muxPosterUrl(playbackId, w)} ${w}w`).join(', '),
+    playerSrc: muxPosterUrl(playbackId, PLAYER_POSTER_RUNG),
   }
 }

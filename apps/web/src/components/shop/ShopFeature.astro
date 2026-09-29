@@ -34,10 +34,13 @@ const textColumns = WIDTH_COLUMNS[textBlock?.width ?? '1/2']
       style={`--media-columns: ${mediaColumns}; --text-columns: ${textColumns}`}
     >
       <div class="shop-feature-media">
+        {/* Above the fold on /shop — priority keeps the poster <img> eager
+            so it, not the <video> first frame, is the LCP candidate. */}
         <MediaFrame
           media={mediaBlock?.media}
           ratio={mediaBlock?.aspectRatio ?? '1:1'}
           placement={{context: 'layoutBlock', width: mediaBlock?.width ?? '1/2', fullBleed: false}}
+          priority
         />
       </div>
       <div class="shop-feature-copy">

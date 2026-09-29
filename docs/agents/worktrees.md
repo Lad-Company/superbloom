@@ -11,7 +11,7 @@ and **text/scroll animations do not run**. No errors in the server log.
 **Cause:** a dev server was killed (or crashed) while Vite was writing its
 pre-bundled dependency cache (`apps/web/node_modules/.vite`). Later servers reuse
 the half-written cache and return **504 Outdated Optimize Dep** for pre-bundled
-deps. In this repo that kills `@mux/mux-player` (all video) and `gsap` (all
+deps. In this repo that kills `@mux/mux-video/base` (all video) and `gsap` (all
 motion), while plain TS modules still transform fine.
 
 **Diagnose** (pull a dep URL out of any served component script, then probe it):
@@ -43,7 +43,7 @@ Gotchas seen in practice:
 - **A partial poisoning can pass the mux+gsap probe.** A poisoned `lenis.js`
   (504) strands the whole Layout module graph and the page hangs on the loading
   veil forever, even with mux and gsap at 200. Probe the full dep set
-  (`gsap`, `gsap/ScrollTrigger`, `lenis`, `split-type`, `@mux/mux-player`), and
+  (`gsap`, `gsap/ScrollTrigger`, `lenis`, `split-type`, `@mux/mux-video/base`), and
   re-fetch the module URLs right before probing — hashes rotate when the
   optimizer re-runs, so stale references 504 transiently during re-optimization.
 
@@ -56,6 +56,6 @@ Gotchas seen in practice:
 3. `pnpm install` in the worktree — `node_modules` is not shared.
 4. `pnpm web` auto-increments when a port is taken (4321, 4322, ...). Read the
    actual URL from the server log and report that one, not the requested port.
-5. Before handing a server to a human, probe one `@mux/mux-player` and one
+5. Before handing a server to a human, probe one `@mux/mux-video/base` and one
    `gsap` dep URL (above) and confirm 200 — this is the fast check that video
    and motion will actually work in the browser.
