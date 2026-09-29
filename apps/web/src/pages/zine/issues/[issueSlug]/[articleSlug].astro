@@ -8,6 +8,7 @@ import {fetchSafe, getSanityClient, rewriteToServerError} from '../../../../lib/
 import {isPreviewRequest} from '../../../../lib/preview'
 import {setContentCache} from '../../../../lib/cacheHeaders'
 import {zineArticleBySlugQuery} from '../../../../lib/queries'
+import {containsMuxVideo} from '../../../../lib/containsMuxVideo'
 import {seoDescription, seoImage} from '../../../../lib/seo'
 
 const issueSlug = Astro.params.issueSlug
@@ -35,6 +36,7 @@ const moreArticles = (result.articles ?? []).filter((item) => item.slug !== arti
   image={seoImage(article.leadMedia)}
   canonicalUrl={`/zine/issues/${result.issueSlug}/${article.slug}`}
   navRole="light"
+  hasVideo={containsMuxVideo(result)}
 >
   <ArticleDetail article={article} />
   <ZineStoriesRail

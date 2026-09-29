@@ -12,6 +12,7 @@ import TypeFilter from '../../components/TypeFilter.astro'
 import SurfaceSection from '../../components/SurfaceSection.astro'
 import {parseArticleTypeFilter} from '../../lib/articleTypes'
 import {indexPageQuery, indexViewAllNewestQuery, indexViewAllOldestQuery} from '../../lib/queries'
+import {containsMuxVideo} from '../../lib/containsMuxVideo'
 import {fetchSafe, getSanityClient, rewriteToServerError} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {setContentCache} from '../../lib/cacheHeaders'
@@ -70,7 +71,7 @@ const queryFor = (nextPage: number, nextSort = sort) => {
 }
 ---
 
-<Layout title="Index" description={pageHeader} canonicalUrl="/index" navRole="light">
+<Layout title="Index" description={pageHeader} canonicalUrl="/index" navRole="light" hasVideo={containsMuxVideo([indexPage, items])}>
   <SurfaceSection role="light">
     <main>
       <PageHero heading={pageHeader} id="featured-heading" />

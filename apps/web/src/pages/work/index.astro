@@ -11,6 +11,7 @@ import {fetchSafe, getSanityClient, rewriteToServerError} from '../../lib/sanity
 import {isPreviewRequest} from '../../lib/preview'
 import {setContentCache} from '../../lib/cacheHeaders'
 import {workIndexQuery, caseStudiesNewestQuery} from '../../lib/queries'
+import {containsMuxVideo} from '../../lib/containsMuxVideo'
 import {orderCaseStudiesByOverrides} from '../../lib/workIndexOrder'
 import type {CaseStudiesNewestQueryResult, WorkIndexQueryResult} from '../../sanity.types'
 import type {PartialContentCardSettings} from '../../lib/contentCard'
@@ -58,7 +59,7 @@ const queryFor = (nextPage: number) => {
 const heroHeading = workIndex?.heroHeading ?? 'Unexpected minds. Unignorable work.'
 ---
 
-<Layout title="Our Work" description={heroHeading} navRole="dark">
+<Layout title="Our Work" description={heroHeading} navRole="dark" hasVideo={containsMuxVideo([workIndex, caseStudies])}>
   <SurfaceSection role="dark">
     <PageHero heading={heroHeading} />
 

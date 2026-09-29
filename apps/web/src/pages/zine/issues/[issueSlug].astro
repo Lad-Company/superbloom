@@ -8,6 +8,7 @@ import {fetchSafe, getSanityClient, rewriteToServerError} from '../../../lib/san
 import {isPreviewRequest} from '../../../lib/preview'
 import {setContentCache} from '../../../lib/cacheHeaders'
 import {issueArchiveQuery, issueBySlugQuery, zineLandingQuery} from '../../../lib/queries'
+import {containsMuxVideo} from '../../../lib/containsMuxVideo'
 import {seoDescription, seoImage} from '../../../lib/seo'
 
 const issueSlug = Astro.params.issueSlug
@@ -49,6 +50,7 @@ if (pastIssues === undefined) return rewriteToServerError(Astro)
   image={seoImage(issue.heroMedia)}
   canonicalUrl={`/zine/issues/${issue.slug}`}
   navRole="dark"
+  hasVideo={containsMuxVideo([issue, pastIssues])}
 >
   {
     isEmbedOnly ? (

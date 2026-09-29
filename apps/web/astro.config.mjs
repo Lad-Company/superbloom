@@ -27,6 +27,14 @@ export default defineConfig({
   site: 'https://superbloomhouse.com',
   output: 'server',
   adapter: vercel(),
+  build: {
+    // Inline every page stylesheet into the served HTML. Each page ships 3–5
+    // small stylesheets (≈10KB total — __uno, PageHero, Footer, page CSS), so
+    // the default 'auto' (inline only below the 4KB assetsInlineLimit) left
+    // several render-blocking requests; inlining trades <12KB of HTML for one
+    // fewer round trip on first paint (Lighthouse render-blocking-insight).
+    inlineStylesheets: 'always',
+  },
   integrations: [
     UnoCSS(),
     sentry({

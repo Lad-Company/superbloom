@@ -463,7 +463,12 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    a slight overshoot settle (`back.out`), springing rather than smacking to a
    stop. Stat Reveal entrances follow the same rule; count-ups stay linear.
 4. **Three-Phase Loading** — skeleton → single progress cue → content release;
-   only for waits >400ms; never spinner + skeleton together.
+   only for waits >400ms; never spinner + skeleton together. The first-load
+   veil (`PageLoader`) follows the same rule with two thresholds: it waits for
+   fonts and every image in the initial viewport (4s cap), lifts immediately if
+   that took under ~100ms (never perceptibly shown), otherwise holds to a 400ms
+   beat so it reads as intentional rather than a flicker. Media frames never
+   render alt text visually while loading; the placeholder gradient shows.
 5. **Route Transition** — full-viewport, reserved exclusively for navbar
    destinations; other navigations keep local motion.
 6. **Pinned Storytelling** — bounded ScrollTrigger chapter sequence (2–4 chapters,

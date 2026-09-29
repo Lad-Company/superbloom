@@ -34,7 +34,14 @@ const mockChain = (finalUrl: string) => {
 
 describe('imageCropping helpers', () => {
   it('exposes the canonical Sanity CDN ladder', () => {
-    expect(IMAGE_LADDER).toEqual([320, 640, 960, 1280, 1600, 1920, 2560])
+    expect(IMAGE_LADDER).toEqual([192, 320, 640, 960, 1280, 1600, 1920, 2560])
+  })
+
+  it('starts the ladder at 192 so 96px fixed thumbnails have a DPR-2 rung', () => {
+    // Zine Past Issues thumbnails render in a 96px CSS slot; at DPR 2 the
+    // browser needs 192px and previously had to take the 320 rung
+    // (Lighthouse image-delivery-insight: "larger than it needs to be").
+    expect(IMAGE_LADDER[0]).toBe(96 * 2)
   })
 
   it('classifies SVG images by mime type', () => {

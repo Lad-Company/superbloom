@@ -8,6 +8,7 @@ import {listProducts} from '../../lib/shopify'
 import {fetchSafe, getSanityClient} from '../../lib/sanity'
 import {isPreviewRequest} from '../../lib/preview'
 import {shopPageQuery} from '../../lib/queries'
+import {containsMuxVideo} from '../../lib/containsMuxVideo'
 
 // CMS page settings (heading, grid collection, hover fill, optional feature
 // above the grid); a CMS outage never takes the shop down with it — the grid
@@ -29,7 +30,7 @@ try {
 }
 ---
 
-<Layout title="Shop | Superbloom House" navRole="dark">
+<Layout title="Shop | Superbloom House" navRole="dark" hasVideo={containsMuxVideo(shopPage)}>
   <main>
     <PageHero heading={shopPage?.heading ?? 'Shop'} />
     <ShopFeature featured={shopPage?.featured ?? null} />
