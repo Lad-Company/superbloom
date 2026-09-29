@@ -5,6 +5,8 @@ import TagList from '../../../components/TagList.astro'
 import Button from '../../../components/Button.astro'
 import SelectDropdown from '../../../components/SelectDropdown.astro'
 import {getProduct} from '../../../lib/shopify'
+import {shopifyImageRendering} from '../../../lib/shopifyImages'
+import {BREAKPOINTS} from '../../../lib/breakpoints'
 
 const handle = Astro.params.handle
 const product = handle ? await getProduct(handle).catch(() => null) : null
@@ -13,16 +15,30 @@ const initialVariant =
   product.variants.find((variant) => variant.availableForSale) ?? product.variants[0]
 const formatMoney = (amount: string, currency: string) =>
   new Intl.NumberFormat('en-US', {style: 'currency', currency}).format(Number(amount))
+// Full width below --bp-small (32px side insets), the left half of the
+// two-col grid above (32px insets + the 96px --space-xl column gap).
+const DETAIL_SIZES = `(max-width: ${BREAKPOINTS.smallMax}px) calc(100vw - 64px), calc((100vw - 160px) / 2)`
+const detailImage = product.featuredImage
+  ? shopifyImageRendering(product.featuredImage.url, {nativeWidth: product.featuredImage.width})
+  : null
 ---
 
-<Layout title={`${product.title} | Shop | Superbloom House`} navRole="light">
+<Layout
+  title={`${product.title} | Shop | Superbloom House`}
+  navRole="light"
+  preconnects={['https://cdn.shopify.com']}
+>
   <main class="detail" data-product-detail data-variants={JSON.stringify(product.variants)}>
     <div class="image">
       {
-        product.featuredImage ? (
+        product.featuredImage && detailImage ? (
           <img
-            src={product.featuredImage.url}
+            src={detailImage.src}
+            srcset={detailImage.srcset}
+            sizes={DETAIL_SIZES}
             alt={product.featuredImage.altText ?? product.title}
+            width={product.featuredImage.width ?? undefined}
+            height={product.featuredImage.height ?? undefined}
           />
         ) : (
           <div class="placeholder" />
