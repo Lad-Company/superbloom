@@ -133,6 +133,16 @@ const gaMode = preview
     <ClientRouter />
     <script is:inline>
       document.documentElement.classList.add('js');
+      // The veil is SSR-painted, so the only way to *not* show it is to decide
+      // before first paint. Once a visitor has sat through it in this tab
+      // (flag set on lift), reloads and back/forward skip it outright — their
+      // assets are warm and a veil that fades in and straight back out reads
+      // as a flicker, not a beat. Fresh tabs / sessions still get the beat.
+      try {
+        if (sessionStorage.getItem('sbh:veil-seen')) {
+          document.documentElement.setAttribute('data-veil-skip', '');
+        }
+      } catch (e) {}
     </script>
     <style is:global>
       /* Route Transition — native View Transition swipe: the outgoing page lifts
@@ -261,14 +271,28 @@ const gaMode = preview
       const VEIL_IMPERCEPTIBLE_MS = 100;
       const VEIL_BEAT_MS = 400;
       const runPageLoader = async (loader: HTMLElement) => {
+        // Skipped before paint (see the inline head script): nothing to wait
+        // for, nothing to fade — just release the reveal.
+        if (document.documentElement.hasAttribute('data-veil-skip')) {
+          loader.setAttribute('data-loader-instant', '');
+          loader.setAttribute('data-loader-done', '');
+          return;
+        }
         const start = performance.now();
         await whenCriticalMediaReady(4000);
         const elapsed = performance.now() - start;
         if (!prefersReducedMotion() && elapsed > VEIL_IMPERCEPTIBLE_MS) {
           const remaining = VEIL_BEAT_MS - elapsed;
           if (remaining > 0) await wait(remaining);
+        } else {
+          // Never perceptibly shown: a 600ms fade-out would itself be the
+          // flicker, so drop it.
+          loader.setAttribute('data-loader-instant', '');
         }
         loader.setAttribute('data-loader-done', '');
+        try {
+          sessionStorage.setItem('sbh:veil-seen', '1');
+        } catch {}
       };
       // Recorded on astro:before-preparation so page-load can tell fresh
       // navigations (land at the top) from history traversal (browser restores

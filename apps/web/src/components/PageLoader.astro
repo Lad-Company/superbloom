@@ -4,7 +4,9 @@
 // fonts and above-the-fold media are ready, so visitors never watch media
 // fold in. Hidden entirely without JS (no-JS/SEO always see the real page) and
 // dismissed immediately on View Transition navigations (the route swipe owns
-// those), so it only ever runs on a genuine hard load.
+// those), so it only ever runs on a genuine hard load. Within a tab it runs
+// once: after the first lift a sessionStorage flag lets reloads and
+// back/forward skip it before paint (`data-veil-skip`).
 ---
 
 <div class="page-loader" data-page-loader aria-hidden="true">
@@ -37,6 +39,18 @@
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+  }
+
+  /* Lifted before it was ever perceptible: skip the fade so the lift itself
+     doesn't read as a flicker. */
+  html.js .page-loader[data-loader-instant] {
+    transition: none;
+  }
+
+  /* Repeat load in this tab (sessionStorage flag read before first paint in
+     Layout's inline head script): never painted at all. */
+  html.js[data-veil-skip] .page-loader {
+    display: none;
   }
 
   .page-loader__cue {

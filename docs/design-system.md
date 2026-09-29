@@ -466,8 +466,9 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    only for waits >400ms; never spinner + skeleton together. The first-load
    veil (`PageLoader`) follows the same rule with two thresholds: it waits for
    fonts and every image in the initial viewport (4s cap), lifts immediately if
-   that took under ~100ms (never perceptibly shown), otherwise holds to a 400ms
-   beat so it reads as intentional rather than a flicker. Media frames never
+   that took under ~100ms (never perceptibly shown, no fade), otherwise holds
+   to a 400ms beat so it reads as intentional rather than a flicker. It runs
+   once per tab: reloads and back/forward skip it before paint. Media frames never
    render alt text visually while loading; the placeholder gradient shows.
 5. **Route Transition** — full-viewport, reserved exclusively for navbar
    destinations; other navigations keep local motion.
