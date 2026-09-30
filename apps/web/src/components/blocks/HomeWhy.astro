@@ -58,9 +58,8 @@ const {headline, body, ctaLabel, media} = Astro.props
     margin: 0;
     max-width: 34ch;
   }
-  .visual {
-    padding-top: var(--space-xs);
-  }
+  /* Media top sits flush with the text block's top — the same vertical
+     alignment as the homepage Zine 50/50 (Figma home composition). */
   @media (--bp-below-desktop) {
     .why {
       grid-template-columns: 1fr;
@@ -71,7 +70,6 @@ const {headline, body, ctaLabel, media} = Astro.props
        data-motion-text reveal is element-scoped, so reordering is safe. */
     .visual {
       order: -1;
-      padding-top: 0;
     }
   }
   @media (--bp-small) {
