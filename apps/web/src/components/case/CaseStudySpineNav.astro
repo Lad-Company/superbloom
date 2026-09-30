@@ -149,6 +149,22 @@ import { caseStudySections } from '../../lib/caseStudySections';
     background: var(--bg);
     color: var(--fg);
     scrollbar-width: none;
+    /* The slide rides the shy bar's own ramp so the dock reads as one piece
+       of chrome moving, not a second animation chasing it. */
+    transition: transform var(--motion-quick) var(--motion-ease-out);
+  }
+  /* While the shy bar is revealed it owns the viewport's top edge (fixed,
+     z-30, same strip this sticky nav pins to): its frost ghosts the tab
+     text and the bar eats every tap meant for the chapters. Dock the strip
+     beneath the bar by its height (--shy-bar-h, published by lib/shyNav.ts)
+     while revealed; the offset lifts when the bar hides. */
+  :global(body:has(.navigation.is-shy.is-revealed)) .spine-nav {
+    transform: translateY(var(--shy-bar-h, 0px));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spine-nav {
+      transition: none;
+    }
   }
   .spine-nav::-webkit-scrollbar {
     display: none;

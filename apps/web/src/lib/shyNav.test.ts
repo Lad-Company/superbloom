@@ -95,4 +95,19 @@ describe('shyNav theme awareness', () => {
     await scrollTo(90)
     expect(nav.classList.contains('is-revealed')).toBe(true)
   })
+
+  it('publishes the bar height as --shy-bar-h while revealed, so top-edge page chrome can dock beneath it', async () => {
+    // The case-study spine nav pins sticky at top: 0 — the same strip the
+    // revealed shy bar (fixed, z-30) occupies. It docks beneath the bar via
+    // translateY(var(--shy-bar-h)); this var is the contract.
+    stubMatchMedia(false)
+    Object.defineProperty(nav, 'offsetHeight', {value: 88, configurable: true})
+    const {initShyNav} = await import('./shyNav')
+    initShyNav()
+
+    await reveal()
+
+    expect(nav.classList.contains('is-revealed')).toBe(true)
+    expect(document.documentElement.style.getPropertyValue('--shy-bar-h')).toBe('88px')
+  })
 })
