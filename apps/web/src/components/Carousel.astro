@@ -10,8 +10,8 @@ interface Props {
   /** Accessible name for the carousel region; defaults to "Carousel". */
   label?: string | null
   /** Display variant: 'full' bleeds edge-to-edge with the controls centered
-   *  below; 'textRight'/'textLeft' give the carousel 3/4 of the row with a
-   *  descriptive 1/4 text box beside it and the controls at the carousel's
+   *  below; 'textRight'/'textLeft' give the carousel 2/3 of the row with a
+   *  descriptive 1/3 text box beside it and the controls at the carousel's
    *  bottom inner corner. Documents saved before the layout field existed
    *  render as 'full'. */
   layout?: CarouselLayout | null
@@ -388,7 +388,10 @@ const slideNumber = (index: number) =>
 
   /* Split layouts: the carousel block always spans the row's full width, so
      this inner 12-column grid (same gutter) aligns with the page grid — the
-     stage takes 3/4, the text box 1/4, top-aligned. */
+     stage takes 2/3, the text box 1/3, top-aligned. The stage's text-side
+     edge lands exactly on the narrative section copy column (cols 5–12 /
+     1–8), so the carousel reads the same width as the chapter text above
+     it. */
   .carousel[data-layout='textRight'],
   .carousel[data-layout='textLeft'] {
     display: grid;
@@ -415,21 +418,21 @@ const slideNumber = (index: number) =>
   }
 
   .carousel[data-layout='textRight'] .stage {
-    grid-column: 1 / 10;
+    grid-column: 1 / 9;
     margin-left: calc(-1 * var(--page-inset));
   }
 
   .carousel[data-layout='textRight'] .aside {
-    grid-column: 10 / -1;
+    grid-column: 9 / -1;
   }
 
   .carousel[data-layout='textLeft'] .stage {
-    grid-column: 4 / -1;
+    grid-column: 5 / -1;
     margin-right: calc(-1 * var(--page-inset));
   }
 
   .carousel[data-layout='textLeft'] .aside {
-    grid-column: 1 / 4;
+    grid-column: 1 / 5;
   }
 
   .aside {

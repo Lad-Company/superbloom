@@ -408,7 +408,13 @@ const links = [
   }
   .navigation.is-shy {
     position: fixed;
-    transform: translateY(-110%);
+    /* Hidden just past its own height (the 100% already covers the bottom
+       border; +2px is fractional-rounding insurance). The case-study spine
+       nav docks beneath the bar by exactly --shy-bar-h on the same 240ms
+       ramp, so the bar's travel must match its own height: the old -110%
+       made the bar travel 10% farther than the strip, opening a ~7px wedge
+       of page content between the two mid-slide. */
+    transform: translateY(calc(-100% - 2px));
     /* The hairline below the bar uses the shared border recipe (1px, fg at
        20%). */
     border-bottom: 1px solid var(--fg-20);
