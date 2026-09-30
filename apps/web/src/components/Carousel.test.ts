@@ -128,18 +128,20 @@ describe('Carousel', () => {
     expect(source).toContain('justify-content: flex-start')
   })
 
-  it('supports a 3/4 carousel with a top-aligned 1/4 text box on either side', () => {
+  it('supports a 2/3 carousel with a top-aligned 1/3 text box on either side', () => {
     expect(source).toContain('data-layout={layout}')
     expect(source).toContain("layout === 'textRight'")
     expect(source).toContain("layout === 'textLeft'")
     expect(source).toContain('<PortableText')
     expect(source).toContain('align-items: start')
-    // textRight: carousel columns 1–9, text columns 10–12.
-    expect(source).toContain('grid-column: 1 / 10')
-    expect(source).toContain('grid-column: 10 / -1')
-    // textLeft: text columns 1–3, carousel columns 4–12.
-    expect(source).toContain('grid-column: 1 / 4')
-    expect(source).toContain('grid-column: 4 / -1')
+    // textRight: carousel columns 1–8, text columns 9–12.
+    expect(source).toContain('grid-column: 1 / 9')
+    expect(source).toContain('grid-column: 9 / -1')
+    // textLeft: text columns 1–4, carousel columns 5–12 — the stage's inner
+    // edge lands on the narrative copy column (cols 5–12) so the carousel
+    // matches the width of the chapter text above it.
+    expect(source).toContain('grid-column: 1 / 5')
+    expect(source).toContain('grid-column: 5 / -1')
   })
 
   it('overflows only the edge farthest from the text, past the page gutter', () => {
