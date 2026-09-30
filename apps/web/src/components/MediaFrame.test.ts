@@ -170,6 +170,15 @@ describe('MediaFrame playback profiles', () => {
     expect(source).toMatch(/<mux-video[^>]*\splaysinline[\s>]/s)
   })
 
+  it('disables picture-in-picture on mux-video — attribute in markup, property set at wire-up for Safari', () => {
+    // The attribute keeps PiP out of native context menus (desktop
+    // right-click, iPadOS long-press) and the Firefox hover toggle.
+    // Safari regressed on the attribute (mdn/browser-compat-data#24399) but
+    // still honors the property, so loadPlayer() sets it after upgrade.
+    expect(source).toMatch(/<mux-video[^>]*\sdisablepictureinpicture[\s>]/s)
+    expect(source).toContain('this.player.disablePictureInPicture = true')
+  })
+
   it('emits no SSR poster attribute on mux-video — the player poster is copied from the overlay img at upgrade', () => {
     // A SSR `poster` takes one URL (no srcset), so every frame fetched its
     // thumbnail twice. loadPlayer() copies the overlay poster's currentSrc

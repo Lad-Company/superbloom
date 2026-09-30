@@ -218,7 +218,10 @@ const imageRendering =
        fade-to-first-frame gap (visual QA: poster="" flashed a blank frame
        there). `playsinline` is load-bearing on iOS: without it Safari throws
        any gesture-driven play() (gated-card reveal tap, Presented play/mute
-       buttons) into the fullscreen native player, hijacking the page. */
+       buttons) into the fullscreen native player, hijacking the page.
+       `disablepictureinpicture` keeps PiP out of the native context menus
+       (desktop right-click, iPadOS long-press, the Firefox hover toggle) —
+       the frame's custom controls are the whole interface. */
     isVideo && (
       <mux-video
         playback-id={asset?._type === 'mux.video' ? asset.playbackId ?? undefined : undefined}
@@ -227,6 +230,7 @@ const imageRendering =
         muted
         loop
         playsinline
+        disablepictureinpicture
         max-resolution={plan.maxResolution}
         preload={plan.preload}
       />
@@ -583,6 +587,11 @@ const imageRendering =
           if (!this.isConnected) return
           if (!player) return
           this.player = player
+
+          // Safari regressed on the `disablepictureinpicture` attribute
+          // (mdn/browser-compat-data#24399) but still honors the property,
+          // so set it here too; the template attribute covers the rest.
+          this.player.disablePictureInPicture = true
 
           this.player.addEventListener('play', this.handlePlay)
           this.player.addEventListener('pause', this.handlePause)
