@@ -222,8 +222,10 @@ Content Card — it does not use card width/ratio/info controls.
 A fourth block, **Carousel** (`contentLayoutCarousel`), holds 3–10 media
 items (`mediaBox`, images and/or videos) in one of three layouts: **full width**
 (the track bleeds edge-to-edge with no gutters at every breakpoint, controls
-centered below), **text right**, or **text left** (the carousel takes 3/4 of
-the row with a descriptive rich-text box in the remaining 1/4, top-aligned;
+centered below), **text right**, or **text left** (the carousel takes 2/3 of
+the row with a descriptive rich-text box in the remaining 1/3, top-aligned —
+the stage's text-side edge lands on the narrative copy column, cols 5–12 /
+1–8, so the carousel matches the width of the chapter text above it;
 controls sit at the carousel's bottom inner corner). Carousels have no width
 control, so a carousel must be its row's only block. The full-width layout
 opens on the second item so the active slide is flanked on both sides, with
@@ -352,8 +354,9 @@ Hero → News → Parallax → Capabilities (Capes) → Our Work → Creative Co
 (Why) → Zine → Contact.
 
 - **Hero** (`PageHero.astro`, media mode) — full-bleed hero: background media
-  with an overlaid headline (`display-1`) and intro, headline left ~2/3, intro
-  bottom-right.
+  with an overlaid headline (`display-1`) and intro; the headline spans the
+  full overlay width with balanced wrapping (a 2/3 column orphaned words on
+  real-length titles), intro bottom-right on its own row below it.
 - **Parallax** (`HomeParallax.astro` + `ParallaxField.astro`) — statement
   headline over a CMS-editable field of 5–10 media items rendered at native
   aspect ratios, scattered at random depths (deterministic seed). The field
