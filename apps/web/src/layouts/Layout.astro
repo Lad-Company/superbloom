@@ -37,10 +37,12 @@ const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
 // preview traffic out of prod analytics.
 const preview = isPreviewRequest(Astro.cookies);
 
+// www is canonical (the apex 308-redirects to it); accept both so GA keeps
+// running even if a request somehow lands on the apex.
 const host = Astro.url.hostname;
 const gaMode = preview
   ? 'off'
-  : host === 'superbloomhouse.com'
+  : host === 'www.superbloomhouse.com' || host === 'superbloomhouse.com'
     ? 'prod'
     : host === 'superbloom-theta.vercel.app'
       ? 'staging'

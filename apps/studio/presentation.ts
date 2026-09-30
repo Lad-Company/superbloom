@@ -15,7 +15,8 @@ import {ARTICLE_LOCATIONS_QUERY, resolveArticleLocations} from './articleLocatio
 // editors switch origins at runtime via the Studio URL's `?preview=` param.
 const previewOrigins = (
   process.env.SANITY_STUDIO_PREVIEW_ORIGINS ??
-  'http://localhost:*,https://superbloom-theta.vercel.app,https://superbloomhouse.com'
+  // www is the canonical prod host (the apex 308-redirects to it on Vercel).
+  'http://localhost:*,https://superbloom-theta.vercel.app,https://www.superbloomhouse.com'
 )
   .split(',')
   .map((origin) => origin.trim())
