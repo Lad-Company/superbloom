@@ -38,7 +38,7 @@ try {
     join(publicDir, 'social-card.png'),
   ], { stdio: 'inherit', shell: false });
 } finally {
-  try { unlinkSync(tmpLogo); } catch {}
+  try { unlinkSync(tmpLogo); } catch { /* best-effort temp cleanup */ }
 }
 
 console.log(
