@@ -114,22 +114,27 @@ const faqVisible = showFaq && faqs.length > 0;
   .discipline-section {
     /* Top padding only: the next section (TwoUp) carries its own 4xl top
        padding, so a bottom pad here would double the gap to 400px. The
-       single 4xl (2xl on mobile via TwoUp) is the intended inter-section
+       single 4xl (64 on mobile via TwoUp) is the intended inter-section
        spacing. */
     padding: var(--space-4xl) 0 0;
+  }
+  @media (--bp-small) {
+    .discipline-section {
+      padding-top: var(--space-m);
+    }
   }
 
   /* TwoUp keeps zero bottom padding because the FAQ below it carries the
      inter-section gap as top padding. When the FAQ is hidden (Site Settings
      toggle or no questions), that gap would land inside ContactBand's accent
      surface and leave this dark section flush with the boundary — restore
-     the FAQ's share (4xl desktop, 2xl mobile) here instead. */
+     the FAQ's share (4xl desktop, 64 mobile) here instead. */
   .ctas-pad-bottom {
     padding-bottom: var(--space-4xl);
   }
   @media (--bp-small) {
     .ctas-pad-bottom {
-      padding-bottom: var(--space-2xl);
+      padding-bottom: var(--space-m);
     }
   }
 

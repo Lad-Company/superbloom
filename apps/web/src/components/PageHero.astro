@@ -99,7 +99,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
        taller than /work and /who-we-are.) Bottom 32 pairs with the next
        section's 32 for the consistent 64px hand-off. */
     .hero-text {
-      padding: calc(var(--nav-height) + var(--space-3xl)) var(--space-3xs) var(--space-xs);
+      padding: calc(var(--nav-height) + var(--space-3xl)) var(--page-inset) var(--space-xs);
     }
   }
 
@@ -180,7 +180,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     .overlay {
       grid-template-columns: minmax(0, 1fr);
       gap: var(--space-2xs);
-      padding: var(--space-3xs) var(--space-3xs) var(--space-m);
+      padding: var(--space-3xs) var(--page-inset) var(--space-m);
     }
 
     .overlay .heading-stack,
@@ -222,7 +222,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
        sides, 32px eyebrow→heading, 64px heading→tags, tags flush to the bottom
        edge so the lead media's 32px top padding is the whole hand-off. */
     .hero-case {
-      padding: calc(var(--nav-height) + var(--space-xl)) var(--space-3xs) 0;
+      padding: calc(var(--nav-height) + var(--space-xl)) var(--page-inset) 0;
     }
 
     .case-eyebrow {

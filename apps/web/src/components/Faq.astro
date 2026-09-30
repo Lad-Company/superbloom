@@ -137,7 +137,8 @@ const { heading = 'FAQ', items } = Astro.props;
   @media (--bp-small) {
     .faq {
       flex-direction: column;
-      padding: var(--space-2xl) var(--space-3xs) var(--space-2xl);
+      /* TwoUp above hands off flush, so the top owns the full 64. */
+      padding: var(--space-m) var(--page-inset) var(--space-xs);
     }
     .faq-heading {
       padding-right: 0;

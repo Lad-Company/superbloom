@@ -55,7 +55,8 @@ const {heading, body, media, aspectRatio = '1:1'} = Astro.props
   @media (--bp-small) {
     .text-media {
       flex-direction: column;
-      padding: var(--space-2xl) var(--space-3xs) 0;
+      /* Flush hand-off from the section above: the top owns the full 64. */
+      padding: var(--space-m) var(--page-inset) 0;
     }
     .text-col {
       padding-right: 0;

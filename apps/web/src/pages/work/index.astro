@@ -124,11 +124,13 @@ const heroHeading = workIndex?.heroHeading ?? 'Unexpected minds. Unignorable wor
     padding: var(--space-xl) var(--page-inset) 0;
   }
   @media (--bp-below-desktop) {
+    /* Featured → All reads as one more card step: this bottom plus
+       .all-work's 32 top equals the stacked-card gap. */
     .featured-work {
-      padding: var(--space-xs) var(--space-3xs) 0;
+      padding: var(--space-xs) var(--page-inset) calc(var(--stack-gap) - var(--space-xs));
     }
     .all-work {
-      padding-inline: var(--space-3xs);
+      padding-inline: var(--page-inset);
       padding-top: var(--space-xs);
     }
   }

@@ -35,9 +35,11 @@ The primary design file is
 
 - Display steps are **fluid** (`--type-*` in `tokens.css`, referenced by the Uno
   `type-*` shortcuts): one shared ramp, each step scaling linearly from its floor
-  at a 360px viewport to its cap at 1440px, then plateauing — h1 64→200,
-  h2 48→140, h3 80→120, h4 40→80, h5 / section-heading 32→56. No component
-  hand-rolls a `vw` font-size; floors are QA-tunable in one place.
+  at a 360px viewport to its cap at 1440px, then plateauing — h1 80→200,
+  h2 48→140, h3 64→120, h4 40→80, h5 / section-heading 32→56. No component
+  hand-rolls a `vw` font-size; floors are QA-tunable in one place. The floors
+  keep h1 > h3 > h2 on phones so the page hero is always the largest type and
+  section statements/headings (h3) never out-size it.
   (ARCHITECTURE.md ADR-0024.)
 - The marquee rides the same ramp shape via `--type-marquee` (cap 200, floor held
   at 80) but keeps its own face: the PP Neue Corp variable cut, morphing
@@ -64,10 +66,17 @@ The primary design file is
 - **Mobile section rhythm (≤767px) is a fixed 64px** between sections, built as
   32 + 32: each section pads `--space-xs` on the side facing a neighbour, and a
   section following a flush or media-hero hand-off owns the full `--space-m` 64
-  on top. The fluid `2xl/3xl/4xl` rhythm takes over from the compact range up.
+  on top. Inside a section, heading → content is `--space-xs` 32. The fluid
+  `2xl/3xl/4xl` rhythm takes over from the compact range up; no `--bp-small`
+  rule uses a fluid step.
 - Control-internal padding below the 8px floor uses the `--pad-*` sub-scale
   (4 / 6 / 10) rather than snapping compact controls up to the spacing scale.
-- Layout: `--page-gutter` 24px, `--page-inset` 32px.
+- Layout: `--page-gutter` 24px, `--page-inset` 32px (12px at ≤767px),
+  `--stack-gap` 96px (40px at ≤767px) between stacked cards / mosaic items once
+  a list collapses to one column, so items within a section sit visibly
+  closer together than the 64px between sections. The
+  inset is the only mobile side gutter: components read `var(--page-inset)`
+  and never hard-code `--space-3xs` / `12px` for a section's inline padding.
 - Radius: `--radius-control` 6px (tags + buttons only); `--radius-media` 0 (media
   never has a radius). There is no separate field radius.
 - Hairlines: every divider and resting border uses one shared opacity,
@@ -139,8 +148,8 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
     > clip the reader is expected to scrub. Annual reviewer: when re-litigating,
     > PageHero's media-mode path is the single change point — no other surface
     > flips.
-- **`PageHero`** — the single page-header block. One shared H1 (200px/78%
-  desktop, `clamp(64px, 18vw, 160px)` below 1024, ≤4 lines) with three modes
+- **`PageHero`** — the single page-header block. One shared H1 (`--type-h1`,
+  80→200 on the fluid ramp, 78% leading, ≤4 lines) with three modes
   derived from props: text (default), media (home 3/2, zine 16:9 + optional
   Super-Header kicker), case (eyebrow + tags).
 - **`Button`** — variants solid / translucent / outline / icon. The canonical

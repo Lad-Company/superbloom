@@ -25,9 +25,9 @@ const spaceClamp = (floorPx: number, capPx: number) => {
 
 describe('fluid type tokens (spec §3)', () => {
   it.each([
-    ['--type-h1', 64, 200],
+    ['--type-h1', 80, 200],
     ['--type-h2', 48, 140],
-    ['--type-h3', 80, 120],
+    ['--type-h3', 64, 120],
     ['--type-h4', 40, 80],
     ['--type-h5', 32, 56],
     ['--type-section-heading', 32, 56],
@@ -47,6 +47,11 @@ describe('fluid spacing tokens (spec §4)', () => {
     ['--space-4xl', 120, 200],
   ] as const)('%s rides the shared 768→1440 ramp (%s→%s)', (token, floor, cap) => {
     expect(source).toContain(`${token}: ${spaceClamp(floor, cap)};`)
+  })
+
+  it('drops the page inset and stack gap on small screens', () => {
+    expect(source).toMatch(/@media \(--bp-small\) \{\s*:root \{[^}]*--page-inset: var\(--space-3xs\);/)
+    expect(source).toMatch(/@media \(--bp-small\) \{\s*:root \{[^}]*--stack-gap: var\(--space-s\);/)
   })
 
   it('keeps 96px and below fixed so component spacing stays put', () => {

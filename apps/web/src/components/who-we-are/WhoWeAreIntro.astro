@@ -23,4 +23,15 @@ const { statement, media = [], showImageLayers, theme } = Astro.props;
   media={media}
   showLayers={showImageLayers}
   headlineSize="compact"
+  class="who-intro"
 />
+
+<style>
+  /* The fact cards below hand off flush (colored bands, no top padding), so
+     on mobile this section owns the whole 64px gap instead of the usual 32. */
+  @media (--bp-small) {
+    :global(.parallax-statement.who-intro) {
+      padding-bottom: var(--space-m);
+    }
+  }
+</style>

@@ -169,12 +169,14 @@ const queryFor = (nextPage: number, nextSort = sort) => {
   @media (--bp-below-desktop) {
     /* Mobile featured hand-off matches the consistent 32px + 32px = 64px gap
        used by Work, Who We Are, and the case-study lead media. */
+    /* "View All" opens with its own heading, so Featured → View All is a
+       section boundary (32 + 32), not a card step. */
     .featured {
-      padding: var(--space-xs) var(--space-3xs) var(--space-2xl);
+      padding: var(--space-xs) var(--page-inset);
     }
 
     .view-all {
-      padding: var(--space-2xl) var(--space-3xs);
+      padding: var(--space-xs) var(--page-inset);
     }
 
     .view-all-header {

@@ -90,14 +90,4 @@ const halfItems = Array.from({length: copiesPerHalf}, () => items).flat()
       padding-block: var(--space-m) var(--space-xs);
     }
   }
-
-  @media (--bp-600) {
-    .inner {
-      padding-inline: 12px;
-    }
-
-    .inner :global(.marquee-track--items) {
-      margin-inline: -12px;
-    }
-  }
 </style>

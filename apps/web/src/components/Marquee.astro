@@ -68,6 +68,11 @@ const hasSlot = Astro.slots.has('default');
   .marquee-track--items {
     padding: 0;
   }
+  @media (--bp-small) {
+    .marquee-track {
+      padding: var(--space-xs) 0;
+    }
+  }
   .marquee-content {
     display: flex;
     width: max-content;

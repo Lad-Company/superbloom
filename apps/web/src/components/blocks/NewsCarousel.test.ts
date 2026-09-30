@@ -8,7 +8,9 @@ describe('News Carousel', () => {
     expect(source).toContain(
       'padding: var(--space-4xl) var(--page-inset) var(--space-2xl)',
     )
-    expect(source).toContain('padding-inline: 12px')
+    // The 12px mobile gutter comes from the responsive --page-inset token
+    // (tokens.css), not a hard-coded override.
+    expect(source).not.toContain('12px')
   })
 
   it('uses the shared Marquee for endless auto-scroll', () => {
@@ -27,7 +29,6 @@ describe('News Carousel', () => {
 
   it('bleeds the marquee to the viewport edges, outside the page gutter', () => {
     expect(source).toContain('margin-inline: calc(-1 * var(--page-inset))')
-    expect(source).toContain('margin-inline: -12px')
   })
 
   it('applies CMS item overrides to cards by article id', () => {
