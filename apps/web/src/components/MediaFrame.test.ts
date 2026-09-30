@@ -186,6 +186,23 @@ describe('MediaFrame playback profiles', () => {
     expect(source).toContain("hls.on('hlsManifestParsed'")
     expect(source).toContain('hls.startLevel = lowest')
   })
+
+  it('caps the ambient ABR climb at the topmost ≤1080p rung', () => {
+    // On fast connections (or Lighthouse's unthrottled lab network) the
+    // pinned-low start climbs immediately; autoLevelCapping keeps that climb
+    // from ever passing the 1080p ceiling the `max-resolution` URL param
+    // declares.
+    expect(source).toContain('MAX_AMBIENT_LEVEL_HEIGHT = 1080')
+    expect(source).toContain('hls.autoLevelCapping = cap')
+  })
+
+  it('bounds the ambient forward buffer to a flat 10s', () => {
+    // 20s at the 9.6 Mbps top rung cost 23.6 MB in one Lighthouse run; a
+    // flat 10s halves that worst case and still covers a short loop twice.
+    expect(source).toContain('maxBufferLength: 10')
+    expect(source).toContain('maxMaxBufferLength: 10')
+    expect(source).not.toContain('maxMaxBufferLength: 20')
+  })
 })
 
 describe('MediaFrame consumers conform to the new controls enum', () => {
