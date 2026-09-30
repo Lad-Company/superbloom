@@ -258,6 +258,8 @@ const marqueeText = (title: string) =>
     position: relative;
     aspect-ratio: 1;
     width: 100%;
+    /* The intrinsic height attribute would otherwise beat aspect-ratio. */
+    height: auto;
     object-fit: cover;
     border-radius: var(--radius-media);
   }

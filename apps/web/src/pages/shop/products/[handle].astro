@@ -177,6 +177,8 @@ const detailImage = product.featuredImage
   .image img,
   .placeholder {
     width: 100%;
+    /* The intrinsic height attribute would otherwise beat aspect-ratio. */
+    height: auto;
     aspect-ratio: 1;
     object-fit: cover;
     background: var(--fg-12);
