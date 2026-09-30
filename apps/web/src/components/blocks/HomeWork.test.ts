@@ -26,7 +26,7 @@ describe('HomeWork mosaic', () => {
     expect(source).toContain('grid-column: 1 / -1 !important;')
     expect(source).toContain('grid-row: auto !important;')
     expect(source).toContain('position: static;')
-    expect(source).toContain('row-gap: var(--space-xl);')
+    expect(source).toContain('row-gap: var(--stack-gap);')
   })
 
   it('keeps desktop media full-bleed with no page gutter', () => {

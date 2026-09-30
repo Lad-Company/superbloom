@@ -98,10 +98,10 @@ const tagTitles = (caseStudy.tags ?? [])
   @media (--bp-small) {
     /* Mobile lead media sits flush under the case hero — the hero's own
        32px padding-bottom plus this 32px top form the consistent 64px
-       hand-off used across pages. Bottom is 0: the first narrative
-       section's 64 top padding is the media→content hand-off. */
+       hand-off used across pages. Bottom 64 mirrors the first narrative
+       section's 64 top so the sticky spine nav sits centred between them. */
     .lead-media {
-      padding: var(--space-xs) var(--page-inset) 0;
+      padding: var(--space-xs) var(--page-inset) var(--space-m);
     }
   }
 </style>

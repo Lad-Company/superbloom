@@ -195,12 +195,12 @@ const {class: className, featured = false, columnPack = false} = Astro.props;
   @media (--bp-below-desktop) {
     .content-card-list {
       grid-template-columns: 1fr;
-      gap: var(--space-xl);
+      gap: var(--stack-gap);
     }
 
     .content-card-list[data-featured] {
       grid-auto-rows: auto;
-      row-gap: var(--space-xl);
+      row-gap: var(--stack-gap);
     }
 
     .content-card-list > :global(.content-card[data-card-width]) {
@@ -210,7 +210,7 @@ const {class: className, featured = false, columnPack = false} = Astro.props;
 
     .content-card-list[data-column-pack] {
       grid-template-columns: 1fr;
-      gap: var(--space-xl);
+      gap: var(--stack-gap);
     }
 
     .content-card-list[data-column-pack] > :global(.content-card:first-child) {
@@ -220,7 +220,7 @@ const {class: className, featured = false, columnPack = false} = Astro.props;
 
     .content-card-list[data-column-pack] > :global(.pack-stack) {
       grid-column: 1;
-      gap: var(--space-xl);
+      gap: var(--stack-gap);
     }
   }
 </style>

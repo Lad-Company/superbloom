@@ -121,16 +121,15 @@ const renderLayers = (showLayers ?? true) && layers.length > 0
 
   /* Compact variant (Who We Are intro): one ramp step down, h3 → h4, with
      the measure widening in lockstep — 34ch + 15 = 49ch. Holds at every
-     viewport — h4's 40px floor needs no mobile override the way h3's 80px
-     floor does — and the class selector outranks the mobile h2 rules below. */
+     viewport. */
   .statement-compact h2 {
     font-size: var(--type-h4);
     max-width: 49ch;
   }
 
-  /* Mobile statements at the default size drop to the page-header size (the
-     type-h1 floor) and wrap with the hero's preferences — no 34ch cap, long
-     words stay inside the section instead of overflowing it. */
+  /* Below desktop the statement wraps with the hero's preferences — no 34ch
+     cap, long words stay inside the section instead of overflowing it. It
+     keeps the h3 step so it reads as a section heading under the h1 hero. */
   @media (--bp-below-desktop) {
     h2 {
       max-width: none;
@@ -143,10 +142,6 @@ const renderLayers = (showLayers ?? true) && layers.length > 0
          them — the section collapses to content plus the mobile 32+32 rhythm. */
       min-height: 0;
       padding: var(--space-xs) var(--page-inset);
-    }
-
-    h2 {
-      font-size: var(--type-h1);
     }
 
     /* No parallax image layers on mobile, even when the CMS toggle is on;
