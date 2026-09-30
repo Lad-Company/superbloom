@@ -375,6 +375,20 @@ const links = [
     transform: translateY(0);
   }
 
+  /* The open compact menu's panel is position: fixed inside the nav, and any
+     non-none transform on the nav — even translateY(0) once the reveal
+     transition settles — makes the nav the panel's containing block,
+     collapsing the full-screen menu to the bar's box. Drop the transform
+     (and the shy backdrop-filter, same effect) while the menu is open; the
+     nav is force-revealed in that state (lib/shyNav.ts), so there's no
+     visual change. The .is-shy class in the selector is needed to outrank
+     .navigation.is-shy.is-revealed above. */
+  .navigation.is-shy:has(.compact-menu[open]) {
+    transform: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .compact-toggle__icon,
     .compact-toggle__icon::before,
