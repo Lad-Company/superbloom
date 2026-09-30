@@ -353,8 +353,9 @@ const links = [
 
   /* Shy nav, all breakpoints: past the page top the nav becomes a fixed
      frosted bar — hidden while scrolling down, revealed on any upward
-     scroll. Colors come from the sampled surface (lib/shyNav.ts), the SSR
-     role at page top; the bar's tint and blur track --bg so it stays
+     scroll. On desktop the revealed bar re-colors to the sampled surface
+     beneath it (lib/shyNav.ts); on compact breakpoints it keeps the SSR
+     role colors. Either way the bar's tint and blur track --bg so it stays
      legible over dark, light, and brand surfaces. */
   .navigation {
     transition:
