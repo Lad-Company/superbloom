@@ -46,4 +46,17 @@ describe('Navigation compact panel', () => {
   it('keeps logo and toggle white over the black panel regardless of nav theme', () => {
     expect(source).toContain('.navigation:has(.compact-menu[open])')
   })
+
+  it('fades the panel in on open so it does not hard-cut against the bar chrome fades', () => {
+    // details renders the panel the frame open flips; without an entrance
+    // animation the black full-screen panel cuts in one frame while the
+    // bar's color/frost transitions run 240ms around it — an abrupt,
+    // glitchy open, most visible when the shy bar is floating mid-page.
+    expect(source).toMatch(
+      /\.compact-menu\[open\] \.compact-panel\s*\{[^}]*animation:\s*compact-panel-in/,
+    )
+    // Reduced motion keeps the instant open.
+    const reduced = source.match(/prefers-reduced-motion: reduce\)\s*\{([\s\S]*)\n  \}/)?.[1] ?? ''
+    expect(reduced).toMatch(/\.compact-menu\[open\] \.compact-panel\s*\{\s*animation:\s*none/)
+  })
 })

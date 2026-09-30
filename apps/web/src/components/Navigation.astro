@@ -276,6 +276,23 @@ const links = [
       background: #000;
       color: #fff;
       overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    /* Entrance: details renders the panel the instant open flips — a hard
+       cut against the bar chrome's 240ms fades (color, frost) reads as an
+       abrupt glitch, with the white logo briefly stranded over the light
+       page. Fading the panel in over the same 240ms runs both in lockstep,
+       one coherent wipe to black. */
+    .compact-menu[open] .compact-panel {
+      animation: compact-panel-in var(--motion-quick) var(--motion-ease-out);
+    }
+    @keyframes compact-panel-in {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
     }
     .compact-panel ul {
       display: flex;
@@ -448,6 +465,9 @@ const links = [
     .compact-toggle__icon::before,
     .compact-toggle__icon::after {
       transition: none;
+    }
+    .compact-menu[open] .compact-panel {
+      animation: none;
     }
 
     /* Reduced motion keeps the shy show/hide behavior but drops the slide
