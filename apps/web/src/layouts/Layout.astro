@@ -157,7 +157,9 @@ const gaMode = preview
         if (sessionStorage.getItem('sbh:veil-seen')) {
           document.documentElement.setAttribute('data-veil-skip', '');
         }
-      } catch (e) {}
+      } catch {
+        // sessionStorage unavailable (e.g. private mode); the veil plays.
+      }
     </script>
     <style is:global>
       /* Route Transition — native View Transition swipe: the outgoing page lifts
@@ -311,7 +313,10 @@ const gaMode = preview
         loader.setAttribute('data-loader-done', '');
         try {
           sessionStorage.setItem('sbh:veil-seen', '1');
-        } catch {}
+        } catch {
+          // sessionStorage unavailable (e.g. private mode); the veil replays
+          // on the next visit instead of being skipped.
+        }
       };
       // Recorded on astro:before-preparation so page-load can tell fresh
       // navigations (land at the top) from history traversal (browser restores
