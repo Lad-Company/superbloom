@@ -48,4 +48,5 @@ Run from the repo root:
 - `CONTEXT.md` - domain model and ubiquitous language
 - `ARCHITECTURE.md` - architecture-of-record and the collapsed decision log
 - `docs/design-system.md` - design, UI, theming, and motion intent
+- `docs/dns-cutover-runbook.md` - DNS/hosting cutover to the Superbloom Pro team (launch)
 - `docs/agents/` - agent workflow docs (issue tracker, triage labels, domain)
