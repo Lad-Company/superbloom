@@ -313,9 +313,23 @@ const links = [
       letter-spacing: 0.02em;
       text-transform: uppercase;
     }
+    /* Panel buttons wear fixed colors: the open menu is a constant black
+       surface, so they must not consume the nav's --bg/--fg — on desktop the
+       shy nav rewrites those vars as it samples sections, which recolored
+       the buttons mid-scroll. Let's Chat mirrors the dark-surface control
+       (white pill, black ink, wipe inverts); Shop's wipe inverts its pinned
+       resting colors. */
+    .compact-actions .btn-secondary {
+      background: #fff;
+      color: #000;
+      --wipe-surface: #000;
+      --wipe-ink: #fff;
+    }
     .compact-actions .btn-tertiary {
       background: #2a2a2a;
       color: #fff;
+      --wipe-surface: #fff;
+      --wipe-ink: #000;
     }
 
     /* Flip logo + toggle to white so they read on the black overlay; the
@@ -353,8 +367,9 @@ const links = [
 
   /* Shy nav, all breakpoints: past the page top the nav becomes a fixed
      frosted bar — hidden while scrolling down, revealed on any upward
-     scroll. Colors come from the sampled surface (lib/shyNav.ts), the SSR
-     role at page top; the bar's tint and blur track --bg so it stays
+     scroll. On desktop the revealed bar re-colors to the sampled surface
+     beneath it (lib/shyNav.ts); on compact breakpoints it keeps the SSR
+     role colors. Either way the bar's tint and blur track --bg so it stays
      legible over dark, light, and brand surfaces. */
   .navigation {
     transition:

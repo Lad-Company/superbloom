@@ -4,19 +4,28 @@
    without a return to the top. Runs across breakpoints; while the mobile
    compact menu is open the nav is the menu's chrome and stays revealed.
 
-   Theme awareness: at page top the nav keeps its SSR surface role (Layout's
-   navRole). While revealed mid-page it samples the surface section beneath
-   it (`[data-surface-role]`, stamped by SurfaceSection with inline --bg/--fg)
-   and adopts those vars, so links and logo stay legible over dark, light,
-   and brand surfaces alike. The nav's --fg-12/--fg-60 and button treatments
-   all derive from --bg/--fg, so copying the pair re-themes the whole bar.
+   Theme awareness (desktop only): at page top the nav keeps its SSR surface
+   role (Layout's navRole). While revealed mid-page on desktop it samples the
+   surface section beneath it (`[data-surface-role]`, stamped by
+   SurfaceSection with inline --bg/--fg) and adopts those vars, so links and
+   logo stay legible over dark, light, and brand surfaces alike. The nav's
+   --fg-12/--fg-60 and button treatments all derive from --bg/--fg, so
+   copying the pair re-themes the whole bar. Below the desktop breakpoint the
+   nav is not surface-aware: the revealed bar keeps the SSR role colors.
 
    Motion: the slide is a CSS transform transition, disabled under
    prefers-reduced-motion (the show/hide behavior itself still works). */
 
+import {BREAKPOINTS} from './breakpoints'
+
 /* Dead zone so sub-pixel scroll noise (and mobile URL-bar jitter) doesn't
    flip the state. */
 const MIN_DELTA = 2
+
+/* Surface sampling is desktop-only (mirrors the --bp-below-desktop custom
+   media in tokens.css); the compact nav keeps its SSR surface role. */
+const isCompactNav = () =>
+  window.matchMedia(`(max-width: ${BREAKPOINTS.belowDesktopMax}px)`).matches
 
 type ShyState = 'top' | 'revealed' | 'hidden'
 
@@ -49,9 +58,14 @@ const setColors = (bg: string, fg: string) => {
    walking up from the hit element: an explicit data-nav-surface wins, then
    any [data-surface-role] ancestor contributes its computed --bg/--fg
    (SurfaceSection sets them inline; plain dark sections like advantages set
-   them in CSS). With no stamped ancestor the last colors stay. */
+   them in CSS). With no stamped ancestor the last colors stay. Compact
+   breakpoints skip sampling entirely and hold the SSR role colors. */
 const applySurfaceColors = () => {
   if (!nav) return
+  if (isCompactNav()) {
+    restoreRoleColors()
+    return
+  }
   let el: Element | null = document.elementFromPoint(window.innerWidth / 2, nav.offsetHeight + 8)
   while (el && el !== document.documentElement) {
     if (el instanceof HTMLElement) {
