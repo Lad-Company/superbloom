@@ -2,6 +2,11 @@
 import { caseStudySections } from '../../lib/caseStudySections';
 ---
 
+{/* Zero-height marker at the strip's flow position: the IntersectionObserver
+    in the script watches it to know when the strip is actually stuck to the
+    viewport top (observing the strip itself would oscillate — the dock
+    transform moves its own rect). */}
+<span class="spine-sentinel" aria-hidden="true"></span>
 <nav class="spine-nav type-label" aria-label="Case study sections">
   <ul>
     {caseStudySections.map((section, index) => (
@@ -101,6 +106,28 @@ import { caseStudySections } from '../../lib/caseStudySections';
     });
   };
 
+  // Dock gate: the shy-bar offset (CSS below) must apply only while the
+  // strip is actually stuck to the viewport top. Translating the in-flow
+  // strip shoves it --shy-bar-h below its seat, opening a gap between it and
+  // the lead media whenever the bar reveals before the strip has stuck —
+  // always the case on mobile, where the strip starts inside the initial
+  // viewport. The sentinel sits at the strip's flow position; once it
+  // crosses above the top edge, the strip is stuck.
+  const sentinel = document.querySelector('.spine-sentinel');
+  const stuckObserver =
+    nav && sentinel
+      ? new IntersectionObserver(
+          ([entry]) => {
+            nav.toggleAttribute(
+              'data-stuck',
+              !entry.isIntersecting && entry.boundingClientRect.top < 0,
+            );
+          },
+          { threshold: 0 },
+        )
+      : null;
+  if (sentinel) stuckObserver?.observe(sentinel);
+
   // Lenis smooth-scroll drives the native scroll position, so plain scroll
   // events stay in sync with the animated motion.
   window.addEventListener('scroll', queueUpdate, { passive: true });
@@ -135,6 +162,7 @@ import { caseStudySections } from '../../lib/caseStudySections';
   const cleanup = () => {
     window.removeEventListener('scroll', queueUpdate);
     window.removeEventListener('resize', queueUpdate);
+    stuckObserver?.disconnect();
     clickHandlers.forEach((handler, link) => link.removeEventListener('click', handler));
   };
   document.addEventListener('astro:before-swap', cleanup, { once: true });
@@ -157,9 +185,15 @@ import { caseStudySections } from '../../lib/caseStudySections';
      z-30, same strip this sticky nav pins to): its frost ghosts the tab
      text and the bar eats every tap meant for the chapters. Dock the strip
      beneath the bar by its height (--shy-bar-h, published by lib/shyNav.ts)
-     while revealed; the offset lifts when the bar hides. */
-  :global(body:has(.navigation.is-shy.is-revealed)) .spine-nav {
+     while revealed; the offset lifts when the bar hides. Gated on
+     data-stuck (set by the sentinel observer in the script) so a strip still
+     in document flow is never pushed off its seat. */
+  :global(body:has(.navigation.is-shy.is-revealed)) .spine-nav[data-stuck] {
     transform: translateY(var(--shy-bar-h, 0px));
+  }
+  .spine-sentinel {
+    display: block;
+    height: 0;
   }
   @media (prefers-reduced-motion: reduce) {
     .spine-nav {

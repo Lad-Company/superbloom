@@ -11,8 +11,19 @@ describe('CaseStudySpineNav shy-bar docking', () => {
     // strip translates down by --shy-bar-h (published by lib/shyNav.ts);
     // the offset lifts when the bar hides.
     expect(source).toMatch(
-      /body:has\(\.navigation\.is-shy\.is-revealed\)\)\s*\.spine-nav\s*\{[^}]*transform:\s*translateY\(var\(--shy-bar-h/,
+      /body:has\(\.navigation\.is-shy\.is-revealed\)\)\s*\.spine-nav\[data-stuck\]\s*\{[^}]*transform:\s*translateY\(var\(--shy-bar-h/,
     )
+  })
+
+  it('gates the dock on the strip being stuck, so the in-flow strip is never shoved off its seat', () => {
+    // Without the gate, revealing the bar while the strip is still in
+    // document flow (always the case on mobile, where it starts inside the
+    // first viewport) opens a --shy-bar-h gap between the strip and the
+    // lead media above it.
+    expect(source).toContain('class="spine-sentinel"')
+    expect(source).toContain('IntersectionObserver')
+    expect(source).toContain("nav.toggleAttribute(\n              'data-stuck'")
+    expect(source).toContain('stuckObserver?.disconnect()')
   })
 
   it("slides on the shy bar's own ramp so the dock reads as one piece of chrome", () => {
@@ -21,7 +32,7 @@ describe('CaseStudySpineNav shy-bar docking', () => {
   })
 
   it('drops the slide under reduced motion (the bar slide is also disabled there)', () => {
-    const reduced = source.match(/prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n  \}/)?.[1] ?? ''
+    const reduced = source.match(/prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n {2}\}/)?.[1] ?? ''
     expect(reduced).toMatch(/\.spine-nav\s*\{\s*transition:\s*none/)
   })
 })
