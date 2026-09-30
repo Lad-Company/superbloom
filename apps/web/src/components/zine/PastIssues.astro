@@ -145,8 +145,9 @@ const {issues} = Astro.props;
       padding-block: var(--space-3xs);
     }
 
+    /* Rows are tappable end to end on mobile; the CTA is desktop-only. */
     .read-more {
-      grid-column: 2;
+      display: none;
     }
   }
 </style>
