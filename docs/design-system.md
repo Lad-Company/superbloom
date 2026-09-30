@@ -152,7 +152,7 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
     > PageHero's media-mode path is the single change point — no other surface
     > flips.
 - **`PageHero`** — the single page-header block. One shared H1 (`--type-h1`,
-  80→200 on the fluid ramp, 78% leading, ≤4 lines) with three modes
+  80→200 on the fluid ramp, 82% leading, ≤4 lines) with three modes
   derived from props: text (default), media (home 3/2, zine 16:9 + optional
   Super-Header kicker), case (eyebrow + tags).
 - **`Button`** — variants solid / translucent / outline / icon. The canonical
