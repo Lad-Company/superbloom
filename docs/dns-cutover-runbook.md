@@ -78,13 +78,34 @@ domain is ever in scope.)
    curl -sI https://www.superbloomhouse.com | head -5   # expect server: Vercel
    ```
 4. Post-cutover:
-   - Set `SANITY_STUDIO_PREVIEW_ORIGIN(S)` to `https://www.superbloomhouse.com`
-     on the Vercel project (ADR-0026: pre-launch it defaults to the staging
-     hostname because the domain served the Netlify site).
+   - [x] Studio preview default flipped to the prod hostname — a code change
+     in `apps/studio/presentation.ts` (`initialOrigin`), not a Vercel env var.
+     Typecheck clean; deployed 2026-09-30 (`sanity deploy` →
+     superbloom-cms.sanity.studio).
+   - [x] Sanity CORS: `https://www.superbloomhouse.com` allowlisted **with
+     credentials** (browser-side preview/comlink requests from the prod
+     origin).
+   - [x] Sanity publish webhook repointed staging → prod. The hooks API has
+     no update operation, so it was recreated as `discord-publish-relay`
+     (identical filter/projection, same signing secret) and the old
+     staging-URL hook was deleted.
+   - [x] GitHub repo webhook (`deployment_status` → `api/hooks/github`)
+     repointed to `https://www.superbloomhouse.com`.
    - Watch Discord `#site-alerts` / Sentry `sbh-web`.
    - Smoke-test: homepage, a Case Study, `/shop` cart flow, contact form
      (lands as a Sanity `formSubmission`), newsletter signup, draft preview
      from the Studio Presentation pane.
+
+### Expected transition behavior: redirect loops
+
+During propagation, a client with a **mixed cache** (apex resolved to Vercel,
+`www` still cached to Netlify) hits a loop: Netlify 301s `www` → apex, Vercel
+308s apex → `www`. It is transient (old record TTLs were 600s) and
+self-heals; affected users can flush local DNS (`sudo dscacheutil
+-flushcache; sudo killall -HUP mDNSResponder` on macOS) and clear the
+browser's cached 301 (hard reload / incognito). The zero-risk alternative is
+to temporarily disable Vercel's apex → www redirect until the old delegation
+fully expires, then restore it.
 
 ## Rollback
 
