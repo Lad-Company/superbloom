@@ -57,7 +57,7 @@ if (pastIssues === undefined) return rewriteToServerError(Astro)
       <IssuuEmbed title={issue.title} eyebrow={issue.eyebrow} issuuUrl={issue.issuuUrl} />
     ) : (
       <>
-        <IssueDetail issue={issue} pastIssues={pastIssues} />
+        <IssueDetail issue={issue} pastIssues={pastIssues} heroReveal={false} />
         <ContactBand role="brand-deep" />
       </>
     )

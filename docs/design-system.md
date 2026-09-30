@@ -470,8 +470,11 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    Always show while paused; show under reduced-motion so the user can opt
    in via the play button. Knob grow / track height grow mirror the same
    recipe inside the scrubber.
-3. **Type Reveal** — lines/words by default; chars reserved for hero/route
-   moments. Units rise under an overflow clip with no opacity fade and land on
+3. **Type Reveal** — lines/words by default; chars reserved for the hero
+   heading on navbar / sitemap destinations only (home, work, who-we-are,
+   index, zine, shop). Detail routes (case studies, articles, past zine
+   issues) render their hero heading static via `PageHero reveal={false}`.
+   Units rise under an overflow clip with no opacity fade and land on
    a slight overshoot settle (`back.out`), springing rather than smacking to a
    stop. Stat Reveal entrances follow the same rule; count-ups stay linear.
 4. **Three-Phase Loading** — skeleton → single progress cue → content release;

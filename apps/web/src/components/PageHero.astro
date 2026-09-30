@@ -12,13 +12,31 @@ interface Props {
   headingSize?: 'h1' | 'h3';
   /** Media hero aspect variant: home 3/2, zine 16:9 (capped at 90svh). */
   mediaRatio?: '3:2' | '16:9';
+  /**
+   * Play the per-character Type Reveal on the heading. Reserved for navbar /
+   * sitemap destinations (home, work, who-we-are, index, zine, shop); detail
+   * routes pass false so their headings render immediately.
+   */
+  reveal?: boolean;
   id?: string;
 }
 
-const { heading, eyebrow, tags, subheading, media, headingSize = 'h1', mediaRatio = '3:2', id } =
-  Astro.props;
+const {
+  heading,
+  eyebrow,
+  tags,
+  subheading,
+  media,
+  headingSize = 'h1',
+  mediaRatio = '3:2',
+  reveal = true,
+  id,
+} = Astro.props;
 
 const headingClass = ['hero-heading', `type-${headingSize}`];
+// Without data-motion-text the heading is never hidden by motion.css, so a
+// non-revealing hero is fully static (no JS work, no fallback timer).
+const revealAttrs = reveal ? {'data-motion-text': true, 'data-unit': 'chars', 'data-scroll': 'false'} : {};
 
 // Layout mode derives from props: media → media hero (home); eyebrow/tags →
 // case hero (work/[slug]); otherwise the plain text hero (work, who-we-are,
@@ -39,7 +57,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
         <div class="overlay">
           <div class="heading-stack">
             {eyebrow && <p class="type-section-heading hero-kicker">{eyebrow}</p>}
-            <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-scroll="false">{heading}</h1>
+            <h1 id={id} class:list={headingClass} {...revealAttrs}>{heading}</h1>
           </div>
           {subheading && <p class="type-caption sub">{subheading}</p>}
         </div>
@@ -48,7 +66,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
   ) : isCase ? (
     <header class="hero-case">
       {eyebrow && <p class="case-eyebrow type-h5">{eyebrow}</p>}
-      <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-scroll="false">{heading}</h1>
+      <h1 id={id} class:list={headingClass} {...revealAttrs}>{heading}</h1>
       {tags && tags.length > 0 && (
         <ul class="case-tags type-label" aria-label="Tags">
           {tags.map((tag) => (
@@ -59,7 +77,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     </header>
   ) : (
     <section class="hero-text">
-      <h1 id={id} class:list={headingClass} data-motion-text data-unit="chars" data-scroll="false">{heading}</h1>
+      <h1 id={id} class:list={headingClass} {...revealAttrs}>{heading}</h1>
     </section>
   )
 }
