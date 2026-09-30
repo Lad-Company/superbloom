@@ -159,13 +159,22 @@ const selected = options.find((option) => option.value === value)
       }
     })
 
-    // Tabbing away closes the menu, matching native select behavior.
+    // Tabbing away closes the menu, matching native select behavior. The
+    // close is deferred a tick because touch taps don't move focus to the
+    // tapped option button, so relatedTarget is null even though the tap's
+    // click is still in flight — closing synchronously unmounts the menu
+    // before the click lands and mobile options become unselectable.
+    // Keyboard Tab settles focus synchronously, so the deferred check still
+    // closes as soon as focus truly leaves; outside taps are already closed
+    // on pointerdown by the shared dismissal.
     document.addEventListener('focusout', (event) => {
       const root = rootOf(event.target as Element | null)
       if (!root || !root.open) return
       const next = event.relatedTarget as Element | null
       if (next && root.contains(next)) return
-      root.open = false
+      setTimeout(() => {
+        if (root.open && !root.contains(document.activeElement)) root.open = false
+      })
     })
 
     // A form reset (e.g. after a successful contact submit) restores input

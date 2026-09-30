@@ -38,4 +38,13 @@ describe('SelectDropdown', () => {
     expect(source).toContain("addEventListener('reset'")
     expect(source).toContain('syncDisplay')
   })
+
+  it('defers the focus-away close so touch taps on options land before the menu unmounts', () => {
+    // Mobile taps don't move focus to the tapped option button, so a
+    // synchronous focusout close would unmount the menu while the tap's
+    // click is still in flight. The handler re-checks activeElement on the
+    // next tick instead.
+    expect(source).toContain("addEventListener('focusout'")
+    expect(source).toContain('root.contains(document.activeElement)')
+  })
 })
