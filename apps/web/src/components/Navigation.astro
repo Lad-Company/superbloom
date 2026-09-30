@@ -450,6 +450,17 @@ const links = [
      .navigation.is-shy.is-revealed above. */
   .navigation.is-shy:has(.compact-menu[open]) {
     transform: none;
+    /* The base .navigation transition includes transform, and transitioning
+       translateY(0) → none keeps the computed transform non-none for the
+       whole 240ms — so the nav stays the fixed panel's containing block
+       until the transition lands: the menu fills only the bar's box, then
+       hard-cuts to full screen (the abrupt shy-bar open; at page top the
+       transform is already none, so the open is smooth there). Take
+       transform out of the transition while the menu is open — the bar is
+       force-revealed, so none and translateY(0) render identically. The
+       full transition list returns on close, so the hide/reveal slide is
+       unaffected. */
+    transition-property: color, background-color;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     /* Also drop the slide-time tint and frost: the open menu is a constant

@@ -17,6 +17,22 @@ describe('Navigation compact menu in shy state', () => {
     expect(source).toMatch(/\.navigation\.is-shy:has\(\.compact-menu\[open\]\)\s*\{[^}]*backdrop-filter:\s*none/)
   })
 
+  it('flips the transform instantly — transitioning to none keeps the containing block for the whole transition', () => {
+    // The base .navigation transition includes transform (240ms). Changing
+    // translateY(0) → none under that transition keeps the computed
+    // transform non-none for the full 240ms, so the nav stays the fixed
+    // panel's containing block until the transition lands: the menu fills
+    // only the bar's box, then hard-cuts to full screen. Measured on the
+    // geometry probe: panel 390x88 (bar height) for ~250ms after the tap,
+    // then a one-frame snap to 390x844 — the "abrupt" open on the shy bar
+    // that the locked-top nav (transform already none) does not have.
+    const block =
+      source.match(/\.navigation\.is-shy:has\(\.compact-menu\[open\]\)\s*\{([^}]*)\}/)?.[1] ?? ''
+    const transitionProperty = block.match(/transition-property:\s*([^;]+)/)?.[1] ?? ''
+    expect(transitionProperty).not.toBe('')
+    expect(transitionProperty).not.toContain('transform')
+  })
+
   it('outranks .navigation.is-shy.is-revealed so the override actually applies', () => {
     // Specificity must beat the (0,3,0) reveal rule regardless of source
     // order — the .is-shy class in the override selector carries it.
