@@ -28,6 +28,10 @@ export default defineConfig({
   site: 'https://www.superbloomhouse.com',
   output: 'server',
   adapter: vercel(),
+  redirects: {
+    // /edit is the human-memorable door into the CMS.
+    '/edit': 'https://superbloom-cms.sanity.studio',
+  },
   build: {
     // Inline every page stylesheet into the served HTML. Each page ships 3–5
     // small stylesheets (≈10KB total — __uno, PageHero, Footer, page CSS), so
