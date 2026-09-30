@@ -7,6 +7,7 @@ interface Cta {
   heading: string | null
   label?: string | null
   href?: string | null
+  contactInquiry?: string | null
   media?: Media | null
 }
 
@@ -28,7 +29,18 @@ const {items} = Astro.props
           title={item.heading ?? undefined}
         />
         {item.heading && <p class="heading type-h5">{item.heading}</p>}
-        {item.label && <Button href={item.href ?? '#'} label={item.label} />}
+        {
+          /* contactInquiry deep-links into the ContactBand form: the band's
+             delegated click handler reads data-contact-inquiry and pre-selects
+             the matching inquiry type (same mechanism as HomeWhy). */
+          item.label && (
+            <Button
+              href={item.href ?? '#'}
+              label={item.label}
+              data-contact-inquiry={item.contactInquiry ?? undefined}
+            />
+          )
+        }
       </div>
     ))
   }

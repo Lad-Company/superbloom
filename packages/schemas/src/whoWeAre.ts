@@ -171,6 +171,22 @@ export const whoWeAre = defineType({
             defineField({name: 'label', type: 'string', initialValue: 'Label'}),
             defineField({name: 'href', type: 'string', initialValue: '#'}),
             defineField({
+              name: 'contactInquiry',
+              title: 'Contact form preset',
+              description:
+                'When the href points at the contact form (#contact), pre-select this inquiry type. Values must match the ContactBand inquiry options.',
+              type: 'string',
+              options: {
+                list: [
+                  {title: 'Agency partner', value: 'agency-partner'},
+                  {title: 'Production partner', value: 'production-partner'},
+                  {title: 'Media partner', value: 'media-partner'},
+                  {title: 'Creative partner', value: 'creative-partner'},
+                  {title: 'Join the Creative Collective', value: 'collective'},
+                ],
+              },
+            }),
+            defineField({
               name: 'media',
               type: 'mediaBox',
             }),

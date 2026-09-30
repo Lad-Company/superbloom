@@ -180,6 +180,7 @@ export const whoWeAreQuery = defineQuery(`
       heading,
       label,
       href,
+      contactInquiry,
       "media": media${mediaProjection}
     },
     faqs[]{

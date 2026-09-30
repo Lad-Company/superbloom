@@ -3747,6 +3747,35 @@
                 },
                 "optional": true
               },
+              "contactInquiry": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "union",
+                  "of": [
+                    {
+                      "type": "string",
+                      "value": "agency-partner"
+                    },
+                    {
+                      "type": "string",
+                      "value": "production-partner"
+                    },
+                    {
+                      "type": "string",
+                      "value": "media-partner"
+                    },
+                    {
+                      "type": "string",
+                      "value": "creative-partner"
+                    },
+                    {
+                      "type": "string",
+                      "value": "collective"
+                    }
+                  ]
+                },
+                "optional": true
+              },
               "media": {
                 "type": "objectAttribute",
                 "value": {
