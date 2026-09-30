@@ -161,6 +161,15 @@ describe('MediaFrame playback profiles', () => {
     expect(source).toContain('transition: none')
   })
 
+  it('sets playsinline on mux-video so iOS never hijacks gesture-driven play into the fullscreen player', () => {
+    // Without playsinline, iPhone Safari forces any play() issued inside a
+    // user gesture (gated-card reveal tap, Presented play/mute buttons) into
+    // the fullscreen native player — the "tap opens the video player"
+    // disruption. custom-media-element only serializes host attributes onto
+    // the shadow <video>, so the attribute must live on <mux-video> here.
+    expect(source).toMatch(/<mux-video[^>]*\splaysinline[\s>]/s)
+  })
+
   it('emits no SSR poster attribute on mux-video — the player poster is copied from the overlay img at upgrade', () => {
     // A SSR `poster` takes one URL (no srcset), so every frame fetched its
     // thumbnail twice. loadPlayer() copies the overlay poster's currentSrc

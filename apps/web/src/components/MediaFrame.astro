@@ -216,7 +216,9 @@ const imageRendering =
        copies the overlay poster's resolved currentSrc onto the element
        before upgrade — guaranteed cache hit — which still covers the
        fade-to-first-frame gap (visual QA: poster="" flashed a blank frame
-       there). */
+       there). `playsinline` is load-bearing on iOS: without it Safari throws
+       any gesture-driven play() (gated-card reveal tap, Presented play/mute
+       buttons) into the fullscreen native player, hijacking the page. */
     isVideo && (
       <mux-video
         playback-id={asset?._type === 'mux.video' ? asset.playbackId ?? undefined : undefined}
@@ -224,6 +226,7 @@ const imageRendering =
         stream-type="on-demand"
         muted
         loop
+        playsinline
         max-resolution={plan.maxResolution}
         preload={plan.preload}
       />
