@@ -2,9 +2,9 @@
 import { caseStudySections } from '../../lib/caseStudySections';
 ---
 
-{/* Zero-height marker at the strip's flow position: the IntersectionObserver
-    in the script watches it to know when the strip is actually stuck to the
-    viewport top (observing the strip itself would oscillate — the dock
+{/* Zero-height marker at the strip's flow position: the script reads its
+    rect on every scroll tick to know when the strip is actually stuck to the
+    viewport top (reading the strip itself would oscillate — the dock
     transform moves its own rect). */}
 <span class="spine-sentinel" aria-hidden="true"></span>
 <nav class="spine-nav type-label" aria-label="Case study sections">
@@ -77,6 +77,7 @@ import { caseStudySections } from '../../lib/caseStudySections';
   );
 
   const updateActive = () => {
+    updateStuck();
     const first = sections.at(0);
     if (!first) return;
     // Fire 15% of a viewport height before the chapter top reaches the nav,
@@ -112,21 +113,24 @@ import { caseStudySections } from '../../lib/caseStudySections';
   // the lead media whenever the bar reveals before the strip has stuck —
   // always the case on mobile, where the strip starts inside the initial
   // viewport. The sentinel sits at the strip's flow position; once it
-  // crosses above the top edge, the strip is stuck.
+  // crosses above the top edge, the strip is stuck. Checked synchronously on
+  // the scroll path, not with an IntersectionObserver: IO deliveries are
+  // batched and can lag Lenis's rAF-driven smooth scroll by several frames,
+  // so the dock engaged late — the revealed bar covered the strip, then the
+  // strip jumped down a beat later (and symmetrically lingered docked after
+  // unsticking, reopening the in-flow gap). The reading-line scrollspy above
+  // replaced an IO for the same flakiness.
   const sentinel = document.querySelector('.spine-sentinel');
-  const stuckObserver =
-    nav && sentinel
-      ? new IntersectionObserver(
-          ([entry]) => {
-            nav.toggleAttribute(
-              'data-stuck',
-              !entry.isIntersecting && entry.boundingClientRect.top < 0,
-            );
-          },
-          { threshold: 0 },
-        )
-      : null;
-  if (sentinel) stuckObserver?.observe(sentinel);
+  const updateStuck = () => {
+    if (!nav || !sentinel) return;
+    // Stuck at the top edge only: past the flow position, but not yet
+    // bottomed out against the parent's end (there the strip rides up with
+    // the content — in flow again — and the dock would shove it --shy-bar-h
+    // below its seat, the same hole as the never-stuck case).
+    const pastTop = sentinel.getBoundingClientRect().top < 0;
+    const parentBottom = nav.parentElement?.getBoundingClientRect().bottom ?? 0;
+    nav.toggleAttribute('data-stuck', pastTop && parentBottom >= nav.offsetHeight);
+  };
 
   // Lenis smooth-scroll drives the native scroll position, so plain scroll
   // events stay in sync with the animated motion.
@@ -162,7 +166,6 @@ import { caseStudySections } from '../../lib/caseStudySections';
   const cleanup = () => {
     window.removeEventListener('scroll', queueUpdate);
     window.removeEventListener('resize', queueUpdate);
-    stuckObserver?.disconnect();
     clickHandlers.forEach((handler, link) => link.removeEventListener('click', handler));
   };
   document.addEventListener('astro:before-swap', cleanup, { once: true });
@@ -186,7 +189,7 @@ import { caseStudySections } from '../../lib/caseStudySections';
      text and the bar eats every tap meant for the chapters. Dock the strip
      beneath the bar by its height (--shy-bar-h, published by lib/shyNav.ts)
      while revealed; the offset lifts when the bar hides. Gated on
-     data-stuck (set by the sentinel observer in the script) so a strip still
+     data-stuck (tracked from the sentinel's rect in the script) so a strip
      in document flow is never pushed off its seat. */
   :global(body:has(.navigation.is-shy.is-revealed)) .spine-nav[data-stuck] {
     transform: translateY(var(--shy-bar-h, 0px));

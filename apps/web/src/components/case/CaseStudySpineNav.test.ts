@@ -19,11 +19,16 @@ describe('CaseStudySpineNav shy-bar docking', () => {
     // Without the gate, revealing the bar while the strip is still in
     // document flow (always the case on mobile, where it starts inside the
     // first viewport) opens a --shy-bar-h gap between the strip and the
-    // lead media above it.
+    // lead media above it. Tracked from the sentinel's rect on the rAF
+    // scroll path — an IntersectionObserver's batched deliveries lag
+    // Lenis's smooth scroll, so the dock engaged and released a beat late.
     expect(source).toContain('class="spine-sentinel"')
-    expect(source).toContain('IntersectionObserver')
-    expect(source).toContain("nav.toggleAttribute(\n              'data-stuck'")
-    expect(source).toContain('stuckObserver?.disconnect()')
+    expect(source).not.toContain('new IntersectionObserver')
+    // Stuck at the top edge only: past the sentinel, but not bottomed out
+    // against the parent's end (where the strip rides up in flow again).
+    expect(source).toContain('sentinel.getBoundingClientRect().top < 0')
+    expect(source).toContain('parentBottom >= nav.offsetHeight')
+    expect(source).toMatch(/const updateActive = \(\) => \{\s*updateStuck\(\)/)
   })
 
   it("slides on the shy bar's own ramp so the dock reads as one piece of chrome", () => {
