@@ -28,12 +28,29 @@ import { caseStudySections } from '../../lib/caseStudySections';
     .filter((section): section is HTMLElement => section !== null);
   let activeId = links.find((link) => link.hasAttribute('aria-current'))?.dataset.spineLink;
 
+  // Keep the active chapter visible in the horizontally scrollable strip:
+  // as the scrollspy moves the highlight, slide the strip so the active tab
+  // centers itself. scrollBy on the overflow container only ever moves the
+  // strip, never the page.
+  const centerActiveLink = (link: HTMLAnchorElement) => {
+    if (!nav) return;
+    const navRect = nav.getBoundingClientRect();
+    const linkRect = link.getBoundingClientRect();
+    const delta = linkRect.left - navRect.left - (navRect.width - linkRect.width) / 2;
+    if (Math.abs(delta) < 1) return;
+    nav.scrollBy({
+      left: delta,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+  };
+
   const setActive = (id: string) => {
     if (id === activeId) return;
     activeId = id;
     links.forEach((link) => {
       if (link.dataset.spineLink === id) {
         link.setAttribute('aria-current', 'location');
+        centerActiveLink(link);
       } else {
         link.removeAttribute('aria-current');
       }

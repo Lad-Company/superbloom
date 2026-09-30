@@ -365,6 +365,16 @@ const links = [
     }
   }
 
+  /* The fixed shy bar and the open compact menu must paint above the case
+     study spine nav (z-index: 20, sticky at top: 0). The compact panel's own
+     z-index: 50 lives inside the nav's stacking context, so only the nav's
+     z-index counts against page content — at 10 the spine nav painted over
+     the open menu and the revealed bar, and ate clicks meant for the logo. */
+  .navigation.is-shy,
+  .navigation:has(.compact-menu[open]) {
+    z-index: 30;
+  }
+
   /* Shy nav, all breakpoints: past the page top the nav becomes a fixed
      frosted bar — hidden while scrolling down, revealed on any upward
      scroll. On desktop the revealed bar re-colors to the sampled surface
@@ -372,8 +382,10 @@ const links = [
      role colors. Either way the bar's tint and blur track --bg so it stays
      legible over dark, light, and brand surfaces. */
   .navigation {
+    /* The shy slide rides the quick ramp (240ms) — at --motion-standard
+       (480ms) the bar read as sluggish to arrive on a flick upward. */
     transition:
-      transform var(--motion-standard) var(--motion-ease-out),
+      transform var(--motion-quick) var(--motion-ease-out),
       color var(--motion-quick) linear;
   }
   .navigation.is-shy {
