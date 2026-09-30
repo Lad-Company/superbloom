@@ -183,6 +183,9 @@ const supportingRows = results.supportingRows ?? [];
       grid-template-columns: 1fr;
     }
     .results--qualitative {
+      /* The band stack has no inner padding, so the 64 hand-off from the
+         flush-ended narrative section above must come from the margin. */
+      margin-top: var(--space-m);
       padding-block: 0;
     }
     .band {
