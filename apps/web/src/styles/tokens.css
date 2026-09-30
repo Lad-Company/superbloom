@@ -75,8 +75,8 @@
   --space-4xl: clamp(120px, 28.57px + 11.9vw, 200px);
   --page-gutter: 24px;
   /* Gap between stacked cards / mosaic items once a list collapses to one
-     column (below desktop). Drops to 64 on small screens so items never
-     sit further apart than sections do. */
+     column (below desktop). Drops to 40 on small screens so items sit
+     visibly closer together than sections (64) do. */
   --stack-gap: var(--space-xl);
   --page-margin-2: 32px;
   --page-inset: var(--page-margin-2);
@@ -137,6 +137,6 @@
   :root {
     --nav-height: 56px;
     --page-inset: var(--space-3xs);
-    --stack-gap: var(--space-m);
+    --stack-gap: var(--space-s);
   }
 }

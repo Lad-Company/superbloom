@@ -51,7 +51,7 @@ describe('fluid spacing tokens (spec §4)', () => {
 
   it('drops the page inset and stack gap on small screens', () => {
     expect(source).toMatch(/@media \(--bp-small\) \{\s*:root \{[^}]*--page-inset: var\(--space-3xs\);/)
-    expect(source).toMatch(/@media \(--bp-small\) \{\s*:root \{[^}]*--stack-gap: var\(--space-m\);/)
+    expect(source).toMatch(/@media \(--bp-small\) \{\s*:root \{[^}]*--stack-gap: var\(--space-s\);/)
   })
 
   it('keeps 96px and below fixed so component spacing stays put', () => {

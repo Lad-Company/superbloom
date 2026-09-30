@@ -72,9 +72,9 @@ The primary design file is
 - Control-internal padding below the 8px floor uses the `--pad-*` sub-scale
   (4 / 6 / 10) rather than snapping compact controls up to the spacing scale.
 - Layout: `--page-gutter` 24px, `--page-inset` 32px (12px at ≤767px),
-  `--stack-gap` 96px (64px at ≤767px) between stacked cards / mosaic items once
-  a list collapses to one column, so items never sit further apart than
-  sections do. The
+  `--stack-gap` 96px (40px at ≤767px) between stacked cards / mosaic items once
+  a list collapses to one column, so items within a section sit visibly
+  closer together than the 64px between sections. The
   inset is the only mobile side gutter: components read `var(--page-inset)`
   and never hard-code `--space-3xs` / `12px` for a section's inline padding.
 - Radius: `--radius-control` 6px (tags + buttons only); `--radius-media` 0 (media
