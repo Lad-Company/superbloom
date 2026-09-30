@@ -21,6 +21,9 @@ describe('Case Study Results variants', () => {
 
   it('separates qualitative bands with the contact-footer hairline', () => {
     expect(source).toContain('border-top: 1px solid var(--fg-20)')
+    // Between bands only — no hairline above the first band: the colored
+    // section edge is itself the divider from the narrative section above.
+    expect(source).toMatch(/\.band\s*\+\s*\.band\s*\{[^}]*border-top/)
   })
 
   it('renders qualitative statements with display type and a caption, no count-up hook', () => {
