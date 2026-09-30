@@ -22,15 +22,15 @@ const previewOrigins = (
   .map((origin) => origin.trim())
   .filter(Boolean)
 
-// Pre-launch, superbloomhouse.com still serves the legacy Netlify site, so
-// the deployed Studio defaults to the Vercel staging URL * flip the default
-// to the prod hostname at launch. Local `sanity dev` defaults to the local
+// Post-launch (2026-09-30 DNS cutover, ADR-0037), the deployed Studio
+// defaults to the prod hostname; the Vercel staging URL stays in the allow
+// list above for staging previews. Local `sanity dev` defaults to the local
 // web server.
 const initialOrigin =
   process.env.SANITY_STUDIO_PREVIEW_ORIGIN ??
   (process.env.NODE_ENV === 'development'
     ? 'http://localhost:4321'
-    : 'https://superbloom-theta.vercel.app')
+    : 'https://www.superbloomhouse.com')
 
 // Articles use the function resolver form: their zine reverse lookup is a
 // GROQ subquery, which the object form's `select` cannot express (select
