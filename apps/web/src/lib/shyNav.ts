@@ -96,6 +96,29 @@ const restoreRoleColors = () => {
   if (roleFg) nav.style.setProperty('--fg', roleFg)
 }
 
+/* While the bar slides in or out, is-animating fades the frost layer out
+   and gives the bar a near-solid tint (see Navigation.astro): animating a
+   35px backdrop blur over live content re-renders the blur every frame and
+   drops frames on mobile. The frost fades back in when the slide ends.
+   transitionend is the normal exit; the timeout covers interrupted slides
+   (state flips again mid-transition, so no transform transitionend fires
+   for the aborted run). */
+let animatingFallback: ReturnType<typeof setTimeout> | undefined
+const boundNavs = new WeakSet<HTMLElement>()
+
+const endSlide = () => {
+  clearTimeout(animatingFallback)
+  nav?.classList.remove('is-animating')
+}
+
+const beginSlide = () => {
+  if (!nav) return
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  nav.classList.add('is-animating')
+  clearTimeout(animatingFallback)
+  animatingFallback = setTimeout(endSlide, 500)
+}
+
 const setState = (next: ShyState) => {
   if (!nav) return
   if (state === next) {
@@ -107,11 +130,14 @@ const setState = (next: ShyState) => {
   state = next
   if (next === 'top') {
     nav.classList.remove('is-shy', 'is-revealed')
+    endSlide()
     restoreRoleColors()
   } else if (next === 'revealed') {
+    beginSlide()
     nav.classList.add('is-shy', 'is-revealed')
     applySurfaceColors()
   } else {
+    beginSlide()
     nav.classList.add('is-shy')
     nav.classList.remove('is-revealed')
   }
@@ -160,6 +186,16 @@ export const initShyNav = () => {
   if (!listening) {
     listening = true
     window.addEventListener('scroll', onScroll, {passive: true})
+  }
+  // The slide's transform transitionend lifts is-animating (filter to the
+  // nav's own transform — the frost pseudo-layer's opacity transitionend
+  // also bubbles here). Bound once per element; initShyNav rebinds after
+  // view-transition swaps, which hand us a fresh nav element.
+  if (nav && !boundNavs.has(nav)) {
+    boundNavs.add(nav)
+    nav.addEventListener('transitionend', (event) => {
+      if (event.propertyName === 'transform' && event.pseudoElement === '') endSlide()
+    })
   }
   // Land correctly when the page restores mid-scroll (bfcache, anchors).
   onScroll()

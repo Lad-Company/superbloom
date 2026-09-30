@@ -386,17 +386,38 @@ const links = [
        (480ms) the bar read as sluggish to arrive on a flick upward. */
     transition:
       transform var(--motion-quick) var(--motion-ease-out),
-      color var(--motion-quick) linear;
+      color var(--motion-quick) linear,
+      background-color var(--motion-quick) linear;
   }
   .navigation.is-shy {
     position: fixed;
     transform: translateY(-110%);
-    /* Barely-there surface tint + heavy blur; the hairline below the bar
-       uses the shared border recipe (1px, fg at 20%). */
+    /* The hairline below the bar uses the shared border recipe (1px, fg at
+       20%). */
+    border-bottom: 1px solid var(--fg-20);
+  }
+  /* The frost (tint + 35px blur) lives on a pseudo-layer, not the nav: a
+     backdrop-filter on the sliding bar forces a full blur re-render of the
+     content beneath it on every animation frame — off the compositor fast
+     path on mobile, and the source of the reveal's dropped frames. While
+     the bar slides (is-animating, set in lib/shyNav.ts) the frost fades out
+     and the bar wears a near-solid tint, so the slide is a pure composited
+     transform; the frost fades back in once the bar lands. */
+  .navigation.is-shy::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
     background: color-mix(in srgb, var(--bg) 10%, transparent);
     backdrop-filter: blur(var(--frosted-layer-blur));
     -webkit-backdrop-filter: blur(var(--frosted-layer-blur));
-    border-bottom: 1px solid var(--fg-20);
+    transition: opacity var(--motion-quick) linear;
+  }
+  .navigation.is-shy.is-animating {
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+  }
+  .navigation.is-shy.is-animating::before {
+    opacity: 0;
   }
   .navigation.is-shy.is-revealed {
     transform: translateY(0);
@@ -414,6 +435,12 @@ const links = [
     transform: none;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+    /* Also drop the slide-time tint and frost: the open menu is a constant
+       black surface, and a frosted strip above it reads as a glitch. */
+    background: transparent;
+  }
+  .navigation.is-shy:has(.compact-menu[open])::before {
+    opacity: 0;
   }
 
   @media (prefers-reduced-motion: reduce) {
