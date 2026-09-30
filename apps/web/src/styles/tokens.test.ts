@@ -31,6 +31,8 @@ describe('fluid type tokens (spec §3)', () => {
     ['--type-h4', 40, 80],
     ['--type-h5', 32, 56],
     ['--type-section-heading', 32, 56],
+    ['--type-h6', 19, 24],
+    ['--type-editorial-title', 24, 38],
   ] as const)('%s rides the shared 360→1440 ramp (%s→%s)', (token, floor, cap) => {
     expect(source).toContain(`${token}: ${typeClamp(floor, cap)};`)
   })
@@ -66,7 +68,7 @@ describe('Uno shortcut wiring', () => {
 
   // Bare `text-[var(--x)]` is ambiguous in Uno and emits a color declaration
   // instead of font-size; the length: hint is what makes the ramp apply.
-  it.each(['h1', 'h2', 'h3', 'h4', 'h5', 'section-heading'])(
+  it.each(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'section-heading', 'editorial-title'])(
     'type-%s references its token with the length: hint',
     (step) => {
       expect(unoConfig).toContain(`text-[length:var(--type-${step})]`)

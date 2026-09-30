@@ -52,6 +52,11 @@
   --type-h4: clamp(40px, 26.67px + 3.7vw, 80px);
   --type-h5: clamp(32px, 24px + 2.22vw, 56px);
   --type-section-heading: clamp(32px, 24px + 2.22vw, 56px);
+  /* Graphik subheading steps ride the same ramp. h6 floors at body (19) so a
+     subheading never drops below the reading copy it introduces; the
+     editorial title keeps its 24/38 endpoints, now fluid between them. */
+  --type-h6: clamp(19px, 17.33px + 0.46vw, 24px);
+  --type-editorial-title: clamp(24px, 19.33px + 1.3vw, 38px);
   /* Marquee: shared ramp shape and 200 cap, floor held at 80 (§3.4). Its font
      stays the marquee face; the variable-font width morph is a separate spec. */
   --type-marquee: clamp(80px, 40px + 11.11vw, 200px);

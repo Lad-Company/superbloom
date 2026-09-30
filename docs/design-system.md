@@ -44,9 +44,12 @@ The primary design file is
 - The marquee rides the same ramp shape via `--type-marquee` (cap 200, floor held
   at 80) but keeps its own face: the PP Neue Corp variable cut, morphing
   Condensed → Wide on hover/focus (ARCHITECTURE.md ADR-0025).
-- Fixed steps (fluid type would fight user zoom): `editorial-title` — Graphik
-  38 / 24. `h6` 24. `h7` 32. `body` 19. `caption` 17. `label`/`eyebrow` 17
-  (PP Tight).
+- The two Graphik subheading steps ride the same ramp: `editorial-title` 24→38,
+  `h6` 19→24 (floored at body so a subheading never drops below the copy it
+  introduces). Both track at -0.02em so letterspacing scales with the size.
+  (ARCHITECTURE.md ADR-0024, amended.)
+- Fixed steps (fluid type would fight user zoom): `h7` 32. `body` 19. `caption` 17.
+  `label`/`eyebrow` 17 (PP Tight).
 - **PP Neue Corp Tight** is the sole compact interface/navigation face (buttons,
   tags, controls, nav). **Graphik** is reserved for editorial/reading copy.
 - The **Who We Are marquee** is the *only* place the alternate PP Neue Corp display

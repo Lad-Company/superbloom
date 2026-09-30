@@ -47,9 +47,11 @@ export default defineConfig({
     },
   },
   shortcuts: {
-    // Type styles transcribed from Figma R3 variables. Display steps reference
-    // the fluid ramp tokens in tokens.css (one shared 360→1440 curve); body/UI
-    // steps stay fixed so they don't fight user zoom.
+    // Type styles transcribed from Figma R3 variables. Display steps and the
+    // Graphik subheadings (h6, editorial-title) reference the fluid ramp
+    // tokens in tokens.css (one shared 360→1440 curve); body/UI steps stay
+    // fixed so they don't fight user zoom. Fluid steps track in em so the
+    // Figma -0.02em letterspacing holds at every size.
     // NB: var() sizes need the `length:` hint — bare `text-[var(--x)]` is
     // ambiguous and Uno emits a (broken) color declaration instead of
     // font-size.
@@ -64,8 +66,8 @@ export default defineConfig({
     'type-h5':
       'font-display-tight font-[750] text-[length:var(--type-h5)] leading-[0.88] tracking-[0] uppercase',
     'editorial-title':
-      'font-body font-medium text-[24px] leading-[1.3] tracking-[-0.48px] lg:text-[38px] lg:leading-[1.28] lg:tracking-[-0.76px]',
-    'type-h6': 'font-body font-medium text-[24px] leading-[1.2] tracking-[-0.48px]',
+      'font-body font-medium text-[length:var(--type-editorial-title)] leading-[1.3] tracking-[-0.02em]',
+    'type-h6': 'font-body font-medium text-[length:var(--type-h6)] leading-[1.2] tracking-[-0.02em]',
     'type-h7':
       'font-display-tight font-[750] text-[32px] leading-[0.88] tracking-[0] uppercase line-clamp-4',
     'type-eyebrow':
