@@ -24,7 +24,8 @@ const sentryAuthToken =
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://superbloomhouse.com',
+  // www is canonical: the apex 308-redirects to it at the Vercel edge.
+  site: 'https://www.superbloomhouse.com',
   output: 'server',
   adapter: vercel(),
   build: {

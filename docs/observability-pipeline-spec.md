@@ -28,10 +28,12 @@ human-readable (plain-language summary lines, not raw payloads).
 - `apps/web` is Astro SSR on Vercel (`output: 'server'`, `@astrojs/vercel`;
   ARCHITECTURE.md §2). API glue already lives in `apps/web/src/pages/api/*`
   per ADR-0003 (no database; SaaS-owned persistence).
-- The Vercel team is on the **Hobby plan**: no Account Webhooks, no Drains, no
-  Audit Log Drains (all Pro/Enterprise; audit logs Enterprise-only). Cron jobs
-  are available but limited to **once per day** with per-hour precision
-  (±59 min).
+- The Vercel team was on the **Hobby plan** at design time: no Account
+  Webhooks, no Drains, no Audit Log Drains (all Pro/Enterprise; audit logs
+  Enterprise-only). Cron jobs were limited to **once per day** with per-hour
+  precision (±59 min). **Update 2026-09-29:** the project transferred to the
+  Superbloom-owned **Pro** team `superbloom` ahead of launch; the Pro
+  constraints no longer apply, but the design below is unchanged (see §8).
 - GA4 is live: measurement ID `G-M4H5NZVDCB`, Consent Mode v2, bootstrapped in
   `apps/web/src/layouts/Layout.astro`; preview traffic is excluded from prod
   analytics via `gaMode` (ADR-0026).
@@ -273,20 +275,23 @@ Vercel project settings for deployed environments.
 | `GA4_PROPERTY_ID`                                     | Numeric GA4 property ID for `runReport`      |
 | `GA4_CLIENT_EMAIL` / `GA4_PRIVATE_KEY`                | Service-account credentials for the Data API |
 
-## 8. Plan-tier constraints (Hobby)
+## 8. Plan-tier constraints (Hobby — retired 2026-09-29)
 
-> Hosting-plan context (2026-09-24): `lad-company` stays on Hobby through
-> launch; the project + domain transfer to an SBH-owned Pro team post-launch
-> (see the DNS Cutover Runbook in the KB). The Hobby constraints below are
-> therefore interim, and the Pro swap noted here becomes available after that
-> transfer — still optional, no relay contract change either way.
+> Hosting-plan context: the project + domains transferred to the
+> SBH-owned **Pro** team `superbloom` on 2026-09-29, ahead of the
+> 2026-09-30 launch (see `docs/dns-cutover-runbook.md`). The Hobby
+> constraints below are therefore **retired**; the Pro options noted here are
+> now available — still optional, no relay contract change either way.
 
-- No Vercel Account Webhooks, Drains, or Audit Log Drains — hence
-  GitHub-sourced deploy events and no login/audit coverage. Upgrading to Pro
-  later would allow swapping the deploy source to Vercel webhooks and adding
-  Firewall attack events without changing the relay's Discord contract.
-- Cron: maximum once per day, per-hour precision (±59 min) — matches the daily
-  digest exactly; nothing in this design needs finer scheduling.
+- ~~No Vercel Account Webhooks, Drains, or Audit Log Drains~~ — on Pro,
+  Account Webhooks and Drains are available (audit logs remain
+  Enterprise-only). The relay keeps GitHub-sourced deploy events and no
+  login/audit coverage for now; swapping the deploy source to Vercel webhooks
+  or adding Firewall attack events would not change the relay's Discord
+  contract.
+- ~~Cron: maximum once per day, per-hour precision (±59 min)~~ — Pro allows
+  more frequent, minute-precise cron. The daily digest stays daily by design;
+  nothing in this pipeline needs finer scheduling.
 - Discord webhook execution is rate-limited per channel; this pipeline's
   volume (a handful of messages per day) is orders of magnitude below it.
 - Sanity webhooks: one concurrent request, 30-second timeout, two retries at

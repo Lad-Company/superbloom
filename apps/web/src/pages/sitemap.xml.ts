@@ -51,7 +51,7 @@ export const GET: APIRoute = async ({ site }) => {
         })),
     ),
   ];
-  const origin = site ?? new URL('https://superbloomhouse.com');
+  const origin = site ?? new URL('https://www.superbloomhouse.com');
   const urls = entries
     .map(({ path, updatedAt }) => {
       const lastmod = updatedAt ? `<lastmod>${escapeXml(updatedAt)}</lastmod>` : '';
