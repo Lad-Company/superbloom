@@ -12,7 +12,6 @@ const nav = [
   {label: 'News & Press', href: '/index'},
   {label: 'Zine', href: '/zine'},
   {label: 'Shop', href: '/shop'},
-  {label: 'Edit', href: 'https://superbloom-cms.sanity.studio', external: true},
 ]
 // Social links are decorative: a CMS outage drops them, never the page. The
 // 500 page skips this footer entirely so it stays fetch-free (ErrorPage
@@ -69,27 +68,23 @@ const currentYear = new Date().getFullYear()
       <div class="col contact">
         <a href="mailto:hello@superbloomhouse.com" class="email">hello@superbloomhouse.com</a>
         <p>
+          LA<br />
           <a href="https://maps.app.goo.gl/JQnEQbBXd1q9TAJu5" target="_blank" rel="noopener">
             5768 West Adams Blvd<br />Los Angeles, CA 90016
-          </a><br />P - 310.913.5312
+          </a><br />PH: 310-913-5312
         </p>
         <p>
           NYC<br />
           <a href="https://goo.gl/maps/RvvdLkRkVatXafCi9" target="_blank" rel="noopener">
-            77 10th Street, Floor 3<br />Brooklyn, NY 11215
-          </a>
+            77 10TH Street, Floor 3<br />Brooklyn, NY 11215
+          </a><br />PH: 212-254-2800
         </p>
       </div>
       <ul class="col">
         {
           nav.map((item) => (
             <li>
-              <a
-                href={item.href}
-                class="underline-draw"
-                target={item.external ? '_blank' : undefined}
-                rel={item.external ? 'noopener noreferrer' : undefined}
-              >
+              <a href={item.href} class="underline-draw">
                 {item.label}
               </a>
             </li>
