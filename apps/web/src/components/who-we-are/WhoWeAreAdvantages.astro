@@ -104,6 +104,8 @@ const { headline, blocks } = Astro.props;
 
   @media (--bp-small) {
     .advantages-section {
+      /* Section header → list is the fixed 32 mobile step. */
+      gap: var(--space-xs);
       padding: var(--space-m) var(--page-inset) 0;
     }
 
@@ -113,10 +115,10 @@ const { headline, blocks } = Astro.props;
       text-align: left;
     }
 
-    /* Stacked items need more air than the desktop 24px, otherwise each
-       item's media bleeds into the next item's heading. */
+    /* Stacked items use the shared stacked-item gap: more air than the
+       desktop 24px, but tighter than the 64 between sections. */
     .advantages-list {
-      gap: var(--space-m);
+      gap: var(--stack-gap);
     }
 
     .advantage-item {

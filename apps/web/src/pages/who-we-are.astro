@@ -118,6 +118,11 @@ const faqVisible = showFaq && faqs.length > 0;
        spacing. */
     padding: var(--space-4xl) 0 0;
   }
+  @media (--bp-small) {
+    .discipline-section {
+      padding-top: var(--space-m);
+    }
+  }
 
   /* TwoUp keeps zero bottom padding because the FAQ below it carries the
      inter-section gap as top padding. When the FAQ is hidden (Site Settings

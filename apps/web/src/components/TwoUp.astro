@@ -66,6 +66,7 @@ const {items} = Astro.props
          shrink-wraps each column to its content width and pins it left.
          Stretch makes columns (and their media) full width. */
       align-items: stretch;
+      gap: var(--stack-gap);
       /* Bottom padding stays 0 on mobile too; Faq's 64 top padding is the
          single spacer. Top owns the full 64 after the flush section above. */
       padding: var(--space-m) var(--page-inset) 0;
