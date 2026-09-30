@@ -44,7 +44,9 @@
      coefficient. Floors are QA-tunable against Figma. */
   --type-h1: clamp(64px, 18.67px + 12.59vw, 200px);
   --type-h2: clamp(48px, 17.33px + 8.52vw, 140px);
-  --type-h3: clamp(80px, 66.67px + 3.7vw, 120px);
+  /* h3 floor matches h1's so the ramp never inverts on phones: a section
+     heading (h3) must not out-size the page hero (h1) at any viewport. */
+  --type-h3: clamp(64px, 45.33px + 5.19vw, 120px);
   --type-h4: clamp(40px, 26.67px + 3.7vw, 80px);
   --type-h5: clamp(32px, 24px + 2.22vw, 56px);
   --type-section-heading: clamp(32px, 24px + 2.22vw, 56px);
@@ -122,9 +124,12 @@
   --font-interface: var(--font-display-tight);
 }
 
-/* Small screens collapse the nav to a shorter compact bar. */
+/* Small screens collapse the nav to a shorter compact bar and drop the page
+   inset to the 12px mobile gutter. Every section reads the gutter from this
+   token; no component hard-codes a mobile inline padding. */
 @media (--bp-small) {
   :root {
     --nav-height: 56px;
+    --page-inset: var(--space-3xs);
   }
 }

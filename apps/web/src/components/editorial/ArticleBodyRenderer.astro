@@ -21,4 +21,12 @@ const {block} = Astro.props;
     padding: 0 var(--page-inset);
     margin: var(--space-xl) 0;
   }
+
+  @media (--bp-small) {
+    /* Rows own a full 64 above themselves (the block before ends flush);
+       the trailing section owns the gap after the last row. */
+    .content-layout-row-shell {
+      margin: var(--space-m) 0 0;
+    }
+  }
 </style>

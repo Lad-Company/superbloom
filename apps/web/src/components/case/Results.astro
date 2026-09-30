@@ -174,8 +174,10 @@ const supportingRows = results.supportingRows ?? [];
   }
   @media (--bp-small) {
     .results {
-      margin-top: var(--space-2xl);
-      padding-block: var(--space-xl);
+      /* Narrative sections above end flush, so the top owns the full 64;
+         bottom 32 pairs with the press section's 32. */
+      margin-top: 0;
+      padding-block: var(--space-m) var(--space-xs);
     }
     ul {
       grid-template-columns: 1fr;

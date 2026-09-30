@@ -65,8 +65,8 @@ const renderLayers = (showLayers ?? true) && layers.length > 0
        to the pointer layers. */
     align-items: flex-start;
     /* Shared inner vertical rhythm for all three statement sections:
-       symmetric 4xl above/below on desktop, 2xl on mobile (the WhoWeAreIntro
-       definition). */
+       symmetric 4xl above/below on desktop, 32 on mobile so it pairs with
+       its neighbours for the standard 64px hand-off. */
     padding: var(--space-4xl) var(--page-inset);
     /* Clip the field at the section box on all sides: items plant past the
        edges with no inner padding and read as sliding under the sections
@@ -140,9 +140,9 @@ const renderLayers = (showLayers ?? true) && layers.length > 0
   @media (--bp-small) {
     .parallax-statement {
       /* Layers are hidden on mobile, so the min-height canvas goes with
-         them — the section collapses to content plus mirrored 2xl padding. */
+         them — the section collapses to content plus the mobile 32+32 rhythm. */
       min-height: 0;
-      padding: var(--space-2xl) var(--space-3xs);
+      padding: var(--space-xs) var(--page-inset);
     }
 
     h2 {

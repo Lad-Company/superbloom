@@ -195,20 +195,13 @@ const displayedCapabilities = capabilities.slice(0, 8);
       grid-template-columns: 1fr;
       /* Halve the gap between the contextual copy and the capability list. */
       gap: calc(var(--space-xl) / 2);
-      /* Top 64 owns the gap above (the parallax section hands off flush);
-         bottom 32 pairs with the next section's 32 for the 64px rhythm. */
-      padding: var(--space-m) var(--space-3xs) var(--space-xs);
+      /* 32 top/bottom pairs with the neighbouring sections' 32 for the
+         64px mobile rhythm. */
+      padding: var(--space-xs) var(--page-inset);
     }
 
     .list {
       gap: var(--space-3xs);
-    }
-
-    /* One-off mobile size (~20% under the h3 floor): at 80px the longest
-       capability ("ENTERTAINMENT", 13 caps) overflows a 375px viewport;
-       64px keeps it inside the 12px gutters. */
-    .list li {
-      font-size: 64px;
     }
   }
 </style>

@@ -286,7 +286,11 @@ const anchoredAtEdge = (index: number): boolean => {
   }
   @media (--bp-small) {
     .work {
-      padding: var(--space-xs) var(--space-3xs);
+      padding: var(--space-xs) var(--page-inset);
+    }
+    /* Section header → content is a fixed 32 on mobile, like /index. */
+    .header {
+      margin-bottom: var(--space-xs);
     }
   }
 </style>

@@ -85,7 +85,9 @@ const { id, label, section, title } = Astro.props;
   }
   @media (--bp-small) {
     .narrative-section {
-      padding-top: var(--space-2xl);
+      /* Sections end flush (0 bottom), so each top owns the full 64. */
+      gap: var(--space-m);
+      padding-top: var(--space-m);
     }
     .summary {
       font-size: 24px;

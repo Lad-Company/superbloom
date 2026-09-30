@@ -179,5 +179,25 @@ const destinationCtaLabel = article.source ?? 'Read the full story'
     .overview-eyebrow {
       margin-bottom: var(--space-3xs);
     }
+
+    /* Mobile rhythm: the hero's 32 bottom + this 32 = the standard 64
+       hand-off; every following block owns a full 64 above itself because
+       the block before it ends flush. */
+    .lead-media {
+      margin-top: var(--space-xs);
+    }
+
+    .overview {
+      padding-top: var(--space-m);
+    }
+
+    .destination-cta {
+      padding-block: var(--space-m) var(--space-xs);
+    }
+
+    .related-items {
+      margin-top: 0;
+      padding-block: var(--space-m) var(--space-xs);
+    }
   }
 </style>
