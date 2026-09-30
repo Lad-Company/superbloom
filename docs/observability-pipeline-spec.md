@@ -1,7 +1,7 @@
 # Observation Pipeline — Sentry Error Aggregation with a Discord Drain
 
 Every operationally significant event on superbloomhouse.com — errors, deploys,
-content publishes, and a daily traffic digest — surfaces as a sanitized,
+and content publishes — surfaces as a sanitized,
 human-readable message in Discord. Errors aggregate in Sentry first; everything
 else flows through a thin relay in `apps/web`.
 
@@ -17,8 +17,8 @@ opening a dashboard:
 
 - when the site errors (new Sentry issues, deploy failures) — in
   **#site-alerts**;
-- when the site changes (production deploys, content publishes) and how it
-  performed yesterday (traffic digest) — in **#site-activity**.
+- when the site changes (production deploys, content publishes) — in
+  **#site-activity**.
 
 Every message is sanitized (no PII, no secrets, no mention injection) and
 human-readable (plain-language summary lines, not raw payloads).
@@ -59,9 +59,11 @@ human-readable (plain-language summary lines, not raw payloads).
 1. **Logins are out of scope.** The site has no visitor auth; admin-login
    events for Vercel/Sanity require Enterprise-tier audit features. Newsletter
    signups and form submissions were considered as a substitute and dropped.
-2. **Traffic = a daily GA4 digest**, produced by a Vercel Cron job querying
-   the GA4 Data API. No per-pageview streaming (Vercel Analytics drains are
-   Pro-only and would be noise).
+2. ~~**Traffic = a daily GA4 digest**, produced by a Vercel Cron job querying
+   the GA4 Data API.~~ **Removed 2026-09-30:** the digest, its cron route, and
+   the GA4 Data API client were deleted; basic GA4 page tracking (Consent Mode
+   v2, `Layout.astro`) is unaffected. No per-pageview streaming (Vercel
+   Analytics drains would be noise).
 3. **Deploy events come from GitHub**, not Vercel: Hobby has no Account
    Webhooks, so the relay consumes GitHub `deployment_status` events emitted
    by Vercel's GitHub app.
@@ -75,7 +77,7 @@ human-readable (plain-language summary lines, not raw payloads).
    PII); the webhook filter is an allowlist so future internal types never
    auto-notify. No Shopify orders, no Mux events.
 6. **Two Discord channels**: `#site-alerts` (errors, deploy failures) and
-   `#site-activity` (deploys, publishes, digest). Alerts never share a channel
+   `#site-activity` (deploys, publishes). Alerts never share a channel
    with ambient activity.
 7. **Sentry aggregates errors and releases only.** All non-error events flow
    upstream → relay → Discord directly; nothing non-error is forced through
@@ -90,8 +92,6 @@ human-readable (plain-language summary lines, not raw payloads).
 flowchart LR
   GH[GitHub deploy events] -->|deployment_status| R[Relay /api/hooks]
   SAN[Sanity publish hook] --> R
-  CRON[Vercel daily cron] --> GA[GA4 Data API]
-  CRON --> R
   SDK[@sentry/astro SDK] -->|errors + releases| S[Sentry project]
   S -->|native Discord alert| AL[#site-alerts]
   R -->|deploy failure| AL
@@ -106,7 +106,6 @@ _Source of truth per event class:_
 | Deploy success       | relay         | #site-activity | GitHub `deployment_status` webhook               |
 | Deploy failure       | relay         | #site-alerts   | GitHub `deployment_status` webhook               |
 | Content publish      | relay         | #site-activity | Sanity outgoing webhook                          |
-| Traffic digest       | relay         | #site-activity | Vercel Cron → GA4 Data API                       |
 
 ## 4. Event catalog
 
@@ -190,34 +189,18 @@ Each entry describes behavior, not build steps. "Relay" means the endpoints in
 - **Deduplication:** deliveries carry an `idempotency-key`; Sanity delivery is
   at-least-once, so the relay ignores repeat keys within a short window.
 
-### 4.4 Daily traffic digest (Vercel Cron → GA4 Data API → relay)
-
-- **Source:** the GA4 Data API `runReport` method against the numeric property
-  behind measurement ID `G-M4H5NZVDCB`, authenticated with a service account
-  (the `G-…` ID itself is not the API's property identifier).
-- **Cadence:** one Vercel Cron job, daily. On Hobby the fire time drifts
-  within a one-hour window; the digest always reports the last completed
-  UTC day, so drift only shifts delivery, not content.
-- **Content:** yesterday's active users and sessions, top pages by views, top
-  referrers — one compact message to `#site-activity`:
-  "Traffic — Mon Aug 16: 312 users · 401 sessions · Top: / (98), /work (54),
-  /zine (31) · Referrers: google (120), direct (96)"
-- **Failure:** if the GA4 query or the Discord post fails, the cron route
-  reports the error to Sentry instead of posting a partial digest.
-
 ## 5. Relay behavior (`apps/web/src/pages/api/hooks/`)
 
 The relay is thin Astro API glue, consistent with ADR-0003. It holds no state
 and keeps no copy of any payload.
 
 - **Endpoints:** `POST /api/hooks/github` (deployment_status), `POST
-/api/hooks/sanity` (publishes), and the cron-invoked traffic-digest route.
+/api/hooks/sanity` (publishes).
 - **Authentication of inbound calls:**
   - GitHub: HMAC-SHA-256 of the raw body in `X-Hub-Signature-256`, verified
     against `GITHUB_WEBHOOK_SECRET` with a timing-safe compare.
   - Sanity: the webhook secret signature (Stripe-style signing), verified
     against `SANITY_WEBHOOK_SECRET`.
-  - Cron: `Authorization: Bearer ${CRON_SECRET}` header check.
   - Every other request gets a 401 and is otherwise ignored.
 - **Sanitization by construction:** handlers extract a per-event allowlist of
   fields and compose a fresh Discord message. Raw upstream payloads are never
@@ -272,8 +255,6 @@ Vercel project settings for deployed environments.
 | `SANITY_WEBHOOK_SECRET`                               | Sanity signature verification                |
 | `CRON_SECRET`                                         | Bearer check on the cron route; also gates the Sentry smoke-test hook (`/api/debug/sentry-test`, `/debug/sentry`) |
 | `SENTRY_FORCE_ENABLE`                                 | Optional `1` override: reports errors from preview/local builds (events are tagged with their `environment`) |
-| `GA4_PROPERTY_ID`                                     | Numeric GA4 property ID for `runReport`      |
-| `GA4_CLIENT_EMAIL` / `GA4_PRIVATE_KEY`                | Service-account credentials for the Data API |
 
 ## 8. Plan-tier constraints (Hobby — retired 2026-09-29)
 
@@ -290,8 +271,8 @@ Vercel project settings for deployed environments.
   or adding Firewall attack events would not change the relay's Discord
   contract.
 - ~~Cron: maximum once per day, per-hour precision (±59 min)~~ — Pro allows
-  more frequent, minute-precise cron. The daily digest stays daily by design;
-  nothing in this pipeline needs finer scheduling.
+  more frequent, minute-precise cron; nothing in this pipeline needs finer
+  scheduling.
 - Discord webhook execution is rate-limited per channel; this pipeline's
   volume (a handful of messages per day) is orders of magnitude below it.
 - Sanity webhooks: one concurrent request, 30-second timeout, two retries at
@@ -319,4 +300,3 @@ Vercel project settings for deployed environments.
 - GitHub webhook events & payloads — https://docs.github.com/en/webhooks/webhook-events-and-payloads
 - GitHub validating webhook deliveries — https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries
 - Sanity GROQ-powered webhooks — https://www.sanity.io/docs/content-lake/webhooks
-- GA4 Data API (runReport) — https://developers.google.com/analytics/devguides/reporting/data/v1/basics

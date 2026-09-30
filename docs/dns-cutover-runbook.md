@@ -113,11 +113,3 @@ The GoDaddy zone is untouched. To roll back, set the nameservers back to
 `ns39.domaincontrol.com` / `ns40.domaincontrol.com` at Domain.com — the domain
 immediately returns to the Netlify site. Decommission the Netlify site and the
 old zone only after the new site has been stable for an agreed window.
-
-## Open item (not a cutover blocker)
-
-- **GA4 digest env vars are unset everywhere.** `GA4_PROPERTY_ID`,
-  `GA4_CLIENT_EMAIL`, `GA4_PRIVATE_KEY` are empty in `.env.local` and absent
-  from the Vercel project, so the daily traffic-digest cron returns 503 (and
-  files a Sentry warning) until configured. Fill the values from the GA4 Data
-  API service account, then `vercel env add <NAME> production --scope superbloom`.

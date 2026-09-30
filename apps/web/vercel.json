@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/hooks/traffic-digest",
-      "schedule": "0 13 * * *"
-    }
-  ]
-}
