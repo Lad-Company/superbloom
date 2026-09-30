@@ -373,7 +373,9 @@ Hero → News → Parallax → Capabilities (Capes) → Our Work → Creative Co
 - **Home Zine** — promotes a specific Zine Issue with its own promo copy/media/CTA
   (does not mirror the current Issue). Fixed brand color **Green `#99a224`**. CTA
   routes to `/zine` if the promoted issue is current, else to
-  `/zine/issues/[slug]`.
+  `/zine/issues/[slug]`. Copy sits flush with the column edges (no inset) so the
+  right-half text block aligns with the Creative Collective media block above it;
+  both 50/50 sections share flush media/copy tops.
 
 ### Who We Are (Fixed, art-directed — singleton `whoWeAre`)
 
