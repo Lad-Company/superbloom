@@ -95,6 +95,11 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     max-width: 28ch;
     display: block;
     overflow: visible;
+    /* Balance multi-line headings so a long CMS title can't strand a lone
+       word ("the") on its own line. Plain CSS for non-revealed heroes; for
+       the char-split reveal it shapes the layout split-type measures at
+       split/resplit time. */
+    text-wrap: balance;
   }
 
   @media (--bp-below-desktop) {
@@ -166,8 +171,12 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     pointer-events: none;
   }
 
+  /* The heading spans the full overlay width (Figma home hero: the headline
+     box runs edge to edge). The old 2/3 column forced real-length titles
+     into tall 4-line stacks with orphaned words at desktop sizes; full width
+     plus text-wrap: balance keeps them on few, even lines. */
   .overlay .heading-stack {
-    grid-column: 1 / 3;
+    grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
     gap: var(--space-2xs);
@@ -179,8 +188,12 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
     margin: 0;
   }
 
+  /* The intro sits on its own row below the now-full-width heading (still
+     the right-hand column), so a long final heading line can never run
+     under it. */
   .sub {
     grid-column: 3;
+    grid-row: 2;
     margin: 0;
     align-self: end;
   }
