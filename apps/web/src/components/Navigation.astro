@@ -313,9 +313,23 @@ const links = [
       letter-spacing: 0.02em;
       text-transform: uppercase;
     }
+    /* Panel buttons wear fixed colors: the open menu is a constant black
+       surface, so they must not consume the nav's --bg/--fg — on desktop the
+       shy nav rewrites those vars as it samples sections, which recolored
+       the buttons mid-scroll. Let's Chat mirrors the dark-surface control
+       (white pill, black ink, wipe inverts); Shop's wipe inverts its pinned
+       resting colors. */
+    .compact-actions .btn-secondary {
+      background: #fff;
+      color: #000;
+      --wipe-surface: #000;
+      --wipe-ink: #fff;
+    }
     .compact-actions .btn-tertiary {
       background: #2a2a2a;
       color: #fff;
+      --wipe-surface: #fff;
+      --wipe-ink: #000;
     }
 
     /* Flip logo + toggle to white so they read on the black overlay; the
