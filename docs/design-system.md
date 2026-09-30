@@ -463,12 +463,14 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    a slight overshoot settle (`back.out`), springing rather than smacking to a
    stop. Stat Reveal entrances follow the same rule; count-ups stay linear.
 4. **Three-Phase Loading** — skeleton → single progress cue → content release;
-   only for waits >400ms; never spinner + skeleton together. The first-load
-   veil (`PageLoader`) follows the same rule with two thresholds: it waits for
-   fonts and every image in the initial viewport (4s cap), lifts immediately if
-   that took under ~100ms (never perceptibly shown, no fade), otherwise holds
-   to a 400ms beat so it reads as intentional rather than a flicker. It runs
-   once per tab: reloads and back/forward skip it before paint. Media frames never
+   never spinner + skeleton together. In-page loading feedback (skeletons,
+   progress cues) appears only for waits >400ms. The first-load veil
+   (`PageLoader`) is the exception: it is already painted at t=0, so the rule
+   becomes *how long it stays*, with two thresholds. It waits for fonts and
+   every image in the initial viewport (4s cap), lifts immediately if that took
+   under ~100ms (never perceptibly shown, no fade), otherwise holds to a 400ms
+   beat so it reads as intentional rather than a flicker. It runs once per
+   tab: reloads and back/forward skip it before paint. Media frames never
    render alt text visually while loading; the placeholder gradient shows.
 5. **Route Transition** — full-viewport, reserved exclusively for navbar
    destinations; other navigations keep local motion.
