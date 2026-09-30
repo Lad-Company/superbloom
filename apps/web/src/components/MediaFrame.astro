@@ -365,39 +365,46 @@ const imageRendering =
 
   /** The `<mux-video>` surface we drive; `_hlsConfig` is the mux-video /
    *  playback-core hook for hls.js options, `_hls` the live hls.js instance
-   *  (undefined under native HLS, i.e. Safari/iOS). */
+   *  (undefined under native HLS, i.e. Safari/iOS). Only the dev guardrail
+   *  reads `_hls.config` — keep it that narrow so dependency upgrades can
+   *  only break the guardrail, never playback. */
   type MuxVideoElement = HTMLVideoElement & {
     _hlsConfig?: Record<string, unknown>
     _hls?: {
       config: Record<string, unknown>
-      levels?: Array<{bitrate?: number; height?: number}>
-      on?: (event: string, cb: () => void) => void
-      startLevel?: number
-      autoLevelCapping?: number
     }
+  }
+
+  /** Startup selection: disable hls.js's lowest-rung bandwidth test and give
+   *  ABR a generous default estimate. firstAutoLevel then starts on the
+   *  highest rung allowed by the player-size cap (capLevelToPlayerSize,
+   *  defaulted on by playback-core with its own MinCapLevelController —
+   *  never set the `cap-rendition-to-player-size` attribute, which swaps in
+   *  the stock controller and drops `max-resolution` enforcement) instead of
+   *  the bottom of the ladder. The estimate only needs to exceed the top
+   *  rung of the capped ladder (measured 2026-09-30: 15.8 Mbps at
+   *  max_resolution=1080p, 6.2 Mbps at 720p) so the size cap is the sole
+   *  selector; measured bandwidth replaces it after the first fragment, so
+   *  slow connections still drop for segment two onward. Do NOT write
+   *  `capLevelToPlayerSize` here — rely on the playback-core default (the
+   *  dev guardrail warns if an upgrade flips it). Safari/iOS play HLS
+   *  natively and ignore all of this; only the `max-resolution` URL param
+   *  applies there. */
+  const STARTUP_HLS_CONFIG = {
+    testBandwidth: false,
+    abrEwmaDefaultEstimate: 20_000_000,
   }
 
   /** Ambient loops are short and cyclic, so the hls.js defaults (30s forward
    *  buffer, unbounded cap growth) download far more of the stream than the
-   *  loop can ever show. A flat 10s forward buffer bounds that worst case;
-   *  `capLevelToPlayerSize` additionally clamps the rendition to the frame's
-   *  rendered size × DPR, so a phone-width hero never pulls the 1080p
-   *  ceiling `max-resolution` allows. Presented media (controls != 'none')
-   *  keeps the defaults — scrubbing wants the deeper buffer. Safari/iOS
-   *  play HLS natively and ignore all of this; only the `max-resolution`
-   *  URL param applies there. */
+   *  loop can ever show. A flat 10s forward buffer bounds that worst case.
+   *  Presented media (controls != 'none') keeps the default buffer —
+   *  scrubbing wants the deeper runway. */
   const AMBIENT_HLS_CONFIG = {
+    ...STARTUP_HLS_CONFIG,
     maxBufferLength: 10,
     maxMaxBufferLength: 10,
-    capLevelToPlayerSize: true,
   }
-
-  /** Ceiling for the ambient ABR climb, enforced via hls.js
-   *  `autoLevelCapping` on MANIFEST_PARSED (see pinAmbientStartLevel). The
-   *  `max-resolution` URL param already strips higher rungs from the
-   *  playlist; this keeps the same ceiling inside hls.js so the climb can
-   *  never pass 1080p even where the param is absent. */
-  const MAX_AMBIENT_LEVEL_HEIGHT = 1080
 
   /** How far below the viewport a frame may sit before we fetch the mux
    *  chunk — roughly one viewport of scroll runway. */
@@ -463,12 +470,13 @@ const imageRendering =
 
     connectedCallback() {
       const playerElement = this.querySelector('mux-video') as MuxVideoElement | null
-      if (playerElement && this.dataset.controls === 'none') {
+      if (playerElement) {
         // Assign before the element upgrades so the value lands as an own
         // property and playback-core reads it when it builds hls.js — the
         // prototype accessor only exists after `@mux/mux-video` defines the
         // element, which happens on the deferred import below.
-        playerElement._hlsConfig = AMBIENT_HLS_CONFIG
+        playerElement._hlsConfig =
+          this.dataset.controls === 'none' ? AMBIENT_HLS_CONFIG : STARTUP_HLS_CONFIG
       }
       this.posterImg = this.querySelector('.media-frame__poster') as HTMLImageElement | null
       this.curatedPoster = this.querySelector(
@@ -573,8 +581,6 @@ const imageRendering =
           if (!player) return
           this.player = player
 
-          if (this.dataset.controls === 'none') this.pinAmbientStartLevel(player)
-
           this.player.addEventListener('play', this.handlePlay)
           this.player.addEventListener('pause', this.handlePause)
           this.player.addEventListener('volumechange', this.handleVolumeChange)
@@ -590,17 +596,36 @@ const imageRendering =
           // change. Re-evaluate once the source is really in.
           this.player.addEventListener('loadedmetadata', this.handleSourceReady)
 
-          if (import.meta.env.DEV && this.dataset.controls === 'none') {
-            // The buffer cap rides on `_hlsConfig` being read as an own
-            // property before upgrade (see connectedCallback). That contract
-            // is mux-video internals, so surface a break in dev instead of
-            // silently regressing to 30s buffers. `_hls` is undefined under
-            // native HLS (Safari), where the cap does not apply anyway.
+          if (import.meta.env.DEV) {
+            // Startup quality and the buffer cap ride on two contracts:
+            // `_hlsConfig` being read as an own property before upgrade (see
+            // connectedCallback), and playback-core defaulting
+            // `capLevelToPlayerSize` on with its own size-cap controller.
+            // Both are dependency internals, so surface a break in dev
+            // instead of silently regressing to a low-res start or 30s
+            // buffers. `_hls` is undefined under native HLS (Safari), where
+            // none of this applies — the check is a no-op there.
             this.player.addEventListener(
               'playing',
               () => {
                 const hlsConfig = this.player?._hls?.config
-                if (hlsConfig && hlsConfig.maxBufferLength !== AMBIENT_HLS_CONFIG.maxBufferLength) {
+                if (!hlsConfig) return
+                if (hlsConfig.testBandwidth !== false) {
+                  console.warn(
+                    '[media-frame] hls.js bandwidth test not disabled; check the _hlsConfig hook against the installed @mux/mux-video',
+                    hlsConfig,
+                  )
+                }
+                if (hlsConfig.capLevelToPlayerSize !== true) {
+                  console.warn(
+                    '[media-frame] player-size rendition cap off; a playback-core upgrade may have changed the capLevelToPlayerSize default',
+                    hlsConfig,
+                  )
+                }
+                if (
+                  this.dataset.controls === 'none' &&
+                  hlsConfig.maxBufferLength !== AMBIENT_HLS_CONFIG.maxBufferLength
+                ) {
                   console.warn(
                     '[media-frame] ambient hls.js buffer cap not applied; check the _hlsConfig hook against the installed @mux/mux-video',
                     hlsConfig,
@@ -650,59 +675,6 @@ const imageRendering =
       delete img.dataset.src
       delete img.dataset.srcset
       this.applyPlayerPoster()
-    }
-
-    /** hls.js picks its first fragment via `firstAutoLevel`; the default
-     *  500 kbps estimate rejects every Mux rung (the ladder bottoms out
-     *  around 1.2 Mbps), and the "first in playlist" fallback lands on a
-     *  mid-ladder rung — the home hero opened with a 1.6 MB 540p segment.
-     *  Pin the start to the lowest-bitrate rung instead: that fragment
-     *  doubles as hls.js's bandwidth test, so ABR climbs right after on
-     *  fast connections. The climb is then capped at the topmost
-     *  ≤1080p rung via `autoLevelCapping` — with the flat 10s ambient
-     *  buffer that bounds a fast-connection climb to ~10s of the top rung
-     *  instead of filling hls.js's 30s default. `_hls` exists only under
-     *  MSE (Safari's native HLS manages its own ladder), so poll briefly
-     *  from loadstart; MANIFEST_PARSED fires after the manifest fetch,
-     *  leaving the level-playlist round trip as slack before the first
-     *  segment request. */
-    private pinAmbientStartLevel(player: MuxVideoElement) {
-      let attempts = 0
-      const attach = () => {
-        const hls = player._hls
-        if (!hls?.on) {
-          if (this.isConnected && attempts++ < 40) window.setTimeout(attach, 50)
-          return
-        }
-        hls.on('hlsManifestParsed', () => {
-          const levels = hls.levels ?? []
-          if (levels.length < 2) return
-          let lowest = 0
-          for (let i = 1; i < levels.length; i++) {
-            if ((levels[i].bitrate ?? Infinity) < (levels[lowest].bitrate ?? Infinity)) lowest = i
-          }
-          hls.startLevel = lowest
-          // The `max-resolution` URL param normally strips every rung above
-          // 1080p already; this enforces the same ceiling inside hls.js.
-          // `capLevelToPlayerSize` (AMBIENT_HLS_CONFIG) can only lower the
-          // effective cap further, never raise it.
-          let cap = levels.length - 1
-          for (let i = cap; i >= 0; i--) {
-            if ((levels[i].height ?? Infinity) <= MAX_AMBIENT_LEVEL_HEIGHT) {
-              cap = i
-              break
-            }
-          }
-          hls.autoLevelCapping = cap
-          if (import.meta.env.DEV) {
-            console.info(
-              `[media-frame] ambient start pinned to lowest-bitrate level ${lowest + 1}/${levels.length}; ABR capped at level ${cap + 1} (≤${MAX_AMBIENT_LEVEL_HEIGHT}p)`,
-            )
-          }
-        })
-      }
-      if (player._hls?.on) attach()
-      else player.addEventListener('loadstart', attach, {once: true})
     }
 
     attributeChangedCallback(name: string) {

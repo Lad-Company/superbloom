@@ -177,23 +177,43 @@ describe('MediaFrame playback profiles', () => {
     expect(source).toContain('public promotePoster()')
   })
 
-  it('pins the ambient hls.js start level to the lowest-bitrate rung', () => {
-    // hls.js's default 500kbps estimate rejects every Mux rung (ladder floor
-    // ~1.2Mbps), so firstAutoLevel fell back to first-in-playlist — a 1.6MB
-    // 540p first segment on the home hero. The pin starts low; the first
-    // fragment is hls.js's bandwidth test, so ABR climbs right after.
-    expect(source).toContain('pinAmbientStartLevel')
-    expect(source).toContain("hls.on('hlsManifestParsed'")
-    expect(source).toContain('hls.startLevel = lowest')
+  it('disables the hls.js bandwidth test and seeds a generous ABR estimate for startup', () => {
+    // With testBandwidth on, hls.js opens on playlist index 0 (a mid-ladder
+    // 540p rung on Mux); with the default 500kbps estimate firstAutoLevel
+    // rejects every Mux rung. testBandwidth: false + a 20 Mbps seed let
+    // firstAutoLevel start on the highest rung the player-size cap allows —
+    // 20 Mbps clears the largest measured 1080p-capped top rung (15.8 Mbps,
+    // 2026-09-30) so the size cap is the sole selector. Measured bandwidth
+    // replaces the seed after the first fragment.
+    expect(source).toContain('const STARTUP_HLS_CONFIG = {')
+    expect(source).toContain('testBandwidth: false')
+    expect(source).toContain('abrEwmaDefaultEstimate: 20_000_000')
+    // No _hls start-level pinning survives — startup is config-only.
+    expect(source).not.toContain('pinAmbientStartLevel')
+    expect(source).not.toContain('startLevel')
+    expect(source).not.toContain('autoLevelCapping')
+    // The size cap stays a playback-core default; writing it ourselves (or
+    // the cap-rendition-to-player-size attribute on the element) would
+    // bypass the MinCapLevelController that enforces max-resolution.
+    expect(source).not.toContain('capLevelToPlayerSize:')
+    expect(source).not.toMatch(/<mux-video[^>]*cap-rendition-to-player-size/s)
   })
 
-  it('caps the ambient ABR climb at the topmost ≤1080p rung', () => {
-    // On fast connections (or Lighthouse's unthrottled lab network) the
-    // pinned-low start climbs immediately; autoLevelCapping keeps that climb
-    // from ever passing the 1080p ceiling the `max-resolution` URL param
-    // declares.
-    expect(source).toContain('MAX_AMBIENT_LEVEL_HEIGHT = 1080')
-    expect(source).toContain('hls.autoLevelCapping = cap')
+  it('gives Ambient frames the startup config plus the 10s buffer, Presented frames the startup config', () => {
+    expect(source).toContain('...STARTUP_HLS_CONFIG')
+    expect(source).toContain(
+      "this.dataset.controls === 'none' ? AMBIENT_HLS_CONFIG : STARTUP_HLS_CONFIG",
+    )
+  })
+
+  it('dev guardrail watches startup config and the playback-core cap default on all frames', () => {
+    // Runs for every frame (no controls gate on the startup assertions) and
+    // keeps the buffer-cap check ambient-only — Presented frames
+    // intentionally keep the deeper default buffer.
+    expect(source).toContain('hlsConfig.testBandwidth !== false')
+    expect(source).toContain('hlsConfig.capLevelToPlayerSize !== true')
+    expect(source).toContain("this.dataset.controls === 'none' &&")
+    expect(source).not.toMatch(/import\.meta\.env\.DEV\s*&&\s*this\.dataset\.controls/)
   })
 
   it('bounds the ambient forward buffer to a flat 10s', () => {
