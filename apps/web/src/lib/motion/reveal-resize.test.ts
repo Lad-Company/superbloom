@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest'
 
-// Stub matchMedia on window before reveal.ts (which imports gsap and registers
-// ScrollTrigger, whose enable() calls matchMedia) is loaded.
+// Stub matchMedia on window before reveal.ts (which imports gsap; gsap's own
+// matchMedia setup reads it) is loaded.
 const matchMediaStub = (query: string) => ({
   matches: false,
   media: query,

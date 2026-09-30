@@ -19,8 +19,6 @@ import { caseStudySections } from '../../lib/caseStudySections';
 </nav>
 
 <script>
-  import { getLenis } from '../../lib/motion';
-
   const nav = document.querySelector<HTMLElement>('.spine-nav');
   const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-spine-link]')];
   const sections = links
@@ -101,7 +99,7 @@ import { caseStudySections } from '../../lib/caseStudySections';
     });
   };
 
-  // Lenis smooth-scroll drives the native scroll position, so plain scroll
+  // Native smooth scrolling drives the real scroll position, so plain scroll
   // events stay in sync with the animated motion.
   window.addEventListener('scroll', queueUpdate, { passive: true });
   window.addEventListener('resize', queueUpdate);
@@ -113,17 +111,10 @@ import { caseStudySections } from '../../lib/caseStudySections';
       const section = document.getElementById(link.dataset.spineLink ?? '');
       if (!section) return;
       event.preventDefault();
-      // Scroll through Lenis when smooth scroll is active: a native
-      // scrollIntoView races Lenis's raf loop and the scroll stalls.
-      const lenis = getLenis();
-      if (lenis) {
-        lenis.scrollTo(section);
-      } else {
-        section.scrollIntoView({
-          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-          block: 'start',
-        });
-      }
+      section.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'start',
+      });
       history.replaceState(null, '', link.hash);
       section.focus({ preventScroll: true });
       setActive(section.id);

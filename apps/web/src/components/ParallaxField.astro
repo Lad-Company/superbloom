@@ -129,11 +129,7 @@ const placement = {context: 'split', collapseAt: 'small', vw: 30} as const
 }
 
 <script>
-  import gsap from 'gsap'
-  import {ScrollTrigger} from 'gsap/ScrollTrigger'
-  import {PARALLAX_FIELD} from '../lib/motion'
-
-  gsap.registerPlugin(ScrollTrigger)
+  import {PARALLAX_FIELD} from '../lib/motion/config'
 
   // Parallax Field: items are planted once (deterministic scatter from the
   // frontmatter) and then move on two axes — a ScrollTrigger scrub on the
@@ -147,20 +143,38 @@ const placement = {context: 'split', collapseAt: 'small', vw: 30} as const
   // no layer motion runs there either — scrub or push-away.
   const finePointer = window.matchMedia('(pointer: fine)')
 
+  // gsap + ScrollTrigger load on demand: reduced-motion and sub-768px
+  // sessions render the static scatter and never pay for the motion stack.
+  const fieldQuery = window.matchMedia('(prefers-reduced-motion: no-preference) and (min-width: 768px)')
+
   const cleanups: Array<() => void> = []
 
   const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 
-  const initFields = () => {
-    document.querySelectorAll<HTMLElement>('[data-parallax-field]').forEach((root) => {
-      if (root.dataset.parallaxInitialized) return
+  const initFields = async () => {
+    if (!fieldQuery.matches) return
+    const roots = Array.from(document.querySelectorAll<HTMLElement>('[data-parallax-field]')).filter(
+      (root) => !root.dataset.parallaxInitialized && root.querySelector('[data-parallax-item]'),
+    )
+    if (!roots.length) return
+
+    const [{default: gsap}, {loadScrollTrigger}] = await Promise.all([
+      import('gsap'),
+      import('../lib/motion/scrollTrigger'),
+    ])
+    await loadScrollTrigger()
+
+    for (const root of roots) {
+      // A View Transition swap may have detached the root while the chunks loaded.
+      if (root.dataset.parallaxInitialized || !root.isConnected) continue
       const items = Array.from(root.querySelectorAll<HTMLElement>('[data-parallax-item]'))
-      if (!items.length) return
       root.dataset.parallaxInitialized = 'true'
 
       const scope = root.closest<HTMLElement>('[data-pointer-scope]') ?? root
       const motion = gsap.matchMedia()
 
+      // matchMedia still owns live teardown: resizing below 768px or toggling
+      // reduced motion reverts the tweens even after the field initialized.
       motion.add('(prefers-reduced-motion: no-preference) and (min-width: 768px)', () => {
         const tweens = items.map((item) => {
           const depth = clamp01(Number(item.dataset.depth ?? 0))
@@ -247,17 +261,22 @@ const placement = {context: 'split', collapseAt: 'small', vw: 30} as const
         motion.revert()
         delete root.dataset.parallaxInitialized
       })
-    })
+    }
   }
 
   const cleanupAll = () => cleanups.splice(0).forEach((cleanup) => cleanup())
 
-  initFields()
-  document.addEventListener('astro:page-load', initFields)
+  void initFields()
+  document.addEventListener('astro:page-load', () => void initFields())
+  // Fields that started below the layer breakpoint (or under reduced motion)
+  // initialize if the query flips to matching.
+  fieldQuery.addEventListener('change', (event) => {
+    if (event.matches) void initFields()
+  })
   document.addEventListener('astro:before-swap', cleanupAll)
   window.addEventListener('pagehide', cleanupAll)
   window.addEventListener('pageshow', (event) => {
-    if (event.persisted) initFields()
+    if (event.persisted) void initFields()
   })
 </script>
 

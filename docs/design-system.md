@@ -439,9 +439,13 @@ linear reveals, expressed only through reusable primitives (never page-specific
 animation). Motion is **built and active** (`apps/web/src/lib/motion/`), not
 deferred.
 
-**Non-negotiables.** GSAP + ScrollTrigger + the shared **Lenis** smooth-scroll
-module (per ADR-0021, which supersedes ADR-0007's no-smooth-scroll clause). No
-Motion/Framer. Every timeline lives inside `gsap.matchMedia()` with a
+**Non-negotiables.** GSAP + ScrollTrigger, no Motion/Framer (per ADR-0039,
+which retires ADR-0021's Lenis smooth scroll — anchor glides are native
+`scroll-behavior: smooth`). Nothing in the motion stack loads eagerly: the
+Layout dynamic-imports the bundle only for `prefers-reduced-motion:
+no-preference` sessions, and ScrollTrigger layers on via
+`loadScrollTrigger()` at the deferred-motion idle beat. Every timeline lives
+inside `gsap.matchMedia()` with a
 reduced-motion path. Animate only transforms / opacity / clip-path / CSS vars —
 never top/left/width/height/margin/padding. No whole-page generic fades. Motion
 never obscures readable type. Reuse a primitive before writing a page-local timeline.

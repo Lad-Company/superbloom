@@ -65,16 +65,23 @@ const supportingRows = results.supportingRows ?? [];
 )}
 
 <script>
-  import {revealStats} from '../../lib/motion';
+  import { prefersReducedMotion } from '../../lib/motion/config';
 
   // Count-up + rise reveal runs only for the quantitative variant — the
   // qualitative bands render their final state with no animation. The
   // [data-results-stats] hook exists only in the quantitative branch, so
   // this is a no-op on qualitative pages.
   const cleanups: Array<() => void> = [];
-  const initStats = () =>
-    document.querySelectorAll<HTMLElement>('[data-results-stats]').forEach((container) => {
-      if (container.dataset.statsInitialized) return;
+  const initStats = async () => {
+    const containers = Array.from(document.querySelectorAll<HTMLElement>('[data-results-stats]')).filter(
+      (container) => !container.dataset.statsInitialized,
+    );
+    // revealStats (gsap + ScrollTrigger) loads on demand; reduced-motion
+    // sessions keep the SSR'd final values and skip the motion stack.
+    if (!containers.length || prefersReducedMotion()) return;
+    const { revealStats } = await import('../../lib/motion/statReveal');
+    containers.forEach((container) => {
+      if (container.dataset.statsInitialized || !container.isConnected) return;
       container.dataset.statsInitialized = 'true';
       const destroy = revealStats(container, ':scope > li');
       cleanups.push(() => {
@@ -82,11 +89,12 @@ const supportingRows = results.supportingRows ?? [];
         delete container.dataset.statsInitialized;
       });
     });
+  };
 
   const cleanupAll = () => cleanups.splice(0).forEach((cleanup) => cleanup());
 
-  initStats();
-  document.addEventListener('astro:page-load', initStats);
+  void initStats();
+  document.addEventListener('astro:page-load', () => void initStats());
   document.addEventListener('astro:before-swap', cleanupAll);
 </script>
 

@@ -117,9 +117,6 @@ importers:
       gsap:
         specifier: ^3.15.0
         version: 3.15.0
-      lenis:
-        specifier: ^1.3.25
-        version: 1.3.25(react@19.2.8)
       split-type:
         specifier: ^0.3.4
         version: 0.3.4
@@ -5187,20 +5184,6 @@ packages:
   lambda-runtimes@3.0.0:
     resolution: {integrity: sha512-fre88KwPAjsDq8jeenv8GlgkdqbKf4wPGTlnKMXEDA5K12A3IptirNFv1koG47IBcgSykCbWYF9T3wmmKJFJtQ==}
     engines: {node: '>=22'}
-
-  lenis@1.3.25:
-    resolution: {integrity: sha512-mOKxayErlaONK8fm4LN3XNd99Qu4plTpn9h9qf8wxzjGrJDzuD84FYzZ81HCd6ZsWp++VWVwOzL286Pf2s2u4A==}
-    peerDependencies:
-      '@nuxt/kit': '>=3.0.0'
-      react: '>=17.0.0'
-      vue: '>=3.0.0'
-    peerDependenciesMeta:
-      '@nuxt/kit':
-        optional: true
-      react:
-        optional: true
-      vue:
-        optional: true
 
   leven@4.1.0:
     resolution: {integrity: sha512-KZ9W9nWDT7rF7Dazg8xyLHGLrmpgq2nVNFUckhqdW3szVP6YhCpp/RAnpmVExA9JvrMynjwSLVrEj3AepHR6ew==}
@@ -13168,10 +13151,6 @@ snapshots:
   kleur@4.1.5: {}
 
   lambda-runtimes@3.0.0: {}
-
-  lenis@1.3.25(react@19.2.8):
-    optionalDependencies:
-      react: 19.2.8
 
   leven@4.1.0: {}
 

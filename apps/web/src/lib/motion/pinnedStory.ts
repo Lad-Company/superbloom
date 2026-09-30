@@ -1,8 +1,7 @@
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { prefersReducedMotion, SCROLL } from './config';
-
-gsap.registerPlugin(ScrollTrigger);
+import type {ScrollTrigger} from 'gsap/ScrollTrigger';
+import {prefersReducedMotion, SCROLL} from './config';
+import {loadScrollTrigger} from './scrollTrigger';
 
 export interface PinnedStoryOptions {
   /** The scroll region that scrubs through chapters. */
@@ -23,6 +22,10 @@ export interface PinnedStoryOptions {
  * Pinned Storytelling primitive. Pins a bounded region and scrubs linearly
  * through a small set of chapters. Under reduced motion no pin is created and
  * the first chapter is shown in normal document flow.
+ *
+ * The pin arms on the lazily loaded ScrollTrigger chunk (this primitive only
+ * runs from the Layout's deferred-motion beat, so the chunk is typically
+ * already in flight or loaded).
  */
 export function initPinnedStory(options: PinnedStoryOptions): () => void {
   const { section, pin, chapters, onChapter, chapterScroll = 100, scrub = SCROLL.scrubLag } = options;
@@ -36,20 +39,28 @@ export function initPinnedStory(options: PinnedStoryOptions): () => void {
   const mm = gsap.matchMedia();
 
   mm.add('(prefers-reduced-motion: no-preference)', () => {
-    const trigger = ScrollTrigger.create({
-      trigger: section,
-      start: 'top top',
-      end: `+=${chapters * chapterScroll}%`,
-      pin,
-      scrub,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        const index = Math.min(chapters - 1, Math.floor(self.progress * chapters));
-        onChapter(index);
-      },
+    let killed = false;
+    let trigger: ScrollTrigger | null = null;
+    void loadScrollTrigger().then((ScrollTrigger) => {
+      if (killed) return;
+      trigger = ScrollTrigger.create({
+        trigger: section,
+        start: 'top top',
+        end: `+=${chapters * chapterScroll}%`,
+        pin,
+        scrub,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const index = Math.min(chapters - 1, Math.floor(self.progress * chapters));
+          onChapter(index);
+        },
+      });
     });
-    return () => trigger.kill();
+    return () => {
+      killed = true;
+      trigger?.kill();
+    };
   });
 
   return () => mm.revert();

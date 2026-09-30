@@ -201,11 +201,18 @@ const gaMode = preview
     {preview && <PreviewBar />}
     {(gaMode !== 'off' || import.meta.env.DEV) && <CookieConsent />}
     <script>
-      import { getLenis, initMotion, initSmoothScroll, prefersReducedMotion } from '../lib/motion';
+      import { prefersReducedMotion } from '../lib/motion/config';
       import { initAnalytics } from '../lib/analytics';
-      import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
       initAnalytics();
+
+      // The motion stack (gsap core + split-type; ScrollTrigger layered on
+      // via loadScrollTrigger) loads only for visitors who can see it:
+      // reduced-motion sessions skip the bundle entirely — CSS leaves every
+      // reveal target visible and this script reveals anything the html.js
+      // gate hid. The import is kicked off immediately so the fetch overlaps
+      // the first-load veil instead of starting after it lifts.
+      const motionModule = prefersReducedMotion() ? null : import('../lib/motion');
 
       // Lazy gtag/js: the library is ~170 KB gz and only ever receives queued
       // dataLayer pushes, so it loads on idle (or first interaction, whichever
@@ -240,7 +247,6 @@ const gaMode = preview
       }
 
       let destroyMotion = () => {};
-      let destroySmoothScroll = () => {};
       // The global veil only runs on the genuine first load; View Transition
       // navigations dismiss it in astro:before-swap and this flips false.
       let isFirstLoad = true;
@@ -324,32 +330,32 @@ const gaMode = preview
       let navigationType: 'push' | 'replace' | 'traverse' = 'push';
 
       // Fresh route navigations land at the top of the new page; a URL hash
-      // lands on its section. Scrolling goes through Lenis (when active) so its
-      // internal scroll state resets too — otherwise Lenis re-applies the
-      // previous page's offset on the next frame and the new page appears to
-      // load scrolled down (e.g. at the footer).
+      // lands on its section. Instant behavior, so the CSS `scroll-behavior:
+      // smooth` used for in-page anchor glides never turns a route landing
+      // into a long smooth scroll from the previous page's offset.
       const settleScrollPosition = () => {
         if (navigationType === 'traverse') return;
         const hash = window.location.hash;
         const target = hash ? document.getElementById(hash.slice(1)) : null;
-        const lenis = getLenis();
-        if (lenis) {
-          lenis.scrollTo(target ?? 0, { immediate: true, force: true });
-        } else if (target) {
-          target.scrollIntoView();
+        if (target) {
+          target.scrollIntoView({ block: 'start', behavior: 'instant' });
         } else {
-          window.scrollTo(0, 0);
+          window.scrollTo({ top: 0, behavior: 'instant' });
         }
       };
 
       // Heavier scroll systems (Capes pin, parallax rAF) listen for this and
       // init only once the hero reveal has had the first frames to itself, so
       // their pin-spacer/refresh reflow never competes with the reveal.
-      const runDeferredMotion = () => {
+      const runDeferredMotion = async () => {
+        const motion = await motionModule;
+        // ScrollTrigger must be registered before the deferred systems create
+        // their triggers in response to this event.
+        if (motion) await motion.loadScrollTrigger();
         document.dispatchEvent(new CustomEvent('sbh:motion-deferred'));
         // Re-assert after ScrollTrigger measures: pin spacers and splits shift
-        // layout, and Lenis must not drift back to a stale offset.
-        ScrollTrigger.refresh();
+        // layout, and the settled scroll position must not drift.
+        if (motion) (await motion.loadScrollTrigger()).refresh();
         settleScrollPosition();
       };
 
@@ -372,7 +378,6 @@ const gaMode = preview
       };
 
       const setup = async () => {
-        destroySmoothScroll = initSmoothScroll();
         settleScrollPosition();
         // First hard load: hold the veil until fonts + above-the-fold media are
         // ready, so startup layout work and any media fetch happen behind it and
@@ -384,9 +389,20 @@ const gaMode = preview
           }
         }
         isFirstLoad = false;
-        // The full page-entry Type Reveal plays on the genuine first load and
-        // on every View Transition navigation.
-        destroyMotion = initMotion();
+        const motion = await motionModule;
+        if (motion) {
+          // The full page-entry Type Reveal plays on the genuine first load and
+          // on every View Transition navigation.
+          destroyMotion = motion.initMotion();
+        } else {
+          // Reduced motion: the motion bundle never loads, so reveal targets
+          // hidden by the html.js CSS gate are shown directly.
+          document
+            .querySelectorAll<HTMLElement>('[data-motion-text]')
+            .forEach((el) => {
+              el.style.opacity = '1';
+            });
+        }
         // Let the reveal own the first frames, then bring up the heavy scroll
         // systems and re-measure on idle (fixed beat where idle is unavailable).
         scheduleDeferredMotion();
@@ -394,9 +410,7 @@ const gaMode = preview
 
       const teardown = () => {
         destroyMotion();
-        destroySmoothScroll();
         destroyMotion = () => {};
-        destroySmoothScroll = () => {};
       };
 
       // Runs on the initial load and after every View Transition navigation.

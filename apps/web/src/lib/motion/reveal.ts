@@ -1,9 +1,8 @@
 import gsap from 'gsap'
-import {ScrollTrigger} from 'gsap/ScrollTrigger'
+import type {ScrollTrigger} from 'gsap/ScrollTrigger'
 import {EASE, MOTION, STAGGER, prefersReducedMotion} from './config'
+import {loadScrollTrigger} from './scrollTrigger'
 import {splitText, type SplitHandle, type SplitUnit} from './splitText'
-
-gsap.registerPlugin(ScrollTrigger)
 
 export interface RevealOptions {
   /** Split unit that gets animated. Reading copy defaults to lines. */
@@ -159,12 +158,21 @@ export async function revealText(
     tween?.restart(true)
   }
 
+  // Scroll-triggered reveals arm on the lazily loaded ScrollTrigger chunk.
+  // The element is already visible (opacity 1 above; units sit in their
+  // clipped from-state), so a swap before the chunk lands must cancel the
+  // arming rather than create a trigger on a detached subtree.
+  let destroyed = false
+
   if (scroll) {
-    trigger = ScrollTrigger.create({
-      trigger: el,
-      start,
-      once: true,
-      onEnter: play,
+    void loadScrollTrigger().then((ScrollTrigger) => {
+      if (destroyed) return
+      trigger = ScrollTrigger.create({
+        trigger: el,
+        start,
+        once: true,
+        onEnter: play,
+      })
     })
   } else {
     play()
@@ -173,6 +181,7 @@ export async function revealText(
   return {
     play,
     destroy() {
+      destroyed = true
       trigger?.kill()
       tween?.kill()
       split.revert()
