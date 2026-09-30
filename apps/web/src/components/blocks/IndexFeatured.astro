@@ -143,10 +143,12 @@ const SIDE_SETTINGS = {
     display: block;
   }
 
+  /* Stacked (below desktop) the lead and rail cards read as one list, so
+     every step is the shared stacked-item gap. */
   .grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-xl);
+    gap: var(--stack-gap);
   }
 
   .lead,
@@ -157,7 +159,7 @@ const SIDE_SETTINGS = {
   .rail {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xl);
+    gap: var(--stack-gap);
   }
 
   @media (--bp-desktop) {
