@@ -1,0 +1,55 @@
+<!doctype html>
+<!-- Render source for public/emails/microdose-footer-{email,phone,web}.png (see README.md).
+     Word positions match Figma 6970:2600: e-mail x=0, phone x=295, web x=589. -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      @font-face {
+        font-family: 'PP Neue Corp';
+        font-weight: 750;
+        src: url('../../public/fonts/PPNeueCorp-TightUltrabold.woff2') format('woff2');
+      }
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      /* Figma 6970:2600 Contact: 612x17, Label style, underlined */
+      .row {
+        position: relative;
+        width: 612px;
+        height: 17px;
+        background: #fff;
+        font-family: 'PP Neue Corp', sans-serif;
+        font-weight: 750;
+        font-size: 17px;
+        line-height: 17px;
+        letter-spacing: 0.34px;
+        color: #000;
+        text-transform: uppercase;
+      }
+      .row span {
+        position: absolute;
+        top: 0;
+        text-decoration: underline;
+        text-underline-position: from-font;
+      }
+      .email {
+        left: 0;
+      }
+      .phone {
+        left: 295px;
+      }
+      .web {
+        left: 589px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="row">
+      <span class="email">e-mail</span>
+      <span class="phone">phone</span>
+      <span class="web">web</span>
+    </div>
+  </body>
+</html>
