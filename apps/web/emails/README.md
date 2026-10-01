@@ -11,8 +11,9 @@ custom HTML.
 
 Header and footer typography is baked into PNG slices in `../public/emails/`
 (served at `https://www.superbloomhouse.com/emails/` — requires a site deploy).
-Footer contact links stay clickable because each word (`e-mail`, `phone`,
-`web`) is its own linked slice; image maps are unreliable in email clients.
+Footer contact links stay clickable because each word (`e-mail`, `web`,
+`unsubscribe`) is its own linked slice; image maps are unreliable in email
+clients. No `phone` word — the numbers live in the addresses slice.
 
 Slices are 2x renders of `src/*.html`, captured with headless Chromium:
 
@@ -25,5 +26,7 @@ playwright screenshot --device="Desktop Chrome HiDPI" --viewport-size=612,17 "fi
 
 `slice-header.png` and `slice-addresses.png` save directly as
 `microdose-header.png` / `microdose-footer-addresses.png`. The contact row is
-cut into per-word slices (design x-positions 0 / 295 / 589, doubled for 2x)
-and trimmed to the ink.
+cut into per-word slices: render each word alone from `src/footer-contact.html`'s
+styles, screenshot at 2x, and trim to the ink (`magick <in> -trim +repage
+../public/emails/microdose-footer-<word>.png`). e-mail sits at x=0, web at
+x=295, unsubscribe right-aligned.

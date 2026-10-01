@@ -16,8 +16,8 @@
   apps/web/public/emails/* before sending. Header and footer typography is
   baked into PNG slices (see emails/src/ for render sources); the content
   section is live text with Arial Narrow / Arial fallbacks in clients that
-  block custom fonts. Footer carries the required *|UNSUB|* merge tag as a
-  live-text link beneath the contact slices.
+  block custom fonts. The footer's unsubscribe slice carries the required
+  *|UNSUB|* merge tag.
 -->
   <head>
     <meta charset="utf-8" />
@@ -225,7 +225,9 @@
               </tr>
               <!-- Contact links: one linked image slice per word so the type
                    matches the design and every link stays clickable. Image
-                   maps are unreliable in email clients, hence slices.
+                   maps are unreliable in email clients, hence slices. No
+                   phone word (numbers are in the addresses block above); the
+                   unsubscribe slice carries the required *|UNSUB|* merge tag.
                    Regenerate from emails/src/footer-contact.html. -->
               <tr>
                 <td>
@@ -247,41 +249,25 @@
                         /></a>
                       </td>
                       <td width="294" style="width: 294px">
-                        <a href="tel:+13109135312" style="text-decoration: none"
-                          ><img
-                            src="https://www.superbloomhouse.com/emails/microdose-footer-phone.png"
-                            width="34"
-                            alt="phone"
-                            style="display: block; width: 34px; height: auto; border: 0"
-                        /></a>
-                      </td>
-                      <td align="right">
                         <a href="https://www.superbloomhouse.com" style="text-decoration: none"
                           ><img
                             src="https://www.superbloomhouse.com/emails/microdose-footer-web.png"
-                            width="23"
+                            width="24"
                             alt="web"
-                            style="display: block; width: 23px; height: auto; border: 0"
+                            style="display: block; width: 24px; height: auto; border: 0"
+                        /></a>
+                      </td>
+                      <td align="right">
+                        <a href="*|UNSUB|*" style="text-decoration: none"
+                          ><img
+                            src="https://www.superbloomhouse.com/emails/microdose-footer-unsubscribe.png"
+                            width="72"
+                            alt="unsubscribe"
+                            style="display: block; width: 72px; height: auto; border: 0"
                         /></a>
                       </td>
                     </tr>
                   </table>
-                </td>
-              </tr>
-              <tr>
-                <td style="padding-top: 24px">
-                  <!-- Required by Mailchimp; live text so the *|UNSUB|* merge
-                       tag resolves. Intentionally understated. -->
-                  <a
-                    href="*|UNSUB|*"
-                    style="
-                      font-family: 'Graphik', Helvetica, Arial, sans-serif;
-                      font-size: 11px;
-                      line-height: 14px;
-                      color: #808080;
-                    "
-                    >Unsubscribe from The Microdose</a
-                  >
                 </td>
               </tr>
             </table>

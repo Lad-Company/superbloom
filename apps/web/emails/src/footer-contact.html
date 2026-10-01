@@ -1,6 +1,8 @@
 <!doctype html>
-<!-- Render source for public/emails/microdose-footer-{email,phone,web}.png (see README.md).
-     Word positions match Figma 6970:2600: e-mail x=0, phone x=295, web x=589. -->
+<!-- Render source for public/emails/microdose-footer-{email,web,unsubscribe}.png
+     (see README.md). e-mail x=0 and web x=295 keep Figma 6970:2600 positions;
+     unsubscribe right-aligns (no phone word — numbers live in the addresses
+     block above). -->
 <html>
   <head>
     <meta charset="utf-8" />
@@ -37,19 +39,19 @@
       .email {
         left: 0;
       }
-      .phone {
+      .web {
         left: 295px;
       }
-      .web {
-        left: 589px;
+      .unsubscribe {
+        right: 0;
       }
     </style>
   </head>
   <body>
     <div class="row">
       <span class="email">e-mail</span>
-      <span class="phone">phone</span>
       <span class="web">web</span>
+      <span class="unsubscribe">unsubscribe</span>
     </div>
   </body>
 </html>
