@@ -19,7 +19,7 @@ Slices are 2x renders of `src/*.html`, captured with headless Chromium:
 ```sh
 cd apps/web/emails
 playwright screenshot --device="Desktop Chrome HiDPI" --viewport-size=660,357 "file://$PWD/src/header.html" /tmp/slice-header.png
-playwright screenshot --device="Desktop Chrome HiDPI" --viewport-size=612,51 "file://$PWD/src/footer-addresses.html" /tmp/slice-addresses.png
+playwright screenshot --device="Desktop Chrome HiDPI" --viewport-size=612,68 "file://$PWD/src/footer-addresses.html" /tmp/slice-addresses.png
 playwright screenshot --device="Desktop Chrome HiDPI" --viewport-size=612,17 "file://$PWD/src/footer-contact.html" /tmp/slice-contact.png
 ```
 
