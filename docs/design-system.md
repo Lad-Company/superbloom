@@ -429,7 +429,10 @@ stays.
   involvement, and it **must not** auto-subscribe the submitter. The newsletter is
   a separate email-only Mailchimp subscribe; successful subscribes also trigger
   Mailchimp Automation flow 8385 ("SBH Web Contact Form", Customer Journeys API
-  starting point) which sends the welcome email.
+  starting point) which sends the welcome email. After the Sanity record is
+  written, a best-effort Resend notification email is sent to
+  hello@superbloomhouse.com (reply-to = submitter); a send failure never blocks
+  or changes the submission response.
 - **Never log** customer PII (email, address, phone, payment) or the cart ID to
   Sentry.
 - `/cart` is `noindex`; the current Zine issue archive URL redirects to `/zine` and

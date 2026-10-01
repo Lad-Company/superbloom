@@ -53,6 +53,7 @@ API glue (`apps/web/src/pages/api/*`).
 | Commerce (products, cart, checkout) | Shopify Storefront API | `lib/shopify*.ts`, `pages/api/shop/*` |
 | Email (newsletter) | Mailchimp | `pages/api/newsletter/*` |
 | Form records (contact inquiries) | Sanity | `formSubmission` document via `pages/api/contact.ts` |
+| Email (transactional notifications) | Resend | `pages/api/contact.ts` |
 | Hosting / SSR | Vercel | `@astrojs/vercel` |
 
 ## 4. `apps/web` layers
@@ -122,7 +123,7 @@ settled part). Where another doc owns the topic, that doc is authoritative.
 - **0003 — No database.** All persistence via SaaS; no backups/migrations/uptime burden at this scale. Rejected Postgres/Supabase/SQLite.
 - **0004 — Mux for video.** First-party Sanity plugin, cheap, AV1 + thumbnails, no YouTube-iframe SEO cost. Rejected Bunny/Cloudflare/Vimeo/YouTube-embed.
 - **0005 — Monorepo (web + studio + schemas).** Independent Studio deploys; one typed schema source. Rejected bundling Studio into Astro.
-- **0006 — Mailchimp only, no Resend.** Client already on Mailchimp; avoid a second email vendor. Narrowed 2026-09 to newsletter only — contact submissions are Sanity `formSubmission` records with no Mailchimp involvement.
+- **0006 — Mailchimp for marketing email, Resend for transactional notifications.** Client already on Mailchimp; avoid a second marketing-email vendor. Narrowed 2026-09 to newsletter only — contact submissions are Sanity `formSubmission` records with no Mailchimp involvement, and the "no auto-subscribe" guardrail stands. Amended 2026-10: transactional contact-form alerts go via Resend (best-effort; Sanity stays the source of truth), sent from `forms@updates.superbloomhouse.com`. The sending domain `updates.superbloomhouse.com` is verified in an SBH-owned Resend account via Vercel DNS (`send.updates` MX/TXT, `resend._domainkey.updates` DKIM); the apex-level Resend records from the 2026-09-30 cutover belonged to an earlier account and were removed 2026-10-01.
 - **0008 — Hybrid SSR.** `output: 'server'`; content SSR per-request, static surfaces opt into prerender. Rejected pure-static+rebuild and ISR. Its 60s-edge-cache clause is superseded by 0031.
 - **0009 — UnoCSS styling.** Utility velocity + on-demand engine; CSS custom properties (Figma tokens) are the source of truth. Rejected Tailwind v4 / CSS Modules / scoped CSS. *(Token specifics: `docs/design-system.md` §1.)*
 - **0014 — Semantic Surface Roles over hue-named themes.** Components express color by role; templates own role→token mapping; WCAG-AA advisory. Authoritative color model; supersedes 0013 §3 and 0010's role vocabulary. *(`docs/design-system.md` §1.)*
