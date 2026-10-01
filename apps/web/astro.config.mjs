@@ -48,14 +48,50 @@ export default defineConfig({
       project: env.SENTRY_PROJECT,
       authToken: sentryAuthToken,
       telemetry: false,
-      // No filesToDeleteAfterUpload: it only deletes after a successful
-      // upload, so a failed upload would ship the maps publicly. The build
-      // script runs scripts/remove-sourcemaps.mjs to delete them
-      // unconditionally instead.
+      sourcemaps: {
+        // Disable the integration's auto-set filesToDeleteAfterUpload
+        // (['./dist/**/client/**/*.map', './dist/**/server/**/*.map']). It
+        // deletes the server maps after the SSR pass uploads them, so the
+        // client pass's upload re-scans dist, finds the server scripts
+        // mapless, and re-uploads them with ~120 "no sourcemap found"
+        // warnings. Deleting nothing here keeps those maps present for the
+        // (deduped) re-scan; scripts/remove-sourcemaps.mjs deletes all maps
+        // unconditionally after the build, so they never reach the deployed
+        // output even when an upload fails.
+        filesToDeleteAfterUpload: [],
+      },
     }),
   ],
   vite: {
     envDir: '../..',
+    build: {
+      // Both chunks above the default 500 kB are intentionally heavy and
+      // intentionally not on the critical path: renderVisualEditing (~780 kB,
+      // preview-only) and the mux/hls.js player (~740 kB, lazy-loaded per
+      // frame, ADR-0036). 900 keeps the tripwire armed for everything else.
+      chunkSizeWarningLimit: 900,
+      rollupOptions: {
+        onwarn(warning, defaultHandler) {
+          // @sanity/ui and framer-motion (pulled in by the preview-only visual
+          // editing bundle) ship "use client" banners, a React Server
+          // Components convention that is meaningless in Astro. Rollup strips
+          // them and warns per file (~70 lines of noise). Only silence that
+          // exact case — other directives (e.g. "use server") and all other
+          // warnings still print.
+          if (warning.code === 'MODULE_LEVEL_DIRECTIVE' && warning.message.includes('use client'))
+            return
+          defaultHandler(warning)
+        },
+        onLog(level, log, defaultHandler) {
+          // Rollup can't map warning locations through framer-motion's own
+          // shipped sourcemaps, adding a few SOURCEMAP_ERROR lines per build.
+          // These travel via onLog, not onwarn. Only silence them for
+          // third-party code; problems in our own files still report.
+          if (log.code === 'SOURCEMAP_ERROR' && log.id?.includes('node_modules')) return
+          defaultHandler(level, log)
+        },
+      },
+    },
     define: {
       // The client bundle can only read inlined values. The release matches the
       // commit SHA the source-map upload registers for each production build.
