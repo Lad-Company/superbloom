@@ -30,3 +30,39 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* Metric-matched fallbacks (CLS guard). font-display: swap swaps the webfont
+   in whenever it arrives, and if the preloads lose the race on a slow
+   connection the fallback's reflow is a layout shift (Lighthouse CLS audit).
+   These local() faces are resized/re-metrised to the webfont's advance widths
+   and hhea metrics (fontaine-style: overrides resolve against the
+   size-adjusted em, so the fallback occupies the webfont's box), making the
+   swap layout-neutral. Values computed from the shipped woff2 files against
+   the system fonts (macOS Supplemental); regenerate with fontTools if either
+   font file changes:
+     PP Neue Corp Tight Ultrabold vs Arial Narrow (upm 2048):
+       avgW 0.3586/0.4748, hhea 2134/-700/280
+     Graphik Medium vs Arial (upm 1000/2048):
+       avgW 0.6075/0.5791, hhea 981/-195/0
+   Arial Narrow / Arial exist on macOS and Windows; Android (Roboto) falls
+   through to the rest of the stack as before — no worse than today. */
+@font-face {
+  font-family: 'PP Neue Corp Tight Fallback';
+  src: local('Arial Narrow');
+  font-weight: 750;
+  font-style: normal;
+  size-adjust: 75.52%;
+  ascent-override: 137.98%;
+  descent-override: 45.26%;
+  line-gap-override: 18.1%;
+}
+@font-face {
+  font-family: 'Graphik Fallback';
+  src: local('Arial'), local('Helvetica Neue'), local('Roboto');
+  font-weight: 500;
+  font-style: normal;
+  size-adjust: 104.91%;
+  ascent-override: 93.51%;
+  descent-override: 18.59%;
+  line-gap-override: 0%;
+}

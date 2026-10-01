@@ -219,9 +219,39 @@ describe('MediaFrame playback profiles', () => {
 
   it('gives Ambient frames the startup config plus the 10s buffer, Presented frames the startup config', () => {
     expect(source).toContain('...STARTUP_HLS_CONFIG')
-    expect(source).toContain(
-      "this.dataset.controls === 'none' ? AMBIENT_HLS_CONFIG : STARTUP_HLS_CONFIG",
-    )
+    expect(source).toContain("this.dataset.controls === 'none' ? ambientConfig : startupConfig")
+  })
+
+  it('seeds a constrained 2 Mbps ABR estimate on save-data, cellular, and small viewports', () => {
+    // The 20 Mbps seed opens on the top capped rung; on a throttled mobile
+    // pipe that pulled ~17 MB of segments into one Lighthouse trace before
+    // the measured estimate could correct it (2026-10-01). The constrained
+    // seed starts low and climbs from the first fragment measurement. The
+    // small-viewport clause covers mobile browsers where the Network
+    // Information API is absent (Safari) or reports the raw downlink.
+    expect(source).toContain('const CONSTRAINED_STARTUP_HLS_CONFIG = {')
+    expect(source).toContain('abrEwmaDefaultEstimate: 2_000_000')
+    expect(source).toContain('...CONSTRAINED_STARTUP_HLS_CONFIG')
+    expect(source).toContain('connection?.saveData')
+    expect(source).toContain("['slow-2g', '2g', '3g'].includes(connection.effectiveType)")
+    expect(source).toContain('constrained ? CONSTRAINED_STARTUP_HLS_CONFIG : STARTUP_HLS_CONFIG')
+  })
+
+  it('caps large-canvas frames at 720p on small viewports before the player upgrades', () => {
+    // 1080p placements (hero / split / full layoutBlock) get a
+    // data-mobile-max-resolution the element applies pre-upgrade, so a phone
+    // never opens the 15.8 Mbps top rung it can't resolve anyway.
+    expect(source).toContain("plan.maxResolution === '1080p' ? '720p' : undefined")
+    expect(source).toContain('data-mobile-max-resolution={mobileMaxResolution}')
+    expect(source).toContain("playerElement.setAttribute('max-resolution', mobileMaxResolution)")
+  })
+
+  it('holds playback while the first-load veil is up', () => {
+    // Segments stay out of the critical load window; the overlay poster is
+    // already the frame's paint. sbh:veil-lifted re-evaluates.
+    expect(source).toContain("document.querySelector('[data-page-loader]:not([data-loader-done])')")
+    expect(source).toContain("document.addEventListener('sbh:veil-lifted', this.handleVeilLifted)")
+    expect(source).toContain("document.removeEventListener('sbh:veil-lifted', this.handleVeilLifted)")
   })
 
   it('dev guardrail watches startup config and the playback-core cap default on all frames', () => {

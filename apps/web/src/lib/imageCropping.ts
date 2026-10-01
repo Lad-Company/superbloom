@@ -73,17 +73,29 @@ const pickLadderWidth = (ladder: readonly number[], fallback: number): number =>
   return fallback
 }
 
+// Every raster URL carries an explicit quality: auto=format picks WebP/AVIF,
+// and q=78 shaves ~40% off the default q=100 encode with no visible loss at
+// the ladder's rung sizes (Lighthouse image-delivery insight, 2026-10-01).
+// SVG sources bypass the ladder entirely (isSvgImage branch).
+const IMAGE_QUALITY = 78
+
 export const buildRatioUrl = (
   source: ImageSource,
   ratio: FixedRatio,
   width: number,
 ): string => {
   const height = Math.max(1, Math.round(width / RATIO_VALUE[ratio]))
-  return urlFor(source).width(width).height(height).fit('crop').auto('format').url()
+  return urlFor(source)
+    .width(width)
+    .height(height)
+    .fit('crop')
+    .auto('format')
+    .quality(IMAGE_QUALITY)
+    .url()
 }
 
 export const buildWidthOnlyUrl = (source: ImageSource, width: number): string =>
-  urlFor(source).width(width).auto('format').url()
+  urlFor(source).width(width).auto('format').quality(IMAGE_QUALITY).url()
 
 export const buildImageRendering = (params: {
   source: ImageSource

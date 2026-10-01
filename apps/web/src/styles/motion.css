@@ -134,6 +134,24 @@ html.js [data-motion-text] {
   animation: sbh-reveal-fallback 0s linear 1.2s forwards;
 }
 
+/* First-load LCP exception: page-entry targets (data-scroll="false" — the
+   hero heading) must paint at first frame even though the first-load veil
+   covers them. Chrome runs no occlusion test for LCP, so the veil does not
+   delay the text paint — but opacity: 0 disqualifies it as an LCP candidate
+   (that was the 8.3s LCP: the heading only became visible after the veil's
+   media wait + beat + reveal). The reveal still happens: initMotion's split
+   re-hides the chars behind their line clips as soon as the motion chunk
+   lands, and the reveal plays when the veil lifts (see reveal.ts). Veil-skip
+   reloads and View Transition navigations (Layout stamps data-veil-skip on
+   the incoming document) keep the opacity gate — there the reveal plays
+   immediately after the split, so the pre-split window stays hidden instead
+   of flashing visible. If the motion JS never runs at all, the heading is
+   simply visible from the start — the desired no-fail outcome. */
+html.js:not([data-veil-skip]) [data-motion-text][data-scroll='false'] {
+  opacity: 1;
+  animation: none;
+}
+
 @keyframes sbh-reveal-fallback {
   to {
     opacity: 1;

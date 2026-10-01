@@ -128,10 +128,15 @@
   --purple: #3f2293;
   --purple-fg: #ffffff;
 
-  /* Fonts (real faces first, fallbacks until Lad supplies licensed files) */
-  --font-display-tight: 'PP Neue Corp Tight', 'Arial Narrow', system-ui, sans-serif;
-  --font-marquee: 'PP Neue Corp Variable', 'Arial Narrow', system-ui, sans-serif;
-  --font-body: 'Graphik', 'Inter', system-ui, sans-serif;
+  /* Fonts (real faces first, metric-matched local fallbacks next — the
+     '* Fallback' faces in fonts.css carry size-adjust/ascent-override so a
+     late webfont swap is layout-neutral (CLS); the plain names remain as
+     the final fallback for platforms without them) */
+  --font-display-tight: 'PP Neue Corp Tight', 'PP Neue Corp Tight Fallback', 'Arial Narrow',
+    system-ui, sans-serif;
+  --font-marquee: 'PP Neue Corp Variable', 'PP Neue Corp Tight Fallback', 'Arial Narrow',
+    system-ui, sans-serif;
+  --font-body: 'Graphik', 'Graphik Fallback', 'Inter', system-ui, sans-serif;
   --font-interface: var(--font-display-tight);
 }
 
