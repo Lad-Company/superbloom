@@ -16,12 +16,8 @@
   apps/web/public/emails/* before sending. Header and footer typography is
   baked into PNG slices (see emails/src/ for render sources); the content
   section is live text with Arial Narrow / Arial fallbacks in clients that
-  block custom fonts.
-
-  TODO before sending:
-  - Replace the placeholder headline/body copy in the content section.
-  - Mailchimp requires an unsubscribe link; add *|UNSUB|* to the footer
-    contact row if the journey doesn't append one automatically.
+  block custom fonts. Footer carries the required *|UNSUB|* merge tag as a
+  live-text link beneath the contact slices.
 -->
   <head>
     <meta charset="utf-8" />
@@ -270,6 +266,22 @@
                       </td>
                     </tr>
                   </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding-top: 24px">
+                  <!-- Required by Mailchimp; live text so the *|UNSUB|* merge
+                       tag resolves. Intentionally understated. -->
+                  <a
+                    href="*|UNSUB|*"
+                    style="
+                      font-family: 'Graphik', Helvetica, Arial, sans-serif;
+                      font-size: 11px;
+                      line-height: 14px;
+                      color: #808080;
+                    "
+                    >Unsubscribe from The Microdose</a
+                  >
                 </td>
               </tr>
             </table>
