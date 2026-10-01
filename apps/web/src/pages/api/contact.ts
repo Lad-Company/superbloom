@@ -111,7 +111,7 @@ export const POST: APIRoute = async ({ request }) => {
     try {
       const {Resend} = await import('resend');
       await new Resend(resendKey).emails.send({
-        from: 'Superbloom Site <forms@superbloomhouse.com>',
+        from: 'Superbloom Site <forms@updates.superbloomhouse.com>',
         to: 'hello@superbloomhouse.com',
         replyTo: email,
         subject: `New inquiry: ${inquiryTypeLabels[inquiryType] ?? inquiryType} — ${name}`,

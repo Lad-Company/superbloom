@@ -56,7 +56,7 @@ describe('contact form endpoint', () => {
     )
     expect(send).toHaveBeenCalledWith(
       expect.objectContaining({
-        from: 'Superbloom Site <forms@superbloomhouse.com>',
+        from: 'Superbloom Site <forms@updates.superbloomhouse.com>',
         to: 'hello@superbloomhouse.com',
         replyTo: 'person@example.com',
         subject: 'New inquiry: Brand looking for an agency partner — Test Person',
