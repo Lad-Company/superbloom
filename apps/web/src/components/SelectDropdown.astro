@@ -55,12 +55,12 @@ const selected = options.find((option) => option.value === value)
         <li>
           <button
             type="button"
-            class="select-dropdown-option underline-draw"
+            class="select-dropdown-option"
             role="option"
             aria-selected={option.value === value}
             data-option-value={option.value}
           >
-            {option.label}
+            <span class="underline-draw">{option.label}</span>
           </button>
         </li>
       ))
@@ -276,6 +276,13 @@ const selected = options.find((option) => option.value === value)
   .select-dropdown-option:focus-visible {
     outline: 2px solid var(--fg);
     outline-offset: -2px;
+  }
+
+  /* The row keeps its full-width click target; the underline draws on the
+     inline label span so it travels the length of the text, not the row. */
+  .select-dropdown-option:hover .underline-draw::after,
+  .select-dropdown-option:focus-visible .underline-draw::after {
+    transform: scaleX(1);
   }
 
   /* Invisible but focusable so native required validation can anchor its
