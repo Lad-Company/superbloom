@@ -48,10 +48,10 @@ export default defineConfig({
       project: env.SENTRY_PROJECT,
       authToken: sentryAuthToken,
       telemetry: false,
-      sourcemaps: {
-        // Uploaded maps are not shipped with the deployed bundle.
-        filesToDeleteAfterUpload: ['dist/**/*.map'],
-      },
+      // No filesToDeleteAfterUpload: it only deletes after a successful
+      // upload, so a failed upload would ship the maps publicly. The build
+      // script runs scripts/remove-sourcemaps.mjs to delete them
+      // unconditionally instead.
     }),
   ],
   vite: {
