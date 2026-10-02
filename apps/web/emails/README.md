@@ -1,11 +1,11 @@
 # Email templates
 
-`newsletter-welcome.html` — The Microdose welcome email, sent via the Mailchimp
-Customer Journey triggered by `src/pages/api/newsletter/subscribe.json.ts`.
+`newsletter-welcome.html` — The Microdose welcome email, sent via Resend from
+`src/pages/api/newsletter/subscribe.json.ts` after a successful Mailchimp
+subscribe. The `{{UNSUBSCRIBE_URL}}` token in the footer is replaced at send
+time with `MAILCHIMP_UNSUBSCRIBE_URL` (Mailchimp's hosted audience unsubscribe
+form, so suppression stays in Mailchimp).
 Design source: [Figma frame 6970:2564](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6970-2564).
-
-To update the email in Mailchimp: Journey → welcome email → paste this file as
-custom HTML.
 
 ## Image assets
 

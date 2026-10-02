@@ -10,14 +10,16 @@
   Source design: Figma "Superbloom Library" frame 6970:2564 (Mail, 660px)
   https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6970-2564
 
-  Usage: Mailchimp Customer Journey welcome email → paste as custom HTML.
-  Assets (header/footer PNGs + woff2 fonts) are served from
+  Usage: sent via Resend from src/pages/api/newsletter/subscribe.json.ts
+  after a successful Mailchimp subscribe. The {{UNSUBSCRIBE_URL}} token in
+  the footer is replaced at send time with MAILCHIMP_UNSUBSCRIBE_URL
+  (Mailchimp's hosted audience unsubscribe form, so suppression stays in
+  Mailchimp). Assets (header/footer PNGs + woff2 fonts) are served from
   superbloomhouse.com, so the site must be deployed with
   apps/web/public/emails/* before sending. Header and footer typography is
   baked into PNG slices (see emails/src/ for render sources); the content
   section is live text with Arial Narrow / Arial fallbacks in clients that
-  block custom fonts. The footer's unsubscribe slice carries the required
-  *|UNSUB|* merge tag.
+  block custom fonts.
 -->
   <head>
     <meta charset="utf-8" />
@@ -227,7 +229,8 @@
                    matches the design and every link stays clickable. Image
                    maps are unreliable in email clients, hence slices. No
                    phone word (numbers are in the addresses block above); the
-                   unsubscribe slice carries the required *|UNSUB|* merge tag.
+                   unsubscribe slice carries the {{UNSUBSCRIBE_URL}} token,
+                   replaced at send time with MAILCHIMP_UNSUBSCRIBE_URL.
                    Regenerate from emails/src/footer-contact.html. -->
               <tr>
                 <td>
@@ -258,7 +261,7 @@
                         /></a>
                       </td>
                       <td align="right">
-                        <a href="*|UNSUB|*" style="text-decoration: none"
+                        <a href="{{UNSUBSCRIBE_URL}}" style="text-decoration: none"
                           ><img
                             src="https://www.superbloomhouse.com/emails/microdose-footer-unsubscribe.png"
                             width="72"

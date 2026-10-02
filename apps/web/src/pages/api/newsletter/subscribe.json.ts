@@ -1,5 +1,7 @@
 import {createHash} from 'node:crypto'
 import type {APIRoute} from 'astro'
+import {sendBestEffortEmail} from '../../../lib/resend'
+import welcomeTemplate from '../../../../emails/newsletter-welcome.html?raw'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const minimumFillTimeMs = 750
@@ -90,45 +92,38 @@ export const POST: APIRoute = async ({request}) => {
       return response(false, 'network', 502)
     }
 
-    const mailchimpResponse = await fetch(
-      memberUrl,
-      {
-        method: 'PUT',
-        headers: {
-          Authorization: authorization,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({email_address: email, status: 'subscribed', status_if_new: 'subscribed'}),
-        signal: AbortSignal.timeout(10_000),
+    const mailchimpResponse = await fetch(memberUrl, {
+      method: 'PUT',
+      headers: {
+        Authorization: authorization,
+        'Content-Type': 'application/json',
       },
-    )
+      body: JSON.stringify({
+        email_address: email,
+        status: 'subscribed',
+        status_if_new: 'subscribed',
+      }),
+      signal: AbortSignal.timeout(10_000),
+    })
 
     if (mailchimpResponse.ok) {
-      // Welcome email: trigger the Automation flow (Customer Journeys API).
-      // A journey failure must not fail the subscription, which already
-      // succeeded above, so this only logs.
-      const journeyId = import.meta.env.MAILCHIMP_WELCOME_JOURNEY_ID
-      const journeyStepId = import.meta.env.MAILCHIMP_WELCOME_JOURNEY_STEP_ID
-      if (journeyId && journeyStepId) {
-        try {
-          const journeyResponse = await fetch(
-            `https://${dataCenter}.api.mailchimp.com/3.0/customer-journeys/journeys/${journeyId}/steps/${journeyStepId}/actions/trigger`,
-            {
-              method: 'POST',
-              headers: {
-                Authorization: authorization,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({email_address: email}),
-              signal: AbortSignal.timeout(10_000),
-            },
-          )
-          if (!journeyResponse.ok) {
-            console.error('Welcome journey trigger failed', {status: journeyResponse.status})
-          }
-        } catch {
-          console.error('Welcome journey trigger failed', {status: 'request-error'})
-        }
+      // Welcome email via Resend, best-effort: the subscription already
+      // succeeded above, so a send failure or missing config only logs and
+      // never changes the response. Never send without a working
+      // unsubscribe URL — suppression stays in Mailchimp via its hosted
+      // audience unsubscribe form.
+      const unsubscribeUrl = import.meta.env.MAILCHIMP_UNSUBSCRIBE_URL
+
+      if (!unsubscribeUrl) {
+        console.error('MAILCHIMP_UNSUBSCRIBE_URL not configured; welcome email skipped')
+      } else {
+        await sendBestEffortEmail('Welcome email', {
+          from: 'The Microdose <microdose@updates.superbloomhouse.com>',
+          to: email,
+          subject: 'Welcome to The Microdose',
+          html: welcomeTemplate.replaceAll('{{UNSUBSCRIBE_URL}}', unsubscribeUrl),
+          headers: {'List-Unsubscribe': `<${unsubscribeUrl}>`},
+        })
       }
       return response(true)
     }

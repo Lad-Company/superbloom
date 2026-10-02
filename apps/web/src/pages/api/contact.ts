@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@sanity/client';
+import { sendBestEffortEmail } from '../../lib/resend';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const inquiryTypes = new Set([
@@ -105,34 +106,25 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Best-effort notification email. Sanity stays the source of truth, so a
   // send failure (or a missing key) must never change the response.
-  const resendKey = import.meta.env.RESEND_API_KEY;
-
-  if (resendKey) {
-    try {
-      const {Resend} = await import('resend');
-      await new Resend(resendKey).emails.send({
-        from: 'Superbloom Site <forms@updates.superbloomhouse.com>',
-        to: 'hello@superbloomhouse.com',
-        replyTo: email,
-        subject: `New inquiry: ${inquiryTypeLabels[inquiryType] ?? inquiryType} — ${name}`,
-        text: [
-          `Inquiry type: ${inquiryTypeLabels[inquiryType] ?? inquiryType}`,
-          `Name: ${name}`,
-          `Email: ${email}`,
-          `Heard about us: ${hearAboutUsLabels[hearAboutUs] ?? hearAboutUs}`,
-          `Submitted: ${new Date().toISOString()}`,
-          '',
-          message,
-        ].join('\n'),
-      });
-    } catch (caughtError) {
-      // Log IDs and the error message only — never submitter PII.
-      const errorMessage = caughtError instanceof Error ? caughtError.message : 'Unknown failure';
-      console.error('Contact notification email failed', {submissionId, message: errorMessage});
-    }
-  } else {
-    console.error('RESEND_API_KEY not configured; notification skipped', {submissionId});
-  }
+  await sendBestEffortEmail(
+    'Contact notification email',
+    {
+      from: 'Superbloom Site <forms@updates.superbloomhouse.com>',
+      to: 'hello@superbloomhouse.com',
+      replyTo: email,
+      subject: `New inquiry: ${inquiryTypeLabels[inquiryType] ?? inquiryType} — ${name}`,
+      text: [
+        `Inquiry type: ${inquiryTypeLabels[inquiryType] ?? inquiryType}`,
+        `Name: ${name}`,
+        `Email: ${email}`,
+        `Heard about us: ${hearAboutUsLabels[hearAboutUs] ?? hearAboutUs}`,
+        `Submitted: ${new Date().toISOString()}`,
+        '',
+        message,
+      ].join('\n'),
+    },
+    {submissionId},
+  );
 
   return new Response(JSON.stringify({ success: true }), {
     status: 200,
