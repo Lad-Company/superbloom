@@ -1,8 +1,10 @@
 ---
 // Global first-load veil. Painted from SSR so it covers the page before any
-// media resolves; the Layout body script lifts it (`data-loader-done`) once
-// fonts and above-the-fold media are ready, so visitors never watch media
-// fold in. Hidden entirely without JS (no-JS/SEO always see the real page) and
+// media resolves; Layout's inline `data-veil-lift` script lifts it
+// (`data-loader-done`, `data-veil-lifted` on <html>) once the preloaded fonts
+// and every `data-critical` element are ready (2s cap), so visitors never
+// watch media fold in. Hidden entirely without JS (no-JS/SEO always see the
+// real page) and
 // dismissed immediately on View Transition navigations (the route swipe owns
 // those), so it only ever runs on a genuine hard load. Within a tab it runs
 // once: after the first lift a sessionStorage flag lets reloads and

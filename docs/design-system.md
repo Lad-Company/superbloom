@@ -492,10 +492,13 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    never spinner + skeleton together. In-page loading feedback (skeletons,
    progress cues) appears only for waits >400ms. The first-load veil
    (`PageLoader`) is the exception: it is already painted at t=0, so the rule
-   becomes *how long it stays*, with two thresholds. It waits for fonts and
-   every image in the initial viewport (4s cap), lifts immediately if that took
-   under ~100ms (never perceptibly shown, no fade), otherwise holds to a 400ms
-   beat so it reads as intentional rather than a flicker. It runs once per
+   becomes *how long it stays*, with two thresholds. It waits for the
+   preloaded fonts and every element stamped `data-critical` (2s cap), lifts
+   immediately if that took under ~100ms (never perceptibly shown, no fade),
+   otherwise holds to a 400ms beat so it reads as intentional rather than a
+   flicker. The lift runs from a small inline script (no module imports), so
+   it never waits on the bundled JS chunk; on the cap it lifts onto skeleton
+   surfaces, never blank media. It runs once per
    tab: reloads and back/forward skip it before paint. The veil gates the
    hero heading's reveal *animation*, never its paint: page-entry Type Reveal
    targets stay painted underneath it (the split re-hides the chars behind
