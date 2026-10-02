@@ -22,6 +22,9 @@ export interface ImageProjection {
   width?: number | null
   height?: number | null
   mimeType?: string | null
+  /** Sanity-generated blur-up preview (data URI); drives the frame's
+   *  skeleton surface (ARCHITECTURE.md ADR-0039). */
+  lqip?: string | null
 }
 
 export interface VideoProjection {
@@ -160,6 +163,12 @@ const posterRendering =
       })
     : null
 const isGated = Boolean(isVideo && posterRendering?.src)
+/** Skeleton blur-up source (ADR-0039): the image asset's own LQIP; for
+ *  Gated Ambient video, the curated poster's LQIP (that poster is the
+ *  layer that fades in over the skeleton). Plain Mux thumbnails carry no
+ *  LQIP — those frames keep the bare token skeleton. */
+const skeletonLqip =
+  asset?._type === 'image' ? (asset.lqip ?? null) : (poster?.lqip ?? null)
 // Large-canvas frames (hero / split / full layoutBlock) cap at 1080p for
 // desktop, but no phone viewport can resolve that: even 430px at DPR 3 is
 // 1290 device px, inside the 720p rung. The element script drops the cap to
@@ -194,6 +203,23 @@ const imageRendering =
   style={styleAttr}
   data-controls={controls}
 >
+  {
+    /* Skeleton surface (ADR-0039): a permanent placeholder filling the
+       reserved aspect-ratio box behind every layer, so no frame ever
+       paints blank or transparent alt text — token color, upgraded to
+       the Sanity LQIP blur-up where the asset carries one. Absolute
+       inside the reserved box, so nothing reflows (CLS stays 0). First
+       child: DOM order alone keeps it behind every media layer. */
+    hasAsset && (
+      <div
+        class="media-frame__skeleton"
+        aria-hidden="true"
+        style={
+          skeletonLqip ? `background-image: url(${JSON.stringify(skeletonLqip)})` : undefined
+        }
+      />
+    )
+  }
   {
     /* Deferred posters render with data-* instead of src/srcset, so they
        fetch nothing until promotePoster() restores them; a src-less <img>
@@ -505,6 +531,11 @@ const imageRendering =
     private handleSourceReady = () => this.updatePlayback()
     private handleMuteClick = () => this.toggleMute()
     private handleVolumeChange = () => this.updateMute()
+    private handleImgLoad = (event: Event) => {
+      const img = event.currentTarget as HTMLImageElement
+      img.removeEventListener('load', this.handleImgLoad)
+      img.setAttribute('data-loaded', '')
+    }
 
     private handleTimeUpdate = () => this.refreshScrubber()
     private handleDurationChange = () => this.refreshScrubber()
@@ -547,6 +578,22 @@ const imageRendering =
       // Sync with a `revealed` attribute set before this element connected
       // (attributeChangedCallback fires before curatedPoster is queried).
       this.curatedPoster?.setAttribute('aria-hidden', String(this.hasAttribute('revealed')))
+      // Load crossfade (ADR-0039): every rendered layer starts at opacity 0
+      // over the skeleton (CSS, gated on html.js) and fades in on its own
+      // load event. A layer already complete at connect (browser cache,
+      // View Transition swap, bfcache) is marked synchronously so the first
+      // paint shows it at full opacity — no skeleton flash, no transition.
+      // Deferred posters (deferPoster) have no currentSrc yet but report
+      // complete, so the check requires a resolved URL; promotePoster()
+      // fires their load later. A failed load leaves the layer hidden and
+      // the skeleton up — the frame still never paints blank.
+      for (const img of this.querySelectorAll('img')) {
+        if (img.currentSrc && img.complete && img.naturalWidth > 0) {
+          img.setAttribute('data-loaded', '')
+        } else {
+          img.addEventListener('load', this.handleImgLoad)
+        }
+      }
       this.control = this.querySelector('[data-media-control]') as HTMLButtonElement | null
       this.isFullControls = this.dataset.controls === 'full'
       this.controlsBar = this.querySelector('[data-media-controls]') as HTMLElement | null
@@ -777,6 +824,9 @@ const imageRendering =
     disconnectedCallback() {
       this.observer?.disconnect()
       this.loadObserver?.disconnect()
+      for (const img of this.querySelectorAll('img')) {
+        img.removeEventListener('load', this.handleImgLoad)
+      }
       document.removeEventListener('visibilitychange', this.handleVisibilityChange)
       document.removeEventListener('sbh:veil-lifted', this.handleVeilLifted)
       this.motionPreference?.removeEventListener('change', this.handleMotionChange)
@@ -1109,6 +1159,13 @@ const imageRendering =
     /* Placeholder gradient's dimmer step, derived locally (nav/cart precedent)
        so the frame resolves in any surface context, not just SurfaceSection. */
     --fg-8: color-mix(in srgb, var(--fg) 8%, transparent);
+    /* Skeleton tint (ADR-0039), same local-derive precedent: the base
+       --fg-12 token is a literal black-12% that reads blank on dark or
+       colored surfaces, and a :root color-mix would bake :root's --fg at
+       declaration time (tokens.css documents the trap — it's why
+       SurfaceSection re-declares its tints). Declared here it resolves
+       against the ambient surface's --fg. */
+    --fg-12: color-mix(in srgb, var(--fg) 12%, transparent);
     background: var(--fg-12);
   }
 
@@ -1127,6 +1184,35 @@ const imageRendering =
      tech but never render it. */
   .media-frame img {
     color: transparent;
+  }
+
+  /* Skeleton surface (ADR-0039): permanent placeholder behind the media.
+     Token color everywhere; the LQIP blur-up arrives as an inline
+     background-image (data URI) when the asset carries one. */
+  .media-frame__skeleton {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-color: var(--fg-12);
+    background-size: cover;
+    background-position: center;
+  }
+
+  /* Load crossfade (ADR-0039): with JS on, every layer starts transparent
+     over the skeleton and fades in when its load fires (the element sets
+     data-loaded; layers already complete at connect are marked before
+     first paint, so they never flash the skeleton). Gated on html.js so a
+     no-JS page — or a failed script chunk — renders media exactly as
+     before. :where() keeps these at near-zero specificity so the
+     video-ready / revealed fade-outs below still win over the loaded
+     state. */
+  :where(html.js) .media-frame img {
+    opacity: 0;
+  }
+
+  :where(html.js) .media-frame img[data-loaded] {
+    opacity: 1;
+    transition: opacity var(--motion-quick) var(--motion-ease-out);
   }
 
   .media-frame.intrinsic img {
@@ -1152,6 +1238,10 @@ const imageRendering =
 
   .media-frame[data-video-ready] .media-frame__poster {
     opacity: 0;
+    /* Restated so the load-crossfade's --motion-quick transition (which
+       outranks the base poster rule once data-loaded is set) can't
+       shorten the tuned fade-to-video. */
+    transition: opacity var(--motion-standard) var(--motion-ease-out);
   }
 
   /* Poster Punch (design-system §5, Content Card family): the poster zooms
@@ -1176,6 +1266,11 @@ const imageRendering =
   .media-frame[revealed] .media-frame__curated-poster {
     transform: scale(1.12);
     opacity: 0;
+    /* Restated so the load-crossfade's quick fade can't preempt the
+       Poster Punch timing once the poster carries data-loaded. */
+    transition:
+      transform var(--motion-deliberate) var(--motion-ease-out),
+      opacity 560ms var(--motion-ease-out) var(--motion-instant);
   }
 
   .media-placeholder {
@@ -1421,9 +1516,14 @@ const imageRendering =
   }
 
   @media (prefers-reduced-motion: reduce) {
-    /* Poster Punch off; the reveal/conceal state change survives as an
-       instant swap (design-system §5 reduced-motion rule). */
+    /* Poster Punch and the load crossfade off; the reveal/conceal and
+       loaded state changes survive as instant swaps (design-system §5
+       reduced-motion rule). The last two selectors restate the state
+       rules above so their newly-explicit transitions are cleared too. */
     .media-frame__curated-poster,
+    .media-frame img[data-loaded],
+    .media-frame[data-video-ready] .media-frame__poster,
+    .media-frame[revealed] .media-frame__curated-poster,
     .media-controls,
     .media-controls__icon svg,
     .media-controls__btn,
