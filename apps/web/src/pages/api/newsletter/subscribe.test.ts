@@ -9,6 +9,7 @@ vi.mock('resend', () => ({
 }))
 
 import {POST} from './subscribe.json'
+import welcomeTemplate from '../../../../emails/newsletter-welcome.html?raw'
 
 const unsubscribeUrl = 'https://superbloomhouse.us1.list-manage.com/unsubscribe?u=abc&id=def'
 
@@ -38,6 +39,14 @@ const subscribeSuccess = () => {
     .mockResolvedValueOnce(mailchimpResponse(false, 404))
     .mockResolvedValueOnce(mailchimpResponse(true, 200))
 }
+
+describe('welcome email template', () => {
+  it('carries the unsubscribe URL token', () => {
+    // Guards the send-time invariant: without the token, replaceAll would
+    // silently send a welcome email with no unsubscribe link.
+    expect(welcomeTemplate).toContain('{{UNSUBSCRIBE_URL}}')
+  })
+})
 
 describe('newsletter subscribe endpoint', () => {
   beforeEach(() => {

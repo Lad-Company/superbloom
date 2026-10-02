@@ -1,5 +1,6 @@
 import {createHash} from 'node:crypto'
 import type {APIRoute} from 'astro'
+import {sendBestEffortEmail} from '../../../lib/resend'
 import welcomeTemplate from '../../../../emails/newsletter-welcome.html?raw'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -111,28 +112,18 @@ export const POST: APIRoute = async ({request}) => {
       // never changes the response. Never send without a working
       // unsubscribe URL — suppression stays in Mailchimp via its hosted
       // audience unsubscribe form.
-      const resendKey = import.meta.env.RESEND_API_KEY
       const unsubscribeUrl = import.meta.env.MAILCHIMP_UNSUBSCRIBE_URL
 
-      if (resendKey && unsubscribeUrl) {
-        try {
-          const {Resend} = await import('resend')
-          await new Resend(resendKey).emails.send({
-            from: 'The Microdose <microdose@updates.superbloomhouse.com>',
-            to: email,
-            subject: 'Welcome to The Microdose',
-            html: welcomeTemplate.replaceAll('{{UNSUBSCRIBE_URL}}', unsubscribeUrl),
-            headers: {'List-Unsubscribe': `<${unsubscribeUrl}>`},
-          })
-        } catch (caughtError) {
-          // Log the error message only — never subscriber PII.
-          const message = caughtError instanceof Error ? caughtError.message : 'Unknown failure'
-          console.error('Welcome email failed', {message})
-        }
+      if (!unsubscribeUrl) {
+        console.error('MAILCHIMP_UNSUBSCRIBE_URL not configured; welcome email skipped')
       } else {
-        console.error(
-          'RESEND_API_KEY or MAILCHIMP_UNSUBSCRIBE_URL not configured; welcome email skipped',
-        )
+        await sendBestEffortEmail('Welcome email', {
+          from: 'The Microdose <microdose@updates.superbloomhouse.com>',
+          to: email,
+          subject: 'Welcome to The Microdose',
+          html: welcomeTemplate.replaceAll('{{UNSUBSCRIBE_URL}}', unsubscribeUrl),
+          headers: {'List-Unsubscribe': `<${unsubscribeUrl}>`},
+        })
       }
       return response(true)
     }

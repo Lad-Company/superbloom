@@ -51,9 +51,9 @@ API glue (`apps/web/src/pages/api/*`).
 | Editorial content + images | Sanity | `lib/sanity.ts`, `lib/queries.ts` (GROQ) |
 | Video | Mux | `mux.video` in `mediaBox`, `<mux-video>` in `MediaFrame` |
 | Commerce (products, cart, checkout) | Shopify Storefront API | `lib/shopify*.ts`, `pages/api/shop/*` |
-| Email (newsletter) | Mailchimp | `pages/api/newsletter/*` |
+| Email (newsletter audience) | Mailchimp | `pages/api/newsletter/*` |
 | Form records (contact inquiries) | Sanity | `formSubmission` document via `pages/api/contact.ts` |
-| Email (transactional notifications) | Resend | `pages/api/contact.ts` |
+| Email sending (transactional + Microdose welcome) | Resend | `lib/resend.ts`, called from `pages/api/contact.ts` and `pages/api/newsletter/*` |
 | Hosting / SSR | Vercel | `@astrojs/vercel` |
 
 ## 4. `apps/web` layers
@@ -64,7 +64,8 @@ API glue (`apps/web/src/pages/api/*`).
 - **`components/`** — primitives, blocks, and per-surface compositions (`home/`,
   `case/`, `who-we-are/`, `editorial/`, `zine/`, `shop/`, `cart/`, `blocks/`,
   `motion/`). Boundaries and primitives: `docs/design-system.md` §2.
-- **`lib/`** — data + logic: `queries.ts` (GROQ), `shopify.ts`, `surfaceRole.ts` +
+- **`lib/`** — data + logic: `queries.ts` (GROQ), `shopify.ts`, `resend.ts`
+  (best-effort email send shared by API endpoints), `surfaceRole.ts` +
   `luminance.ts` (role → token + WCAG foreground), `contentCard.ts` /
   `contentLayout.ts` (settings resolution), `imageCropping.ts` + `imageLadder.ts`
   (Sanity srcset rungs), `shopifyImages.ts` (Shopify CDN srcset on the same ladder),
@@ -123,7 +124,7 @@ settled part). Where another doc owns the topic, that doc is authoritative.
 - **0003 — No database.** All persistence via SaaS; no backups/migrations/uptime burden at this scale. Rejected Postgres/Supabase/SQLite.
 - **0004 — Mux for video.** First-party Sanity plugin, cheap, AV1 + thumbnails, no YouTube-iframe SEO cost. Rejected Bunny/Cloudflare/Vimeo/YouTube-embed.
 - **0005 — Monorepo (web + studio + schemas).** Independent Studio deploys; one typed schema source. Rejected bundling Studio into Astro.
-- **0006 — Mailchimp for marketing email, Resend for transactional notifications.** Client already on Mailchimp; avoid a second marketing-email vendor. Narrowed 2026-09 to newsletter only — contact submissions are Sanity `formSubmission` records with no Mailchimp involvement, and the "no auto-subscribe" guardrail stands. Amended 2026-10: transactional contact-form alerts go via Resend (best-effort; Sanity stays the source of truth), sent from `forms@updates.superbloomhouse.com`. The sending domain `updates.superbloomhouse.com` is verified in an SBH-owned Resend account via Vercel DNS (`send.updates` MX/TXT, `resend._domainkey.updates` DKIM); the apex-level Resend records from the 2026-09-30 cutover belonged to an earlier account and were removed 2026-10-01.
+- **0006 — Mailchimp as the marketing audience of record, Resend for sending.** Client already on Mailchimp; avoid a second marketing-email vendor. Narrowed 2026-09 to newsletter only — contact submissions are Sanity `formSubmission` records with no Mailchimp involvement, and the "no auto-subscribe" guardrail stands. Amended 2026-10: transactional contact-form alerts go via Resend (best-effort; Sanity stays the source of truth), sent from `forms@updates.superbloomhouse.com`. The sending domain `updates.superbloomhouse.com` is verified in an SBH-owned Resend account via Vercel DNS (`send.updates` MX/TXT, `resend._domainkey.updates` DKIM); the apex-level Resend records from the 2026-09-30 cutover belonged to an earlier account and were removed 2026-10-01. Amended 2026-10-02: the Microdose welcome email also sends via Resend (best-effort, from `microdose@updates.superbloomhouse.com`), replacing Mailchimp Customer Journey 8385 — Mailchimp stays the audience of record and the single suppression source, since the welcome's unsubscribe (footer link + `List-Unsubscribe` header) is Mailchimp's hosted audience unsubscribe form via `MAILCHIMP_UNSUBSCRIBE_URL`, and the send is skipped when that URL is unconfigured. Both endpoints share the best-effort sender in `lib/resend.ts`.
 - **0008 — Hybrid SSR.** `output: 'server'`; content SSR per-request, static surfaces opt into prerender. Rejected pure-static+rebuild and ISR. Its 60s-edge-cache clause is superseded by 0031.
 - **0009 — UnoCSS styling.** Utility velocity + on-demand engine; CSS custom properties (Figma tokens) are the source of truth. Rejected Tailwind v4 / CSS Modules / scoped CSS. *(Token specifics: `docs/design-system.md` §1.)*
 - **0014 — Semantic Surface Roles over hue-named themes.** Components express color by role; templates own role→token mapping; WCAG-AA advisory. Authoritative color model; supersedes 0013 §3 and 0010's role vocabulary. *(`docs/design-system.md` §1.)*
