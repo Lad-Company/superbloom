@@ -320,7 +320,7 @@ describe('MediaFrame consumers conform to the new controls enum', () => {
 
 describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
   it('renders a skeleton surface behind the media whenever an asset exists', () => {
-    expect(source).toContain('class="media-frame__skeleton"')
+    expect(source).toContain("'media-frame__skeleton'")
     expect(source).toContain('aria-hidden="true"')
     // Only real assets get a skeleton; the no-asset placeholder gradient
     // stays the fallback for empty frames.
@@ -345,11 +345,26 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
   })
 
   it('upgrades the skeleton to the Sanity LQIP blur-up when the asset carries one', () => {
-    expect(source).toContain('skeletonLqip')
+    expect(source).toContain('skeletonBackdrop')
     expect(source).toContain('background-image: url(')
     // Image assets use their own LQIP; Gated Ambient videos fall back to
-    // the curated poster's LQIP.
-    expect(source).toContain("asset?._type === 'image' ? (asset.lqip ?? null) : (poster?.lqip ?? null)")
+    // the curated poster's LQIP — both pre-blurred by Sanity.
+    expect(source).toContain("{url: asset.lqip, needsBlur: false}")
+    expect(source).toContain("{url: poster.lqip, needsBlur: false}")
+  })
+
+  it('gives ungated video frames a tiny Mux thumbnail blur-up skeleton', () => {
+    // Ungated video has no Sanity LQIP; without this the biggest canvases
+    // on the site (home hero, shop hero) sat on a flat gray box until the
+    // poster arrived — the "no poster" gap from HITL review.
+    expect(source).toContain('muxSkeletonThumbUrl')
+    expect(source).toMatch(
+      /deferPoster \|\| asset\?\._type !== 'mux\.video' \|\| !asset\.playbackId/,
+    )
+    expect(source).toContain('media-frame__skeleton--blur')
+    // The raw 24px thumb needs a CSS blur + scale (edge bleed) treatment.
+    expect(source).toMatch(/\.media-frame__skeleton--blur\s*\{[^}]*filter:\s*blur\(/)
+    expect(source).toMatch(/\.media-frame__skeleton--blur\s*\{[^}]*transform:\s*scale\(/)
   })
 
   it('types the LQIP field on the image projection', () => {

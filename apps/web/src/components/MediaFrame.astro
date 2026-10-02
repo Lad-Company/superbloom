@@ -2,6 +2,7 @@
 import {buildImageRendering, type CropRatio} from '../lib/imageCropping'
 import {
   muxPosterRendering,
+  muxSkeletonThumbUrl,
   planMediaRendering,
   type MediaPlacement,
   type MuxMaxResolution,
@@ -163,12 +164,24 @@ const posterRendering =
       })
     : null
 const isGated = Boolean(isVideo && posterRendering?.src)
-/** Skeleton blur-up source (ADR-0039): the image asset's own LQIP; for
- *  Gated Ambient video, the curated poster's LQIP (that poster is the
- *  layer that fades in over the skeleton). Plain Mux thumbnails carry no
- *  LQIP — those frames keep the bare token skeleton. */
-const skeletonLqip =
-  asset?._type === 'image' ? (asset.lqip ?? null) : (poster?.lqip ?? null)
+/** Skeleton surface backdrop (ADR-0039): the image asset's own LQIP; for
+ *  Gated Ambient video, the curated poster's LQIP (that poster is the layer
+ *  that fades in over the skeleton). Ungated video has no LQIP, so it falls
+ *  back to a tiny Mux thumbnail (~1-2KB) so big video frames get the same
+ *  blur-up instead of a flat gray box — except deferred frames (Capes),
+ *  which must fetch nothing until promoted and keep the bare token
+ *  skeleton. Sanity LQIPs ship pre-blurred; the Mux thumb is a raw 24px
+ *  frame and needs a CSS blur, flagged by `needsBlur`. */
+const skeletonBackdrop: {url: string; needsBlur: boolean} | null =
+  asset?._type === 'image'
+    ? asset.lqip
+      ? {url: asset.lqip, needsBlur: false}
+      : null
+    : poster?.lqip
+      ? {url: poster.lqip, needsBlur: false}
+      : deferPoster || asset?._type !== 'mux.video' || !asset.playbackId
+        ? null
+        : {url: muxSkeletonThumbUrl(asset.playbackId, asset.thumbTime), needsBlur: true}
 // Large-canvas frames (hero / split / full layoutBlock) cap at 1080p for
 // desktop, but no phone viewport can resolve that: even 430px at DPR 3 is
 // 1290 device px, inside the 720p rung. The element script drops the cap to
@@ -206,16 +219,22 @@ const imageRendering =
   {
     /* Skeleton surface (ADR-0039): a permanent placeholder filling the
        reserved aspect-ratio box behind every layer, so no frame ever
-       paints blank or transparent alt text — token color, upgraded to
-       the Sanity LQIP blur-up where the asset carries one. Absolute
-       inside the reserved box, so nothing reflows (CLS stays 0). First
-       child: DOM order alone keeps it behind every media layer. */
+       paints blank or transparent alt text — token color, upgraded to a
+       blur-up (Sanity LQIP inline, or a tiny Mux thumbnail for ungated
+       video) wherever the asset offers one. Absolute inside the reserved
+       box, so nothing reflows (CLS stays 0). First child: DOM order alone
+       keeps it behind every media layer. */
     hasAsset && (
       <div
-        class="media-frame__skeleton"
+        class:list={[
+          'media-frame__skeleton',
+          {'media-frame__skeleton--blur': skeletonBackdrop?.needsBlur},
+        ]}
         aria-hidden="true"
         style={
-          skeletonLqip ? `background-image: url(${JSON.stringify(skeletonLqip)})` : undefined
+          skeletonBackdrop
+            ? `background-image: url(${JSON.stringify(skeletonBackdrop.url)})`
+            : undefined
         }
       />
     )
@@ -1197,6 +1216,15 @@ const imageRendering =
     background-color: var(--fg-12);
     background-size: cover;
     background-position: center;
+  }
+
+  /* The Mux skeleton thumb is a raw 24px frame, not pre-blurred like a
+     Sanity LQIP — blur it in place, scaled slightly so the blur's soft
+     edges stay inside the clipped frame instead of ghosting the page
+     background. Static paint only; nothing animates here. */
+  .media-frame__skeleton--blur {
+    filter: blur(20px);
+    transform: scale(1.08);
   }
 
   /* The skeleton is positioned, and CSS paints positioned descendants
