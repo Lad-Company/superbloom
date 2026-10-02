@@ -20,7 +20,7 @@ describe('ContactBand', () => {
   it('stamps startedAt inside the page-load init, not at module eval', () => {
     // The hidden timestamp must be re-stamped on every page load — a swapped-
     // in form has an empty startedAt, which the API rejects as a stale fill.
-    const initBody = source.match(/function initContactForm\(\)[\s\S]*?\n  \}/)?.[0] ?? ''
+    const initBody = source.match(/function initContactForm\(\)[\s\S]*?\n {2}\}/)?.[0] ?? ''
     expect(initBody).toContain("startedAt.value = String(Date.now())")
   })
 

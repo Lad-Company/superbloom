@@ -17,7 +17,10 @@
   letter-spacing: -0.02em;
 }
 .input::placeholder {
-  color: color-mix(in srgb, var(--fg) 50%, transparent);
+  /* 70% matches the SelectDropdown placeholder: 50% failed the 4.5:1
+     color-contrast floor on the brand surfaces (3.98:1 on brand-deep,
+     2.97:1 on brand-tertiary). */
+  color: color-mix(in srgb, var(--fg) 70%, transparent);
 }
 .input:focus {
   outline: none;

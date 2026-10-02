@@ -160,6 +160,11 @@ const posterRendering =
       })
     : null
 const isGated = Boolean(isVideo && posterRendering?.src)
+// Large-canvas frames (hero / split / full layoutBlock) cap at 1080p for
+// desktop, but no phone viewport can resolve that: even 430px at DPR 3 is
+// 1290 device px, inside the 720p rung. The element script drops the cap to
+// 720p under the small breakpoint before the player upgrades (ADR-0038).
+const mobileMaxResolution = plan.maxResolution === '1080p' ? '720p' : undefined
 const imageRendering =
   asset?._type === 'image' && asset.asset?._ref
     ? buildImageRendering({
@@ -180,6 +185,7 @@ const imageRendering =
   active={active ? true : undefined}
   gated={isGated ? true : undefined}
   data-priority={plan.priority ? true : undefined}
+  data-mobile-max-resolution={mobileMaxResolution}
   class:list={[
     'media-frame',
     className,
@@ -365,6 +371,8 @@ const imageRendering =
 </media-frame>
 
 <script>
+  import { BREAKPOINTS } from '../lib/breakpoints'
+
   const AUTO_HIDE_MS = 2500
   const SEEK_STEP_S = 5
   /** Time outside [0, duration] that we consider the player still settling. */
@@ -402,6 +410,33 @@ const imageRendering =
     abrEwmaDefaultEstimate: 20_000_000,
   }
 
+  /** Constrained startup: same disabled bandwidth test, but a 2 Mbps seed so
+   *  firstAutoLevel opens on a low rung and measured bandwidth climbs from
+   *  there. Used on save-data, cellular-class connections (2g/3g), and small
+   *  viewports — the small-viewport clause doubles as the mobile heuristic
+   *  where the Network Information API is absent (Safari) or reports the
+   *  downlink, not the user's real budget. A 20 Mbps seed under simulated
+   *  throttling opened on the top capped rung and pulled ~17 MB of segments
+   *  into one Lighthouse trace (2026-10-01); the first fragment still
+   *  replaces the seed with a real measurement, so fast connections upgrade
+   *  within a segment or two. */
+  const CONSTRAINED_STARTUP_HLS_CONFIG = {
+    testBandwidth: false,
+    abrEwmaDefaultEstimate: 2_000_000,
+  }
+
+  type NetworkInformationLike = { saveData?: boolean; effectiveType?: string }
+
+  const constrainedNetwork = (): boolean => {
+    const connection = (navigator as Navigator & { connection?: NetworkInformationLike })
+      .connection
+    if (connection?.saveData) return true
+    if (connection?.effectiveType && ['slow-2g', '2g', '3g'].includes(connection.effectiveType)) {
+      return true
+    }
+    return window.matchMedia(`(max-width: ${BREAKPOINTS.smallMax}px)`).matches
+  }
+
   /** Ambient loops are short and cyclic, so the hls.js defaults (30s forward
    *  buffer, unbounded cap growth) download far more of the stream than the
    *  loop can ever show. A flat 10s forward buffer bounds that worst case.
@@ -409,6 +444,12 @@ const imageRendering =
    *  scrubbing wants the deeper runway. */
   const AMBIENT_HLS_CONFIG = {
     ...STARTUP_HLS_CONFIG,
+    maxBufferLength: 10,
+    maxMaxBufferLength: 10,
+  }
+
+  const CONSTRAINED_AMBIENT_HLS_CONFIG = {
+    ...CONSTRAINED_STARTUP_HLS_CONFIG,
     maxBufferLength: 10,
     maxMaxBufferLength: 10,
   }
@@ -447,6 +488,7 @@ const imageRendering =
 
     private handleVisibilityChange = () => this.updatePlayback()
     private handleMotionChange = () => this.updatePlayback()
+    private handleVeilLifted = () => this.updatePlayback()
     private handlePlay = () => {
       this.updateControl()
       this.refreshScrubber()
@@ -478,12 +520,25 @@ const imageRendering =
     connectedCallback() {
       const playerElement = this.querySelector('mux-video') as MuxVideoElement | null
       if (playerElement) {
+        // Small viewports can't resolve 1080p (even 430px at DPR 3 is 1290
+        // device px, inside the 720p rung), so drop the rendition cap before
+        // the player upgrades — mobile never opens the 15.8 Mbps top rung.
+        const mobileMaxResolution = this.dataset.mobileMaxResolution
+        if (
+          mobileMaxResolution &&
+          window.matchMedia(`(max-width: ${BREAKPOINTS.smallMax}px)`).matches
+        ) {
+          playerElement.setAttribute('max-resolution', mobileMaxResolution)
+        }
         // Assign before the element upgrades so the value lands as an own
         // property and playback-core reads it when it builds hls.js — the
         // prototype accessor only exists after `@mux/mux-video` defines the
         // element, which happens on the deferred import below.
+        const constrained = constrainedNetwork()
+        const startupConfig = constrained ? CONSTRAINED_STARTUP_HLS_CONFIG : STARTUP_HLS_CONFIG
+        const ambientConfig = constrained ? CONSTRAINED_AMBIENT_HLS_CONFIG : AMBIENT_HLS_CONFIG
         playerElement._hlsConfig =
-          this.dataset.controls === 'none' ? AMBIENT_HLS_CONFIG : STARTUP_HLS_CONFIG
+          this.dataset.controls === 'none' ? ambientConfig : startupConfig
       }
       this.posterImg = this.querySelector('.media-frame__poster') as HTMLImageElement | null
       this.curatedPoster = this.querySelector(
@@ -540,6 +595,12 @@ const imageRendering =
 
       document.addEventListener('visibilitychange', this.handleVisibilityChange)
       this.motionPreference.addEventListener('change', this.handleMotionChange)
+      // The first-load veil holds playback (see updatePlayback): the poster
+      // is already the frame's LCP paint, and starting the stream under the
+      // veil pulls segments into the critical window. Layout dispatches
+      // sbh:veil-lifted the moment the veil lifts; on navigations and
+      // veil-skip loads the veil is already done and this never fires.
+      document.addEventListener('sbh:veil-lifted', this.handleVeilLifted)
 
       // The mux-video chunk (~1MB raw with media-chrome on mux-player) is the
       // largest JS cost on media pages, so it loads lazily: priority frames
@@ -717,6 +778,7 @@ const imageRendering =
       this.observer?.disconnect()
       this.loadObserver?.disconnect()
       document.removeEventListener('visibilitychange', this.handleVisibilityChange)
+      document.removeEventListener('sbh:veil-lifted', this.handleVeilLifted)
       this.motionPreference?.removeEventListener('change', this.handleMotionChange)
       this.player?.removeEventListener('play', this.handlePlay)
       this.player?.removeEventListener('pause', this.handlePause)
@@ -772,6 +834,15 @@ const imageRendering =
         } else if (this.userIntent === 'playing') {
           shouldPlay = isRevealed && isActive && this.isVisible && isDocVisible
         }
+      }
+
+      // First-load veil hold: don't start the stream while the veil is up.
+      // The overlay poster is already the frame's paint, so nothing is lost
+      // visually, and the segments stay out of the critical load window.
+      // (No interaction can arrive under the veil, so this never overrides a
+      // real userIntent.) sbh:veil-lifted re-evaluates.
+      if (document.querySelector('[data-page-loader]:not([data-loader-done])')) {
+        shouldPlay = false
       }
 
       if (shouldPlay && isPaused) {

@@ -87,10 +87,9 @@ const gaMode = preview
       crossorigin
     />
     {/* The logo SVG is only referenced as a CSS mask-image (veil + nav), so
-       it is discovered at style resolution instead of during HTML parsing —
-       and on `/` it IS the LCP element (the full-viewport hero is excluded
-       as an LCP candidate, the H1 is opacity-0 for the Type Reveal). 4KB on
-       every page buys LCP discovery at parse time. */}
+       it is discovered at style resolution instead of during HTML parsing.
+       The veil cue is the first thing a visitor sees on a cold load, so 4KB
+       on every page buys its discovery at parse time. */}
     <link rel="preload" href="/superbloom-house-logo.svg" as="image" type="image/svg+xml" />
     {/* Warm the Mux hosts (poster thumbnails + HLS manifests) so video frames
        don't pay a fresh DNS+TLS round trip when the player upgrades. Only on
@@ -201,18 +200,17 @@ const gaMode = preview
     {preview && <PreviewBar />}
     {(gaMode !== 'off' || import.meta.env.DEV) && <CookieConsent />}
     <script>
-      import { getLenis, initMotion, initSmoothScroll, prefersReducedMotion } from '../lib/motion';
+      import { prefersReducedMotion } from '../lib/motion/config';
       import { initAnalytics } from '../lib/analytics';
-      import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
       initAnalytics();
 
       // Lazy gtag/js: the library is ~170 KB gz and only ever receives queued
-      // dataLayer pushes, so it loads on idle (or first interaction, whichever
-      // comes first) instead of blocking the critical path. Injected once per
-      // session; bundled scripts persist across View Transitions, so the
-      // module-level flag is enough. No-op when gaMode is 'off' (the attribute
-      // is absent).
+      // dataLayer pushes, so it loads on first interaction only — never on an
+      // idle timer — so it can't compete with the critical path or the
+      // Lighthouse trace window. Injected once per session; bundled scripts
+      // persist across View Transitions, so the module-level flag is enough.
+      // No-op when gaMode is 'off' (the attribute is absent).
       const gaId = document.documentElement.dataset.gaId;
       let gtagRequested = false;
       const loadGtag = () => {
@@ -224,16 +222,6 @@ const gaMode = preview
         document.head.appendChild(script);
       };
       if (gaId) {
-        const idle = (
-          window as Window & {
-            requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-          }
-        ).requestIdleCallback;
-        if (idle) {
-          idle(loadGtag, { timeout: 3000 });
-        } else {
-          window.setTimeout(loadGtag, 2000);
-        }
         for (const eventName of ['pointerdown', 'keydown', 'scroll'] as const) {
           window.addEventListener(eventName, loadGtag, { once: true, passive: true });
         }
@@ -244,6 +232,9 @@ const gaMode = preview
       // The global veil only runs on the genuine first load; View Transition
       // navigations dismiss it in astro:before-swap and this flips false.
       let isFirstLoad = true;
+      // Supersede guard: setup() awaits the motion chunk, and a View
+      // Transition can land mid-flight; the newer setup must win.
+      let setupGeneration = 0;
 
       const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 
@@ -279,11 +270,12 @@ const gaMode = preview
       // media lands almost at once (warm cache) the veil was never perceptibly
       // visible, so lift immediately; a flat floor here was 280ms of pointless
       // veil time on every repeat visit. The veil does not gate LCP: Chrome
-      // does no occlusion test, so posters under it register at first paint
-      // regardless. (The full-viewport hero on `/` and `/zine` is excluded as
-      // an LCP candidate because Chrome ignores elements covering the full
-      // viewport — web.dev/articles/lcp — and with the H1 at opacity 0 for
-      // the Type Reveal, LCP there falls to the nav logo or the kicker text.)
+      // does no occlusion test, so media and text under it register at first
+      // paint regardless. (The full-viewport hero on `/` and `/zine` is
+      // excluded as an LCP candidate because Chrome ignores elements covering
+      // the full viewport — web.dev/articles/lcp — so LCP there is the hero
+      // H1, which motion.css keeps painted under the veil instead of hiding
+      // it for the Type Reveal.)
       // Past that point the user has seen the veil, so hold it to the 400ms
       // beat: it reads as a deliberate moment rather than a flicker, and on a
       // cold load the media wait usually exceeds it anyway. The clock starts at
@@ -297,6 +289,7 @@ const gaMode = preview
         if (document.documentElement.hasAttribute('data-veil-skip')) {
           loader.setAttribute('data-loader-instant', '');
           loader.setAttribute('data-loader-done', '');
+          document.dispatchEvent(new CustomEvent('sbh:veil-lifted'));
           return;
         }
         const start = performance.now();
@@ -311,6 +304,11 @@ const gaMode = preview
           loader.setAttribute('data-loader-instant', '');
         }
         loader.setAttribute('data-loader-done', '');
+        // Page-entry Type Reveals (hero headings) split as soon as the motion
+        // chunk lands and hold their play for this moment, so the reveal
+        // still opens on a clean frame as the veil lifts. The veil gates the
+        // animation only — never the text paint (motion.css LCP exception).
+        document.dispatchEvent(new CustomEvent('sbh:veil-lifted'));
         try {
           sessionStorage.setItem('sbh:veil-seen', '1');
         } catch {
@@ -327,12 +325,14 @@ const gaMode = preview
       // lands on its section. Scrolling goes through Lenis (when active) so its
       // internal scroll state resets too — otherwise Lenis re-applies the
       // previous page's offset on the next frame and the new page appears to
-      // load scrolled down (e.g. at the footer).
-      const settleScrollPosition = () => {
+      // load scrolled down (e.g. at the footer). The Lenis instance comes from
+      // the lazily-imported motion module, so callers pass it in.
+      const settleScrollPosition = (
+        lenis: { scrollTo: (target: HTMLElement | number, options?: { immediate?: boolean; force?: boolean }) => void } | null,
+      ) => {
         if (navigationType === 'traverse') return;
         const hash = window.location.hash;
         const target = hash ? document.getElementById(hash.slice(1)) : null;
-        const lenis = getLenis();
         if (lenis) {
           lenis.scrollTo(target ?? 0, { immediate: true, force: true });
         } else if (target) {
@@ -342,57 +342,72 @@ const gaMode = preview
         }
       };
 
-      // Heavier scroll systems (Capes pin, parallax rAF) listen for this and
-      // init only once the hero reveal has had the first frames to itself, so
-      // their pin-spacer/refresh reflow never competes with the reveal.
-      const runDeferredMotion = () => {
-        document.dispatchEvent(new CustomEvent('sbh:motion-deferred'));
-        // Re-assert after ScrollTrigger measures: pin spacers and splits shift
-        // layout, and Lenis must not drift back to a stale offset.
-        ScrollTrigger.refresh();
-        settleScrollPosition();
-      };
-
-      const scheduleDeferredMotion = () => {
-        // No reveal competes under reduced motion, so bring everything up now.
-        if (prefersReducedMotion()) {
-          runDeferredMotion();
-          return;
-        }
-        const idle = (
-          window as Window & {
-            requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-          }
-        ).requestIdleCallback;
-        if (idle) {
-          idle(runDeferredMotion, { timeout: 1200 });
-        } else {
-          window.setTimeout(runDeferredMotion, 800);
-        }
-      };
-
       const setup = async () => {
-        destroySmoothScroll = initSmoothScroll();
-        settleScrollPosition();
-        // First hard load: hold the veil until fonts + above-the-fold media are
-        // ready, so startup layout work and any media fetch happen behind it and
-        // the hero reveal plays on a clean frame as the veil lifts.
+        const generation = ++setupGeneration;
+        // First hard load: lift the veil once fonts + above-the-fold media are
+        // ready. The veil wait runs concurrently with the motion chunk fetch
+        // below — it gates the reveal *animation* (via sbh:veil-lifted), never
+        // the heading's first paint.
         if (isFirstLoad) {
           const loader = document.querySelector<HTMLElement>('[data-page-loader]');
           if (loader && !loader.hasAttribute('data-loader-done')) {
-            await runPageLoader(loader);
+            void runPageLoader(loader);
           }
         }
         isFirstLoad = false;
-        // The full page-entry Type Reveal plays on the genuine first load and
-        // on every View Transition navigation.
-        destroyMotion = initMotion();
-        // Let the reveal own the first frames, then bring up the heavy scroll
-        // systems and re-measure on idle (fixed beat where idle is unavailable).
-        scheduleDeferredMotion();
+
+        // Motion (GSAP + Lenis + split-type) ships as its own chunk so the
+        // eager base bundle isn't half-unused motion/scroll code on first
+        // paint. The import overlaps the veil's media wait on cold loads and
+        // is a cache hit on View Transition navigations.
+        const [motion, { ScrollTrigger }] = await Promise.all([
+          import('../lib/motion'),
+          import('gsap/ScrollTrigger'),
+        ]);
+        // A navigation superseded this setup while the chunk was in flight;
+        // the new page's own setup owns motion now.
+        if (generation !== setupGeneration) return;
+
+        destroySmoothScroll = motion.initSmoothScroll();
+        settleScrollPosition(motion.getLenis());
+        // The full page-entry Type Reveal plays on the genuine first load
+        // (held for sbh:veil-lifted) and on every View Transition navigation
+        // (immediately — the incoming veil is already done).
+        destroyMotion = motion.initMotion();
+
+        // Heavier scroll systems (Capes pin, parallax rAF) listen for
+        // sbh:motion-deferred and init only once the hero reveal has had the
+        // first frames to itself, so their pin-spacer/refresh reflow never
+        // competes with the reveal.
+        const runDeferredMotion = () => {
+          document.dispatchEvent(new CustomEvent('sbh:motion-deferred'));
+          // Re-assert after ScrollTrigger measures: pin spacers and splits
+          // shift layout, and Lenis must not drift back to a stale offset.
+          ScrollTrigger.refresh();
+          settleScrollPosition(motion.getLenis());
+        };
+        // No reveal competes under reduced motion, so bring everything up
+        // now; otherwise defer to idle (fixed beat where idle is
+        // unavailable).
+        if (prefersReducedMotion()) {
+          runDeferredMotion();
+        } else {
+          const idle = (
+            window as Window & {
+              requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+            }
+          ).requestIdleCallback;
+          if (idle) {
+            idle(runDeferredMotion, { timeout: 1200 });
+          } else {
+            window.setTimeout(runDeferredMotion, 800);
+          }
+        }
       };
 
       const teardown = () => {
+        // Supersede any in-flight setup still awaiting the motion chunk.
+        setupGeneration++;
         destroyMotion();
         destroySmoothScroll();
         destroyMotion = () => {};
@@ -409,6 +424,11 @@ const gaMode = preview
         // visible-then-hidden.
         const newDocument = (event as unknown as { newDocument?: Document }).newDocument;
         newDocument?.documentElement.classList.add('js');
+        // Navigations behave like veil-skip loads: the incoming veil is
+        // already dismissed (stamped below) and the reveal plays as soon as
+        // the split lands, so the first-load LCP exception in motion.css
+        // (visible-under-veil) must not apply to them.
+        newDocument?.documentElement.setAttribute('data-veil-skip', '');
         // The preview flag rides the SSR'd <html>, but a prerendered surface
         // can't vary by cookie — propagate it so draft content and GA-off
         // survive every View Transition navigation of the preview session.

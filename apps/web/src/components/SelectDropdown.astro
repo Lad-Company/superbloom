@@ -220,7 +220,11 @@ const selected = options.find((option) => option.value === value)
   }
 
   .select-dropdown-value.is-placeholder {
-    color: color-mix(in srgb, currentColor 50%, transparent);
+    /* 70% (not 50%): the placeholder must hold 4.5:1 on every brand surface
+       the ContactBand uses — 50% measured 3.98:1 on brand-deep purple and
+       2.97:1 on brand-tertiary green (axe color-contrast, 2026-10-01); 70%
+       lands at 6.3:1 / 4.84:1. */
+    color: color-mix(in srgb, currentColor 70%, transparent);
   }
 
   /* The filled trigger is the pre-selected state: its label reads at full

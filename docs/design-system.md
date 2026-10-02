@@ -493,7 +493,12 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    every image in the initial viewport (4s cap), lifts immediately if that took
    under ~100ms (never perceptibly shown, no fade), otherwise holds to a 400ms
    beat so it reads as intentional rather than a flicker. It runs once per
-   tab: reloads and back/forward skip it before paint. Media frames never
+   tab: reloads and back/forward skip it before paint. The veil gates the
+   hero heading's reveal *animation*, never its paint: page-entry Type Reveal
+   targets stay painted underneath it (the split re-hides the chars behind
+   their line clips once the motion chunk lands, and the reveal plays on
+   `sbh:veil-lifted`), so text LCP lands at first paint instead of after the
+   loading ceremony. Media frames never
    render alt text visually while loading; the placeholder gradient shows.
 5. **Route Transition** — full-viewport, reserved exclusively for navbar
    destinations; other navigations keep local motion.

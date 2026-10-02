@@ -26,6 +26,16 @@ export interface RevealHandle {
 
 const noopHandle: RevealHandle = {play() {}, destroy() {}}
 
+/** First-load veil state: the loader element carries data-loader-done from
+ *  the moment Layout lifts it. Page-entry reveals (scroll: false) hold their
+ *  play until the lift so the Type Reveal still opens on a clean frame — but
+ *  the split itself runs as soon as the motion chunk lands, so the veil's
+ *  media wait never gates the heading's first paint (motion.css keeps
+ *  page-entry targets visible to LCP under the veil). */
+const veilOpen = (): boolean =>
+  typeof document !== 'undefined' &&
+  Boolean(document.querySelector('[data-page-loader]:not([data-loader-done])'))
+
 let pageEntryHasRevealed = false
 
 export function hasPageEntryRevealed(): boolean {
@@ -109,6 +119,7 @@ export async function revealText(
 
   let tween: gsap.core.Tween | null = null
   let trigger: ScrollTrigger | null = null
+  let veilPlayListener: (() => void) | null = null
   // Once the entrance has been started (immediate or scroll-triggered),
   // resize must never replay it. From that point, `build` only re-lays the
   // new split units in the visible end-state instead of rebuilding a paused
@@ -166,13 +177,34 @@ export async function revealText(
       once: true,
       onEnter: play,
     })
+  } else if (veilOpen()) {
+    // First load: the heading painted under the veil (the motion.css LCP
+    // exception) and the split has just re-hidden it behind the line clips.
+    // Hold the reveal until Layout lifts the veil so it plays on a clean
+    // frame — the veil's media wait gates the animation, never the paint.
+    veilPlayListener = () => play()
+    document.addEventListener('sbh:veil-lifted', veilPlayListener, { once: true })
+  } else if (!document.documentElement.hasAttribute('data-veil-skip')) {
+    // First load, but the veil lifted before the split landed (very slow
+    // motion chunk): the heading has been visibly painted the whole time, so
+    // hiding it now for a late reveal would read as a glitch. Commit the end
+    // state instead — hasStarted makes build() lay out the visible end-state.
+    hasStarted = true
+    build()
   } else {
+    // Veil-skip reloads and View Transition navigations (both stamp
+    // data-veil-skip): the CSS opacity gate kept the heading hidden, so the
+    // reveal plays as soon as the split is ready, as before.
     play()
   }
 
   return {
     play,
     destroy() {
+      if (veilPlayListener) {
+        document.removeEventListener('sbh:veil-lifted', veilPlayListener)
+        veilPlayListener = null
+      }
       trigger?.kill()
       tween?.kill()
       split.revert()
