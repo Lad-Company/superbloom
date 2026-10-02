@@ -158,6 +158,28 @@ html.js:not([data-veil-skip]) [data-motion-text][data-scroll='false'] {
   }
 }
 
+/* MediaFrame load crossfade (ARCHITECTURE.md ADR-0039): every rendered media
+   layer starts transparent over the frame's skeleton surface and fades in on
+   its load event (the media-frame element stamps data-loaded; layers already
+   complete at connect are stamped before first paint, so cached images and
+   View Transition swaps never flash the skeleton). These rules must live in a
+   global stylesheet: the html.js gate can't survive Astro's scoped-style
+   compiler — a bare :where(html.js) gets the scope attribute fused onto the
+   html compound (`[data-astro-cid-*]:where(html.js)`, never matches), and
+   :where(:global(html.js)) emits as an empty :where() — both silently deaden
+   the rules (verified in-browser 2026-10-02). Kept unscoped, the specificity
+   stays below MediaFrame's scoped fade-out states (video-ready, revealed),
+   so those tuned transitions still win, and below the component's
+   reduced-motion override. */
+html.js media-frame img {
+  opacity: 0;
+}
+
+html.js media-frame img[data-loaded] {
+  opacity: 1;
+  transition: opacity var(--motion-quick) var(--motion-ease-out);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .surface-wipe.is-pressed {
     transform: none;

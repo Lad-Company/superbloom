@@ -1210,22 +1210,15 @@ const imageRendering =
     position: relative;
   }
 
-  /* Load crossfade (ADR-0039): with JS on, every layer starts transparent
-     over the skeleton and fades in when its load fires (the element sets
-     data-loaded; layers already complete at connect are marked before
-     first paint, so they never flash the skeleton). Gated on html.js so a
-     no-JS page — or a failed script chunk — renders media exactly as
-     before. :where() keeps these at near-zero specificity so the
-     video-ready / revealed fade-outs below still win over the loaded
-     state. */
-  :where(html.js) .media-frame img {
-    opacity: 0;
-  }
+  /* Load crossfade (ADR-0039): every layer starts transparent over the
+     skeleton and fades in on its load event — but the rules themselves
+     live in styles/motion.css. The html.js gate can't survive Astro's
+     scoped-style compiler (a bare :where(html.js) gets the scope attribute
+     fused onto html, and :where(:global(html.js)) emits an empty :where();
+     both silently deaden the selector), and unscoped the specificity also
+     stays below the video-ready / revealed fade-outs below so those keep
+     winning. The element side (data-loaded stamping) is in the script. */
 
-  :where(html.js) .media-frame img[data-loaded] {
-    opacity: 1;
-    transition: opacity var(--motion-quick) var(--motion-ease-out);
-  }
 
   .media-frame.intrinsic img {
     height: auto;

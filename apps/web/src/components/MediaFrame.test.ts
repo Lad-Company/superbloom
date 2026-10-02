@@ -374,19 +374,26 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
     expect(source).toMatch(/\.media-frame\s*\{[^}]*--fg-12:\s*color-mix\(in srgb, var\(--fg\) 12%, transparent\)/)
   })
 
-  it('starts layers at opacity 0 over the skeleton, gated on html.js', () => {
+  it('starts layers at opacity 0 over the skeleton, gated on html.js — in motion.css', () => {
     // Without JS (or a failed chunk) media must render exactly as before —
     // the hide rule only applies when Layout's inline script has marked
-    // the document JS-capable.
-    expect(source).toMatch(/:where\(html\.js\) \.media-frame img\s*\{[^}]*opacity:\s*0/)
+    // the document JS-capable. The rules must live in the global
+    // motion.css: Astro's scoped compiler deadens an html.js gate inside
+    // the component (bare :where(html.js) gets the scope attribute fused
+    // onto html; :where(:global(html.js)) emits an empty :where() —
+    // verified in-browser 2026-10-02).
+    const motionCss = readFileSync(new URL('../styles/motion.css', import.meta.url), 'utf8')
+    expect(motionCss).toMatch(/html\.js media-frame img\s*\{[^}]*opacity:\s*0/)
+    // …and no equivalent rule remains in the scoped component style
+    // (selector + brace, so the explanatory comment doesn't false-positive).
+    expect(source).not.toMatch(/:where\([^)]*html\.js[^)]*\)\s*\.media-frame\s*img[^{]*\{/)
   })
 
   it('crossfades each layer in on its load event at --motion-quick', () => {
-    expect(source).toMatch(
-      /:where\(html\.js\) \.media-frame img\[data-loaded\]\s*\{[^}]*opacity:\s*1/,
-    )
-    expect(source).toMatch(
-      /:where\(html\.js\) \.media-frame img\[data-loaded\]\s*\{[^}]*transition:\s*opacity var\(--motion-quick\) var\(--motion-ease-out\)/,
+    const motionCss = readFileSync(new URL('../styles/motion.css', import.meta.url), 'utf8')
+    expect(motionCss).toMatch(/html\.js media-frame img\[data-loaded\]\s*\{[^}]*opacity:\s*1/)
+    expect(motionCss).toMatch(
+      /html\.js media-frame img\[data-loaded\]\s*\{[^}]*transition:\s*opacity var\(--motion-quick\) var\(--motion-ease-out\)/,
     )
     expect(source).toContain("img.addEventListener('load', this.handleImgLoad)")
     expect(source).toContain("img.setAttribute('data-loaded', '')")
