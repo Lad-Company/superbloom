@@ -317,3 +317,127 @@ describe('MediaFrame consumers conform to the new controls enum', () => {
     expect(source).toContain('promotePoster(i + 1)')
   })
 })
+
+describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
+  it('renders a skeleton surface behind the media whenever an asset exists', () => {
+    expect(source).toContain("'media-frame__skeleton'")
+    expect(source).toContain('aria-hidden="true"')
+    // Only real assets get a skeleton; the no-asset placeholder gradient
+    // stays the fallback for empty frames.
+    expect(source).toMatch(/hasAsset && \([\s\S]*?media-frame__skeleton/)
+  })
+
+  it('skeleton is absolute inside the reserved box (no layout cost, CLS 0)', () => {
+    expect(source).toMatch(/\.media-frame__skeleton\s*\{[^}]*position:\s*absolute/)
+    expect(source).toMatch(/\.media-frame__skeleton\s*\{[^}]*inset:\s*0/)
+  })
+
+  it('positions the primary image layer so it paints above the positioned skeleton', () => {
+    // CSS paints positioned descendants above non-positioned in-flow content
+    // regardless of DOM order: a static <img> would sit UNDER the absolute
+    // skeleton forever (the HITL-caught "permanent blur" regression). The
+    // poster / curated-poster layers are already absolute; the primary image
+    // gets position: relative via its own class — adding it to the base
+    // `.media-frame img` rule instead would outspecificity the poster's
+    // `position: absolute` (0,1,1 beats 0,1,0) and break video frames.
+    expect(source).toContain('class="media-frame__image"')
+    expect(source).toMatch(/\.media-frame__image\s*\{[^}]*position:\s*relative/)
+  })
+
+  it('upgrades the skeleton to the Sanity LQIP blur-up when the asset carries one', () => {
+    expect(source).toContain('skeletonBackdrop')
+    expect(source).toContain('background-image: url(')
+    // Image assets use their own LQIP; Gated Ambient videos fall back to
+    // the curated poster's LQIP — both pre-blurred by Sanity.
+    expect(source).toContain("{url: asset.lqip, needsBlur: false}")
+    expect(source).toContain("{url: poster.lqip, needsBlur: false}")
+  })
+
+  it('gives ungated video frames a tiny Mux thumbnail blur-up skeleton', () => {
+    // Ungated video has no Sanity LQIP; without this the biggest canvases
+    // on the site (home hero, shop hero) sat on a flat gray box until the
+    // poster arrived — the "no poster" gap from HITL review.
+    expect(source).toContain('muxSkeletonThumbUrl')
+    expect(source).toMatch(
+      /deferPoster \|\| asset\?\._type !== 'mux\.video' \|\| !asset\.playbackId/,
+    )
+    expect(source).toContain('media-frame__skeleton--blur')
+    // The raw 24px thumb needs a CSS blur + scale (edge bleed) treatment.
+    expect(source).toMatch(/\.media-frame__skeleton--blur\s*\{[^}]*filter:\s*blur\(/)
+    expect(source).toMatch(/\.media-frame__skeleton--blur\s*\{[^}]*transform:\s*scale\(/)
+  })
+
+  it('types the LQIP field on the image projection', () => {
+    expect(source).toContain('lqip?: string | null')
+  })
+
+  it('projects lqip in the shared media projection (image + poster branches)', () => {
+    const queries = readFileSync(new URL('../lib/queries.ts', import.meta.url), 'utf8')
+    const projection = queries.slice(
+      queries.indexOf('const mediaProjection'),
+      queries.indexOf('export const contentLayoutRowsProjection'),
+    )
+    // Both the image branch and the curated poster branch carry it.
+    expect(projection.match(/"lqip": asset->metadata\.lqip/g)).toHaveLength(2)
+  })
+
+  it('derives --fg-12 locally via color-mix so the skeleton resolves on any surface', () => {
+    // The base token is a literal black-12% that reads blank on dark or
+    // colored surfaces; a :root color-mix would bake :root's --fg at
+    // declaration time. MediaFrame re-declares it like --fg-8 /
+    // CartDrawer / Navigation.
+    expect(source).toMatch(/\.media-frame\s*\{[^}]*--fg-12:\s*color-mix\(in srgb, var\(--fg\) 12%, transparent\)/)
+  })
+
+  it('starts layers at opacity 0 over the skeleton, gated on html.js — in motion.css', () => {
+    // Without JS (or a failed chunk) media must render exactly as before —
+    // the hide rule only applies when Layout's inline script has marked
+    // the document JS-capable. The rules must live in the global
+    // motion.css: Astro's scoped compiler deadens an html.js gate inside
+    // the component (bare :where(html.js) gets the scope attribute fused
+    // onto html; :where(:global(html.js)) emits an empty :where() —
+    // verified in-browser 2026-10-02).
+    const motionCss = readFileSync(new URL('../styles/motion.css', import.meta.url), 'utf8')
+    expect(motionCss).toMatch(/html\.js media-frame img\s*\{[^}]*opacity:\s*0/)
+    // …and no equivalent rule remains in the scoped component style
+    // (selector + brace, so the explanatory comment doesn't false-positive).
+    expect(source).not.toMatch(/:where\([^)]*html\.js[^)]*\)\s*\.media-frame\s*img[^{]*\{/)
+  })
+
+  it('crossfades each layer in on its load event at --motion-quick', () => {
+    const motionCss = readFileSync(new URL('../styles/motion.css', import.meta.url), 'utf8')
+    expect(motionCss).toMatch(/html\.js media-frame img\[data-loaded\]\s*\{[^}]*opacity:\s*1/)
+    expect(motionCss).toMatch(
+      /html\.js media-frame img\[data-loaded\]\s*\{[^}]*transition:\s*opacity var\(--motion-quick\) var\(--motion-ease-out\)/,
+    )
+    expect(source).toContain("img.addEventListener('load', this.handleImgLoad)")
+    expect(source).toContain("img.setAttribute('data-loaded', '')")
+  })
+
+  it('marks already-complete layers synchronously (cache, View Transitions, bfcache)', () => {
+    // Requires a resolved URL so deferred posters (no src yet, complete ===
+    // true) stay on the listener path until promotePoster() fires load.
+    expect(source).toContain('img.currentSrc && img.complete && img.naturalWidth > 0')
+  })
+
+  it('removes the load listener in disconnectedCallback', () => {
+    expect(source).toContain("img.removeEventListener('load', this.handleImgLoad)")
+  })
+
+  it('preserves the tuned fade-out timings against the quick load crossfade', () => {
+    // The data-loaded transition would otherwise outrank the base rules:
+    // video-ready keeps --motion-standard, the Poster Punch keeps
+    // deliberate zoom + delayed 560ms fade.
+    expect(source).toMatch(
+      /\.media-frame\[data-video-ready\] \.media-frame__poster\s*\{[^}]*transition:\s*opacity var\(--motion-standard\)/,
+    )
+    expect(source).toMatch(
+      /\.media-frame\[revealed\] \.media-frame__curated-poster\s*\{[^}]*transform var\(--motion-deliberate\)/,
+    )
+  })
+
+  it('is instant under prefers-reduced-motion', () => {
+    const reduceBlock = source.slice(source.indexOf('@media (prefers-reduced-motion: reduce)'))
+    expect(reduceBlock).toContain('.media-frame img[data-loaded]')
+  })
+})
