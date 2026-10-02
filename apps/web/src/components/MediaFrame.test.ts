@@ -332,6 +332,18 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
     expect(source).toMatch(/\.media-frame__skeleton\s*\{[^}]*inset:\s*0/)
   })
 
+  it('positions the primary image layer so it paints above the positioned skeleton', () => {
+    // CSS paints positioned descendants above non-positioned in-flow content
+    // regardless of DOM order: a static <img> would sit UNDER the absolute
+    // skeleton forever (the HITL-caught "permanent blur" regression). The
+    // poster / curated-poster layers are already absolute; the primary image
+    // gets position: relative via its own class — adding it to the base
+    // `.media-frame img` rule instead would outspecificity the poster's
+    // `position: absolute` (0,1,1 beats 0,1,0) and break video frames.
+    expect(source).toContain('class="media-frame__image"')
+    expect(source).toMatch(/\.media-frame__image\s*\{[^}]*position:\s*relative/)
+  })
+
   it('upgrades the skeleton to the Sanity LQIP blur-up when the asset carries one', () => {
     expect(source).toContain('skeletonLqip')
     expect(source).toContain('background-image: url(')

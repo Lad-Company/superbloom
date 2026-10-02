@@ -291,6 +291,7 @@ const imageRendering =
   {
     imageRendering && imageRendering.src && (
       <img
+        class="media-frame__image"
         src={imageRendering.src}
         srcset={imageRendering.srcset}
         sizes={frameSizes}
@@ -1196,6 +1197,17 @@ const imageRendering =
     background-color: var(--fg-12);
     background-size: cover;
     background-position: center;
+  }
+
+  /* The skeleton is positioned, and CSS paints positioned descendants
+     above non-positioned in-flow content regardless of DOM order — so the
+     primary image must be positioned too, or the skeleton covers it
+     forever (a static <img> paints below the skeleton even though it
+     follows it in the DOM). relative keeps it in flow, which intrinsic
+     ratio frames rely on for their height; the poster and curated-poster
+     layers are already absolute. */
+  .media-frame__image {
+    position: relative;
   }
 
   /* Load crossfade (ADR-0039): with JS on, every layer starts transparent
