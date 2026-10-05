@@ -1,14 +1,14 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest'
 import {clearMuxBlurUpCache, muxBlurUpDataUri} from './muxBlurUp'
 
-const okResponse = (bytes: Uint8Array, type = 'image/webp') =>
-  new Response(bytes, {status: 200, headers: {'content-type': type}})
+const okResponse = (bytes: number[], type = 'image/webp') =>
+  new Response(new Uint8Array(bytes).buffer, {status: 200, headers: {'content-type': type}})
 
 describe('muxBlurUpDataUri', () => {
   beforeEach(() => clearMuxBlurUpCache())
 
   it('inlines the 24px thumbnail as a data URI at the asset thumbTime', async () => {
-    const fetchImpl = vi.fn(async () => okResponse(new Uint8Array([1, 2, 3])))
+    const fetchImpl = vi.fn(async (_input: string | URL | Request) => okResponse([1, 2, 3]))
     const uri = await muxBlurUpDataUri('abc', 4, fetchImpl as unknown as typeof fetch)
     expect(uri).toBe('data:image/webp;base64,AQID')
     expect(fetchImpl).toHaveBeenCalledTimes(1)
@@ -18,7 +18,7 @@ describe('muxBlurUpDataUri', () => {
   })
 
   it('shares one request per asset across renders', async () => {
-    const fetchImpl = vi.fn(async () => okResponse(new Uint8Array([9])))
+    const fetchImpl = vi.fn(async () => okResponse([9]))
     await Promise.all([
       muxBlurUpDataUri('abc', 0, fetchImpl as unknown as typeof fetch),
       muxBlurUpDataUri('abc', 0, fetchImpl as unknown as typeof fetch),
@@ -31,7 +31,7 @@ describe('muxBlurUpDataUri', () => {
     const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(new Response(null, {status: 404}))
-      .mockResolvedValueOnce(okResponse(new Uint8Array([7])))
+      .mockResolvedValueOnce(okResponse([7]))
     expect(await muxBlurUpDataUri('abc', 0, fetchImpl as unknown as typeof fetch)).toBeNull()
     expect(await muxBlurUpDataUri('abc', 0, fetchImpl as unknown as typeof fetch)).toBe(
       'data:image/webp;base64,Bw==',
@@ -46,7 +46,7 @@ describe('muxBlurUpDataUri', () => {
   })
 
   it('returns null for an empty body', async () => {
-    const fetchImpl = vi.fn(async () => okResponse(new Uint8Array([])))
+    const fetchImpl = vi.fn(async () => okResponse([]))
     expect(await muxBlurUpDataUri('abc', 0, fetchImpl as unknown as typeof fetch)).toBeNull()
   })
 })
