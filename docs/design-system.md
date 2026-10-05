@@ -500,7 +500,8 @@ never obscures readable type. Reuse a primitive before writing a page-local time
 4. **Loading surfaces** — skeleton → content, never a spinner and a skeleton
    together, and never a whole-page veil. In-page loading feedback appears
    only for waits >400ms. Media frames always paint a skeleton surface (token
-   fill, upgraded to the asset's blur-up where one exists — ADR-0039) and
+   fill, upgraded to the asset's blur-up where one exists — Sanity LQIP for
+   images, an inline 24px Mux thumbnail for priority video, ADR-0039/0040) and
    crossfade the real media in on load, so nothing renders blank and alt text
    is never shown visually while loading. There is no first-load veil: the
    page is the loading surface, text is painted from the first frame, and the

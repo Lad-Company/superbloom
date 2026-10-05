@@ -7,6 +7,7 @@ import {
   type MediaPlacement,
   type MuxMaxResolution,
 } from '../lib/mediaRenderingPlan'
+import {muxBlurUpDataUri} from '../lib/muxBlurUp'
 
 export type MediaRatio = CropRatio
 
@@ -171,7 +172,18 @@ const isGated = Boolean(isVideo && posterRendering?.src)
  *  blur-up instead of a flat gray box — except deferred frames (Capes),
  *  which must fetch nothing until promoted and keep the bare token
  *  skeleton. Sanity LQIPs ship pre-blurred; the Mux thumb is a raw 24px
- *  frame and needs a CSS blur, flagged by `needsBlur`. */
+ *  frame and needs a CSS blur, flagged by `needsBlur`. Priority frames
+ *  (heroes) inline that thumb as a data URI fetched at render
+ *  (lib/muxBlurUp.ts) so the first frame is already a blur-up, not a bare
+ *  token box waiting on a request; the URL stays the fallback. */
+const muxSkeletonUrl =
+  !deferPoster && asset?._type === 'mux.video' && asset.playbackId && !poster?.lqip
+    ? muxSkeletonThumbUrl(asset.playbackId, asset.thumbTime)
+    : null
+const muxSkeletonInline =
+  muxSkeletonUrl && plan.priority && asset?._type === 'mux.video' && asset.playbackId
+    ? await muxBlurUpDataUri(asset.playbackId, asset.thumbTime)
+    : null
 const skeletonBackdrop: {url: string; needsBlur: boolean} | null =
   asset?._type === 'image'
     ? asset.lqip
@@ -179,9 +191,9 @@ const skeletonBackdrop: {url: string; needsBlur: boolean} | null =
       : null
     : poster?.lqip
       ? {url: poster.lqip, needsBlur: false}
-      : deferPoster || asset?._type !== 'mux.video' || !asset.playbackId
-        ? null
-        : {url: muxSkeletonThumbUrl(asset.playbackId, asset.thumbTime), needsBlur: true}
+      : muxSkeletonUrl
+        ? {url: muxSkeletonInline ?? muxSkeletonUrl, needsBlur: true}
+        : null
 // Large-canvas frames (hero / split / full layoutBlock) cap at 1080p for
 // desktop, but no phone viewport can resolve that: even 430px at DPR 3 is
 // 1290 device px, inside the 720p rung. The element script drops the cap to

@@ -350,9 +350,14 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
     // on the site (home hero, shop hero) sat on a flat gray box until the
     // poster arrived — the "no poster" gap from HITL review.
     expect(source).toContain('muxSkeletonThumbUrl')
-    expect(source).toMatch(
-      /deferPoster \|\| asset\?\._type !== 'mux\.video' \|\| !asset\.playbackId/,
-    )
+    // Deferred frames (Capes) must fetch nothing until promoted.
+    expect(source).toMatch(/!deferPoster && asset\?\._type === 'mux\.video' && asset\.playbackId/)
+    // Priority frames (heroes) inline the thumb at render so the first frame
+    // is already a blur-up (GH #151 HITL: a bare grey hero once the veil was
+    // gone); the URL remains the fallback when the fetch misses.
+    expect(source).toContain('await muxBlurUpDataUri(asset.playbackId, asset.thumbTime)')
+    expect(source).toMatch(/muxSkeletonUrl && plan\.priority/)
+    expect(source).toContain('muxSkeletonInline ?? muxSkeletonUrl')
     expect(source).toContain('media-frame__skeleton--blur')
     // The raw 24px thumb needs a CSS blur + scale (edge bleed) treatment.
     expect(source).toMatch(/\.media-frame__skeleton--blur\s*\{[^}]*filter:\s*blur\(/)
