@@ -246,14 +246,6 @@ describe('MediaFrame playback profiles', () => {
     expect(source).toContain("playerElement.setAttribute('max-resolution', mobileMaxResolution)")
   })
 
-  it('holds playback while the first-load veil is up', () => {
-    // Segments stay out of the critical load window; the overlay poster is
-    // already the frame's paint. sbh:veil-lifted re-evaluates.
-    expect(source).toContain("document.querySelector('[data-page-loader]:not([data-loader-done])')")
-    expect(source).toContain("document.addEventListener('sbh:veil-lifted', this.handleVeilLifted)")
-    expect(source).toContain("document.removeEventListener('sbh:veil-lifted', this.handleVeilLifted)")
-  })
-
   it('dev guardrail watches startup config and the playback-core cap default on all frames', () => {
     // Runs for every frame (no controls gate on the startup assertions) and
     // keeps the buffer-cap check ambient-only — Presented frames
@@ -320,7 +312,7 @@ describe('MediaFrame consumers conform to the new controls enum', () => {
 
 describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
   it('renders a skeleton surface behind the media whenever an asset exists', () => {
-    expect(source).toContain("'media-frame__skeleton'")
+    expect(source).toContain('class="media-frame__skeleton"')
     expect(source).toContain('aria-hidden="true"')
     // Only real assets get a skeleton; the no-asset placeholder gradient
     // stays the fallback for empty frames.
@@ -348,9 +340,9 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
     expect(source).toContain('skeletonBackdrop')
     expect(source).toContain('background-image: url(')
     // Image assets use their own LQIP; Gated Ambient videos fall back to
-    // the curated poster's LQIP — both pre-blurred by Sanity.
-    expect(source).toContain("{url: asset.lqip, needsBlur: false}")
-    expect(source).toContain("{url: poster.lqip, needsBlur: false}")
+    // the curated poster's LQIP.
+    expect(source).toContain('asset.lqip ?? null')
+    expect(source).toContain('poster?.lqip ??')
   })
 
   it('gives ungated video frames a tiny Mux thumbnail blur-up skeleton', () => {
@@ -358,13 +350,21 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
     // on the site (home hero, shop hero) sat on a flat gray box until the
     // poster arrived — the "no poster" gap from HITL review.
     expect(source).toContain('muxSkeletonThumbUrl')
-    expect(source).toMatch(
-      /deferPoster \|\| asset\?\._type !== 'mux\.video' \|\| !asset\.playbackId/,
-    )
-    expect(source).toContain('media-frame__skeleton--blur')
-    // The raw 24px thumb needs a CSS blur + scale (edge bleed) treatment.
-    expect(source).toMatch(/\.media-frame__skeleton--blur\s*\{[^}]*filter:\s*blur\(/)
-    expect(source).toMatch(/\.media-frame__skeleton--blur\s*\{[^}]*transform:\s*scale\(/)
+    // Deferred frames (Capes) must fetch nothing until promoted.
+    expect(source).toMatch(/!deferPoster && asset\?\._type === 'mux\.video' && asset\.playbackId/)
+    // Priority frames (heroes) inline the thumb at render so the first frame
+    // is already a blur-up (GH #151 HITL: a bare grey hero once the veil was
+    // gone); the URL remains the fallback when the fetch misses.
+    expect(source).toContain('await muxBlurUpDataUri(asset.playbackId, asset.thumbTime)')
+    expect(source).toMatch(/muxSkeletonUrl && plan\.priority/)
+    expect(source).toContain('muxSkeletonInline ?? muxSkeletonUrl')
+    expect(source).toContain('media-frame__skeleton-image')
+    // Every ~20-24px source gets a blur that scales with the frame (container
+    // units) plus a scale-up so the blur's edge fade stays outside the clip;
+    // a fixed-px blur left JPEG blocks visible as crosshatching on large frames.
+    expect(source).toMatch(/\.media-frame__skeleton\s*\{[^}]*container-type:\s*inline-size/)
+    expect(source).toMatch(/\.media-frame__skeleton-image\s*\{[^}]*filter:\s*blur\(\d+cqw\)/)
+    expect(source).toMatch(/\.media-frame__skeleton-image\s*\{[^}]*transform:\s*scale\(/)
   })
 
   it('types the LQIP field on the image projection', () => {

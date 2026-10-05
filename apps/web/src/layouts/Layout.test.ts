@@ -3,61 +3,34 @@ import {describe, expect, it} from 'vitest'
 
 const source = readFileSync(new URL('./Layout.astro', import.meta.url), 'utf8')
 
-// The veil lift moved from the bundled module script to a dedicated inline
-// script (GH #149). These tests pin that contract: what the lift waits for,
-// how long it can take, and the hooks every lift path stamps.
-describe('first-load veil (GH #149)', () => {
-  it('lifts from an inline script with no dependency on the bundled chunk', () => {
-    expect(source).toContain('<script is:inline data-veil-lift>')
-    // The inline script is plain JS: no imports, no TS.
-    const inline = source.slice(source.indexOf('<script is:inline data-veil-lift>'))
-    const bundled = inline.indexOf('<script>')
-    expect(inline.slice(0, bundled)).not.toContain('import ')
+// The first-load veil is gone (GH #151, ARCHITECTURE.md ADR-0040). What
+// remains of the loading ceremony is a single inline stamp that starts the
+// hero's CSS word reveal once fonts are in. These tests pin that contract.
+describe('fonts-ready stamp (GH #151)', () => {
+  it('stamps html[data-fonts-ready] from an inline head script with no imports', () => {
+    const head = source.slice(0, source.indexOf('</head>'))
+    const inlineStart = head.indexOf("document.documentElement.classList.add('js')")
+    expect(inlineStart).toBeGreaterThan(-1)
+    const inline = head.slice(inlineStart, head.indexOf('</script>', inlineStart))
+    expect(inline).toContain("setAttribute('data-fonts-ready', '')")
+    expect(inline).toContain('document.fonts.ready')
+    expect(inline).not.toContain('import ')
   })
 
-  it('waits for preloaded fonts and data-critical elements only', () => {
-    expect(source).toContain('document.fonts.ready')
-    expect(source).toContain("document.querySelectorAll('[data-critical]')")
+  it('caps the font wait so a slow font never holds the reveal', () => {
+    expect(source).toMatch(/window\.setTimeout\(resolve, 1000\)/)
+    expect(source).toContain('Promise.race([document.fonts.ready, capped])')
   })
 
-  it('drops the rect-intersection heuristic entirely', () => {
-    expect(source).not.toContain('getBoundingClientRect')
-    expect(source).not.toContain('inInitialViewport')
-    expect(source).not.toContain('whenCriticalMediaReady')
+  it('stamps the incoming document on View Transition swaps', () => {
+    expect(source).toContain("newDocument?.documentElement.setAttribute('data-fonts-ready', '')")
   })
 
-  it('caps the wait at 2000ms', () => {
-    expect(source).toContain('VEIL_CAP_MS = 2000')
-    expect(source).not.toContain('4000')
-  })
-
-  it('keeps the 400ms beat and the imperceptible fast path', () => {
-    expect(source).toContain('VEIL_BEAT_MS = 400')
-    expect(source).toContain('VEIL_IMPERCEPTIBLE_MS = 100')
-    expect(source).toContain("loader.setAttribute('data-loader-instant', '')")
-  })
-
-  it('keeps the sessionStorage veil-seen skip', () => {
-    expect(source).toContain("sessionStorage.getItem('sbh:veil-seen')")
-    expect(source).toContain("sessionStorage.setItem('sbh:veil-seen', '1')")
-  })
-
-  it('stamps data-veil-lifted on <html> on every lift path', () => {
-    // Normal + cap path (the shared lift() in the inline script).
-    expect(source).toContain("docEl.setAttribute('data-veil-lifted', '')")
-    // The veil-skip head script stamps it immediately, before paint.
-    expect(source).toContain("document.documentElement.setAttribute('data-veil-lifted', '')")
-    // View Transition navigations stamp the incoming document.
-    expect(source).toContain("newDocument?.documentElement.setAttribute('data-veil-lifted', '')")
-  })
-
-  it('still dispatches sbh:veil-lifted for the reveal and media holds', () => {
-    expect(source).toContain("new CustomEvent('sbh:veil-lifted')")
-    expect(source).toContain("loader.setAttribute('data-loader-done', '')")
-  })
-
-  it('no longer runs the veil from the bundled module script', () => {
-    expect(source).not.toContain('runPageLoader')
-    expect(source).not.toContain('isFirstLoad')
+  it('carries no trace of the first-load veil', () => {
+    expect(source).not.toContain('PageLoader')
+    expect(source).not.toContain('data-veil')
+    expect(source).not.toContain('data-critical')
+    expect(source).not.toContain('sbh:veil')
+    expect(source).not.toContain('data-page-loader')
   })
 })

@@ -481,31 +481,31 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    Always show while paused; show under reduced-motion so the user can opt
    in via the play button. Knob grow / track height grow mirror the same
    recipe inside the scrubber.
-3. **Type Reveal** — lines/words by default; chars reserved for the hero
-   heading on navbar / sitemap destinations only (home, work, who-we-are,
-   index, zine, shop). Detail routes (case studies, articles, past zine
-   issues) render their hero heading static via `PageHero reveal={false}`.
-   Units rise under an overflow clip with no opacity fade and land on
-   a slight overshoot settle (`back.out`), springing rather than smacking to a
-   stop. Stat Reveal entrances follow the same rule; count-ups stay linear.
-4. **Three-Phase Loading** — skeleton → single progress cue → content release;
-   never spinner + skeleton together. In-page loading feedback (skeletons,
-   progress cues) appears only for waits >400ms. The first-load veil
-   (`PageLoader`) is the exception: it is already painted at t=0, so the rule
-   becomes *how long it stays*, with two thresholds. It waits for the
-   preloaded fonts and every element stamped `data-critical` (2s cap), lifts
-   immediately if that took under ~100ms (never perceptibly shown, no fade),
-   otherwise holds to a 400ms beat so it reads as intentional rather than a
-   flicker. The lift runs from a small inline script (no module imports), so
-   it never waits on the bundled JS chunk; on the cap it lifts onto skeleton
-   surfaces, never blank media. It runs once per
-   tab: reloads and back/forward skip it before paint. The veil gates the
-   hero heading's reveal *animation*, never its paint: page-entry Type Reveal
-   targets stay painted underneath it (the split re-hides the chars behind
-   their line clips once the motion chunk lands, and the reveal plays on
-   `sbh:veil-lifted`), so text LCP lands at first paint instead of after the
-   loading ceremony. Media frames never
-   render alt text visually while loading; the placeholder gradient shows.
+3. **Type Reveal** — lines/words, rising under an overflow clip with no
+   opacity fade and landing on a slight overshoot settle (`back.out`),
+   springing rather than smacking to a stop. Two implementations, one look:
+   - *Hero entry reveal* (`HeroHeading`, via `PageHero` on navbar / sitemap
+     destinations: home, work, who-we-are, index, zine, shop) is **SSR
+     word-split + CSS keyframes**. Every word span exists in the HTML and is
+     painted on the first frame; the rise starts when Layout's inline script
+     stamps `html[data-fonts-ready]` (fonts ready, 1s cap) so words rise in
+     the real glyphs. No JavaScript touches the heading after paint — that
+     is what keeps the LCP element deterministic (ARCHITECTURE.md ADR-0040).
+     Detail routes (case studies, articles, past zine issues) render their
+     heading as plain text via `PageHero reveal={false}`.
+   - *Scroll reveals* (`data-motion-text`, `MotionText`) below the fold use
+     the GSAP + split-type primitive in `lib/motion/reveal.ts`, split on
+     intersection. Chars are not a unit anywhere.
+   Stat Reveal entrances follow the same rule; count-ups stay linear.
+4. **Loading surfaces** — skeleton → content, never a spinner and a skeleton
+   together, and never a whole-page veil. In-page loading feedback appears
+   only for waits >400ms. Media frames always paint a skeleton surface (token
+   fill, upgraded to the asset's blur-up where one exists — Sanity LQIP for
+   images, an inline 24px Mux thumbnail for priority video, ADR-0039/0040) and
+   crossfade the real media in on load, so nothing renders blank and alt text
+   is never shown visually while loading. There is no first-load veil: the
+   page is the loading surface, text is painted from the first frame, and the
+   only entry ceremony is the hero word rise above.
 5. **Route Transition** — full-viewport, reserved exclusively for navbar
    destinations; other navigations keep local motion.
 6. **Pinned Storytelling** — bounded ScrollTrigger chapter sequence (2–4 chapters,
