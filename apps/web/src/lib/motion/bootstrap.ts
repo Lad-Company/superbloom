@@ -3,14 +3,14 @@ import {revealText, type RevealHandle} from './reveal'
 
 /**
  * Per-page motion bootstrap. Wires Contained Control press feedback and the
- * Type Reveal entry animation for every element that opts in via data
- * attributes, then returns a cleanup for the caller to run on `astro:before-swap`.
+ * JS Type Reveal for every element that opts in via `data-motion-text`
+ * (below-fold scroll reveals, MotionText), then returns a cleanup for the
+ * caller to run on `astro:before-swap`. The hero heading's entry reveal is
+ * not wired here: it is SSR word-split and CSS-only (HeroHeading.astro).
  *
- * Runs on every `astro:page-load`. The full Type Reveal (immediate hero +
- * scroll-triggered) plays on the genuine initial load and on every View
- * Transition navigation — Layout stamps the incoming document with the `js`
- * class on `astro:before-swap`, so reveal targets start hidden and animate in
- * alongside the route swipe.
+ * Runs on every `astro:page-load`; Layout stamps the incoming document with
+ * the `js` class on `astro:before-swap`, so reveal targets start hidden and
+ * animate in alongside the route swipe.
  */
 export function initMotion(): () => void {
   const cleanups: Array<() => void> = [initPressFeedback()]
@@ -20,7 +20,7 @@ export function initMotion(): () => void {
     if (el.dataset.motionInit) return
     el.dataset.motionInit = '1'
     revealText(el, {
-      unit: (el.dataset.unit as 'lines' | 'words' | 'chars') || 'lines',
+      unit: (el.dataset.unit as 'lines' | 'words') || 'lines',
       scroll: el.dataset.scroll !== 'false',
       start: el.dataset.start || undefined,
     }).then((handle) => handles.push(handle))

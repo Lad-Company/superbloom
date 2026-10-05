@@ -1,0 +1,99 @@
+---
+import { splitHeroWords } from '../lib/heroWords';
+
+interface Props {
+  heading: string;
+  headingSize: 'h1' | 'h3';
+  /** Emit the SSR word split and play the CSS entry reveal. */
+  reveal: boolean;
+  id?: string;
+}
+
+const { heading, headingSize, reveal, id } = Astro.props;
+
+// Entry Type Reveal (design-system §5): the words are split here, at render,
+// and animated by CSS alone once `html[data-fonts-ready]` lands (Layout's
+// inline stamp). No JS touches the heading after paint — a runtime split
+// created new nodes after first paint and made the LCP element a coin flip
+// between the h1, a split line, and the nav logo (ARCHITECTURE.md ADR-0040).
+const words = reveal ? splitHeroWords(heading) : null;
+---
+
+<h1 id={id} class:list={['hero-heading', `type-${headingSize}`, { 'hero-heading--reveal': reveal }]}>
+  {
+    words
+      ? words.map((token) =>
+          token.kind === 'word' ? (
+            <span class="word" style={`--i: ${token.index}`}>
+              <span class="word__inner">{token.text}</span>
+            </span>
+          ) : (
+            token.text
+          ),
+        )
+      : heading
+  }
+</h1>
+
+<style>
+  /* Shared H1 — rides the fluid type-h1/type-h3 ramp tokens (one continuous
+     360→1440 curve, no 1024 snap). The shortcut also applies line-clamp-4
+     from Uno; we override it here so long hero titles (e.g. "Superbloom
+     House's 5th-Birthday Move? Open a Shop and Give the Artists All The…")
+     wrap to every line instead of truncation. */
+  .hero-heading {
+    margin: 0;
+    /* 28ch floor: titles get at least ~28 characters of flow per line before
+       wrapping (the old 21ch broke even mid-length titles too early). */
+    max-width: 28ch;
+    display: block;
+    overflow: visible;
+    /* Balance multi-line headings so a long CMS title can't strand a lone
+       word ("the") on its own line. */
+    text-wrap: balance;
+  }
+
+  @media (--bp-below-desktop) {
+    .hero-heading {
+      max-width: none;
+    }
+  }
+
+  /* Word wrappers clip the rising inner span. The padding/margin pair lifts
+     the clip edge 0.1em above the line box without shifting layout, so the
+     overshoot settle never clips ascenders. Both spans are painted content
+     from the first frame: no opacity 0, no resting transform — the hidden
+     state exists only inside the keyframes, which start when the fonts
+     stamp lands. */
+  .word {
+    display: inline-block;
+    overflow: clip;
+    padding-top: 0.1em;
+    margin-top: -0.1em;
+    vertical-align: bottom;
+  }
+
+  .word__inner {
+    display: inline-block;
+  }
+
+  :global(html.js[data-fonts-ready]) .hero-heading--reveal .word__inner {
+    animation: hero-word-rise var(--motion-quick) var(--motion-ease-reveal) both;
+    animation-delay: calc(var(--i) * var(--motion-stagger-standard));
+  }
+
+  @keyframes hero-word-rise {
+    from {
+      transform: translateY(110%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.js[data-fonts-ready]) .hero-heading--reveal .word__inner {
+      animation: none;
+    }
+  }
+</style>

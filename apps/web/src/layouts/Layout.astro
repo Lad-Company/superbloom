@@ -8,7 +8,6 @@ import SEOHead from '../components/SEOHead.astro';
 import Navigation from '../components/Navigation.astro';
 import CartDrawer from '../components/cart/CartDrawer.astro';
 import CookieConsent from '../components/CookieConsent.astro';
-import PageLoader from '../components/PageLoader.astro';
 import PreviewBar from '../components/PreviewBar.astro';
 import { type SurfaceRole } from '../lib/surfaceRole';
 import { isPreviewRequest } from '../lib/preview';
@@ -86,10 +85,10 @@ const gaMode = preview
       type="font/woff2"
       crossorigin
     />
-    {/* The logo SVG is only referenced as a CSS mask-image (veil + nav), so
-       it is discovered at style resolution instead of during HTML parsing.
-       The veil cue is the first thing a visitor sees on a cold load, so 4KB
-       on every page buys its discovery at parse time. */}
+    {/* The logo SVG is only referenced as a CSS mask-image (nav), so it is
+       discovered at style resolution instead of during HTML parsing. The nav
+       is above the fold on every page, so 4KB buys its discovery at parse
+       time. */}
     <link rel="preload" href="/superbloom-house-logo.svg" as="image" type="image/svg+xml" />
     {/* Warm the Mux hosts (poster thumbnails + HLS manifests) so video frames
        don't pay a fresh DNS+TLS round trip when the player upgrades. Only on
@@ -147,21 +146,26 @@ const gaMode = preview
     <ClientRouter />
     <script is:inline>
       document.documentElement.classList.add('js');
-      // The veil is SSR-painted, so the only way to *not* show it is to decide
-      // before first paint. Once a visitor has sat through it in this tab
-      // (flag set on lift), reloads and back/forward skip it outright — their
-      // assets are warm and a veil that fades in and straight back out reads
-      // as a flicker, not a beat. Fresh tabs / sessions still get the beat.
-      try {
-        if (sessionStorage.getItem('sbh:veil-seen')) {
-          document.documentElement.setAttribute('data-veil-skip', '');
-          // The skip path is a lift path too: stamp the CSS hook immediately
-          // so nothing downstream waits on a lift that will never animate.
-          document.documentElement.setAttribute('data-veil-lifted', '');
+      // Fonts-ready stamp: the hero Type Reveal (HeroHeading) is pure CSS
+      // keyed on html[data-fonts-ready], so the words rise in the real
+      // glyphs instead of swapping faces mid-animation. Inline with no
+      // imports so it never waits on the bundle; the heading is painted
+      // content from the first frame either way (the stamp starts an
+      // animation, it never gates a paint — ARCHITECTURE.md ADR-0040). The
+      // cap keeps a slow font from holding the reveal indefinitely.
+      (function () {
+        const stamp = function () {
+          document.documentElement.setAttribute('data-fonts-ready', '');
+        };
+        if (!document.fonts || !document.fonts.ready) {
+          stamp();
+          return;
         }
-      } catch {
-        // sessionStorage unavailable (e.g. private mode); the veil plays.
-      }
+        const capped = new Promise(function (resolve) {
+          window.setTimeout(resolve, 1000);
+        });
+        Promise.race([document.fonts.ready, capped]).then(stamp, stamp);
+      })();
     </script>
     <style is:global>
       /* Route Transition — native View Transition swipe: the outgoing page lifts
@@ -196,119 +200,11 @@ const gaMode = preview
     </style>
   </head>
   <body style={bodyStyle}>
-    <PageLoader />
     {navRole && <Navigation role={navRole} />}
     <slot />
     <CartDrawer />
     {preview && <PreviewBar />}
     {(gaMode !== 'off' || import.meta.env.DEV) && <CookieConsent />}
-    {/* First-load veil lift, inline with zero module imports so it runs the
-       moment the body has parsed — never hostage to the bundled JS chunk
-       downloading and evaluating on a throttled CPU (GH #149). The wait is an
-       explicit opt-in set: the preloaded fonts plus every element stamped
-       `data-critical` (hero poster, per-page lead images). Nothing else. On
-       the 2s cap the veil lifts onto the MediaFrame skeleton surfaces (GH
-       #148), never blank media. The bundled module script below keeps owning
-       motion init and the deferred scroll systems. */}
-    <script is:inline data-veil-lift>
-      (function () {
-        const docEl = document.documentElement;
-        const loader = document.querySelector('[data-page-loader]');
-        if (!loader) return;
-
-        const lift = (instant) => {
-          if (instant) loader.setAttribute('data-loader-instant', '');
-          loader.setAttribute('data-loader-done', '');
-          docEl.setAttribute('data-veil-lifted', '');
-          // Page-entry Type Reveals (hero headings) split as soon as the
-          // motion chunk lands and hold their play for this moment, so the
-          // reveal still opens on a clean frame as the veil lifts. The veil
-          // gates the animation only — never the text paint (motion.css LCP
-          // exception). Listeners that attach late check data-loader-done /
-          // data-veil-lifted instead, so an early dispatch is never missed.
-          document.dispatchEvent(new CustomEvent('sbh:veil-lifted'));
-          try {
-            sessionStorage.setItem('sbh:veil-seen', '1');
-          } catch {
-            // sessionStorage unavailable (e.g. private mode); the veil
-            // replays on the next visit instead of being skipped.
-          }
-        };
-
-        // Skipped before paint (see the inline head script): nothing to wait
-        // for, nothing to fade — just release the reveal. The head script has
-        // already stamped data-veil-lifted.
-        if (docEl.hasAttribute('data-veil-skip')) {
-          lift(true);
-          return;
-        }
-
-        // Two thresholds (design-system §5, Three-Phase Loading). If the
-        // critical set lands almost at once (warm cache) the veil was never
-        // perceptibly visible, so lift immediately; a flat floor here was
-        // 280ms of pointless veil time on every repeat visit. The veil does
-        // not gate LCP: Chrome does no occlusion test, so media and text
-        // under it register at first paint regardless. (The full-viewport
-        // hero on `/` and `/zine` is excluded as an LCP candidate because
-        // Chrome ignores elements covering the full viewport —
-        // web.dev/articles/lcp — so LCP there is the hero H1, which
-        // motion.css keeps painted under the veil instead of hiding it for
-        // the Type Reveal.)
-        // Past that point the user has seen the veil, so hold it to the
-        // 400ms beat: it reads as a deliberate moment rather than a flicker.
-        // The clock starts at script start, later than first paint, so the
-        // imperceptible window is conservative.
-        const VEIL_IMPERCEPTIBLE_MS = 100;
-        const VEIL_BEAT_MS = 400;
-        const VEIL_CAP_MS = 2000;
-
-        const waits = [];
-        if (document.fonts && document.fonts.ready) waits.push(document.fonts.ready);
-        const critical = document.querySelectorAll('[data-critical]');
-        for (const el of critical) {
-          if (el.tagName === 'IMG') {
-            if (!el.complete) {
-              waits.push(
-                new Promise((resolve) => {
-                  el.addEventListener('load', resolve, { once: true });
-                  el.addEventListener('error', resolve, { once: true });
-                }),
-              );
-            }
-          } else if (el.tagName === 'VIDEO') {
-            if (el.readyState < 2) {
-              waits.push(
-                new Promise((resolve) => {
-                  el.addEventListener('loadeddata', resolve, { once: true });
-                  el.addEventListener('error', resolve, { once: true });
-                }),
-              );
-            }
-          }
-          // Other element types opt in by containing a critical img/video,
-          // not by being waited on directly.
-        }
-
-        const start = performance.now();
-        const cap = new Promise((resolve) => {
-          window.setTimeout(resolve, VEIL_CAP_MS);
-        });
-        Promise.race([Promise.all(waits), cap]).then(() => {
-          const elapsed = performance.now() - start;
-          const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          const remaining = VEIL_BEAT_MS - elapsed;
-          if (!reduced && elapsed > VEIL_IMPERCEPTIBLE_MS && remaining > 0) {
-            window.setTimeout(() => {
-              lift(false);
-            }, remaining);
-          } else {
-            // Never perceptibly shown: a 600ms fade-out would itself be the
-            // flicker, so drop it.
-            lift(elapsed <= VEIL_IMPERCEPTIBLE_MS || reduced);
-          }
-        });
-      })();
-    </script>
     <script>
       import { prefersReducedMotion } from '../lib/motion/config';
       import { initAnalytics } from '../lib/analytics';
@@ -343,11 +239,6 @@ const gaMode = preview
       // Transition can land mid-flight; the newer setup must win.
       let setupGeneration = 0;
 
-      // The first-load veil lift lives in the inline `data-veil-lift` script
-      // below (issue #149): it waits only for preloaded fonts + `data-critical`
-      // elements, runs without the bundle, and stamps data-loader-done /
-      // data-veil-lifted + `sbh:veil-lifted`. This module keeps everything
-      // else: motion init and the deferred scroll systems.
       // Recorded on astro:before-preparation so page-load can tell fresh
       // navigations (land at the top) from history traversal (browser restores
       // the saved scroll position).
@@ -376,15 +267,11 @@ const gaMode = preview
 
       const setup = async () => {
         const generation = ++setupGeneration;
-        // The veil lift is owned by the inline script (see above) and runs
-        // concurrently with the motion chunk fetch below — it gates the
-        // reveal *animation* (via sbh:veil-lifted), never the heading's
-        // first paint.
-
         // Motion (GSAP + Lenis + split-type) ships as its own chunk so the
         // eager base bundle isn't half-unused motion/scroll code on first
-        // paint. The import overlaps the veil's media wait on cold loads and
-        // is a cache hit on View Transition navigations.
+        // paint. The hero entry reveal does not depend on it (HeroHeading is
+        // CSS-only); this chunk owns below-fold scroll reveals, smooth
+        // scroll, and the deferred scroll systems.
         const [motion, { ScrollTrigger }] = await Promise.all([
           import('../lib/motion'),
           import('gsap/ScrollTrigger'),
@@ -395,9 +282,6 @@ const gaMode = preview
 
         destroySmoothScroll = motion.initSmoothScroll();
         settleScrollPosition(motion.getLenis());
-        // The full page-entry Type Reveal plays on the genuine first load
-        // (held for sbh:veil-lifted) and on every View Transition navigation
-        // (immediately — the incoming veil is already done).
         destroyMotion = motion.initMotion();
 
         // Heavier scroll systems (Capes pin, parallax rAF) listen for
@@ -444,26 +328,21 @@ const gaMode = preview
       document.addEventListener('astro:before-swap', (event) => {
         teardown();
         // Astro resets <html> on swap, dropping the `js` class that hides
-        // Type Reveal targets. Stamp the incoming document so hero text starts
-        // hidden and the reveal animates on navigations instead of flashing
+        // scroll Type Reveal targets. Stamp the incoming document so they
+        // start hidden and animate in on navigations instead of flashing
         // visible-then-hidden.
         const newDocument = (event as unknown as { newDocument?: Document }).newDocument;
         newDocument?.documentElement.classList.add('js');
-        // Navigations behave like veil-skip loads: the incoming veil is
-        // already dismissed (stamped below) and the reveal plays as soon as
-        // the split lands, so the first-load LCP exception in motion.css
-        // (visible-under-veil) must not apply to them.
-        newDocument?.documentElement.setAttribute('data-veil-skip', '');
-        newDocument?.documentElement.setAttribute('data-veil-lifted', '');
+        // Fonts are already cached on a navigation, so stamp the incoming
+        // document directly: the hero word reveal plays alongside the route
+        // swipe without waiting for the head script to re-run.
+        newDocument?.documentElement.setAttribute('data-fonts-ready', '');
         // The preview flag rides the SSR'd <html>, but a prerendered surface
         // can't vary by cookie — propagate it so draft content and GA-off
         // survive every View Transition navigation of the preview session.
         if (document.documentElement.hasAttribute('data-preview')) {
           newDocument?.documentElement.setAttribute('data-preview', '');
         }
-        // The route swipe owns navigations, so the incoming page's veil starts
-        // already dismissed and never flashes over a client-side transition.
-        newDocument?.querySelector('[data-page-loader]')?.setAttribute('data-loader-done', '');
       });
       document.addEventListener('astro:before-preparation', (event) => {
         const type = (event as Event & { navigationType?: typeof navigationType }).navigationType;

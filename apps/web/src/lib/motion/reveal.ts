@@ -6,7 +6,10 @@ import {splitText, type SplitHandle, type SplitUnit} from './splitText'
 gsap.registerPlugin(ScrollTrigger)
 
 export interface RevealOptions {
-  /** Split unit that gets animated. Reading copy defaults to lines. */
+  /** Split unit that gets animated. Reading copy defaults to lines. The hero
+   *  heading's entry reveal is not a caller: it is SSR word-split and
+   *  CSS-animated (HeroHeading.astro) so no JS ever rebuilds the LCP
+   *  element after paint (ARCHITECTURE.md ADR-0040). */
   unit?: SplitUnit
   /** Play on scroll into view rather than immediately. */
   scroll?: boolean
@@ -26,47 +29,6 @@ export interface RevealHandle {
 
 const noopHandle: RevealHandle = {play() {}, destroy() {}}
 
-/** First-load veil state: the loader element carries data-loader-done from
- *  the moment Layout lifts it. Page-entry reveals (scroll: false) hold their
- *  play until the lift so the Type Reveal still opens on a clean frame — but
- *  the split itself runs as soon as the motion chunk lands, so the veil's
- *  media wait never gates the heading's first paint (motion.css keeps
- *  page-entry targets visible to LCP under the veil). */
-const veilOpen = (): boolean =>
-  typeof document !== 'undefined' &&
-  Boolean(document.querySelector('[data-page-loader]:not([data-loader-done])'))
-
-let pageEntryHasRevealed = false
-
-export function hasPageEntryRevealed(): boolean {
-  return pageEntryHasRevealed
-}
-
-export function markPageEntryRevealed(): void {
-  pageEntryHasRevealed = true
-}
-
-export function pageEntryRevealAllowed(state: {
-  reducedMotion: boolean
-  alreadyRevealed: boolean
-  routeEntering: boolean
-}): boolean {
-  if (state.reducedMotion) return true
-  if (state.alreadyRevealed) return false
-  return !state.routeEntering
-}
-
-/** Returns true when the initial page-entry reveal should play. */
-export function shouldPlayPageEntryReveal(): boolean {
-  return pageEntryRevealAllowed({
-    reducedMotion: prefersReducedMotion(),
-    alreadyRevealed: pageEntryHasRevealed,
-    routeEntering:
-      typeof document !== 'undefined' &&
-      document.documentElement.classList.contains('route-entering'),
-  })
-}
-
 /**
  * Type Reveal primitive. Clips animated units upward into place fast and lands
  * them on a slight overshoot settle — no opacity fade — so entrances spring
@@ -81,10 +43,10 @@ export async function revealText(
     unit = 'lines',
     scroll = false,
     start = 'top 80%',
-    stagger = unit === 'chars' ? STAGGER.tight : STAGGER.standard,
+    stagger = STAGGER.standard,
     duration = MOTION.quick,
     delay = 0,
-    y = unit === 'chars' ? 18 : undefined,
+    y,
   } = options
 
   if (prefersReducedMotion()) {
@@ -92,12 +54,7 @@ export async function revealText(
     return noopHandle
   }
 
-  const units: SplitUnit[] =
-    unit === 'lines'
-      ? ['lines']
-      : unit === 'words'
-        ? ['lines', 'words']
-        : ['lines', 'words', 'chars']
+  const units: SplitUnit[] = unit === 'lines' ? ['lines'] : ['lines', 'words']
 
   let split: SplitHandle
   try {
@@ -119,7 +76,6 @@ export async function revealText(
 
   let tween: gsap.core.Tween | null = null
   let trigger: ScrollTrigger | null = null
-  let veilPlayListener: (() => void) | null = null
   // Once the entrance has been started (immediate or scroll-triggered),
   // resize must never replay it. From that point, `build` only re-lays the
   // new split units in the visible end-state instead of rebuilding a paused
@@ -177,34 +133,15 @@ export async function revealText(
       once: true,
       onEnter: play,
     })
-  } else if (veilOpen()) {
-    // First load: the heading painted under the veil (the motion.css LCP
-    // exception) and the split has just re-hidden it behind the line clips.
-    // Hold the reveal until Layout lifts the veil so it plays on a clean
-    // frame — the veil's media wait gates the animation, never the paint.
-    veilPlayListener = () => play()
-    document.addEventListener('sbh:veil-lifted', veilPlayListener, { once: true })
-  } else if (!document.documentElement.hasAttribute('data-veil-skip')) {
-    // First load, but the veil lifted before the split landed (very slow
-    // motion chunk): the heading has been visibly painted the whole time, so
-    // hiding it now for a late reveal would read as a glitch. Commit the end
-    // state instead — hasStarted makes build() lay out the visible end-state.
-    hasStarted = true
-    build()
   } else {
-    // Veil-skip reloads and View Transition navigations (both stamp
-    // data-veil-skip): the CSS opacity gate kept the heading hidden, so the
-    // reveal plays as soon as the split is ready, as before.
+    // Immediate reveals (MotionText with scroll=false): the CSS opacity gate
+    // kept the element hidden until the split landed, so play right away.
     play()
   }
 
   return {
     play,
     destroy() {
-      if (veilPlayListener) {
-        document.removeEventListener('sbh:veil-lifted', veilPlayListener)
-        veilPlayListener = null
-      }
       trigger?.kill()
       tween?.kill()
       split.revert()

@@ -41,8 +41,8 @@ Gotchas seen in practice:
   serving old code. Kill by listener instead:
   `kill $(lsof -nP -iTCP:<port> -sTCP:LISTEN -t)`.
 - **A partial poisoning can pass the mux+gsap probe.** A poisoned `lenis.js`
-  (504) strands the whole Layout module graph and the page hangs on the loading
-  veil forever, even with mux and gsap at 200. Probe the full dep set
+  (504) strands the whole Layout module graph: smooth scroll and every scroll
+  reveal silently never run, even with mux and gsap at 200. Probe the full dep set
   (`gsap`, `gsap/ScrollTrigger`, `lenis`, `split-type`, `@mux/mux-video/base`), and
   re-fetch the module URLs right before probing — hashes rotate when the
   optimizer re-runs, so stale references 504 transiently during re-optimization.

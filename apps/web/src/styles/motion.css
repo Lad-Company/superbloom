@@ -121,10 +121,13 @@
   opacity: 0.5;
 }
 
-/* Type Reveal gating: only hide when JavaScript is available so no-JS and
-   reduced-motion visitors always get the final, readable content. Layout
-   re-stamps the incoming document's <html> with `js` on every View Transition
-   swap, so the reveal plays on client-side navigations too. */
+/* JS Type Reveal gating (below-fold scroll reveals, MotionText): only hide
+   when JavaScript is available so no-JS and reduced-motion visitors always
+   get the final, readable content. Layout re-stamps the incoming document's
+   <html> with `js` on every View Transition swap, so the reveal plays on
+   client-side navigations too. The hero heading never carries this
+   attribute: its entry reveal is SSR word-split and CSS-only (HeroHeading),
+   so it is painted content from the first frame (ADR-0040). */
 html.js [data-motion-text] {
   opacity: 0;
   /* Safety net: if the JS reveal never runs (script error, split failure), the
@@ -132,24 +135,6 @@ html.js [data-motion-text] {
      reveals it; the JS path sets inline opacity:1 first, so this never fires
      when motion is working. */
   animation: sbh-reveal-fallback 0s linear 1.2s forwards;
-}
-
-/* First-load LCP exception: page-entry targets (data-scroll="false" — the
-   hero heading) must paint at first frame even though the first-load veil
-   covers them. Chrome runs no occlusion test for LCP, so the veil does not
-   delay the text paint — but opacity: 0 disqualifies it as an LCP candidate
-   (that was the 8.3s LCP: the heading only became visible after the veil's
-   media wait + beat + reveal). The reveal still happens: initMotion's split
-   re-hides the chars behind their line clips as soon as the motion chunk
-   lands, and the reveal plays when the veil lifts (see reveal.ts). Veil-skip
-   reloads and View Transition navigations (Layout stamps data-veil-skip on
-   the incoming document) keep the opacity gate — there the reveal plays
-   immediately after the split, so the pre-split window stays hidden instead
-   of flashing visible. If the motion JS never runs at all, the heading is
-   simply visible from the start — the desired no-fail outcome. */
-html.js:not([data-veil-skip]) [data-motion-text][data-scroll='false'] {
-  opacity: 1;
-  animation: none;
 }
 
 @keyframes sbh-reveal-fallback {

@@ -241,10 +241,8 @@ const imageRendering =
   }
   {
     /* Deferred posters render with data-* instead of src/srcset, so they
-       fetch nothing until promotePoster() restores them; a src-less <img>
-       reports complete === true, which keeps it out of the veil's critical-
-       media wait (Layout.astro) as well. `sizes` stays on the element so it
-       is already correct when promotion sets the srcset. */
+       fetch nothing until promotePoster() restores them. `sizes` stays on
+       the element so it is already correct when promotion sets the srcset. */
     isVideo && videoPoster && (
       <img
         class="media-frame__poster"
@@ -534,7 +532,6 @@ const imageRendering =
 
     private handleVisibilityChange = () => this.updatePlayback()
     private handleMotionChange = () => this.updatePlayback()
-    private handleVeilLifted = () => this.updatePlayback()
     private handlePlay = () => {
       this.updateControl()
       this.refreshScrubber()
@@ -662,12 +659,6 @@ const imageRendering =
 
       document.addEventListener('visibilitychange', this.handleVisibilityChange)
       this.motionPreference.addEventListener('change', this.handleMotionChange)
-      // The first-load veil holds playback (see updatePlayback): the poster
-      // is already the frame's LCP paint, and starting the stream under the
-      // veil pulls segments into the critical window. Layout dispatches
-      // sbh:veil-lifted the moment the veil lifts; on navigations and
-      // veil-skip loads the veil is already done and this never fires.
-      document.addEventListener('sbh:veil-lifted', this.handleVeilLifted)
 
       // The mux-video chunk (~1MB raw with media-chrome on mux-player) is the
       // largest JS cost on media pages, so it loads lazily: priority frames
@@ -848,7 +839,6 @@ const imageRendering =
         img.removeEventListener('load', this.handleImgLoad)
       }
       document.removeEventListener('visibilitychange', this.handleVisibilityChange)
-      document.removeEventListener('sbh:veil-lifted', this.handleVeilLifted)
       this.motionPreference?.removeEventListener('change', this.handleMotionChange)
       this.player?.removeEventListener('play', this.handlePlay)
       this.player?.removeEventListener('pause', this.handlePause)
@@ -904,15 +894,6 @@ const imageRendering =
         } else if (this.userIntent === 'playing') {
           shouldPlay = isRevealed && isActive && this.isVisible && isDocVisible
         }
-      }
-
-      // First-load veil hold: don't start the stream while the veil is up.
-      // The overlay poster is already the frame's paint, so nothing is lost
-      // visually, and the segments stay out of the critical load window.
-      // (No interaction can arrive under the veil, so this never overrides a
-      // real userIntent.) sbh:veil-lifted re-evaluates.
-      if (document.querySelector('[data-page-loader]:not([data-loader-done])')) {
-        shouldPlay = false
       }
 
       if (shouldPlay && isPaused) {

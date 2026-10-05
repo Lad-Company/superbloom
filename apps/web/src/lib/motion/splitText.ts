@@ -1,6 +1,6 @@
 import SplitType from 'split-type';
 
-export type SplitUnit = 'lines' | 'words' | 'chars';
+export type SplitUnit = 'lines' | 'words';
 
 export interface SplitHandle {
   instance: SplitType;
@@ -8,10 +8,9 @@ export interface SplitHandle {
   revert: () => void;
 }
 
-const UNIT_MAP: Record<SplitUnit, keyof Pick<SplitType, 'lines' | 'words' | 'chars'>> = {
+const UNIT_MAP: Record<SplitUnit, keyof Pick<SplitType, 'lines' | 'words'>> = {
   lines: 'lines',
   words: 'words',
-  chars: 'chars',
 };
 
 /**
@@ -36,19 +35,10 @@ export async function splitText(
   let instance = new SplitType(el, { types: units, tagName: 'span' });
 
   let resizeRaf = 0;
-  let retryTimer = 0;
   let lastWidth = el.offsetWidth;
   const scheduleResplit = () => {
     window.cancelAnimationFrame(resizeRaf);
     resizeRaf = window.requestAnimationFrame(() => {
-      // Defer while the first-load veil is up: a resplit forces layout, and
-      // that reflow must not compete with the hero reveal playing as the
-      // veil lifts. Retry until the veil is done.
-      const loader = document.querySelector('[data-page-loader]');
-      if (loader && !loader.hasAttribute('data-loader-done')) {
-        retryTimer = window.setTimeout(scheduleResplit, 200);
-        return;
-      }
       instance.revert();
       instance = new SplitType(el, { types: units, tagName: 'span' });
       onResplit?.();
@@ -71,7 +61,6 @@ export async function splitText(
     },
     revert() {
       window.cancelAnimationFrame(resizeRaf);
-      window.clearTimeout(retryTimer);
       window.removeEventListener('resize', handleResize);
       instance.revert();
     },

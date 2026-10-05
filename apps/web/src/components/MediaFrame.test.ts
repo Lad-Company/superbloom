@@ -246,14 +246,6 @@ describe('MediaFrame playback profiles', () => {
     expect(source).toContain("playerElement.setAttribute('max-resolution', mobileMaxResolution)")
   })
 
-  it('holds playback while the first-load veil is up', () => {
-    // Segments stay out of the critical load window; the overlay poster is
-    // already the frame's paint. sbh:veil-lifted re-evaluates.
-    expect(source).toContain("document.querySelector('[data-page-loader]:not([data-loader-done])')")
-    expect(source).toContain("document.addEventListener('sbh:veil-lifted', this.handleVeilLifted)")
-    expect(source).toContain("document.removeEventListener('sbh:veil-lifted', this.handleVeilLifted)")
-  })
-
   it('dev guardrail watches startup config and the playback-core cap default on all frames', () => {
     // Runs for every frame (no controls gate on the startup assertions) and
     // keeps the buffer-cap check ambient-only — Presented frames
