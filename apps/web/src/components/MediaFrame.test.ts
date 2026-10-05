@@ -312,7 +312,7 @@ describe('MediaFrame consumers conform to the new controls enum', () => {
 
 describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
   it('renders a skeleton surface behind the media whenever an asset exists', () => {
-    expect(source).toContain("'media-frame__skeleton'")
+    expect(source).toContain('class="media-frame__skeleton"')
     expect(source).toContain('aria-hidden="true"')
     // Only real assets get a skeleton; the no-asset placeholder gradient
     // stays the fallback for empty frames.
@@ -340,9 +340,9 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
     expect(source).toContain('skeletonBackdrop')
     expect(source).toContain('background-image: url(')
     // Image assets use their own LQIP; Gated Ambient videos fall back to
-    // the curated poster's LQIP — both pre-blurred by Sanity.
-    expect(source).toContain("{url: asset.lqip, needsBlur: false}")
-    expect(source).toContain("{url: poster.lqip, needsBlur: false}")
+    // the curated poster's LQIP.
+    expect(source).toContain('asset.lqip ?? null')
+    expect(source).toContain('poster?.lqip ??')
   })
 
   it('gives ungated video frames a tiny Mux thumbnail blur-up skeleton', () => {
@@ -358,10 +358,13 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
     expect(source).toContain('await muxBlurUpDataUri(asset.playbackId, asset.thumbTime)')
     expect(source).toMatch(/muxSkeletonUrl && plan\.priority/)
     expect(source).toContain('muxSkeletonInline ?? muxSkeletonUrl')
-    expect(source).toContain('media-frame__skeleton--blur')
-    // The raw 24px thumb needs a CSS blur + scale (edge bleed) treatment.
-    expect(source).toMatch(/\.media-frame__skeleton--blur\s*\{[^}]*filter:\s*blur\(/)
-    expect(source).toMatch(/\.media-frame__skeleton--blur\s*\{[^}]*transform:\s*scale\(/)
+    expect(source).toContain('media-frame__skeleton-image')
+    // Every ~20-24px source gets a blur that scales with the frame (container
+    // units) plus a scale-up so the blur's edge fade stays outside the clip;
+    // a fixed-px blur left JPEG blocks visible as crosshatching on large frames.
+    expect(source).toMatch(/\.media-frame__skeleton\s*\{[^}]*container-type:\s*inline-size/)
+    expect(source).toMatch(/\.media-frame__skeleton-image\s*\{[^}]*filter:\s*blur\(\d+cqw\)/)
+    expect(source).toMatch(/\.media-frame__skeleton-image\s*\{[^}]*transform:\s*scale\(/)
   })
 
   it('types the LQIP field on the image projection', () => {

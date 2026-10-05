@@ -171,8 +171,9 @@ const isGated = Boolean(isVideo && posterRendering?.src)
  *  back to a tiny Mux thumbnail (~1-2KB) so big video frames get the same
  *  blur-up instead of a flat gray box — except deferred frames (Capes),
  *  which must fetch nothing until promoted and keep the bare token
- *  skeleton. Sanity LQIPs ship pre-blurred; the Mux thumb is a raw 24px
- *  frame and needs a CSS blur, flagged by `needsBlur`. Priority frames
+ *  skeleton. Every backdrop is a ~20-24px source (Sanity's LQIP is a tiny
+ *  JPEG, not a blurred one), so the CSS blurs all of them in proportion to
+ *  the frame — see .media-frame__skeleton-image. Priority frames
  *  (heroes) inline that thumb as a data URI fetched at render
  *  (lib/muxBlurUp.ts) so the first frame is already a blur-up, not a bare
  *  token box waiting on a request; the URL stays the fallback. */
@@ -184,16 +185,10 @@ const muxSkeletonInline =
   muxSkeletonUrl && plan.priority && asset?._type === 'mux.video' && asset.playbackId
     ? await muxBlurUpDataUri(asset.playbackId, asset.thumbTime)
     : null
-const skeletonBackdrop: {url: string; needsBlur: boolean} | null =
+const skeletonBackdrop: string | null =
   asset?._type === 'image'
-    ? asset.lqip
-      ? {url: asset.lqip, needsBlur: false}
-      : null
-    : poster?.lqip
-      ? {url: poster.lqip, needsBlur: false}
-      : muxSkeletonUrl
-        ? {url: muxSkeletonInline ?? muxSkeletonUrl, needsBlur: true}
-        : null
+    ? (asset.lqip ?? null)
+    : (poster?.lqip ?? (muxSkeletonUrl ? (muxSkeletonInline ?? muxSkeletonUrl) : null))
 // Large-canvas frames (hero / split / full layoutBlock) cap at 1080p for
 // desktop, but no phone viewport can resolve that: even 430px at DPR 3 is
 // 1290 device px, inside the 720p rung. The element script drops the cap to
@@ -237,18 +232,14 @@ const imageRendering =
        box, so nothing reflows (CLS stays 0). First child: DOM order alone
        keeps it behind every media layer. */
     hasAsset && (
-      <div
-        class:list={[
-          'media-frame__skeleton',
-          {'media-frame__skeleton--blur': skeletonBackdrop?.needsBlur},
-        ]}
-        aria-hidden="true"
-        style={
-          skeletonBackdrop
-            ? `background-image: url('${skeletonBackdrop.url}')`
-            : undefined
-        }
-      />
+      <div class="media-frame__skeleton" aria-hidden="true">
+        {skeletonBackdrop && (
+          <div
+            class="media-frame__skeleton-image"
+            style={`background-image: url('${skeletonBackdrop}')`}
+          />
+        )}
+      </div>
     )
   }
   {
@@ -1200,24 +1191,34 @@ const imageRendering =
   }
 
   /* Skeleton surface (ADR-0039): permanent placeholder behind the media.
-     Token color everywhere; the LQIP blur-up arrives as an inline
-     background-image (data URI) when the asset carries one. */
+     Token color everywhere; the blur-up arrives as an inline
+     background-image on the child when the asset carries one. The surface
+     is a size container so the blur below can scale with the frame; it is
+     the skeleton (not the frame) that gets containment, so no layout
+     anywhere else changes. */
   .media-frame__skeleton {
     position: absolute;
     inset: 0;
+    overflow: clip;
     pointer-events: none;
     background-color: var(--fg-12);
-    background-size: cover;
-    background-position: center;
+    container-type: inline-size;
   }
 
-  /* The Mux skeleton thumb is a raw 24px frame, not pre-blurred like a
-     Sanity LQIP — blur it in place, scaled slightly so the blur's soft
-     edges stay inside the clipped frame instead of ghosting the page
-     background. Static paint only; nothing animates here. */
-  .media-frame__skeleton--blur {
-    filter: blur(20px);
-    transform: scale(1.08);
+  /* Every blur-up source is ~20-24px wide (Sanity LQIP JPEG, Mux thumb), so
+     stretched over a frame its pixel grid and JPEG blocks read as
+     crosshatching unless the blur radius scales with the frame: 4cqw is
+     about one source pixel at any size (a 1400px hero blurs 56px, a 300px
+     card 12px). The blur fades to transparent at its edges, so the layer is
+     oversized to push that fade past the clipped surface. Static paint
+     only; nothing animates here. */
+  .media-frame__skeleton-image {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: blur(4cqw);
+    transform: scale(1.2);
   }
 
   /* The skeleton is positioned, and CSS paints positioned descendants
