@@ -98,7 +98,9 @@ export default defineConfig({
               .child(S.document().schemaType('siteSettings').documentId('siteSettings')),
           ]),
     }),
-    muxInput(),
+    // Pin new uploads to plus so they don't inherit the Mux account default
+    // (premium) — see ARCHITECTURE.md ADR-0038 and the 2026-10-06 plus sweep.
+    muxInput({video_quality: 'plus'}),
     muxSchemaCompatibility(),
     colorInput(),
     presentation,
