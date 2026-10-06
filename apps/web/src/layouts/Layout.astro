@@ -41,6 +41,10 @@ const {
 
 const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
 
+// Sentry browser SDK is deferred to after `window load` (GH #164); the
+// inline buffer below only exists when the SDK does.
+const sentryEnabled = import.meta.env.SENTRY_ENABLED === 'true';
+
 // Draft preview: stamp the request marker and keep editor/share-link
 // preview traffic out of prod analytics.
 const preview = isPreviewRequest(Astro.cookies);
@@ -144,6 +148,39 @@ const gaMode = preview
       </>
     )}
     <ClientRouter />
+    {sentryEnabled && (
+      // Sentry pre-init error buffer (GH #164): the browser SDK loads after
+      // `window load` (lib/sentryDeferred.ts), so errors thrown before then
+      // would be lost. Queue every error / unhandled rejection with its
+      // timestamp; the deferred loader replays them through the SDK's own
+      // exception parser with the original timestamp. `__sbhSentryLive`
+      // stops queueing once the SDK's handlers take over. Guarded so a View
+      // Transition re-running this inline script doesn't double-register.
+      <script is:inline>
+        (function () {
+          if (window.__sbhSentryQueue) return;
+          const queue = (window.__sbhSentryQueue = []);
+          window.addEventListener('error', function (event) {
+            if (window.__sbhSentryLive) return;
+            queue.push({
+              kind: 'error',
+              error: event.error || null,
+              message: event.message || 'Unknown error',
+              timestamp: Date.now() / 1000,
+            });
+          });
+          window.addEventListener('unhandledrejection', function (event) {
+            if (window.__sbhSentryLive) return;
+            queue.push({
+              kind: 'unhandledrejection',
+              error: event.reason || null,
+              message: (event.reason && event.reason.message) || String(event.reason),
+              timestamp: Date.now() / 1000,
+            });
+          });
+        })();
+      </script>
+    )}
     <script is:inline>
       document.documentElement.classList.add('js');
       // Fonts-ready stamp: the hero Type Reveal (HeroHeading) is pure CSS
@@ -208,8 +245,15 @@ const gaMode = preview
     <script>
       import { prefersReducedMotion } from '../lib/motion/config';
       import { initAnalytics } from '../lib/analytics';
+      import { initDeferredSentry } from '../lib/sentryDeferred';
 
       initAnalytics();
+
+      // Sentry browser SDK: deferred to after `window load` so it never
+      // competes with first paint (GH #164); a static no-op when Sentry is
+      // disabled. Errors thrown before then sit in the head script's
+      // buffer and are replayed with their original timestamps.
+      initDeferredSentry();
 
       // Lazy gtag/js: the library is ~170 KB gz and only ever receives queued
       // dataLayer pushes, so it loads on first interaction only — never on an
