@@ -2,9 +2,17 @@
 
 Status: **paused** (2026-10-02). Multiple fix attempts landed no visible
 improvement. This doc records what was tried and what was verified, so the
-next attempt doesn't retrace the same ground. The working tree still holds
-the latest attempt's changes, uncommitted — see "Current working tree"
-below before touching these files.
+next attempt doesn't retrace the same ground.
+
+> **Code-drift warning (2026-10-06):** the v5 changes described below were
+> never committed and no longer exist. The working tree is clean, and the
+> sequenced dismiss they patched (hairline exit wipe + `transition-delay`
+> slide, `is-exiting`, `EXIT_SEQUENCE_MS`) is gone from the code entirely —
+> `Navigation.astro` now runs a single 240ms transform slide with the frost
+> parked on a pseudo-layer during motion (`is-animating`, commit d4cc8b8).
+> Whether the snap symptom survives that rewrite is unverified; re-confirm
+> the symptom before reviving any hypothesis below. The timeline is kept as
+> a record of dead ends, not as a description of current code.
 
 ## Symptom
 
@@ -81,21 +89,10 @@ is still there (and/or the wipe still doesn't read). Paused here.
   at 1px/240ms; if not, the wipe may need a different treatment
   (thicker line during the sweep, or drop the wipe on dismiss).
 
-## Current working tree (uncommitted)
+## Current working tree
 
-Modified, embodying v5:
-
-- `apps/web/src/lib/shyNav.ts` — timer removed, persistence model
-- `apps/web/src/components/Navigation.astro` — hot-sweep keyframes,
-  updated comment blocks
-- `apps/web/src/components/case/CaseStudySpineNav.astro` — comment only
-- `apps/web/src/lib/shyNav.test.ts` — persistence assertions replacing the
-  480ms-lifetime test
-- `apps/web/src/components/Navigation.test.ts` — prominence-sweep test
-- `apps/web/src/components/case/CaseStudySpineNav.test.ts` — comment
-- `docs/design-system.md` — §5 dismiss description (persistence model +
-  prominence sweep)
-
-Decide whether to keep or revert these before the next attempt; the v5
-changes are behavior-neutral to slightly-positive in isolation (no
-regressions measured), they just didn't fix the target symptom.
+Clean. The v5 changes listed in the original log (`lib/shyNav.ts` persistence
+model, `Navigation.astro` hot-sweep keyframes, the matching test and
+design-system.md edits) were never committed and were later discarded; the
+dismiss itself was subsequently rewritten (see the code-drift warning at the
+top). Nothing to keep or revert — start any new attempt from `main`.

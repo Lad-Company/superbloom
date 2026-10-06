@@ -6,10 +6,10 @@ This is a pnpm monorepo containing the public website, the Sanity CMS that power
 
 ## Workspace layout
 
-| Package             | Path                | Description                                                        |
-| ------------------- | ------------------- | ----------------------------------------------------------------- |
-| `web`               | `apps/web`          | Public site. Astro (SSR via the Vercel adapter) + UnoCSS + GSAP.  |
-| `studio`            | `apps/studio`       | Sanity Studio CMS (project `l9mhqdtj`, dataset `production`).     |
+| Package               | Path               | Description                                                      |
+| --------------------- | ------------------ | ---------------------------------------------------------------- |
+| `web`                 | `apps/web`         | Public site. Astro (SSR via the Vercel adapter) + UnoCSS + GSAP. |
+| `studio`              | `apps/studio`      | Sanity Studio CMS (project `l9mhqdtj`, dataset `production`).    |
 | `@superbloom/schemas` | `packages/schemas` | Shared Sanity content schemas and migration/contract test suite. |
 
 ## Requirements
@@ -40,7 +40,7 @@ Run from the repo root:
 | `pnpm format:check` | Check formatting without writing                                  |
 | `pnpm typecheck`    | Type-check every package (`astro check` for web, `tsc` elsewhere) |
 | `pnpm test`         | Run the test suites (Vitest)                                      |
-| `pnpm build`        | Build every package (`astro build`, `sanity build`)              |
+| `pnpm build`        | Build every package (`astro build`, `sanity build`)               |
 
 ## Further reading
 
@@ -48,5 +48,6 @@ Run from the repo root:
 - `CONTEXT.md` - domain model and ubiquitous language
 - `ARCHITECTURE.md` - architecture-of-record and the collapsed decision log
 - `docs/design-system.md` - design, UI, theming, and motion intent
-- `docs/dns-cutover-runbook.md` - DNS/hosting cutover to the Superbloom Pro team (launch)
+- `docs/dns-cutover-runbook.md` - DNS/hosting cutover to the Superbloom Pro team (completed 2026-09-30; zone reference + rollback)
+- `docs/observability-pipeline-spec.md` - Sentry + Discord alerting pipeline (ADR-0028)
 - `docs/agents/` - agent workflow docs (issue tracker, triage labels, domain)

@@ -4,6 +4,28 @@
 
 Website for SuperBloom House (superbloomhouse.com) via Lad Company.
 
+**The site is in production.** Most work here is maintenance and bug fixes, not
+new features. Bias toward small, reversible changes; preserve editor content and
+the settled decisions in `ARCHITECTURE.md`.
+
+## Working on this repo
+
+- **Read before touching code:** `CONTEXT.md` (domain glossary),
+  `ARCHITECTURE.md` (architecture + collapsed decision log), and
+  `docs/design-system.md` (design/UI/motion intent). Code is the source of
+  truth for field-level detail; flag any conflict with a logged decision
+  instead of silently overriding it.
+- **Verify every change** from the repo root: `pnpm lint`, `pnpm typecheck`,
+  `pnpm test`. Run `pnpm typegen` after any schema change in
+  `packages/schemas`.
+- **Deploys:** merging to `main` deploys the site to production on Vercel.
+  The Studio deploys separately (`sanity deploy` from `apps/studio`).
+- **Observability:** errors aggregate in Sentry project `sbh-web` and alert to
+  Discord `#site-alerts`; deploys and content publishes post to
+  `#site-activity`. Pipeline details: `docs/observability-pipeline-spec.md`.
+- **Open investigations:** the shy-nav dismiss "snap" bug is paused; read
+  `docs/shy-nav-dismiss-snap-log.md` before retrying it (note its code-drift
+  warning — the code it describes has moved on).
 
 ## Agent skills
 

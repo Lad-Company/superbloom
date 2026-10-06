@@ -1,7 +1,9 @@
 # DNS Cutover Runbook — superbloomhouse.com
 
 Cutover of superbloomhouse.com from the legacy Netlify site to the Vercel-hosted
-Astro site. Launch: **2026-09-30**.
+Astro site. Launched **2026-09-30**; the site is live on Vercel. This file is
+retained as the DNS zone reference and the rollback path — keep it until the
+legacy Netlify site and the GoDaddy zone are decommissioned.
 
 **Hosting context:** the Vercel project is on the Superbloom-owned **Pro** team
 `superbloom` (project `superbloom`, `prj_qfcp4nlUHjOO1aIUpzsMb6jUhUdO`, root

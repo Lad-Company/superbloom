@@ -332,7 +332,9 @@ eyebrows, nav labels, and order stay in lockstep.
 Small pill, optional editorial taxonomy, distinct from Capability, Deliverables,
 and the Type badge. Uncapped on Articles (the Type badge is automatic), capped at
 2 on Case Studies; cards always render a capped subset per the Badges rules.
-Rendered top-left of the Media Frame, inheriting page color mode.
+Rendered top-left of the Media Frame on the frosted layer with a fixed
+white-ink palette, independent of the surrounding Surface Role (tags always
+overlay media).
 
 ### FAQ
 
