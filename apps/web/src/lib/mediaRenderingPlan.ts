@@ -223,13 +223,22 @@ export const muxPosterRendering = (
   playbackId: string,
   placement: MediaPlacement,
   thumbTime?: number | null,
+  widths?: readonly number[],
 ): MuxPosterRendering => {
   const time = thumbTime ?? 0
+  const rungs = widths ?? IMAGE_LADDER
   return {
-    src: muxPosterUrl(playbackId, posterRung(posterTargetPx(placement)), time),
-    srcset: IMAGE_LADDER.map((w) => `${muxPosterUrl(playbackId, w, time)} ${w}w`).join(', '),
+    src: muxPosterUrl(playbackId, widths ? rungs[0] : posterRung(posterTargetPx(placement)), time),
+    srcset: rungs.map((w) => `${muxPosterUrl(playbackId, w, time)} ${w}w`).join(', '),
   }
 }
+
+/** Hero poster rungs (GH #172): Mux generates thumbnails on demand per
+ *  width × time, and cold rungs measured 0.7–1.0s TTFB — the full ladder
+ *  spread visitors across eight URLs, so the hi-res hero poster was
+ *  routinely the last hero asset to land (1.37s). Pinning the hero to two
+ *  rungs means every visitor warms the same two thumbnail URLs. */
+export const HERO_POSTER_WIDTHS = [1280, 2560] as const
 
 /** Blur-up rung for the MediaFrame skeleton surface (ADR-0039): a 24px
  *  thumbnail (~1-2KB) that the frame blurs into a placeholder for ungated
