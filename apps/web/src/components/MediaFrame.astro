@@ -598,11 +598,15 @@ const imageRendering =
       // Sync with a `revealed` attribute set before this element connected
       // (attributeChangedCallback fires before curatedPoster is queried).
       this.curatedPoster?.setAttribute('aria-hidden', String(this.hasAttribute('revealed')))
-      // Load crossfade (ADR-0039): every rendered layer starts at opacity 0
-      // over the skeleton (CSS, gated on html.js) and fades in on its own
-      // load event. A layer already complete at connect (browser cache,
-      // View Transition swap, bfcache) is marked synchronously so the first
-      // paint shows it at full opacity — no skeleton flash, no transition.
+      // Load crossfade (ADR-0039): non-priority layers start at opacity 0
+      // over the skeleton (CSS, gated on html.js) and fade in on their own
+      // load event. Priority frames (data-priority) are exempt from the
+      // opacity gate — they paint as soon as the browser decodes them
+      // (GH #162, LCP) — but the stamping below still runs for them so the
+      // contract stays uniform. A layer already complete at connect (browser
+      // cache, View Transition swap, bfcache) is marked synchronously so the
+      // first paint shows it at full opacity — no skeleton flash, no
+      // transition.
       // Deferred posters (deferPoster) have no currentSrc yet but report
       // complete, so the check requires a resolved URL; promotePoster()
       // fires their load later. A failed load leaves the layer hidden and
@@ -1232,14 +1236,16 @@ const imageRendering =
     position: relative;
   }
 
-  /* Load crossfade (ADR-0039): every layer starts transparent over the
-     skeleton and fades in on its load event — but the rules themselves
-     live in styles/motion.css. The html.js gate can't survive Astro's
-     scoped-style compiler (a bare :where(html.js) gets the scope attribute
-     fused onto html, and :where(:global(html.js)) emits an empty :where();
-     both silently deaden the selector), and unscoped the specificity also
-     stays below the video-ready / revealed fade-outs below so those keep
-     winning. The element side (data-loaded stamping) is in the script. */
+  /* Load crossfade (ADR-0039): non-priority layers start transparent over
+     the skeleton and fade in on their load event (priority frames are
+     exempt — GH #162, they paint on decode for LCP) — but the rules
+     themselves live in styles/motion.css. The html.js gate can't survive
+     Astro's scoped-style compiler (a bare :where(html.js) gets the scope
+     attribute fused onto html, and :where(:global(html.js)) emits an empty
+     :where(); both silently deaden the selector), and unscoped the
+     specificity also stays below the video-ready / revealed fade-outs below
+     so those keep winning, priority frames included. The element side
+     (data-loaded stamping) is in the script. */
 
 
   .media-frame.intrinsic img {
