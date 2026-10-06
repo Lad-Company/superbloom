@@ -7,14 +7,17 @@ import {isPreviewRequest} from '../lib/preview'
 import {setContentCache} from '../lib/cacheHeaders'
 import {homepageQuery} from '../lib/queries'
 import {containsMuxVideo} from '../lib/containsMuxVideo'
+import {applyHeroExperiment} from '../lib/heroExperiment'
 import type {HomepageQueryResult} from '../sanity.types'
 
 const preview = isPreviewRequest(Astro.cookies)
 const client = getSanityClient(preview)
 setContentCache(Astro.response, preview)
 
-const homepage = await fetchSafe<HomepageQueryResult>(client, homepageQuery)
-if (homepage === undefined) return rewriteToServerError(Astro)
+const fetched = await fetchSafe<HomepageQueryResult>(client, homepageQuery)
+if (fetched === undefined) return rewriteToServerError(Astro)
+// TEMPORARY hero delivery experiment (lib/heroExperiment.ts).
+const homepage = applyHeroExperiment(fetched, Astro.url.searchParams)
 ---
 
 <Layout navRole="dark" hasVideo={containsMuxVideo(homepage)}>
