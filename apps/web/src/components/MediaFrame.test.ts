@@ -174,9 +174,41 @@ describe('MediaFrame playback profiles', () => {
     // The attribute keeps PiP out of native context menus (desktop
     // right-click, iPadOS long-press) and the Firefox hover toggle.
     // Safari regressed on the attribute (mdn/browser-compat-data#24399) but
-    // still honors the property, so loadPlayer() sets it after upgrade.
+    // still honors the property, so wirePlayer() sets it on adoption.
     expect(source).toMatch(/<mux-video[^>]*\sdisablepictureinpicture[\s>]/s)
-    expect(source).toContain('this.player.disablePictureInPicture = true')
+    expect(source).toMatch(/<video[^>]*\sdisablepictureinpicture[\s>]/s)
+    expect(source).toContain('player.disablePictureInPicture = true')
+  })
+
+  describe('progressive loop (MP4 static renditions)', () => {
+    it('renders a plain <video> with <source media> rungs only for eligible placements with ready MP4s', () => {
+      expect(source).toContain('progressiveLoopSources(asset.playbackId!, asset.staticRenditions)')
+      // Presented and Gated frames keep HLS.
+      expect(source).toMatch(/plan\.progressiveLoop && controls === 'none' && !isGated/)
+      expect(source).toContain('class="media-frame__loop"')
+      expect(source).toMatch(/<source src=\{source\.src\} type="video\/mp4" media=\{source\.media\} \/>/)
+      // Mutually exclusive with the HLS element.
+      expect(source).toContain('isVideo && !isProgressiveLoop && (')
+    })
+
+    it('keeps iOS inline playback and the priority preload on the loop element', () => {
+      expect(source).toMatch(/<video[^>]*\smuted\s[^>]*\sloop\s[^>]*\splaysinline[\s>]/s)
+      expect(source).toContain("preload={plan.priority ? 'auto' : 'none'}")
+    })
+
+    it('adopts the loop element synchronously and never imports the mux-video chunk for it', () => {
+      expect(source).toContain("this.querySelector('video.media-frame__loop')")
+      expect(source).toContain('this.applyPlayerPoster(loopElement)')
+      expect(source).toContain('this.wirePlayer(loopElement)')
+      expect(source).toContain('this.playerLoading = Promise.resolve()')
+      expect(source).toContain('if (!playerElement && !loopElement) return')
+    })
+
+    it('shares the layer geometry with mux-video and the poster', () => {
+      expect(source).toMatch(
+        /\.media-frame :global\(mux-video\),\s*\.media-frame__loop,\s*\.media-frame__poster \{/,
+      )
+    })
   })
 
   it('emits no SSR poster attribute on mux-video — the player poster is copied from the overlay img at upgrade', () => {
