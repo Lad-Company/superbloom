@@ -389,16 +389,21 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
     expect(source).toMatch(/\.media-frame\s*\{[^}]*--fg-12:\s*color-mix\(in srgb, var\(--fg\) 12%, transparent\)/)
   })
 
-  it('starts layers at opacity 0 over the skeleton, gated on html.js — in motion.css', () => {
+  it('starts non-priority layers at opacity 0 over the skeleton, gated on html.js — in motion.css', () => {
     // Without JS (or a failed chunk) media must render exactly as before —
     // the hide rule only applies when Layout's inline script has marked
-    // the document JS-capable. The rules must live in the global
-    // motion.css: Astro's scoped compiler deadens an html.js gate inside
-    // the component (bare :where(html.js) gets the scope attribute fused
-    // onto html; :where(:global(html.js)) emits an empty :where() —
-    // verified in-browser 2026-10-02).
+    // the document JS-capable. Priority frames (data-priority) are exempt:
+    // their layers are the LCP element on /work and /index, and the gate
+    // held them invisible until the module-script queue ran (GH #162), so
+    // they paint as soon as the browser decodes them. The rules must live
+    // in the global motion.css: Astro's scoped compiler deadens an html.js
+    // gate inside the component (bare :where(html.js) gets the scope
+    // attribute fused onto html; :where(:global(html.js)) emits an empty
+    // :where() — verified in-browser 2026-10-02).
     const motionCss = readFileSync(new URL('../styles/motion.css', import.meta.url), 'utf8')
-    expect(motionCss).toMatch(/html\.js media-frame img\s*\{[^}]*opacity:\s*0/)
+    expect(motionCss).toMatch(/html\.js media-frame:not\(\[data-priority\]\) img\s*\{[^}]*opacity:\s*0/)
+    // The exemption is the priority attribute only — no other frame opts out.
+    expect(motionCss).not.toMatch(/html\.js media-frame img\s*\{[^}]*opacity:\s*0/)
     // …and no equivalent rule remains in the scoped component style
     // (selector + brace, so the explanatory comment doesn't false-positive).
     expect(source).not.toMatch(/:where\([^)]*html\.js[^)]*\)\s*\.media-frame\s*img[^{]*\{/)

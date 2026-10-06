@@ -147,16 +147,24 @@ html.js [data-motion-text] {
    layer starts transparent over the frame's skeleton surface and fades in on
    its load event (the media-frame element stamps data-loaded; layers already
    complete at connect are stamped before first paint, so cached images and
-   View Transition swaps never flash the skeleton). These rules must live in a
-   global stylesheet: the html.js gate can't survive Astro's scoped-style
-   compiler — a bare :where(html.js) gets the scope attribute fused onto the
-   html compound (`[data-astro-cid-*]:where(html.js)`, never matches), and
+   View Transition swaps never flash the skeleton). Priority frames
+   (data-priority — heroes, featured leads) are exempt from the opacity gate
+   (GH #162): their layers are the LCP element on /work and /index, fully
+   downloaded well before LCP, and gating them on data-loaded held them
+   invisible until the whole module-script queue executed (~1.1–1.2s of
+   Lighthouse LCP). They paint over the skeleton as soon as the browser
+   decodes them; the data-loaded stamping still runs on every frame (a no-op
+   visually on priority frames — opacity is already 1 — and keeps the element
+   contract simple). These rules must live in a global stylesheet: the html.js
+   gate can't survive Astro's scoped-style compiler — a bare :where(html.js)
+   gets the scope attribute fused onto the html compound
+   (`[data-astro-cid-*]:where(html.js)`, never matches), and
    :where(:global(html.js)) emits as an empty :where() — both silently deaden
-   the rules (verified in-browser 2026-10-02). Kept unscoped, the specificity
-   stays below MediaFrame's scoped fade-out states (video-ready, revealed),
-   so those tuned transitions still win, and below the component's
-   reduced-motion override. */
-html.js media-frame img {
+   the rules (verified in-browser 2026-10-02). Even with the :not() bump
+   (0,2,3), the specificity stays below MediaFrame's scoped fade-out states
+   (video-ready 0,3,0, revealed 0,3,0), so those tuned transitions still win
+   on priority frames, and below the component's reduced-motion override. */
+html.js media-frame:not([data-priority]) img {
   opacity: 0;
 }
 
