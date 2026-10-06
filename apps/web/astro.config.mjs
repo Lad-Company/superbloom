@@ -32,6 +32,16 @@ export default defineConfig({
     // /edit is the human-memorable door into the CMS.
     '/edit': 'https://superbloom-cms.sanity.studio',
   },
+  // Route-link prefetching (GH #152): links carrying data-astro-prefetch warm
+  // the destination document on hover/focus/tap ('hover' is the default —
+  // stated explicitly so the strategy is discoverable here). The prefetch
+  // script only ever fetches same-origin URLs, and the attribute is applied
+  // only to internal route links — never cart mutations, external links, or
+  // preview-session URLs. Prefetch warms the cache only; the ClientRouter
+  // swap is unchanged.
+  prefetch: {
+    defaultStrategy: 'hover',
+  },
   build: {
     // Inline every page stylesheet into the served HTML. Each page ships 3–5
     // small stylesheets (≈10KB total — __uno, PageHero, Footer, page CSS), so
