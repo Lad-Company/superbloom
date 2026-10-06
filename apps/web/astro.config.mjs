@@ -43,7 +43,15 @@ export default defineConfig({
   integrations: [
     UnoCSS(),
     sentry({
-      enabled: sentryEnabled,
+      // Client init is hand-rolled (GH #164): the integration's injected
+      // page script put the 51 KB SDK at High priority on the first-paint
+      // critical path of an errors-only config. Layout.astro ships a tiny
+      // inline pre-init error buffer instead, and lib/sentryDeferred.ts
+      // dynamic-imports the SDK (and sentry.client.config.ts) after
+      // `window load`. Server init, middleware, and source-map upload are
+      // unchanged (sourceMapsNeeded is client || server, so server keeps
+      // the upload alive).
+      enabled: {client: false, server: sentryEnabled},
       org: env.SENTRY_ORG,
       project: env.SENTRY_PROJECT,
       authToken: sentryAuthToken,

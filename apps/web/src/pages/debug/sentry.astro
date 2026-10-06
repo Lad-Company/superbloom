@@ -22,6 +22,15 @@ if (!cronSecret || !safeCompare(secret, cronSecret)) {
   </head>
   <body>
     <button id="smoke">Throw client error</button>
+    {/* This page doesn't use Layout, so it wires its own SDK load (GH #164):
+       the SDK initializes after `window load`; the button click below always
+       lands after that, so the error reports as a normal live capture. Needs
+       SENTRY_FORCE_ENABLE=1 on preview deploys. */}
+    <script>
+      import { initDeferredSentry } from '../../lib/sentryDeferred'
+
+      initDeferredSentry()
+    </script>
     <script>
       document.getElementById('smoke')?.addEventListener('click', () => {
         throw new Error('Sentry smoke test (client)')
