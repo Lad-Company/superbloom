@@ -62,11 +62,17 @@
        avgW 0.3586/0.4748, hhea 2134/-700/280
      Graphik Medium vs Arial (upm 1000/2048):
        avgW 0.6075/0.5791, hhea 981/-195/0
-   Arial Narrow / Arial exist on macOS and Windows; Android (Roboto) falls
-   through to the rest of the stack as before — no worse than today. */
+   Platform coverage (GH #153): each src resolves to the FIRST installed
+   local() name, and the overrides apply to whichever resolves. Arial Narrow /
+   Arial resolve on macOS and Windows (byte-identical to before); Liberation
+   Sans Narrow / Liberation Sans — preinstalled on most Linux distros and on
+   PageSpeed Insights / Lighthouse runners — are metric-compatible clones of
+   Arial Narrow / Arial by design, so the same size-adjust/ascent/descent
+   values hold unchanged there. Android (Roboto) still falls through to the
+   rest of the stack as before — no worse than today. */
 @font-face {
   font-family: 'PP Neue Corp Tight Fallback';
-  src: local('Arial Narrow');
+  src: local('Arial Narrow'), local('Liberation Sans Narrow');
   font-weight: 750;
   font-style: normal;
   size-adjust: 75.52%;
@@ -76,7 +82,7 @@
 }
 @font-face {
   font-family: 'Graphik Fallback';
-  src: local('Arial'), local('Helvetica Neue'), local('Roboto');
+  src: local('Arial'), local('Helvetica Neue'), local('Liberation Sans'), local('Roboto');
   font-weight: 500;
   font-style: normal;
   size-adjust: 104.91%;
