@@ -486,13 +486,17 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    springing rather than smacking to a stop. Two implementations, one look:
    - *Hero entry reveal* (`HeroHeading`, via `PageHero` on navbar / sitemap
      destinations: home, work, who-we-are, index, zine, shop) is **SSR
-     word-split + CSS keyframes**. Every word span exists in the HTML and is
-     painted on the first frame; the rise starts when Layout's inline script
-     stamps `html[data-fonts-ready]` (fonts ready, 1s cap) so words rise in
-     the real glyphs. No JavaScript touches the heading after paint — that
-     is what keeps the LCP element deterministic (ARCHITECTURE.md ADR-0040).
-     Detail routes (case studies, articles, past zine issues) render their
-     heading as plain text via `PageHero reveal={false}`.
+     word-split + CSS keyframes**. Every word span exists in the HTML; on
+     cold loads the words start clipped at `translateY(110%)` from the first
+     frame (`html.js:not([data-fonts-ready])`, GH #171), and the rise plays
+     from hidden when Layout's inline script stamps
+     `html[data-fonts-ready]` (display face loaded via `document.fonts.load`,
+     1s cap) so words rise in the real glyphs. No JavaScript touches the
+     heading after paint — that is what keeps the LCP element deterministic
+     (ARCHITECTURE.md ADR-0040; the heading is now clipped at first paint,
+     so LCP moves to the subheading or nav logo). Detail routes (case
+     studies, articles, past zine issues) render their heading as plain
+     text via `PageHero reveal={false}`.
    - *Scroll reveals* (`data-motion-text`, `MotionText`) below the fold use
      the GSAP + split-type primitive in `lib/motion/reveal.ts`, split on
      intersection. Chars are not a unit anywhere.
