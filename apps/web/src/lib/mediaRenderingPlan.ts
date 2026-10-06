@@ -230,3 +230,13 @@ export const muxPosterRendering = (
     srcset: IMAGE_LADDER.map((w) => `${muxPosterUrl(playbackId, w, time)} ${w}w`).join(', '),
   }
 }
+
+/** Blur-up rung for the MediaFrame skeleton surface (ADR-0039): a 24px
+ *  thumbnail (~1-2KB) that the frame blurs into a placeholder for ungated
+ *  video, which has no Sanity LQIP. Deliberately NOT in IMAGE_LADDER — it is
+ *  only ever a skeleton background, never a srcset candidate. Uses the
+ *  asset's thumbTime so the blur-up matches the poster frame exactly. */
+const SKELETON_THUMB_PX = 24
+
+export const muxSkeletonThumbUrl = (playbackId: string, thumbTime?: number | null): string =>
+  muxPosterUrl(playbackId, SKELETON_THUMB_PX, thumbTime ?? 0)

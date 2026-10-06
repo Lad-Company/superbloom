@@ -39,13 +39,13 @@ const hrefFor = (type: ArticleTypeFilter | null) => {
         return (
           <li>
             <a
-              class="type-filter-option underline-draw"
+              class="type-filter-option"
               href={hrefFor(selected ? null : type)}
               data-type-filter
               aria-current={selected ? 'true' : undefined}
               aria-label={selected ? `Clear the ${label} filter` : `Show only ${label}`}
             >
-              {label}
+              <span class="underline-draw">{label}</span>
             </a>
           </li>
         )
@@ -151,6 +151,15 @@ const hrefFor = (type: ArticleTypeFilter | null) => {
     color: var(--fg);
     text-decoration: none;
     white-space: nowrap;
+  }
+
+  /* The row keeps its full-width click target; the underline draws on the
+     inline label span so it travels the length of the text, not the row.
+     aria-current keeps the selected filter's underline drawn. */
+  .type-filter-option:hover .underline-draw::after,
+  .type-filter-option:focus-visible .underline-draw::after,
+  .type-filter-option[aria-current] .underline-draw::after {
+    transform: scaleX(1);
   }
 
   @media (prefers-reduced-motion: reduce) {

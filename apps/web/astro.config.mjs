@@ -32,6 +32,16 @@ export default defineConfig({
     // /edit is the human-memorable door into the CMS.
     '/edit': 'https://superbloom-cms.sanity.studio',
   },
+  // Route-link prefetching (GH #152): links carrying data-astro-prefetch warm
+  // the destination document on hover/focus/tap ('hover' is the default —
+  // stated explicitly so the strategy is discoverable here). The prefetch
+  // script only ever fetches same-origin URLs, and the attribute is applied
+  // only to internal route links — never cart mutations, external links, or
+  // preview-session URLs. Prefetch warms the cache only; the ClientRouter
+  // swap is unchanged.
+  prefetch: {
+    defaultStrategy: 'hover',
+  },
   build: {
     // Inline every page stylesheet into the served HTML. Each page ships 3–5
     // small stylesheets (≈10KB total — __uno, PageHero, Footer, page CSS), so
@@ -43,19 +53,63 @@ export default defineConfig({
   integrations: [
     UnoCSS(),
     sentry({
-      enabled: sentryEnabled,
+      // Client init is hand-rolled (GH #164): the integration's injected
+      // page script put the 51 KB SDK at High priority on the first-paint
+      // critical path of an errors-only config. Layout.astro ships a tiny
+      // inline pre-init error buffer instead, and lib/sentryDeferred.ts
+      // dynamic-imports the SDK (and sentry.client.config.ts) after
+      // `window load`. Server init, middleware, and source-map upload are
+      // unchanged (sourceMapsNeeded is client || server, so server keeps
+      // the upload alive).
+      enabled: {client: false, server: sentryEnabled},
       org: env.SENTRY_ORG,
       project: env.SENTRY_PROJECT,
       authToken: sentryAuthToken,
       telemetry: false,
       sourcemaps: {
-        // Uploaded maps are not shipped with the deployed bundle.
-        filesToDeleteAfterUpload: ['dist/**/*.map'],
+        // Disable the integration's auto-set filesToDeleteAfterUpload
+        // (['./dist/**/client/**/*.map', './dist/**/server/**/*.map']). It
+        // deletes the server maps after the SSR pass uploads them, so the
+        // client pass's upload re-scans dist, finds the server scripts
+        // mapless, and re-uploads them with ~120 "no sourcemap found"
+        // warnings. Deleting nothing here keeps those maps present for the
+        // (deduped) re-scan; scripts/remove-sourcemaps.mjs deletes all maps
+        // unconditionally after the build, so they never reach the deployed
+        // output even when an upload fails.
+        filesToDeleteAfterUpload: [],
       },
     }),
   ],
   vite: {
     envDir: '../..',
+    build: {
+      // Both chunks above the default 500 kB are intentionally heavy and
+      // intentionally not on the critical path: renderVisualEditing (~780 kB,
+      // preview-only) and the mux/hls.js player (~740 kB, lazy-loaded per
+      // frame, ADR-0036). 900 keeps the tripwire armed for everything else.
+      chunkSizeWarningLimit: 900,
+      rollupOptions: {
+        onwarn(warning, defaultHandler) {
+          // @sanity/ui and framer-motion (pulled in by the preview-only visual
+          // editing bundle) ship "use client" banners, a React Server
+          // Components convention that is meaningless in Astro. Rollup strips
+          // them and warns per file (~70 lines of noise). Only silence that
+          // exact case — other directives (e.g. "use server") and all other
+          // warnings still print.
+          if (warning.code === 'MODULE_LEVEL_DIRECTIVE' && warning.message.includes('use client'))
+            return
+          defaultHandler(warning)
+        },
+        onLog(level, log, defaultHandler) {
+          // Rollup can't map warning locations through framer-motion's own
+          // shipped sourcemaps, adding a few SOURCEMAP_ERROR lines per build.
+          // These travel via onLog, not onwarn. Only silence them for
+          // third-party code; problems in our own files still report.
+          if (log.code === 'SOURCEMAP_ERROR' && log.id?.includes('node_modules')) return
+          defaultHandler(level, log)
+        },
+      },
+    },
     define: {
       // The client bundle can only read inlined values. The release matches the
       // commit SHA the source-map upload registers for each production build.

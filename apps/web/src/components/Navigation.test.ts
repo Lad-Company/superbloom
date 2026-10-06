@@ -72,7 +72,7 @@ describe('Navigation compact panel', () => {
       /\.compact-menu\[open\] \.compact-panel\s*\{[^}]*animation:\s*compact-panel-in/,
     )
     // Reduced motion keeps the instant open.
-    const reduced = source.match(/prefers-reduced-motion: reduce\)\s*\{([\s\S]*)\n  \}/)?.[1] ?? ''
+    const reduced = source.match(/prefers-reduced-motion: reduce\)\s*\{([\s\S]*)\n {2}\}/)?.[1] ?? ''
     expect(reduced).toMatch(/\.compact-menu\[open\] \.compact-panel\s*\{\s*animation:\s*none/)
   })
 })

@@ -51,12 +51,14 @@ const href = issue?.slug
     padding: var(--space-3xl) var(--page-inset);
   }
 
+  /* Copy sits flush with the column edges — no inset — so the right-half
+     text block aligns with the Creative Collective media block directly
+     above it (the left halves already share the section's left edge). */
   .content {
     display: flex;
     flex-direction: column;
     align-items: start;
     gap: var(--space-xs);
-    padding-inline: var(--space-xs);
   }
 
   h2 {
@@ -67,10 +69,6 @@ const href = issue?.slug
     .home-zine {
       grid-template-columns: 1fr;
       padding: var(--space-2xl) var(--page-inset);
-    }
-
-    .content {
-      padding-inline: 0;
     }
   }
 

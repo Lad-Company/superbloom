@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@sanity/client';
+import { sendBestEffortEmail } from '../../lib/resend';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const inquiryTypes = new Set([
@@ -10,6 +11,21 @@ const inquiryTypes = new Set([
   'collective',
 ]);
 const hearAboutUsOptions = new Set(['referral', 'instagram', 'linkedin', 'google', 'event', 'other']);
+const inquiryTypeLabels: Record<string, string> = {
+  'agency-partner': 'Brand looking for an agency partner',
+  'production-partner': 'Looking for a production partner',
+  'media-partner': 'Looking for a media partner',
+  'creative-partner': 'Looking for a creative partner',
+  collective: 'Wants to join the Creative Collective',
+};
+const hearAboutUsLabels: Record<string, string> = {
+  referral: 'Referral',
+  instagram: 'Instagram',
+  linkedin: 'LinkedIn',
+  google: 'Google',
+  event: 'Event',
+  other: 'Other',
+};
 const minimumFillTimeMs = 750;
 const maximumFillTimeMs = 86_400_000;
 
@@ -87,6 +103,28 @@ export const POST: APIRoute = async ({ request }) => {
     console.error('Contact form submission failed', {submissionId, message});
     return error('network', 502);
   }
+
+  // Best-effort notification email. Sanity stays the source of truth, so a
+  // send failure (or a missing key) must never change the response.
+  await sendBestEffortEmail(
+    'Contact notification email',
+    {
+      from: 'Superbloom Site <forms@updates.superbloomhouse.com>',
+      to: 'hello@superbloomhouse.com',
+      replyTo: email,
+      subject: `New inquiry: ${inquiryTypeLabels[inquiryType] ?? inquiryType} — ${name}`,
+      text: [
+        `Inquiry type: ${inquiryTypeLabels[inquiryType] ?? inquiryType}`,
+        `Name: ${name}`,
+        `Email: ${email}`,
+        `Heard about us: ${hearAboutUsLabels[hearAboutUs] ?? hearAboutUs}`,
+        `Submitted: ${new Date().toISOString()}`,
+        '',
+        message,
+      ].join('\n'),
+    },
+    {submissionId},
+  );
 
   return new Response(JSON.stringify({ success: true }), {
     status: 200,

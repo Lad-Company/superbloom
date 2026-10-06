@@ -55,8 +55,10 @@ export default defineConfig({
     // NB: var() sizes need the `length:` hint — bare `text-[var(--x)]` is
     // ambiguous and Uno emits a (broken) color declaration instead of
     // font-size.
+    // h1 leading is 0.82 (0.78 + 5%): at 0.78 the display face's descenders
+    // (comma, y, g) grazed the next line's caps at hero sizes.
     'type-h1':
-      'font-display-tight font-[750] text-[length:var(--type-h1)] leading-[0.78] tracking-[0] uppercase line-clamp-4',
+      'font-display-tight font-[750] text-[length:var(--type-h1)] leading-[0.82] tracking-[0] uppercase line-clamp-4',
     'type-h2':
       'font-display-tight font-[750] text-[length:var(--type-h2)] leading-[0.88] tracking-[0] uppercase line-clamp-4',
     'type-h3':

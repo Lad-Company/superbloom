@@ -84,7 +84,7 @@ const currentYear = new Date().getFullYear()
         {
           nav.map((item) => (
             <li>
-              <a href={item.href} class="underline-draw">
+              <a href={item.href} class="underline-draw" data-astro-prefetch>
                 {item.label}
               </a>
             </li>

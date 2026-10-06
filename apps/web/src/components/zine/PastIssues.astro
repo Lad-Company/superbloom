@@ -54,6 +54,12 @@ const {issues} = Astro.props;
     padding: 0;
     background: #000;
     color: #fff;
+    /* Re-derive the shared hairline from this surface's white --fg: the
+       :root --fg-20 resolves var(--fg) where it is declared, so it inherits
+       here as black-at-20% — invisible on the black band, which is why the
+       row dividers went missing. Same re-derivation SurfaceSection does per
+       role. */
+    --fg-20: color-mix(in srgb, var(--fg) 20%, transparent);
   }
 
   h2 {

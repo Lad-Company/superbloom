@@ -44,9 +44,10 @@ describe('revealText on window resize', () => {
     Object.defineProperty(h1, 'offsetWidth', {configurable: true, value: 320})
     document.body.appendChild(h1)
 
-    // Reveal plays immediately (data-scroll="false" behavior). Use chars unit
-    // because the PageHero.astro h1 uses data-unit="chars".
-    await revealText(h1, {unit: 'chars', scroll: false})
+    // Reveal plays immediately (scroll: false). Words is the finest unit the
+    // JS reveal supports now that the hero heading is SSR-split and CSS-only
+    // (HeroHeading.astro); below-fold scroll reveals use it.
+    await revealText(h1, {unit: 'words', scroll: false})
 
     // Force the GSAP timeline to its end frame so the reveal is "complete"
     // and the targets are in the visible end-state. This simulates the user
@@ -55,9 +56,9 @@ describe('revealText on window resize', () => {
     // Force-render any pending writes so the computed styles reflect the end.
     flushStyleRecalc()
 
-    const initialChars = collectDeepestSpans(h1)
-    expect(initialChars.length).toBeGreaterThan(0)
-    for (const ch of initialChars) {
+    const initialWords = collectDeepestSpans(h1)
+    expect(initialWords.length).toBeGreaterThan(0)
+    for (const ch of initialWords) {
       expect(isVisible(ch), `pre-resize ${describeEl(ch)} should be visible`).toBe(true)
     }
 
@@ -71,9 +72,9 @@ describe('revealText on window resize', () => {
     // that gsap.fromTo renders the from-state immediately even when paused,
     // so the freshly-split targets end up stuck at yPercent: 100 (clipped out
     // of view) again.
-    const postResizeChars = collectDeepestSpans(h1)
-    expect(postResizeChars.length).toBeGreaterThan(0)
-    for (const ch of postResizeChars) {
+    const postResizeWords = collectDeepestSpans(h1)
+    expect(postResizeWords.length).toBeGreaterThan(0)
+    for (const ch of postResizeWords) {
       expect(isVisible(ch), `post-resize ${describeEl(ch)} should be visible`).toBe(true)
     }
   })
@@ -90,9 +91,8 @@ function flushStyleRecalc(): void {
   void document.body.offsetWidth
 }
 
-// SplitType lays elements out as lines > words > chars, each level wrapped
-// in spans. We grab the deepest spans (chars) and ignore the outer wrapping
-// container <h1>.
+// SplitType lays elements out as lines > words, each level wrapped in spans.
+// We grab the deepest spans (words) and ignore the outer wrapping <h1>.
 function collectDeepestSpans(root: HTMLElement): HTMLElement[] {
   const all = Array.from(root.querySelectorAll<HTMLElement>('span'))
   return all.filter((el) => el.querySelector('span') === null)

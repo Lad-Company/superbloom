@@ -2,6 +2,11 @@
 import { caseStudySections } from '../../lib/caseStudySections';
 ---
 
+{/* Zero-height marker at the strip's flow position: the script reads its
+    rect on every scroll tick to know when the strip is actually stuck to the
+    viewport top (reading the strip itself would oscillate — the dock
+    transform moves its own rect). */}
+<span class="spine-sentinel" aria-hidden="true"></span>
 <nav class="spine-nav type-label" aria-label="Case study sections">
   <ul>
     {caseStudySections.map((section, index) => (
@@ -70,6 +75,7 @@ import { caseStudySections } from '../../lib/caseStudySections';
   );
 
   const updateActive = () => {
+    updateStuck();
     const first = sections.at(0);
     if (!first) return;
     // Fire 15% of a viewport height before the chapter top reaches the nav,
@@ -99,8 +105,33 @@ import { caseStudySections } from '../../lib/caseStudySections';
     });
   };
 
-  // Native smooth scrolling drives the real scroll position, so plain scroll
-  // events stay in sync with the animated motion.
+  // Dock gate: the shy-bar offset (CSS below) must apply only while the
+  // strip is actually stuck to the viewport top. Translating the in-flow
+  // strip shoves it --shy-bar-h below its seat, opening a gap between it and
+  // the lead media whenever the bar reveals before the strip has stuck —
+  // always the case on mobile, where the strip starts inside the initial
+  // viewport. The sentinel sits at the strip's flow position; once it
+  // crosses above the top edge, the strip is stuck. Checked synchronously on
+  // the scroll path, not with an IntersectionObserver: IO deliveries are
+  // batched and can lag the scroll handler by several frames, so the dock
+  // engaged late — the revealed bar covered the strip, then the strip jumped
+  // down a beat later (and symmetrically lingered docked after unsticking,
+  // reopening the in-flow gap). The reading-line scrollspy above replaced an
+  // IO for the same flakiness.
+  const sentinel = document.querySelector('.spine-sentinel');
+  const updateStuck = () => {
+    if (!nav || !sentinel) return;
+    // Stuck at the top edge only: past the flow position, but not yet
+    // bottomed out against the parent's end (there the strip rides up with
+    // the content — in flow again — and the dock would shove it --shy-bar-h
+    // below its seat, the same hole as the never-stuck case).
+    const pastTop = sentinel.getBoundingClientRect().top < 0;
+    const parentBottom = nav.parentElement?.getBoundingClientRect().bottom ?? 0;
+    nav.toggleAttribute('data-stuck', pastTop && parentBottom >= nav.offsetHeight);
+  };
+
+  // Anchor glides ride native `scroll-behavior: smooth` (motion.css), so
+  // plain scroll events stay in sync with the animated motion.
   window.addEventListener('scroll', queueUpdate, { passive: true });
   window.addEventListener('resize', queueUpdate);
   updateActive();
@@ -140,6 +171,28 @@ import { caseStudySections } from '../../lib/caseStudySections';
     background: var(--bg);
     color: var(--fg);
     scrollbar-width: none;
+    /* The slide rides the shy bar's own ramp so the dock reads as one piece
+       of chrome moving, not a second animation chasing it. */
+    transition: transform var(--motion-quick) var(--motion-ease-out);
+  }
+  /* While the shy bar is revealed it owns the viewport's top edge (fixed,
+     z-30, same strip this sticky nav pins to): its frost ghosts the tab
+     text and the bar eats every tap meant for the chapters. Dock the strip
+     beneath the bar by its height (--shy-bar-h, published by lib/shyNav.ts)
+     while revealed; the offset lifts when the bar hides. Gated on
+     data-stuck (tracked from the sentinel's rect in the script) so a strip
+     in document flow is never pushed off its seat. */
+  :global(body:has(.navigation.is-shy.is-revealed)) .spine-nav[data-stuck] {
+    transform: translateY(var(--shy-bar-h, 0px));
+  }
+  .spine-sentinel {
+    display: block;
+    height: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .spine-nav {
+      transition: none;
+    }
   }
   .spine-nav::-webkit-scrollbar {
     display: none;

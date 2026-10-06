@@ -15,9 +15,19 @@ content, and experiential campaigns for brand clients.
 - **Media Asset** — a reusable image or Mux video from a Media field. _Avoid_:
   attachment, file.
 - **Poster Image** — an optional curated still paired with a Media field's
-  video asset (`mediaBox.poster`). When set, a content card is dormant until
-  hover/focus/tap slides the poster away to reveal the video; when unset, the
-  video autoplays ambiently as before. _Avoid_: thumbnail, cover image.
+  video asset (`mediaBox.poster`). Setting it switches the frame to Gated
+  Ambient mode: dormant until hover/focus/tap slides the poster away to reveal
+  the video. When unset, the video autoplays ambiently and its poster is a
+  Mux-generated thumbnail at the asset's thumbTime — a different thing that
+  happens to share the name "poster." _Avoid_: thumbnail, cover image.
+- **Media Mode** — the rendering strategy a Media Frame applies, determined
+  by the asset and the Media field, in four flavors: **Image** (a still
+  asset; skeleton is its own LQIP), **Ambient** (Mux video, no Poster Image,
+  no controls; autoplays on visibility, poster is a Mux thumbnail at
+  thumbTime, skeleton is a blurred 24px Mux thumb since Mux assets have no
+  LQIP), **Gated Ambient** (Mux video *with* a Poster Image; dormant until
+  revealed), **Presented** (Mux video with the full Media Control Bar and
+  scrubber; user-initiated playback). _Avoid_: video type, player variant.
 - **Placement** — where a Media Asset sits in a page composition, named by the
   composition that hosts it: hero, Content Card (grid or rail), Content Layout
   block, split (a two-up sharing a row), or fixed-size thumbnail. A Media

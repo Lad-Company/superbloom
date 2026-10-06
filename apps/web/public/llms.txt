@@ -1,0 +1,23 @@
+# Superbloom House
+
+> Superbloom House is a creative agency that helps brands make work people
+> actually want to watch, share, and talk about — one integrated model
+> spanning brand, content, and production, powered by a 300+ member Creative
+> Collective.
+
+## Site map
+
+- [Home](https://www.superbloomhouse.com/): Featured work, capabilities, news, and contact.
+- [Work](https://www.superbloomhouse.com/work): Case studies and selected client work.
+- [Who We Are](https://www.superbloomhouse.com/who-we-are): The agency, the Collective, and how the model works.
+- [Index](https://www.superbloomhouse.com/index): Press, news, and announcements.
+- [Zine](https://www.superbloomhouse.com/zine): Superbloom's publication — issues and articles.
+- [Shop](https://www.superbloomhouse.com/shop): Prints and objects from Superbloom artists.
+
+## Notes for agents
+
+- All pages are server-rendered HTML; no client API is required to read
+  content. Video streams via Mux (HLS); poster images are available at
+  `https://image.mux.com/{playbackId}/thumbnail.webp`.
+- Contact: the site has no contact email on-page; use the inquiry form in the
+  contact section of any page (anchored at `#contact`).

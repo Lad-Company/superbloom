@@ -119,12 +119,26 @@ const beginSlide = () => {
   animatingFallback = setTimeout(endSlide, 500)
 }
 
+/* While revealed, publish the bar height as --shy-bar-h: page chrome that
+   shares the top edge (the case-study spine nav) docks beneath the bar via
+   that var — without it the fixed bar covers the strip outright, ghosting
+   its text through the frost and eating every tap meant for it. Published
+   on every reveal confirmation (not just the state flip) so a breakpoint
+   resize that changed the bar's height corrects on the next scroll tick. */
+const publishBarHeight = () => {
+  if (!nav) return
+  document.documentElement.style.setProperty('--shy-bar-h', `${nav.offsetHeight}px`)
+}
+
 const setState = (next: ShyState) => {
   if (!nav) return
   if (state === next) {
     // While revealed, keep re-sampling: the surface under the bar changes as
     // the user keeps scrolling up.
-    if (next === 'revealed') applySurfaceColors()
+    if (next === 'revealed') {
+      applySurfaceColors()
+      publishBarHeight()
+    }
     return
   }
   state = next
@@ -136,6 +150,7 @@ const setState = (next: ShyState) => {
     beginSlide()
     nav.classList.add('is-shy', 'is-revealed')
     applySurfaceColors()
+    publishBarHeight()
   } else {
     beginSlide()
     nav.classList.add('is-shy')

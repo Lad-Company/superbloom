@@ -8,7 +8,6 @@ import SEOHead from '../components/SEOHead.astro';
 import Navigation from '../components/Navigation.astro';
 import CartDrawer from '../components/cart/CartDrawer.astro';
 import CookieConsent from '../components/CookieConsent.astro';
-import PageLoader from '../components/PageLoader.astro';
 import PreviewBar from '../components/PreviewBar.astro';
 import { type SurfaceRole } from '../lib/surfaceRole';
 import { isPreviewRequest } from '../lib/preview';
@@ -41,6 +40,10 @@ const {
 } = Astro.props;
 
 const canonical = new URL(canonicalUrl, Astro.site ?? Astro.url.origin).href;
+
+// Sentry browser SDK is deferred to after `window load` (GH #164); the
+// inline buffer below only exists when the SDK does.
+const sentryEnabled = import.meta.env.SENTRY_ENABLED === 'true';
 
 // Draft preview: stamp the request marker and keep editor/share-link
 // preview traffic out of prod analytics.
@@ -86,11 +89,10 @@ const gaMode = preview
       type="font/woff2"
       crossorigin
     />
-    {/* The logo SVG is only referenced as a CSS mask-image (veil + nav), so
-       it is discovered at style resolution instead of during HTML parsing —
-       and on `/` it IS the LCP element (the full-viewport hero is excluded
-       as an LCP candidate, the H1 is opacity-0 for the Type Reveal). 4KB on
-       every page buys LCP discovery at parse time. */}
+    {/* The logo SVG is only referenced as a CSS mask-image (nav), so it is
+       discovered at style resolution instead of during HTML parsing. The nav
+       is above the fold on every page, so 4KB buys its discovery at parse
+       time. */}
     <link rel="preload" href="/superbloom-house-logo.svg" as="image" type="image/svg+xml" />
     {/* Warm the Mux hosts (poster thumbnails + HLS manifests) so video frames
        don't pay a fresh DNS+TLS round trip when the player upgrades. Only on
@@ -146,20 +148,61 @@ const gaMode = preview
       </>
     )}
     <ClientRouter />
+    {sentryEnabled && (
+      // Sentry pre-init error buffer (GH #164): the browser SDK loads after
+      // `window load` (lib/sentryDeferred.ts), so errors thrown before then
+      // would be lost. Queue every error / unhandled rejection with its
+      // timestamp; the deferred loader replays them through the SDK's own
+      // exception parser with the original timestamp. `__sbhSentryLive`
+      // stops queueing once the SDK's handlers take over. Guarded so a View
+      // Transition re-running this inline script doesn't double-register.
+      <script is:inline>
+        (function () {
+          if (window.__sbhSentryQueue) return;
+          const queue = (window.__sbhSentryQueue = []);
+          window.addEventListener('error', function (event) {
+            if (window.__sbhSentryLive) return;
+            queue.push({
+              kind: 'error',
+              error: event.error || null,
+              message: event.message || 'Unknown error',
+              timestamp: Date.now() / 1000,
+            });
+          });
+          window.addEventListener('unhandledrejection', function (event) {
+            if (window.__sbhSentryLive) return;
+            queue.push({
+              kind: 'unhandledrejection',
+              error: event.reason || null,
+              message: (event.reason && event.reason.message) || String(event.reason),
+              timestamp: Date.now() / 1000,
+            });
+          });
+        })();
+      </script>
+    )}
     <script is:inline>
       document.documentElement.classList.add('js');
-      // The veil is SSR-painted, so the only way to *not* show it is to decide
-      // before first paint. Once a visitor has sat through it in this tab
-      // (flag set on lift), reloads and back/forward skip it outright — their
-      // assets are warm and a veil that fades in and straight back out reads
-      // as a flicker, not a beat. Fresh tabs / sessions still get the beat.
-      try {
-        if (sessionStorage.getItem('sbh:veil-seen')) {
-          document.documentElement.setAttribute('data-veil-skip', '');
+      // Fonts-ready stamp: the hero Type Reveal (HeroHeading) is pure CSS
+      // keyed on html[data-fonts-ready], so the words rise in the real
+      // glyphs instead of swapping faces mid-animation. Inline with no
+      // imports so it never waits on the bundle; the heading is painted
+      // content from the first frame either way (the stamp starts an
+      // animation, it never gates a paint — ARCHITECTURE.md ADR-0040). The
+      // cap keeps a slow font from holding the reveal indefinitely.
+      (function () {
+        const stamp = function () {
+          document.documentElement.setAttribute('data-fonts-ready', '');
+        };
+        if (!document.fonts || !document.fonts.ready) {
+          stamp();
+          return;
         }
-      } catch {
-        // sessionStorage unavailable (e.g. private mode); the veil plays.
-      }
+        const capped = new Promise(function (resolve) {
+          window.setTimeout(resolve, 1000);
+        });
+        Promise.race([document.fonts.ready, capped]).then(stamp, stamp);
+      })();
     </script>
     <style is:global>
       /* Route Transition — native View Transition swipe: the outgoing page lifts
@@ -194,7 +237,6 @@ const gaMode = preview
     </style>
   </head>
   <body style={bodyStyle}>
-    <PageLoader />
     {navRole && <Navigation role={navRole} />}
     <slot />
     <CartDrawer />
@@ -203,23 +245,30 @@ const gaMode = preview
     <script>
       import { prefersReducedMotion } from '../lib/motion/config';
       import { initAnalytics } from '../lib/analytics';
+      import { initDeferredSentry } from '../lib/sentryDeferred';
 
       initAnalytics();
 
+      // Sentry browser SDK: deferred to after `window load` so it never
+      // competes with first paint (GH #164); a static no-op when Sentry is
+      // disabled. Errors thrown before then sit in the head script's
+      // buffer and are replayed with their original timestamps.
+      initDeferredSentry();
+
       // The motion stack (gsap core + split-type; ScrollTrigger layered on
       // via loadScrollTrigger) loads only for visitors who can see it:
-      // reduced-motion sessions skip the bundle entirely — CSS leaves every
-      // reveal target visible and this script reveals anything the html.js
-      // gate hid. The import is kicked off immediately so the fetch overlaps
-      // the first-load veil instead of starting after it lifts.
+      // reduced-motion sessions skip the bundle entirely — this script then
+      // reveals anything the html.js gate hid, and the 1.2s CSS fallback is
+      // the safety net. The import is kicked off immediately so the fetch
+      // overlaps first paint instead of starting after it.
       const motionModule = prefersReducedMotion() ? null : import('../lib/motion');
 
       // Lazy gtag/js: the library is ~170 KB gz and only ever receives queued
-      // dataLayer pushes, so it loads on idle (or first interaction, whichever
-      // comes first) instead of blocking the critical path. Injected once per
-      // session; bundled scripts persist across View Transitions, so the
-      // module-level flag is enough. No-op when gaMode is 'off' (the attribute
-      // is absent).
+      // dataLayer pushes, so it loads on first interaction only — never on an
+      // idle timer — so it can't compete with the critical path or the
+      // Lighthouse trace window. Injected once per session; bundled scripts
+      // persist across View Transitions, so the module-level flag is enough.
+      // No-op when gaMode is 'off' (the attribute is absent).
       const gaId = document.documentElement.dataset.gaId;
       let gtagRequested = false;
       const loadGtag = () => {
@@ -231,99 +280,16 @@ const gaMode = preview
         document.head.appendChild(script);
       };
       if (gaId) {
-        const idle = (
-          window as Window & {
-            requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-          }
-        ).requestIdleCallback;
-        if (idle) {
-          idle(loadGtag, { timeout: 3000 });
-        } else {
-          window.setTimeout(loadGtag, 2000);
-        }
         for (const eventName of ['pointerdown', 'keydown', 'scroll'] as const) {
           window.addEventListener(eventName, loadGtag, { once: true, passive: true });
         }
       }
 
       let destroyMotion = () => {};
-      // The global veil only runs on the genuine first load; View Transition
-      // navigations dismiss it in astro:before-swap and this flips false.
-      let isFirstLoad = true;
+      // Supersede guard: setup() awaits the motion chunk, and a View
+      // Transition can land mid-flight; the newer setup must win.
+      let setupGeneration = 0;
 
-      const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
-
-      // Resolve once fonts and every above-the-fold media element are in,
-      // capped so a slow asset can never strand the veil. "Above the fold" is
-      // the eager / high-priority images (each video frame's poster included)
-      // plus any lazy image whose box intersects the initial viewport: card
-      // grids mark only their lead card eager, so without the rect check the
-      // veil lifted onto neighbouring cards still painting alt text.
-      const whenCriticalMediaReady = (timeoutMs: number) => {
-        const viewportH = window.innerHeight;
-        const inInitialViewport = (img: HTMLImageElement) => {
-          const rect = img.getBoundingClientRect();
-          return rect.bottom > 0 && rect.top < viewportH && rect.width > 0 && rect.height > 0;
-        };
-        const imgs = Array.from(document.querySelectorAll<HTMLImageElement>('img')).filter(
-          (img) =>
-            !img.complete &&
-            (img.fetchPriority === 'high' || img.loading === 'eager' || inInitialViewport(img)),
-        );
-        const imgReady = imgs.map(
-          (img) =>
-            new Promise<void>((resolve) => {
-              img.addEventListener('load', () => resolve(), { once: true });
-              img.addEventListener('error', () => resolve(), { once: true });
-            }),
-        );
-        const fontsReady = document.fonts?.ready ?? Promise.resolve();
-        return Promise.race([Promise.all([...imgReady, fontsReady]), wait(timeoutMs)]);
-      };
-
-      // Two thresholds (design-system §5, Three-Phase Loading). If critical
-      // media lands almost at once (warm cache) the veil was never perceptibly
-      // visible, so lift immediately; a flat floor here was 280ms of pointless
-      // veil time on every repeat visit. The veil does not gate LCP: Chrome
-      // does no occlusion test, so posters under it register at first paint
-      // regardless. (The full-viewport hero on `/` and `/zine` is excluded as
-      // an LCP candidate because Chrome ignores elements covering the full
-      // viewport — web.dev/articles/lcp — and with the H1 at opacity 0 for
-      // the Type Reveal, LCP there falls to the nav logo or the kicker text.)
-      // Past that point the user has seen the veil, so hold it to the 400ms
-      // beat: it reads as a deliberate moment rather than a flicker, and on a
-      // cold load the media wait usually exceeds it anyway. The clock starts at
-      // script start, later than first paint, so the imperceptible window is
-      // conservative.
-      const VEIL_IMPERCEPTIBLE_MS = 100;
-      const VEIL_BEAT_MS = 400;
-      const runPageLoader = async (loader: HTMLElement) => {
-        // Skipped before paint (see the inline head script): nothing to wait
-        // for, nothing to fade — just release the reveal.
-        if (document.documentElement.hasAttribute('data-veil-skip')) {
-          loader.setAttribute('data-loader-instant', '');
-          loader.setAttribute('data-loader-done', '');
-          return;
-        }
-        const start = performance.now();
-        await whenCriticalMediaReady(4000);
-        const elapsed = performance.now() - start;
-        if (!prefersReducedMotion() && elapsed > VEIL_IMPERCEPTIBLE_MS) {
-          const remaining = VEIL_BEAT_MS - elapsed;
-          if (remaining > 0) await wait(remaining);
-        } else {
-          // Never perceptibly shown: a 600ms fade-out would itself be the
-          // flicker, so drop it.
-          loader.setAttribute('data-loader-instant', '');
-        }
-        loader.setAttribute('data-loader-done', '');
-        try {
-          sessionStorage.setItem('sbh:veil-seen', '1');
-        } catch {
-          // sessionStorage unavailable (e.g. private mode); the veil replays
-          // on the next visit instead of being skipped.
-        }
-      };
       // Recorded on astro:before-preparation so page-load can tell fresh
       // navigations (land at the top) from history traversal (browser restores
       // the saved scroll position).
@@ -360,7 +326,9 @@ const gaMode = preview
       };
 
       const scheduleDeferredMotion = () => {
-        // No reveal competes under reduced motion, so bring everything up now.
+        // No reveal competes under reduced motion, so bring everything up
+        // now; otherwise defer to idle (fixed beat where idle is
+        // unavailable).
         if (prefersReducedMotion()) {
           runDeferredMotion();
           return;
@@ -378,25 +346,20 @@ const gaMode = preview
       };
 
       const setup = async () => {
+        const generation = ++setupGeneration;
         settleScrollPosition();
-        // First hard load: hold the veil until fonts + above-the-fold media are
-        // ready, so startup layout work and any media fetch happen behind it and
-        // the hero reveal plays on a clean frame as the veil lifts.
-        if (isFirstLoad) {
-          const loader = document.querySelector<HTMLElement>('[data-page-loader]');
-          if (loader && !loader.hasAttribute('data-loader-done')) {
-            await runPageLoader(loader);
-          }
-        }
-        isFirstLoad = false;
         const motion = await motionModule;
+        // A navigation superseded this setup while the chunk was in flight;
+        // the new page's own setup owns motion now.
+        if (generation !== setupGeneration) return;
         if (motion) {
           // The full page-entry Type Reveal plays on the genuine first load and
           // on every View Transition navigation.
           destroyMotion = motion.initMotion();
         } else {
           // Reduced motion: the motion bundle never loads, so reveal targets
-          // hidden by the html.js CSS gate are shown directly.
+          // hidden by the html.js CSS gate are shown directly (the 1.2s CSS
+          // fallback covers the failure paths).
           document
             .querySelectorAll<HTMLElement>('[data-motion-text]')
             .forEach((el) => {
@@ -409,6 +372,8 @@ const gaMode = preview
       };
 
       const teardown = () => {
+        // Supersede any in-flight setup still awaiting the motion chunk.
+        setupGeneration++;
         destroyMotion();
         destroyMotion = () => {};
       };
@@ -418,20 +383,21 @@ const gaMode = preview
       document.addEventListener('astro:before-swap', (event) => {
         teardown();
         // Astro resets <html> on swap, dropping the `js` class that hides
-        // Type Reveal targets. Stamp the incoming document so hero text starts
-        // hidden and the reveal animates on navigations instead of flashing
+        // scroll Type Reveal targets. Stamp the incoming document so they
+        // start hidden and animate in on navigations instead of flashing
         // visible-then-hidden.
         const newDocument = (event as unknown as { newDocument?: Document }).newDocument;
         newDocument?.documentElement.classList.add('js');
+        // Fonts are already cached on a navigation, so stamp the incoming
+        // document directly: the hero word reveal plays alongside the route
+        // swipe without waiting for the head script to re-run.
+        newDocument?.documentElement.setAttribute('data-fonts-ready', '');
         // The preview flag rides the SSR'd <html>, but a prerendered surface
         // can't vary by cookie — propagate it so draft content and GA-off
         // survive every View Transition navigation of the preview session.
         if (document.documentElement.hasAttribute('data-preview')) {
           newDocument?.documentElement.setAttribute('data-preview', '');
         }
-        // The route swipe owns navigations, so the incoming page's veil starts
-        // already dismissed and never flashes over a client-side transition.
-        newDocument?.querySelector('[data-page-loader]')?.setAttribute('data-loader-done', '');
       });
       document.addEventListener('astro:before-preparation', (event) => {
         const type = (event as Event & { navigationType?: typeof navigationType }).navigationType;

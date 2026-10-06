@@ -15,12 +15,12 @@ const links = [
 ---
 
 <nav class="navigation" aria-label="Primary navigation" style={vars[role]}>
-  <a href="/" class="logo" data-route-link aria-label="Superbloom House"></a>
+  <a href="/" class="logo" data-route-link data-astro-prefetch aria-label="Superbloom House"></a>
   <ul class="desktop-links">
     {
       links.map((link) => (
         <li>
-          <a href={link.href} class="type-eyebrow underline-draw" data-route-link>
+          <a href={link.href} class="type-eyebrow underline-draw" data-route-link data-astro-prefetch>
             {link.label}
           </a>
         </li>
@@ -34,7 +34,11 @@ const links = [
       data-motion-control
       data-lets-chat><span class="nav__label">Let's Chat</span></a
     >
-    <a href="/shop" class="btn btn-tertiary surface-wipe type-label" data-motion-control
+    <a
+      href="/shop"
+      class="btn btn-tertiary surface-wipe type-label"
+      data-motion-control
+      data-astro-prefetch
       ><span class="nav__label">Shop</span></a
     >
     <a
@@ -54,7 +58,7 @@ const links = [
         {
           links.map((link) => (
             <li>
-              <a href={link.href} class="compact-link" data-route-link>
+              <a href={link.href} class="compact-link" data-route-link data-astro-prefetch>
                 {link.label}
               </a>
             </li>
@@ -68,7 +72,11 @@ const links = [
           data-motion-control
           data-lets-chat><span class="nav__label">Let's Chat</span></a
         >
-        <a href="/shop" class="btn btn-tertiary surface-wipe compact-btn-label" data-motion-control
+        <a
+          href="/shop"
+          class="btn btn-tertiary surface-wipe compact-btn-label"
+          data-motion-control
+          data-astro-prefetch
           ><span class="nav__label">Shop</span></a
         >
         <a
@@ -408,7 +416,13 @@ const links = [
   }
   .navigation.is-shy {
     position: fixed;
-    transform: translateY(-110%);
+    /* Hidden just past its own height (the 100% already covers the bottom
+       border; +2px is fractional-rounding insurance). The case-study spine
+       nav docks beneath the bar by exactly --shy-bar-h on the same 240ms
+       ramp, so the bar's travel must match its own height: the old -110%
+       made the bar travel 10% farther than the strip, opening a ~7px wedge
+       of page content between the two mid-slide. */
+    transform: translateY(calc(-100% - 2px));
     /* The hairline below the bar uses the shared border recipe (1px, fg at
        20%). */
     border-bottom: 1px solid var(--fg-20);

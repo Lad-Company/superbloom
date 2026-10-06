@@ -152,7 +152,7 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
     > PageHero's media-mode path is the single change point — no other surface
     > flips.
 - **`PageHero`** — the single page-header block. One shared H1 (`--type-h1`,
-  80→200 on the fluid ramp, 78% leading, ≤4 lines) with three modes
+  80→200 on the fluid ramp, 82% leading, ≤4 lines) with three modes
   derived from props: text (default), media (home 3/2, zine 16:9 + optional
   Super-Header kicker), case (eyebrow + tags).
 - **`Button`** — variants solid / translucent / outline / icon. The canonical
@@ -222,8 +222,10 @@ Content Card — it does not use card width/ratio/info controls.
 A fourth block, **Carousel** (`contentLayoutCarousel`), holds 3–10 media
 items (`mediaBox`, images and/or videos) in one of three layouts: **full width**
 (the track bleeds edge-to-edge with no gutters at every breakpoint, controls
-centered below), **text right**, or **text left** (the carousel takes 3/4 of
-the row with a descriptive rich-text box in the remaining 1/4, top-aligned;
+centered below), **text right**, or **text left** (the carousel takes 2/3 of
+the row with a descriptive rich-text box in the remaining 1/3, top-aligned —
+the stage's text-side edge lands on the narrative copy column, cols 5–12 /
+1–8, so the carousel matches the width of the chapter text above it;
 controls sit at the carousel's bottom inner corner). Carousels have no width
 control, so a carousel must be its row's only block. The full-width layout
 opens on the second item so the active slide is flanked on both sides, with
@@ -352,8 +354,9 @@ Hero → News → Parallax → Capabilities (Capes) → Our Work → Creative Co
 (Why) → Zine → Contact.
 
 - **Hero** (`PageHero.astro`, media mode) — full-bleed hero: background media
-  with an overlaid headline (`display-1`) and intro, headline left ~2/3, intro
-  bottom-right.
+  with an overlaid headline (`display-1`) and intro; the headline spans the
+  full overlay width with balanced wrapping (a 2/3 column orphaned words on
+  real-length titles), intro bottom-right on its own row below it.
 - **Parallax** (`HomeParallax.astro` + `ParallaxField.astro`) — statement
   headline over a CMS-editable field of 5–10 media items rendered at native
   aspect ratios, scattered at random depths (deterministic seed). The field
@@ -370,7 +373,9 @@ Hero → News → Parallax → Capabilities (Capes) → Our Work → Creative Co
 - **Home Zine** — promotes a specific Zine Issue with its own promo copy/media/CTA
   (does not mirror the current Issue). Fixed brand color **Green `#99a224`**. CTA
   routes to `/zine` if the promoted issue is current, else to
-  `/zine/issues/[slug]`.
+  `/zine/issues/[slug]`. Copy sits flush with the column edges (no inset) so the
+  right-half text block aligns with the Creative Collective media block above it;
+  both 50/50 sections share flush media/copy tops.
 
 ### Who We Are (Fixed, art-directed — singleton `whoWeAre`)
 
@@ -422,9 +427,15 @@ stays.
 
 - The contact form creates a Sanity `formSubmission` record only — no Mailchimp
   involvement, and it **must not** auto-subscribe the submitter. The newsletter is
-  a separate email-only Mailchimp subscribe; successful subscribes also trigger
-  Mailchimp Automation flow 8385 ("SBH Web Contact Form", Customer Journeys API
-  starting point) which sends the welcome email.
+  a separate email-only Mailchimp subscribe; a successful subscribe then sends
+  the welcome email via Resend from microdose@updates.superbloomhouse.com using
+  `apps/web/emails/newsletter-welcome.html` (best-effort — a send failure never
+  changes the subscribe response). The unsubscribe link and `List-Unsubscribe`
+  header point at Mailchimp's hosted audience unsubscribe form, so suppression
+  stays in Mailchimp. Requires `RESEND_API_KEY` and `MAILCHIMP_UNSUBSCRIBE_URL`.
+  After the Sanity record is written, a best-effort Resend notification email is
+  sent to hello@superbloomhouse.com (reply-to = submitter); a send failure never
+  blocks or changes the submission response.
 - **Never log** customer PII (email, address, phone, payment) or the cart ID to
   Sentry.
 - `/cart` is `noindex`; the current Zine issue archive URL redirects to `/zine` and
@@ -439,7 +450,7 @@ linear reveals, expressed only through reusable primitives (never page-specific
 animation). Motion is **built and active** (`apps/web/src/lib/motion/`), not
 deferred.
 
-**Non-negotiables.** GSAP + ScrollTrigger, no Motion/Framer (per ADR-0039,
+**Non-negotiables.** GSAP + ScrollTrigger, no Motion/Framer (per ADR-0041,
 which retires ADR-0021's Lenis smooth scroll — anchor glides are native
 `scroll-behavior: smooth`). Nothing in the motion stack loads eagerly: the
 Layout dynamic-imports the bundle only for `prefers-reduced-motion:
@@ -474,20 +485,31 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    Always show while paused; show under reduced-motion so the user can opt
    in via the play button. Knob grow / track height grow mirror the same
    recipe inside the scrubber.
-3. **Type Reveal** — lines/words by default; chars reserved for hero/route
-   moments. Units rise under an overflow clip with no opacity fade and land on
-   a slight overshoot settle (`back.out`), springing rather than smacking to a
-   stop. Stat Reveal entrances follow the same rule; count-ups stay linear.
-4. **Three-Phase Loading** — skeleton → single progress cue → content release;
-   never spinner + skeleton together. In-page loading feedback (skeletons,
-   progress cues) appears only for waits >400ms. The first-load veil
-   (`PageLoader`) is the exception: it is already painted at t=0, so the rule
-   becomes *how long it stays*, with two thresholds. It waits for fonts and
-   every image in the initial viewport (4s cap), lifts immediately if that took
-   under ~100ms (never perceptibly shown, no fade), otherwise holds to a 400ms
-   beat so it reads as intentional rather than a flicker. It runs once per
-   tab: reloads and back/forward skip it before paint. Media frames never
-   render alt text visually while loading; the placeholder gradient shows.
+3. **Type Reveal** — lines/words, rising under an overflow clip with no
+   opacity fade and landing on a slight overshoot settle (`back.out`),
+   springing rather than smacking to a stop. Two implementations, one look:
+   - *Hero entry reveal* (`HeroHeading`, via `PageHero` on navbar / sitemap
+     destinations: home, work, who-we-are, index, zine, shop) is **SSR
+     word-split + CSS keyframes**. Every word span exists in the HTML and is
+     painted on the first frame; the rise starts when Layout's inline script
+     stamps `html[data-fonts-ready]` (fonts ready, 1s cap) so words rise in
+     the real glyphs. No JavaScript touches the heading after paint — that
+     is what keeps the LCP element deterministic (ARCHITECTURE.md ADR-0040).
+     Detail routes (case studies, articles, past zine issues) render their
+     heading as plain text via `PageHero reveal={false}`.
+   - *Scroll reveals* (`data-motion-text`, `MotionText`) below the fold use
+     the GSAP + split-type primitive in `lib/motion/reveal.ts`, split on
+     intersection. Chars are not a unit anywhere.
+   Stat Reveal entrances follow the same rule; count-ups stay linear.
+4. **Loading surfaces** — skeleton → content, never a spinner and a skeleton
+   together, and never a whole-page veil. In-page loading feedback appears
+   only for waits >400ms. Media frames always paint a skeleton surface (token
+   fill, upgraded to the asset's blur-up where one exists — Sanity LQIP for
+   images, an inline 24px Mux thumbnail for priority video, ADR-0039/0040) and
+   crossfade the real media in on load, so nothing renders blank and alt text
+   is never shown visually while loading. There is no first-load veil: the
+   page is the loading surface, text is painted from the first frame, and the
+   only entry ceremony is the hero word rise above.
 5. **Route Transition** — full-viewport, reserved exclusively for navbar
    destinations; other navigations keep local motion.
 6. **Pinned Storytelling** — bounded ScrollTrigger chapter sequence (2–4 chapters,

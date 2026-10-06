@@ -2,7 +2,7 @@ import {readFileSync} from 'node:fs'
 import {describe, expect, it} from 'vitest'
 import {BREAKPOINTS} from './breakpoints'
 import {CARD_WIDTHS} from './contentCard'
-import {planMediaRendering, muxPosterRendering, type MediaPlacement} from './mediaRenderingPlan'
+import {planMediaRendering, muxPosterRendering, muxSkeletonThumbUrl, type MediaPlacement} from './mediaRenderingPlan'
 
 const sizes = (placement: MediaPlacement) => planMediaRendering(placement).sizes
 
@@ -253,5 +253,20 @@ describe('muxPosterRendering', () => {
       'https://image.mux.com/abc123/thumbnail.webp?width=1920&time=0 1920w',
       'https://image.mux.com/abc123/thumbnail.webp?width=2560&time=0 2560w',
     ])
+  })
+})
+
+describe('muxSkeletonThumbUrl (ADR-0039 blur-up for ungated video)', () => {
+  it('is a fixed tiny 24px rung, off the width ladder', () => {
+    expect(muxSkeletonThumbUrl('abc123')).toBe(
+      'https://image.mux.com/abc123/thumbnail.webp?width=24&time=0',
+    )
+  })
+
+  it('threads the editor-picked thumbTime so the blur-up matches the poster', () => {
+    expect(muxSkeletonThumbUrl('abc123', 0.5)).toBe(
+      'https://image.mux.com/abc123/thumbnail.webp?width=24&time=0.5',
+    )
+    expect(muxSkeletonThumbUrl('abc123', null)).toContain('time=0')
   })
 })

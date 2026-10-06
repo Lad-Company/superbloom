@@ -1,0 +1,32 @@
+# Email templates
+
+`newsletter-welcome.html` — The Microdose welcome email, sent via Resend from
+`src/pages/api/newsletter/subscribe.json.ts` after a successful Mailchimp
+subscribe. The `{{UNSUBSCRIBE_URL}}` token in the footer is replaced at send
+time with `MAILCHIMP_UNSUBSCRIBE_URL` (Mailchimp's hosted audience unsubscribe
+form, so suppression stays in Mailchimp).
+Design source: [Figma frame 6970:2564](https://www.figma.com/design/qQxcXKwgY7EUJodM1Ypfr5/Superbloom-Library?node-id=6970-2564).
+
+## Image assets
+
+Header and footer typography is baked into PNG slices in `../public/emails/`
+(served at `https://www.superbloomhouse.com/emails/` — requires a site deploy).
+Footer contact links stay clickable because each word (`e-mail`, `web`,
+`unsubscribe`) is its own linked slice; image maps are unreliable in email
+clients. No `phone` word — the numbers live in the addresses slice.
+
+Slices are 2x renders of `src/*.html`, captured with headless Chromium:
+
+```sh
+cd apps/web/emails
+playwright screenshot --device="Desktop Chrome HiDPI" --viewport-size=660,357 "file://$PWD/src/header.html" /tmp/slice-header.png
+playwright screenshot --device="Desktop Chrome HiDPI" --viewport-size=612,68 "file://$PWD/src/footer-addresses.html" /tmp/slice-addresses.png
+playwright screenshot --device="Desktop Chrome HiDPI" --viewport-size=612,17 "file://$PWD/src/footer-contact.html" /tmp/slice-contact.png
+```
+
+`slice-header.png` and `slice-addresses.png` save directly as
+`microdose-header.png` / `microdose-footer-addresses.png`. The contact row is
+cut into per-word slices: render each word alone from `src/footer-contact.html`'s
+styles, screenshot at 2x, and trim to the ink (`magick <in> -trim +repage
+../public/emails/microdose-footer-<word>.png`). e-mail sits at x=0, web at
+x=295, unsubscribe right-aligned.

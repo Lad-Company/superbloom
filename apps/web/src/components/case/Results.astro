@@ -129,10 +129,11 @@ const supportingRows = results.supportingRows ?? [];
 
   /* Qualitative: full-bleed statement bands stacked flush on the primary
      brand surface, separated by the same faint ink hairline as the contact
-     footer divider (--fg-20) — one above the first band and one between
-     each band. The section heading stays available to assistive tech (and
-     the spine-nav anchor) but is not shown — the bands carry the section
-     on their own. */
+     footer divider (--fg-20) — between bands only. No hairline above the
+     first band: the section's color band is itself the divider from the
+     light narrative section above. The section heading stays available to
+     assistive tech (and the spine-nav anchor) but is not shown — the bands
+     carry the section on their own. */
   .results--qualitative {
     gap: 0;
     padding: 0;
@@ -147,6 +148,8 @@ const supportingRows = results.supportingRows ?? [];
     flex-direction: column;
     gap: var(--space-16);
     padding: var(--space-m) var(--page-inset);
+  }
+  .band + .band {
     border-top: 1px solid var(--fg-20);
   }
   .band-value,

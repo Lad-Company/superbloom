@@ -101,10 +101,6 @@ const {role} = Astro.props
 </SurfaceSection>
 
 <script>
-  const form = document.getElementById('contact-form') as HTMLFormElement | null
-  const status = document.getElementById('contact-status')
-  const startedAt = form?.elements.namedItem('startedAt') as HTMLInputElement | null
-
   // CTAs elsewhere on the page (e.g. the Creative Collective block) deep-link
   // here with href="#contact" plus data-contact-inquiry="<option value>".
   // Apply the preset by clicking the matching option, so SelectDropdown's own
@@ -124,38 +120,54 @@ const {role} = Astro.props
       ?.click()
   })
 
+  // Bound on astro:page-load, not at module eval: the ClientRouter does not
+  // re-run a module script it already executed when swapping between two pages
+  // that both render this component, so eval-time binding leaves the
+  // swapped-in form unbound — submits fall back to a native GET (page reload,
+  // field values leaked into the URL) and never reach /api/contact. The
+  // dataset guard dedupes repeat page-load runs on the same DOM (Marquee
+  // pattern).
+  function initContactForm() {
+    const form = document.getElementById('contact-form') as HTMLFormElement | null
+    if (!form || form.dataset.contactBound) return
+    form.dataset.contactBound = 'true'
 
-  if (startedAt) startedAt.value = String(Date.now())
+    const status = document.getElementById('contact-status')
+    const startedAt = form.elements.namedItem('startedAt') as HTMLInputElement | null
+    if (startedAt) startedAt.value = String(Date.now())
 
-  form?.addEventListener('submit', async (event) => {
-    event.preventDefault()
-    if (!form.reportValidity()) return
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault()
+      if (!form.reportValidity()) return
 
-    const button = form.querySelector('button[type="submit"]') as HTMLButtonElement
-    button.disabled = true
-    if (status) status.textContent = ''
+      const button = form.querySelector('button[type="submit"]') as HTMLButtonElement
+      button.disabled = true
+      if (status) status.textContent = ''
 
-    try {
-      const response = await fetch('/api/contact', {method: 'POST', body: new FormData(form)})
-      const data = (await response.json()) as {success?: boolean; error?: string}
-      if (!data.success) throw new Error(data.error ?? 'Unknown error')
-      form.reset()
-      if (startedAt) startedAt.value = String(Date.now())
-      if (status) {
-        status.textContent = 'Thanks — we’ll be in touch.'
-        status.classList.remove('status--error')
-        status.classList.add('status--ok')
+      try {
+        const response = await fetch('/api/contact', {method: 'POST', body: new FormData(form)})
+        const data = (await response.json()) as {success?: boolean; error?: string}
+        if (!data.success) throw new Error(data.error ?? 'Unknown error')
+        form.reset()
+        if (startedAt) startedAt.value = String(Date.now())
+        if (status) {
+          status.textContent = 'Thanks — we’ll be in touch.'
+          status.classList.remove('status--error')
+          status.classList.add('status--ok')
+        }
+      } catch {
+        if (status) {
+          status.textContent = 'Something went wrong. Please try again.'
+          status.classList.add('status--error')
+          status.classList.remove('status--ok')
+        }
+      } finally {
+        button.disabled = false
       }
-    } catch {
-      if (status) {
-        status.textContent = 'Something went wrong. Please try again.'
-        status.classList.add('status--error')
-        status.classList.remove('status--ok')
-      }
-    } finally {
-      button.disabled = false
-    }
-  })
+    })
+  }
+
+  document.addEventListener('astro:page-load', initContactForm)
 </script>
 
 <style>

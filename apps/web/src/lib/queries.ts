@@ -13,7 +13,8 @@ const mediaProjection = `{
       hotspot,
       "width": asset->metadata.dimensions.width,
       "height": asset->metadata.dimensions.height,
-      "mimeType": asset->mimeType
+      "mimeType": asset->mimeType,
+      "lqip": asset->metadata.lqip
     },
     _type == "mux.video" => {
       "playbackId": asset->playbackId,
@@ -28,7 +29,8 @@ const mediaProjection = `{
     hotspot,
     "width": asset->metadata.dimensions.width,
     "height": asset->metadata.dimensions.height,
-    "mimeType": asset->mimeType
+    "mimeType": asset->mimeType,
+    "lqip": asset->metadata.lqip
   },
   altText,
   decorative

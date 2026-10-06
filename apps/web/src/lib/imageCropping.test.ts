@@ -27,6 +27,7 @@ const mockChain = (finalUrl: string) => {
     height: vi.fn().mockReturnThis(),
     fit: vi.fn().mockReturnThis(),
     auto: vi.fn().mockReturnThis(),
+    quality: vi.fn().mockReturnThis(),
     url: vi.fn().mockReturnValue(finalUrl),
   }
   return chain

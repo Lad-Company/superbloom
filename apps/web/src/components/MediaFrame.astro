@@ -2,10 +2,12 @@
 import {buildImageRendering, type CropRatio} from '../lib/imageCropping'
 import {
   muxPosterRendering,
+  muxSkeletonThumbUrl,
   planMediaRendering,
   type MediaPlacement,
   type MuxMaxResolution,
 } from '../lib/mediaRenderingPlan'
+import {muxBlurUpDataUri} from '../lib/muxBlurUp'
 
 export type MediaRatio = CropRatio
 
@@ -22,6 +24,9 @@ export interface ImageProjection {
   width?: number | null
   height?: number | null
   mimeType?: string | null
+  /** Sanity-generated blur-up preview (data URI); drives the frame's
+   *  skeleton surface (ARCHITECTURE.md ADR-0039). */
+  lqip?: string | null
 }
 
 export interface VideoProjection {
@@ -160,6 +165,35 @@ const posterRendering =
       })
     : null
 const isGated = Boolean(isVideo && posterRendering?.src)
+/** Skeleton surface backdrop (ADR-0039): the image asset's own LQIP; for
+ *  Gated Ambient video, the curated poster's LQIP (that poster is the layer
+ *  that fades in over the skeleton). Ungated video has no LQIP, so it falls
+ *  back to a tiny Mux thumbnail (~1-2KB) so big video frames get the same
+ *  blur-up instead of a flat gray box — except deferred frames (Capes),
+ *  which must fetch nothing until promoted and keep the bare token
+ *  skeleton. Every backdrop is a ~20-24px source (Sanity's LQIP is a tiny
+ *  JPEG, not a blurred one), so the CSS blurs all of them in proportion to
+ *  the frame — see .media-frame__skeleton-image. Priority frames
+ *  (heroes) inline that thumb as a data URI fetched at render
+ *  (lib/muxBlurUp.ts) so the first frame is already a blur-up, not a bare
+ *  token box waiting on a request; the URL stays the fallback. */
+const muxSkeletonUrl =
+  !deferPoster && asset?._type === 'mux.video' && asset.playbackId && !poster?.lqip
+    ? muxSkeletonThumbUrl(asset.playbackId, asset.thumbTime)
+    : null
+const muxSkeletonInline =
+  muxSkeletonUrl && plan.priority && asset?._type === 'mux.video' && asset.playbackId
+    ? await muxBlurUpDataUri(asset.playbackId, asset.thumbTime)
+    : null
+const skeletonBackdrop: string | null =
+  asset?._type === 'image'
+    ? (asset.lqip ?? null)
+    : (poster?.lqip ?? (muxSkeletonUrl ? (muxSkeletonInline ?? muxSkeletonUrl) : null))
+// Large-canvas frames (hero / split / full layoutBlock) cap at 1080p for
+// desktop, but no phone viewport can resolve that: even 430px at DPR 3 is
+// 1290 device px, inside the 720p rung. The element script drops the cap to
+// 720p under the small breakpoint before the player upgrades (ADR-0038).
+const mobileMaxResolution = plan.maxResolution === '1080p' ? '720p' : undefined
 const imageRendering =
   asset?._type === 'image' && asset.asset?._ref
     ? buildImageRendering({
@@ -180,6 +214,7 @@ const imageRendering =
   active={active ? true : undefined}
   gated={isGated ? true : undefined}
   data-priority={plan.priority ? true : undefined}
+  data-mobile-max-resolution={mobileMaxResolution}
   class:list={[
     'media-frame',
     className,
@@ -189,11 +224,28 @@ const imageRendering =
   data-controls={controls}
 >
   {
+    /* Skeleton surface (ADR-0039): a permanent placeholder filling the
+       reserved aspect-ratio box behind every layer, so no frame ever
+       paints blank or transparent alt text — token color, upgraded to a
+       blur-up (Sanity LQIP inline, or a tiny Mux thumbnail for ungated
+       video) wherever the asset offers one. Absolute inside the reserved
+       box, so nothing reflows (CLS stays 0). First child: DOM order alone
+       keeps it behind every media layer. */
+    hasAsset && (
+      <div class="media-frame__skeleton" aria-hidden="true">
+        {skeletonBackdrop && (
+          <div
+            class="media-frame__skeleton-image"
+            style={`background-image: url('${skeletonBackdrop}')`}
+          />
+        )}
+      </div>
+    )
+  }
+  {
     /* Deferred posters render with data-* instead of src/srcset, so they
-       fetch nothing until promotePoster() restores them; a src-less <img>
-       reports complete === true, which keeps it out of the veil's critical-
-       media wait (Layout.astro) as well. `sizes` stays on the element so it
-       is already correct when promotion sets the srcset. */
+       fetch nothing until promotePoster() restores them. `sizes` stays on
+       the element so it is already correct when promotion sets the srcset. */
     isVideo && videoPoster && (
       <img
         class="media-frame__poster"
@@ -259,6 +311,7 @@ const imageRendering =
   {
     imageRendering && imageRendering.src && (
       <img
+        class="media-frame__image"
         src={imageRendering.src}
         srcset={imageRendering.srcset}
         sizes={frameSizes}
@@ -365,6 +418,8 @@ const imageRendering =
 </media-frame>
 
 <script>
+  import { BREAKPOINTS } from '../lib/breakpoints'
+
   const AUTO_HIDE_MS = 2500
   const SEEK_STEP_S = 5
   /** Time outside [0, duration] that we consider the player still settling. */
@@ -402,6 +457,33 @@ const imageRendering =
     abrEwmaDefaultEstimate: 20_000_000,
   }
 
+  /** Constrained startup: same disabled bandwidth test, but a 2 Mbps seed so
+   *  firstAutoLevel opens on a low rung and measured bandwidth climbs from
+   *  there. Used on save-data, cellular-class connections (2g/3g), and small
+   *  viewports — the small-viewport clause doubles as the mobile heuristic
+   *  where the Network Information API is absent (Safari) or reports the
+   *  downlink, not the user's real budget. A 20 Mbps seed under simulated
+   *  throttling opened on the top capped rung and pulled ~17 MB of segments
+   *  into one Lighthouse trace (2026-10-01); the first fragment still
+   *  replaces the seed with a real measurement, so fast connections upgrade
+   *  within a segment or two. */
+  const CONSTRAINED_STARTUP_HLS_CONFIG = {
+    testBandwidth: false,
+    abrEwmaDefaultEstimate: 2_000_000,
+  }
+
+  type NetworkInformationLike = { saveData?: boolean; effectiveType?: string }
+
+  const constrainedNetwork = (): boolean => {
+    const connection = (navigator as Navigator & { connection?: NetworkInformationLike })
+      .connection
+    if (connection?.saveData) return true
+    if (connection?.effectiveType && ['slow-2g', '2g', '3g'].includes(connection.effectiveType)) {
+      return true
+    }
+    return window.matchMedia(`(max-width: ${BREAKPOINTS.smallMax}px)`).matches
+  }
+
   /** Ambient loops are short and cyclic, so the hls.js defaults (30s forward
    *  buffer, unbounded cap growth) download far more of the stream than the
    *  loop can ever show. A flat 10s forward buffer bounds that worst case.
@@ -409,6 +491,12 @@ const imageRendering =
    *  scrubbing wants the deeper runway. */
   const AMBIENT_HLS_CONFIG = {
     ...STARTUP_HLS_CONFIG,
+    maxBufferLength: 10,
+    maxMaxBufferLength: 10,
+  }
+
+  const CONSTRAINED_AMBIENT_HLS_CONFIG = {
+    ...CONSTRAINED_STARTUP_HLS_CONFIG,
     maxBufferLength: 10,
     maxMaxBufferLength: 10,
   }
@@ -463,6 +551,11 @@ const imageRendering =
     private handleSourceReady = () => this.updatePlayback()
     private handleMuteClick = () => this.toggleMute()
     private handleVolumeChange = () => this.updateMute()
+    private handleImgLoad = (event: Event) => {
+      const img = event.currentTarget as HTMLImageElement
+      img.removeEventListener('load', this.handleImgLoad)
+      img.setAttribute('data-loaded', '')
+    }
 
     private handleTimeUpdate = () => this.refreshScrubber()
     private handleDurationChange = () => this.refreshScrubber()
@@ -478,12 +571,25 @@ const imageRendering =
     connectedCallback() {
       const playerElement = this.querySelector('mux-video') as MuxVideoElement | null
       if (playerElement) {
+        // Small viewports can't resolve 1080p (even 430px at DPR 3 is 1290
+        // device px, inside the 720p rung), so drop the rendition cap before
+        // the player upgrades — mobile never opens the 15.8 Mbps top rung.
+        const mobileMaxResolution = this.dataset.mobileMaxResolution
+        if (
+          mobileMaxResolution &&
+          window.matchMedia(`(max-width: ${BREAKPOINTS.smallMax}px)`).matches
+        ) {
+          playerElement.setAttribute('max-resolution', mobileMaxResolution)
+        }
         // Assign before the element upgrades so the value lands as an own
         // property and playback-core reads it when it builds hls.js — the
         // prototype accessor only exists after `@mux/mux-video` defines the
         // element, which happens on the deferred import below.
+        const constrained = constrainedNetwork()
+        const startupConfig = constrained ? CONSTRAINED_STARTUP_HLS_CONFIG : STARTUP_HLS_CONFIG
+        const ambientConfig = constrained ? CONSTRAINED_AMBIENT_HLS_CONFIG : AMBIENT_HLS_CONFIG
         playerElement._hlsConfig =
-          this.dataset.controls === 'none' ? AMBIENT_HLS_CONFIG : STARTUP_HLS_CONFIG
+          this.dataset.controls === 'none' ? ambientConfig : startupConfig
       }
       this.posterImg = this.querySelector('.media-frame__poster') as HTMLImageElement | null
       this.curatedPoster = this.querySelector(
@@ -492,6 +598,26 @@ const imageRendering =
       // Sync with a `revealed` attribute set before this element connected
       // (attributeChangedCallback fires before curatedPoster is queried).
       this.curatedPoster?.setAttribute('aria-hidden', String(this.hasAttribute('revealed')))
+      // Load crossfade (ADR-0039): non-priority layers start at opacity 0
+      // over the skeleton (CSS, gated on html.js) and fade in on their own
+      // load event. Priority frames (data-priority) are exempt from the
+      // opacity gate — they paint as soon as the browser decodes them
+      // (GH #162, LCP) — but the stamping below still runs for them so the
+      // contract stays uniform. A layer already complete at connect (browser
+      // cache, View Transition swap, bfcache) is marked synchronously so the
+      // first paint shows it at full opacity — no skeleton flash, no
+      // transition.
+      // Deferred posters (deferPoster) have no currentSrc yet but report
+      // complete, so the check requires a resolved URL; promotePoster()
+      // fires their load later. A failed load leaves the layer hidden and
+      // the skeleton up — the frame still never paints blank.
+      for (const img of this.querySelectorAll('img')) {
+        if (img.currentSrc && img.complete && img.naturalWidth > 0) {
+          img.setAttribute('data-loaded', '')
+        } else {
+          img.addEventListener('load', this.handleImgLoad)
+        }
+      }
       this.control = this.querySelector('[data-media-control]') as HTMLButtonElement | null
       this.isFullControls = this.dataset.controls === 'full'
       this.controlsBar = this.querySelector('[data-media-controls]') as HTMLElement | null
@@ -716,6 +842,9 @@ const imageRendering =
     disconnectedCallback() {
       this.observer?.disconnect()
       this.loadObserver?.disconnect()
+      for (const img of this.querySelectorAll('img')) {
+        img.removeEventListener('load', this.handleImgLoad)
+      }
       document.removeEventListener('visibilitychange', this.handleVisibilityChange)
       this.motionPreference?.removeEventListener('change', this.handleMotionChange)
       this.player?.removeEventListener('play', this.handlePlay)
@@ -1038,6 +1167,13 @@ const imageRendering =
     /* Placeholder gradient's dimmer step, derived locally (nav/cart precedent)
        so the frame resolves in any surface context, not just SurfaceSection. */
     --fg-8: color-mix(in srgb, var(--fg) 8%, transparent);
+    /* Skeleton tint (ADR-0039), same local-derive precedent: the base
+       --fg-12 token is a literal black-12% that reads blank on dark or
+       colored surfaces, and a :root color-mix would bake :root's --fg at
+       declaration time (tokens.css documents the trap — it's why
+       SurfaceSection re-declares its tints). Declared here it resolves
+       against the ambient surface's --fg. */
+    --fg-12: color-mix(in srgb, var(--fg) 12%, transparent);
     background: var(--fg-12);
   }
 
@@ -1057,6 +1193,60 @@ const imageRendering =
   .media-frame img {
     color: transparent;
   }
+
+  /* Skeleton surface (ADR-0039): permanent placeholder behind the media.
+     Token color everywhere; the blur-up arrives as an inline
+     background-image on the child when the asset carries one. The surface
+     is a size container so the blur below can scale with the frame; it is
+     the skeleton (not the frame) that gets containment, so no layout
+     anywhere else changes. */
+  .media-frame__skeleton {
+    position: absolute;
+    inset: 0;
+    overflow: clip;
+    pointer-events: none;
+    background-color: var(--fg-12);
+    container-type: inline-size;
+  }
+
+  /* Every blur-up source is ~20-24px wide (Sanity LQIP JPEG, Mux thumb), so
+     stretched over a frame its pixel grid and JPEG blocks read as
+     crosshatching unless the blur radius scales with the frame: 4cqw is
+     about one source pixel at any size (a 1400px hero blurs 56px, a 300px
+     card 12px). The blur fades to transparent at its edges, so the layer is
+     oversized to push that fade past the clipped surface. Static paint
+     only; nothing animates here. */
+  .media-frame__skeleton-image {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: blur(4cqw);
+    transform: scale(1.2);
+  }
+
+  /* The skeleton is positioned, and CSS paints positioned descendants
+     above non-positioned in-flow content regardless of DOM order — so the
+     primary image must be positioned too, or the skeleton covers it
+     forever (a static <img> paints below the skeleton even though it
+     follows it in the DOM). relative keeps it in flow, which intrinsic
+     ratio frames rely on for their height; the poster and curated-poster
+     layers are already absolute. */
+  .media-frame__image {
+    position: relative;
+  }
+
+  /* Load crossfade (ADR-0039): non-priority layers start transparent over
+     the skeleton and fade in on their load event (priority frames are
+     exempt — GH #162, they paint on decode for LCP) — but the rules
+     themselves live in styles/motion.css. The html.js gate can't survive
+     Astro's scoped-style compiler (a bare :where(html.js) gets the scope
+     attribute fused onto html, and :where(:global(html.js)) emits an empty
+     :where(); both silently deaden the selector), and unscoped the
+     specificity also stays below the video-ready / revealed fade-outs below
+     so those keep winning, priority frames included. The element side
+     (data-loaded stamping) is in the script. */
+
 
   .media-frame.intrinsic img {
     height: auto;
@@ -1081,6 +1271,10 @@ const imageRendering =
 
   .media-frame[data-video-ready] .media-frame__poster {
     opacity: 0;
+    /* Restated so the load-crossfade's --motion-quick transition (which
+       outranks the base poster rule once data-loaded is set) can't
+       shorten the tuned fade-to-video. */
+    transition: opacity var(--motion-standard) var(--motion-ease-out);
   }
 
   /* Poster Punch (design-system §5, Content Card family): the poster zooms
@@ -1105,6 +1299,11 @@ const imageRendering =
   .media-frame[revealed] .media-frame__curated-poster {
     transform: scale(1.12);
     opacity: 0;
+    /* Restated so the load-crossfade's quick fade can't preempt the
+       Poster Punch timing once the poster carries data-loaded. */
+    transition:
+      transform var(--motion-deliberate) var(--motion-ease-out),
+      opacity 560ms var(--motion-ease-out) var(--motion-instant);
   }
 
   .media-placeholder {
@@ -1350,9 +1549,14 @@ const imageRendering =
   }
 
   @media (prefers-reduced-motion: reduce) {
-    /* Poster Punch off; the reveal/conceal state change survives as an
-       instant swap (design-system §5 reduced-motion rule). */
+    /* Poster Punch and the load crossfade off; the reveal/conceal and
+       loaded state changes survive as instant swaps (design-system §5
+       reduced-motion rule). The last two selectors restate the state
+       rules above so their newly-explicit transitions are cleared too. */
     .media-frame__curated-poster,
+    .media-frame img[data-loaded],
+    .media-frame[data-video-ready] .media-frame__poster,
+    .media-frame[revealed] .media-frame__curated-poster,
     .media-controls,
     .media-controls__icon svg,
     .media-controls__btn,

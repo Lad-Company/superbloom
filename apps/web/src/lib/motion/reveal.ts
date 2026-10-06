@@ -5,7 +5,10 @@ import {loadScrollTrigger} from './scrollTrigger'
 import {splitText, type SplitHandle, type SplitUnit} from './splitText'
 
 export interface RevealOptions {
-  /** Split unit that gets animated. Reading copy defaults to lines. */
+  /** Split unit that gets animated. Reading copy defaults to lines. The hero
+   *  heading's entry reveal is not a caller: it is SSR word-split and
+   *  CSS-animated (HeroHeading.astro) so no JS ever rebuilds the LCP
+   *  element after paint (ARCHITECTURE.md ADR-0040). */
   unit?: SplitUnit
   /** Play on scroll into view rather than immediately. */
   scroll?: boolean
@@ -25,37 +28,6 @@ export interface RevealHandle {
 
 const noopHandle: RevealHandle = {play() {}, destroy() {}}
 
-let pageEntryHasRevealed = false
-
-export function hasPageEntryRevealed(): boolean {
-  return pageEntryHasRevealed
-}
-
-export function markPageEntryRevealed(): void {
-  pageEntryHasRevealed = true
-}
-
-export function pageEntryRevealAllowed(state: {
-  reducedMotion: boolean
-  alreadyRevealed: boolean
-  routeEntering: boolean
-}): boolean {
-  if (state.reducedMotion) return true
-  if (state.alreadyRevealed) return false
-  return !state.routeEntering
-}
-
-/** Returns true when the initial page-entry reveal should play. */
-export function shouldPlayPageEntryReveal(): boolean {
-  return pageEntryRevealAllowed({
-    reducedMotion: prefersReducedMotion(),
-    alreadyRevealed: pageEntryHasRevealed,
-    routeEntering:
-      typeof document !== 'undefined' &&
-      document.documentElement.classList.contains('route-entering'),
-  })
-}
-
 /**
  * Type Reveal primitive. Clips animated units upward into place fast and lands
  * them on a slight overshoot settle — no opacity fade — so entrances spring
@@ -70,10 +42,10 @@ export async function revealText(
     unit = 'lines',
     scroll = false,
     start = 'top 80%',
-    stagger = unit === 'chars' ? STAGGER.tight : STAGGER.standard,
+    stagger = STAGGER.standard,
     duration = MOTION.quick,
     delay = 0,
-    y = unit === 'chars' ? 18 : undefined,
+    y,
   } = options
 
   if (prefersReducedMotion()) {
@@ -81,12 +53,7 @@ export async function revealText(
     return noopHandle
   }
 
-  const units: SplitUnit[] =
-    unit === 'lines'
-      ? ['lines']
-      : unit === 'words'
-        ? ['lines', 'words']
-        : ['lines', 'words', 'chars']
+  const units: SplitUnit[] = unit === 'lines' ? ['lines'] : ['lines', 'words']
 
   let split: SplitHandle
   try {
@@ -175,6 +142,8 @@ export async function revealText(
       })
     })
   } else {
+    // Immediate reveals (MotionText with scroll=false): the CSS opacity gate
+    // kept the element hidden until the split landed, so play right away.
     play()
   }
 

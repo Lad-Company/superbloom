@@ -2,7 +2,7 @@
 
 The public Superbloom House website. Built with [Astro](https://astro.build) in SSR mode
 (`output: 'server'`) using the Vercel adapter, [UnoCSS](https://unocss.dev) for styling, and
-GSAP for motion (lazy-loaded; ScrollTrigger deferred — see ADR-0039). Content is sourced from the Sanity Studio in `apps/studio` via
+GSAP for motion (lazy-loaded; ScrollTrigger deferred — see ADR-0041). Content is sourced from the Sanity Studio in `apps/studio` via
 `@sanity/client` and shared schemas from `@superbloom/schemas`.
 
 ## Development
