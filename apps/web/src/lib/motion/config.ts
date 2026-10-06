@@ -22,7 +22,6 @@ export const STAGGER = {
 } as const
 
 export const SCROLL = {
-  lerp: 0.1,
   scrubLag: 0.6,
 } as const
 
