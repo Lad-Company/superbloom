@@ -478,6 +478,25 @@ const imageRendering =
   import { BREAKPOINTS } from '../lib/breakpoints'
 
   const AUTO_HIDE_MS = 2500
+  /** Stall watchdog budget for the progressive loop (GH #178): healthy loads
+   *  emit `progress` within ~1s even on slow links (measured first frame
+   *  0.85s desktop / 1.3s fast 4G, ADR-0042), so 4s of requested playback
+   *  with zero data events means the load is wedged, not slow. */
+  const LOOP_STALL_MS = 4000
+  /** Data arrived / playback stopped on purpose — either disarms the loop
+   *  stall watchdog. `suspend` is deliberately absent: Firefox fires it on
+   *  the wedged load (and on any full buffer), so it proves nothing. */
+  const LOOP_STALL_DISARM_EVENTS = [
+    'progress',
+    'loadeddata',
+    'canplay',
+    'playing',
+    'timeupdate',
+    'pause',
+    'emptied',
+    'abort',
+    'error',
+  ] as const
   const SEEK_STEP_S = 5
   /** Time outside [0, duration] that we consider the player still settling. */
   const SCRUBBER_READY_EPSILON_S = 0.05
@@ -616,6 +635,10 @@ const imageRendering =
     private isDragging = false
     private dragPointerId: number | null = null
     private autoHideTimer: ReturnType<typeof setTimeout> | null = null
+    private loopStallTimer: ReturnType<typeof setTimeout> | null = null
+    /** One revival per element: a re-wedged loop after a forced reload means
+     *  something deeper is wrong — never loop load() calls. */
+    private loopRevived = false
 
     private handleVisibilityChange = () => this.updatePlayback()
     private handleMotionChange = () => this.updatePlayback()
@@ -650,6 +673,37 @@ const imageRendering =
       }
     }
     private handleSourceReady = () => this.updatePlayback()
+
+    /** Firefox wedged-load recovery (GH #178): a progressive-loop <video>
+     *  adopted from the ClientRouter's inert parsed document can deadlock in
+     *  Firefox — metadata lands from the media cache, the fetch suspends,
+     *  play() resolves, then `waiting` and nothing else, forever (no
+     *  `progress`, readyState stuck < 2, paused=false; the poster sits
+     *  because data-video-ready never lands). Chrome and Safari survive the
+     *  adoption. Re-running the load algorithm in the live document
+     *  (load() + play()) unwedges it. Armed at connect and re-armed on
+     *  `waiting`; disarmed by any LOOP_STALL_DISARM_EVENTS signal, so a
+     *  genuinely slow network (which emits `progress`) never triggers it. */
+    private armLoopStallWatchdog = () => {
+      if (this.loopRevived) return
+      if (this.loopStallTimer !== null) clearTimeout(this.loopStallTimer)
+      this.loopStallTimer = setTimeout(() => {
+        this.loopStallTimer = null
+        const player = this.player
+        if (!player || this.loopRevived) return
+        if (player.paused || player.readyState >= 2) return
+        this.loopRevived = true
+        this.setAttribute('data-loop-revived', '')
+        player.load()
+        player.play?.().catch(() => {})
+      }, LOOP_STALL_MS)
+    }
+    private disarmLoopStallWatchdog = () => {
+      if (this.loopStallTimer !== null) {
+        clearTimeout(this.loopStallTimer)
+        this.loopStallTimer = null
+      }
+    }
     private handleMuteClick = () => this.toggleMute()
     private handleVolumeChange = () => this.updateMute()
     private handleImgLoad = (event: Event) => {
@@ -797,6 +851,13 @@ const imageRendering =
         // the loop fades in over the always-painted overlay poster via the
         // same data-video-ready opacity gate as the HLS path.
         this.wirePlayer(loopElement)
+        // Firefox wedged-load watchdog (GH #178): loop path only — the HLS
+        // path fetches through hls.js, which manages its own stalls.
+        loopElement.addEventListener('waiting', this.armLoopStallWatchdog)
+        for (const event of LOOP_STALL_DISARM_EVENTS) {
+          loopElement.addEventListener(event, this.disarmLoopStallWatchdog)
+        }
+        this.armLoopStallWatchdog()
         // Resolve the never-awaited promise so togglePlayback()'s "chunk in
         // flight" branch can't fire for a frame that has no chunk.
         this.playerLoading = Promise.resolve()
@@ -988,6 +1049,11 @@ const imageRendering =
       if (this.autoHideTimer !== null) {
         clearTimeout(this.autoHideTimer)
         this.autoHideTimer = null
+      }
+      this.disarmLoopStallWatchdog()
+      this.player?.removeEventListener('waiting', this.armLoopStallWatchdog)
+      for (const event of LOOP_STALL_DISARM_EVENTS) {
+        this.player?.removeEventListener(event, this.disarmLoopStallWatchdog)
       }
       if (this.dragPointerId !== null) {
         try {

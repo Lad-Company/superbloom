@@ -244,6 +244,38 @@ describe('MediaFrame playback profiles', () => {
       expect(source).toContain('loopElement.load()')
       expect(source).toContain("this.setAttribute('data-loop-held', '')")
     })
+
+    it('recovers a wedged loop load exactly once (GH #178)', () => {
+      // Firefox deadlocks a progressive-loop <video> adopted from the
+      // ClientRouter's inert parsed document: metadata lands from the media
+      // cache, the fetch suspends, play() resolves, then `waiting` and no
+      // data events forever. The watchdog arms at connect and on `waiting`,
+      // disarms on any real data signal or intentional stop, and after 4s of
+      // requested-but-dataless playback re-runs the load algorithm once.
+      expect(source).toContain('const LOOP_STALL_MS = 4000')
+      expect(source).toContain('private armLoopStallWatchdog')
+      expect(source).toContain('private disarmLoopStallWatchdog')
+      // Loop path only — hls.js manages its own stalls on the HLS path.
+      expect(source).toContain("loopElement.addEventListener('waiting', this.armLoopStallWatchdog)")
+      expect(source).not.toContain("playerElement.addEventListener('waiting'")
+      // Revival is gated on the actual wedge signature (playback requested,
+      // no current data) and runs load() + play() at most once per element.
+      expect(source).toContain('player.paused || player.readyState >= 2')
+      expect(source).toContain('private loopRevived = false')
+      expect(source).toContain('this.loopRevived = true')
+      expect(source).toContain("this.setAttribute('data-loop-revived', '')")
+      expect(source).toContain('player.load()')
+      // `suspend` fires on the wedged load itself (and on any full buffer),
+      // so it must NOT be a disarm signal.
+      const disarm = source.match(/LOOP_STALL_DISARM_EVENTS = \[([\s\S]*?)\]/)?.[1] ?? ''
+      expect(disarm).toContain("'progress'")
+      expect(disarm).toContain("'pause'")
+      expect(disarm).not.toContain("'suspend'")
+      // The timer and its listeners leave with the element (View Transition
+      // swap teardown), or an armed watchdog would fire into a dead frame.
+      expect(source).toContain('this.disarmLoopStallWatchdog()')
+      expect(source).toContain("this.player?.removeEventListener('waiting', this.armLoopStallWatchdog)")
+    })
   })
 
   it('emits no poster attribute on mux-video and never copies one — the opacity gate covers the first-frame gap (GH #172)', () => {
