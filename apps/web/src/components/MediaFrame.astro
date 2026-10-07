@@ -313,10 +313,21 @@ const imageRendering =
        buttons) into the fullscreen native player, hijacking the page.
        `disablepictureinpicture` keeps PiP out of the native context menus
        (desktop right-click, iPadOS long-press, the Firefox hover toggle) —
-       the frame's custom controls are the whole interface. */
+       the frame's custom controls are the whole interface.
+       `autoplay` (priority frames only — it implies an eager fetch, which
+       only the hero's preload="auto" already pays for) makes playback
+       declarative instead of purely JS-driven (GH #190): the browser
+       starts the muted loop as soon as policy and data allow, and — the
+       part no play() call can replicate — self-resumes autoplay media
+       after bfcache restores, where no connectedCallback or
+       visibilitychange re-runs our gates. Reduced-motion strips the
+       attribute at connect, before first data (see syncAutoplayGate), so
+       the attribute path can never autostart motion for a user who asked
+       for none. */
     isProgressiveLoop && loopSources && (
       <video
         class="media-frame__loop"
+        autoplay={plan.priority ? true : undefined}
         muted
         loop
         playsinline
@@ -483,6 +494,15 @@ const imageRendering =
    *  0.85s desktop / 1.3s fast 4G, ADR-0042), so 4s of requested playback
    *  with zero data events means the load is wedged, not slow. */
   const LOOP_STALL_MS = 4000
+  /** Transient play() rejection retry (GH #190): an AbortError means the
+   *  request was interrupted (a load()/pause() race), not that policy
+   *  blocked it — re-evaluate shortly instead of parking the frame. One
+   *  timer at a time; a second rejection while one is pending is the same
+   *  retry. */
+  const TRANSIENT_RETRY_MS = 250
+  /** Consecutive transient retries before giving up (see
+   *  handlePlayRejection). */
+  const MAX_TRANSIENT_RETRIES = 3
   /** Data arrived / playback stopped on purpose — either disarms the loop
    *  stall watchdog. `suspend` is deliberately absent: Firefox fires it on
    *  the wedged load (and on any full buffer), so it proves nothing. */
@@ -636,17 +656,43 @@ const imageRendering =
     private dragPointerId: number | null = null
     private autoHideTimer: ReturnType<typeof setTimeout> | null = null
     private loopStallTimer: ReturnType<typeof setTimeout> | null = null
+    private transientRetryTimer: ReturnType<typeof setTimeout> | null = null
+    private transientRetries = 0
     /** One revival per element: a re-wedged loop after a forced reload means
      *  something deeper is wrong — never loop load() calls. */
     private loopRevived = false
     private gestureRetryArmed = false
+    /** False until the visibility observer delivers its first reading. The
+     *  pause branch waits for it so a browser-started declarative autoplay
+     *  (GH #190) can't be paused by the pre-observation pass, where
+     *  isVisible is still the initial false. */
+    private observedOnce = false
 
     private handleVisibilityChange = () => this.updatePlayback()
-    private handleMotionChange = () => this.updatePlayback()
+    private handleMotionChange = () => {
+      this.syncAutoplayGate()
+      this.updatePlayback()
+    }
+    /** bfcache restore (GH #190): no lifecycle callback re-runs on
+     *  `pageshow(persisted)` and JS-driven play state is not the browser's
+     *  to resume, so a hero frozen on the way out would sit paused forever
+     *  — with no play() rejection, not even the gesture retry would arm.
+     *  Re-evaluate instead. (The loop's declarative `autoplay` makes the
+     *  browser resume on its own in most cases; this covers JS-paused
+     *  states it won't.) */
+    private handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) this.updatePlayback()
+    }
     private handlePlay = () => {
       this.updateControl()
       this.refreshScrubber()
       this.scheduleAutoHide()
+      this.transientRetries = 0
+      // Declarative-autoplay safety net (GH #190): if the browser started
+      // the loop on its own (attribute path, bfcache resume) while the JS
+      // gates say no (reduced motion, offscreen), bring the element back
+      // under the shared contract. A no-op for every intentional play.
+      this.updatePlayback()
     }
     private handlePause = () => {
       this.updateControl()
@@ -696,7 +742,7 @@ const imageRendering =
         this.loopRevived = true
         this.setAttribute('data-loop-revived', '')
         player.load()
-        player.play?.().catch(() => this.armPlaybackGestureRetry())
+        player.play?.().catch(this.handlePlayRejection)
       }, LOOP_STALL_MS)
     }
     private disarmLoopStallWatchdog = () => {
@@ -704,6 +750,31 @@ const imageRendering =
         clearTimeout(this.loopStallTimer)
         this.loopStallTimer = null
       }
+    }
+    /** play() rejection routing (GH #190): NotAllowedError is policy — a
+     *  per-site "Never Auto-Play" setting or iOS Low Power Mode blocks even
+     *  muted playback, and only a real user gesture lifts it, so arm the
+     *  one-time pointerdown/keydown retry. Anything else (AbortError from
+     *  an interrupted request — a load()/pause() race with the loop
+     *  watchdog or visibility flapping) is transient, not policy:
+     *  re-evaluate once on a short timer instead of parking the frame for
+     *  a tap policy never required. */
+    private handlePlayRejection = (error: unknown) => {
+      if ((error as DOMException | null)?.name === 'NotAllowedError') {
+        this.armPlaybackGestureRetry()
+        return
+      }
+      // Capped: a rejection that outlives the cap is a broken source, not a
+      // race — stop rather than retry-loop every 250ms forever. The count
+      // resets on the next successful play (handlePlay).
+      if (this.transientRetryTimer !== null || this.transientRetries >= MAX_TRANSIENT_RETRIES) {
+        return
+      }
+      this.transientRetries += 1
+      this.transientRetryTimer = setTimeout(() => {
+        this.transientRetryTimer = null
+        this.updatePlayback()
+      }, TRANSIENT_RETRY_MS)
     }
     /** Autoplay-policy recovery: a per-site "Never Auto-Play" setting (or a
      *  similar policy) rejects even muted play() with NotAllowedError, which
@@ -854,6 +925,7 @@ const imageRendering =
       this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
       this.observer = new IntersectionObserver(
         ([entry]) => {
+          this.observedOnce = true
           this.isVisible = entry.isIntersecting
           this.updatePlayback()
         },
@@ -863,6 +935,7 @@ const imageRendering =
 
       document.addEventListener('visibilitychange', this.handleVisibilityChange)
       this.motionPreference.addEventListener('change', this.handleMotionChange)
+      window.addEventListener('pageshow', this.handlePageShow)
 
       // The mux-video chunk (~1MB raw with media-chrome on mux-player) is the
       // largest JS cost on media pages, so it loads lazily: priority frames
@@ -875,6 +948,10 @@ const imageRendering =
         // the loop fades in over the always-painted overlay poster via the
         // same data-video-ready opacity gate as the HLS path.
         this.wirePlayer(loopElement)
+        // Reduced-motion connect guard (GH #190): strip the declarative
+        // autoplay before first data arrives, so the attribute path can
+        // never autostart motion the JS play() gate would have withheld.
+        this.syncAutoplayGate()
         // Firefox wedged-load watchdog (GH #178): loop path only — the HLS
         // path fetches through hls.js, which manages its own stalls.
         loopElement.addEventListener('waiting', this.armLoopStallWatchdog)
@@ -1053,6 +1130,7 @@ const imageRendering =
       }
       document.removeEventListener('visibilitychange', this.handleVisibilityChange)
       this.motionPreference?.removeEventListener('change', this.handleMotionChange)
+      window.removeEventListener('pageshow', this.handlePageShow)
       this.player?.removeEventListener('play', this.handlePlay)
       this.player?.removeEventListener('pause', this.handlePause)
       this.player?.removeEventListener('playing', this.handleReady)
@@ -1075,6 +1153,10 @@ const imageRendering =
         this.autoHideTimer = null
       }
       this.disarmLoopStallWatchdog()
+      if (this.transientRetryTimer !== null) {
+        clearTimeout(this.transientRetryTimer)
+        this.transientRetryTimer = null
+      }
       this.player?.removeEventListener('waiting', this.armLoopStallWatchdog)
       for (const event of LOOP_STALL_DISARM_EVENTS) {
         this.player?.removeEventListener(event, this.disarmLoopStallWatchdog)
@@ -1091,6 +1173,24 @@ const imageRendering =
         this.dragPointerId = null
       }
       this.isDragging = false
+    }
+
+    /** Keeps the loop's declarative `autoplay` attribute (GH #190) in sync
+     *  with the motion preference: reduce strips it (called at connect,
+     *  before first data, so the attribute path never autostarts), a flip
+     *  back to no-preference restores it so the browser owns resumption
+     *  again. Loop path and priority frames only — a lazy frame's autoplay
+     *  would force an eager fetch. No-op on the HLS surface, whose playback
+     *  stays JS-driven. */
+    private syncAutoplayGate() {
+      const loop = this.player
+      if (!loop?.classList.contains('media-frame__loop')) return
+      if (!this.hasAttribute('data-priority')) return
+      if (this.motionPreference?.matches) {
+        loop.removeAttribute('autoplay')
+      } else {
+        loop.setAttribute('autoplay', '')
+      }
     }
 
     private updatePlayback() {
@@ -1118,8 +1218,12 @@ const imageRendering =
       }
 
       if (shouldPlay && isPaused) {
-        this.player.play?.().catch(() => this.armPlaybackGestureRetry())
-      } else if (!shouldPlay && !isPaused) {
+        this.player.play?.().catch(this.handlePlayRejection)
+      } else if (!shouldPlay && !isPaused && this.observedOnce) {
+        // observedOnce: before the observer's first reading isVisible is
+        // still the initial false, so this branch would pause a
+        // declarative autoplay the browser just started (GH #190) — the
+        // real visibility verdict arrives one callback later.
         this.player.pause?.()
       }
     }
@@ -1136,7 +1240,7 @@ const imageRendering =
       if (this.player.paused) {
         this.userIntent = 'playing'
         if (this.isVisible && document.visibilityState === 'visible') {
-          this.player.play?.().catch(() => {})
+          this.player.play?.().catch(this.handlePlayRejection)
         }
       } else {
         this.userIntent = 'paused'

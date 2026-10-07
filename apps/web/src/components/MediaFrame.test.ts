@@ -196,6 +196,34 @@ describe('MediaFrame playback profiles', () => {
       expect(source).toContain("preload={plan.priority ? 'auto' : 'none'}")
     })
 
+    it('makes loop autoplay declarative, with reduced-motion and pre-observation guards (GH #190)', () => {
+      // The priority loop carries the autoplay attribute so the browser
+      // starts muted playback on its own initiative and self-resumes after
+      // bfcache restores — no JS timing window can drop the first play.
+      // Priority only: the attribute implies an eager fetch, which a lazy
+      // frame must never pay.
+      expect(source).toContain("autoplay={plan.priority ? true : undefined}")
+      // Reduced motion strips the attribute at connect (before first data)
+      // and a preference flip restores it — the attribute path must never
+      // autostart motion the JS play() gate would have withheld.
+      expect(source).toContain('private syncAutoplayGate')
+      expect(source).toContain("loop.removeAttribute('autoplay')")
+      expect(source).toContain("loop.setAttribute('autoplay', '')")
+      // Loop path and priority frames only — never the HLS surface.
+      expect(source).toContain("loop?.classList.contains('media-frame__loop')")
+      expect(source).toContain("this.hasAttribute('data-priority')")
+      // The pause branch waits for the observer's first reading so a
+      // browser-started autoplay can't be paused while isVisible is still
+      // the initial false; handlePlay re-evaluates as a safety net.
+      expect(source).toContain('!shouldPlay && !isPaused && this.observedOnce')
+      expect(source).toContain('this.observedOnce = true')
+      // bfcache restores re-run no lifecycle callbacks — re-evaluate on
+      // pageshow(persisted), and take the listener with the element.
+      expect(source).toContain('if (event.persisted) this.updatePlayback()')
+      expect(source).toContain("window.addEventListener('pageshow', this.handlePageShow)")
+      expect(source).toContain("window.removeEventListener('pageshow', this.handlePageShow)")
+    })
+
     it('adopts the loop element synchronously and never imports the mux-video chunk for it', () => {
       expect(source).toContain("this.querySelector('video.media-frame__loop')")
       expect(source).toContain('this.wirePlayer(loopElement)')
@@ -277,16 +305,29 @@ describe('MediaFrame playback profiles', () => {
       expect(source).toContain("this.player?.removeEventListener('waiting', this.armLoopStallWatchdog)")
     })
 
-    it('retries playback on the first user gesture after a play() rejection', () => {
+    it('retries playback on the first user gesture after a policy rejection, and on a timer after a transient one (GH #190)', () => {
       // Safari's per-site "Never Auto-Play" (or a similar policy) rejects
       // even muted play() with NotAllowedError on a visible, buffered video;
       // a real user gesture lifts the block. Rejected plays arm one-time
       // pointerdown/keydown listeners that re-run updatePlayback().
+      // Every play() call site routes its rejection through the shared
+      // handler, which arms the gesture retry for NotAllowedError only.
+      expect(source).toContain('private handlePlayRejection')
+      expect(source).toContain("?.name === 'NotAllowedError'")
+      expect(source).toContain('this.player.play?.().catch(this.handlePlayRejection)')
+      expect(source).not.toContain('catch(() => this.armPlaybackGestureRetry())')
       expect(source).toContain('private armPlaybackGestureRetry')
-      expect(source).toContain("this.player.play?.().catch(() => this.armPlaybackGestureRetry())")
       expect(source).toContain("document.addEventListener('pointerdown', this.handlePlaybackGesture")
       expect(source).toContain("document.addEventListener('keydown', this.handlePlaybackGesture")
       expect(source).toContain('once: true')
+      // Transient rejections (AbortError from a load()/pause() race) are
+      // not policy: retry once on a short timer, capped so a broken source
+      // can't retry-loop forever, with the timer torn down on disconnect.
+      expect(source).toContain('const TRANSIENT_RETRY_MS = 250')
+      expect(source).toContain('const MAX_TRANSIENT_RETRIES = 3')
+      expect(source).toContain('this.transientRetries >= MAX_TRANSIENT_RETRIES')
+      expect(source).toContain('this.transientRetries = 0')
+      expect(source).toContain('clearTimeout(this.transientRetryTimer)')
       // The armed listeners leave with the element (View Transition swap
       // teardown), or a dead frame would retry into a detached player.
       expect(source).toContain("document.removeEventListener('pointerdown', this.handlePlaybackGesture")
