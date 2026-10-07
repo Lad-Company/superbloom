@@ -59,9 +59,20 @@
    the system fonts (macOS Supplemental); regenerate with fontTools if either
    font file changes:
      PP Neue Corp Tight Ultrabold vs Arial Narrow (upm 2048):
-       avgW 0.3586/0.4748, hhea 2134/-700/280
+       capsW 0.3328/0.4974 (English-frequency-weighted caps + space),
+       hhea 2134/-700/280
      Graphik Medium vs Arial (upm 1000/2048):
        avgW 0.6075/0.5791, hhea 981/-195/0
+   The display face's match is caps-weighted, not full-repertoire avgW: every
+   usage is uppercase (the Uno type-h1…h7/section-heading/eyebrow/label
+   shortcuts bake in `uppercase`, and the hand-rolled display-tight usages —
+   Navigation, ParallaxStatement, NextProject — all set text-transform:
+   uppercase). The avgW match (75.52%) set caps ~13–18% too wide, which
+   flipped the /work hero to a different balanced line count when the real
+   font swapped in — CLS 0.4 on cold desktop loads. The caps-weighted 66.91%
+   holds real headings within ±4% between faces. The hhea overrides are
+   rescaled with the same ratio so override% × size-adjust — the absolute
+   metric the browser resolves — is unchanged by the retune.
    Platform coverage (GH #153): each src resolves to the FIRST installed
    local() name, and the overrides apply to whichever resolves. Arial Narrow /
    Arial resolve on macOS and Windows (byte-identical to before); Liberation
@@ -75,10 +86,10 @@
   src: local('Arial Narrow'), local('Liberation Sans Narrow');
   font-weight: 750;
   font-style: normal;
-  size-adjust: 75.52%;
-  ascent-override: 137.98%;
-  descent-override: 45.26%;
-  line-gap-override: 18.1%;
+  size-adjust: 66.91%;
+  ascent-override: 155.73%;
+  descent-override: 51.08%;
+  line-gap-override: 20.43%;
 }
 @font-face {
   font-family: 'Graphik Fallback';
