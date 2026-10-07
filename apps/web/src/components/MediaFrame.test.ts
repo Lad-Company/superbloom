@@ -174,9 +174,76 @@ describe('MediaFrame playback profiles', () => {
     // The attribute keeps PiP out of native context menus (desktop
     // right-click, iPadOS long-press) and the Firefox hover toggle.
     // Safari regressed on the attribute (mdn/browser-compat-data#24399) but
-    // still honors the property, so loadPlayer() sets it after upgrade.
+    // still honors the property, so wirePlayer() sets it on adoption.
     expect(source).toMatch(/<mux-video[^>]*\sdisablepictureinpicture[\s>]/s)
-    expect(source).toContain('this.player.disablePictureInPicture = true')
+    expect(source).toMatch(/<video[^>]*\sdisablepictureinpicture[\s>]/s)
+    expect(source).toContain('player.disablePictureInPicture = true')
+  })
+
+  describe('progressive loop (MP4 static renditions)', () => {
+    it('renders a plain <video> with <source media> rungs only for eligible placements with ready MP4s', () => {
+      expect(source).toContain('progressiveLoopSources(asset.playbackId!, asset.staticRenditions)')
+      // Presented and Gated frames keep HLS.
+      expect(source).toMatch(/plan\.progressiveLoop && controls === 'none' && !isGated/)
+      expect(source).toContain('class="media-frame__loop"')
+      expect(source).toMatch(/<source src=\{source\.src\} type="video\/mp4" media=\{source\.media\} \/>/)
+      // Mutually exclusive with the HLS element.
+      expect(source).toContain('isVideo && !isProgressiveLoop && (')
+    })
+
+    it('keeps iOS inline playback and the priority preload on the loop element', () => {
+      expect(source).toMatch(/<video[^>]*\smuted\s[^>]*\sloop\s[^>]*\splaysinline[\s>]/s)
+      expect(source).toContain("preload={plan.priority ? 'auto' : 'none'}")
+    })
+
+    it('adopts the loop element synchronously and never imports the mux-video chunk for it', () => {
+      expect(source).toContain("this.querySelector('video.media-frame__loop')")
+      expect(source).toContain('this.wirePlayer(loopElement)')
+      expect(source).toContain('this.playerLoading = Promise.resolve()')
+      expect(source).toContain('if (!playerElement && !loopElement) return')
+    })
+
+    it('rides the GH #172 opacity gate — no player poster, the loop fades in over the overlay poster', () => {
+      // The loop follows the same contract as mux-video: no poster attribute
+      // ever, opacity 0 until data-video-ready (a presented frame), fading
+      // in over the overlay poster, which never fades.
+      expect(source).not.toMatch(/<video[^>]*\sposter=/s)
+      expect(source).toMatch(/\.media-frame__loop\s*\{[^}]*opacity:\s*0/)
+      expect(source).toMatch(/\.media-frame\[data-video-ready\] \.media-frame__loop\s*\{[^}]*opacity:\s*1/)
+      // The loop joins the hero settle so the media layers stay locked
+      // together while the scale(1.04 → 1) plays.
+      expect(source).toContain('.media-frame[data-hero-entrance] .media-frame__loop,')
+      // Reduced motion: the loop's ready-fade collapses to an instant swap.
+      const reduceBlock = source.slice(source.indexOf('@media (prefers-reduced-motion: reduce)'))
+      expect(reduceBlock).toContain('.media-frame .media-frame__loop')
+    })
+
+    it('shares the layer geometry with mux-video and the poster', () => {
+      expect(source).toMatch(
+        /\.media-frame :global\(mux-video\),\s*\.media-frame__loop,\s*\.media-frame__poster \{/,
+      )
+    })
+
+    it('holds the poster on constrained networks instead of a stuttering fixed-bitrate loop', () => {
+      // No ABR ladder on the MP4 path: the 720p rendition (~3.9 Mbps)
+      // stalled four times in 30s on a 1.6 Mbps link where HLS downshifted
+      // and played through (2026-10-06). Save-data, cellular-class, or a
+      // reported downlink under the floor keeps the poster; a missing
+      // Network Information API (Safari) plays. Viewport size is not a
+      // signal — unlike the HLS constrained seed, a phone on wifi is fine.
+      expect(source).toContain('const PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS = 4')
+      expect(source).toContain('const holdProgressiveLoop = (): boolean => {')
+      expect(source).toContain('connection.downlink < PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS')
+      const holdFn = source.match(/const holdProgressiveLoop = \(\): boolean => \{[\s\S]*?\n {2}\}/)?.[0]
+      expect(holdFn).toBeDefined()
+      expect(holdFn).not.toContain('matchMedia')
+      expect(holdFn).toContain('cellularClass(connection)')
+      expect(source).toContain('if (loopElement && holdProgressiveLoop()) {')
+      // Abort the parse-time fetch and never adopt the element as the player.
+      expect(source).toContain("for (const source of loopElement.querySelectorAll('source')) source.remove()")
+      expect(source).toContain('loopElement.load()')
+      expect(source).toContain("this.setAttribute('data-loop-held', '')")
+    })
   })
 
   it('emits no poster attribute on mux-video and never copies one — the opacity gate covers the first-frame gap (GH #172)', () => {
@@ -450,14 +517,19 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
   it('fades the video in over the poster — the poster never fades (GH #172)', () => {
     // The old design faded the poster OUT on data-video-ready; Safari fires
     // `playing` before compositing the first frame, so the dissolve revealed
-    // the blank skeleton. Now mux-video starts at opacity 0 and fades in at
+    // the blank skeleton. Now both video surfaces (mux-video and the
+    // progressive-loop <video>) start at opacity 0 and fade in at
     // --motion-standard once a frame has actually been presented, with the
     // poster staying painted underneath.
-    expect(source).toMatch(/\.media-frame :global\(mux-video\)\s*\{[^}]*opacity:\s*0/)
     expect(source).toMatch(
-      /\.media-frame :global\(mux-video\)\s*\{[^}]*transition:\s*opacity var\(--motion-standard\) var\(--motion-ease-out\)/,
+      /\.media-frame :global\(mux-video\),\s*\.media-frame__loop\s*\{[^}]*opacity:\s*0/,
     )
-    expect(source).toMatch(/\.media-frame\[data-video-ready\] :global\(mux-video\)\s*\{[^}]*opacity:\s*1/)
+    expect(source).toMatch(
+      /\.media-frame :global\(mux-video\),\s*\.media-frame__loop\s*\{[^}]*transition:\s*opacity var\(--motion-standard\) var\(--motion-ease-out\)/,
+    )
+    expect(source).toMatch(
+      /\.media-frame\[data-video-ready\] :global\(mux-video\),\s*\.media-frame\[data-video-ready\] \.media-frame__loop\s*\{[^}]*opacity:\s*1/,
+    )
     // No poster fade-out rule survives anywhere (state or reduced-motion).
     expect(source).not.toMatch(/\.media-frame\[data-video-ready\] \.media-frame__poster/)
     // The Poster Punch keeps its deliberate zoom + delayed 560ms fade

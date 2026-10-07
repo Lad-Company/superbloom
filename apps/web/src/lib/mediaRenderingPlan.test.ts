@@ -2,7 +2,13 @@ import {readFileSync} from 'node:fs'
 import {describe, expect, it} from 'vitest'
 import {BREAKPOINTS} from './breakpoints'
 import {CARD_WIDTHS} from './contentCard'
-import {planMediaRendering, muxPosterRendering, muxSkeletonThumbUrl, type MediaPlacement} from './mediaRenderingPlan'
+import {
+  planMediaRendering,
+  muxPosterRendering,
+  muxSkeletonThumbUrl,
+  progressiveLoopSources,
+  type MediaPlacement,
+} from './mediaRenderingPlan'
 
 const sizes = (placement: MediaPlacement) => planMediaRendering(placement).sizes
 
@@ -268,5 +274,52 @@ describe('muxSkeletonThumbUrl (ADR-0039 blur-up for ungated video)', () => {
       'https://image.mux.com/abc123/thumbnail.webp?width=24&time=0.5',
     )
     expect(muxSkeletonThumbUrl('abc123', null)).toContain('time=0')
+  })
+})
+
+describe('progressive loop — MP4 static renditions for the hero', () => {
+  const card: MediaPlacement = {
+    context: 'card',
+    settings: {cardWidth: '1/2', mediaAspectRatio: '16:9', infoPosition: 'below'},
+  }
+
+  it('only the hero placement is eligible', () => {
+    expect(planMediaRendering({context: 'hero'}).progressiveLoop).toBe(true)
+    expect(planMediaRendering({context: 'hero', capPx: 1440}).progressiveLoop).toBe(true)
+    for (const placement of [
+      card,
+      {context: 'split'} as MediaPlacement,
+      {context: 'layoutBlock', width: 'full'} as MediaPlacement,
+      {context: 'fixed', px: {small: 64, large: 96}} as MediaPlacement,
+    ]) {
+      expect(planMediaRendering(placement).progressiveLoop).toBe(false)
+    }
+  })
+
+  it('serves 720p under the small breakpoint and 1080p above when both exist', () => {
+    expect(
+      progressiveLoopSources('pb', [
+        {resolution: '1080p', name: '1080p.mp4'},
+        {resolution: '720p', name: '720p.mp4'},
+      ]),
+    ).toEqual([
+      {src: 'https://stream.mux.com/pb/720p.mp4', media: `(max-width: ${BREAKPOINTS.smallMax}px)`},
+      {src: 'https://stream.mux.com/pb/1080p.mp4'},
+    ])
+  })
+
+  it('falls back to the single rendition present, with no media query', () => {
+    expect(progressiveLoopSources('pb', [{resolution: '720p', name: '720p.mp4'}])).toEqual([
+      {src: 'https://stream.mux.com/pb/720p.mp4'},
+    ])
+    expect(progressiveLoopSources('pb', [{resolution: 'highest', name: 'highest.mp4'}])).toEqual([
+      {src: 'https://stream.mux.com/pb/highest.mp4'},
+    ])
+  })
+
+  it('returns null with no usable MP4 so the frame streams HLS', () => {
+    expect(progressiveLoopSources('pb', null)).toBeNull()
+    expect(progressiveLoopSources('pb', [])).toBeNull()
+    expect(progressiveLoopSources('pb', [{resolution: null, name: null}])).toBeNull()
   })
 })

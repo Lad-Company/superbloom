@@ -5,8 +5,10 @@ import {
   muxPosterRendering,
   muxSkeletonThumbUrl,
   planMediaRendering,
+  progressiveLoopSources,
   type MediaPlacement,
   type MuxMaxResolution,
+  type StaticRenditionRef,
 } from '../lib/mediaRenderingPlan'
 import {muxBlurUpDataUri} from '../lib/muxBlurUp'
 
@@ -37,6 +39,10 @@ export interface VideoProjection {
   /** Editor-picked poster frame (seconds) on the Mux asset in Sanity;
    *  defaults to time=0 (see muxPosterRendering). */
   thumbTime?: number | null
+  /** Ready MP4 static renditions on the Mux asset (projected only where
+   *  `status == "ready"`). Present on the hero loop assets; absent on
+   *  everything else, which streams HLS. */
+  staticRenditions?: StaticRenditionRef[] | null
 }
 
 export type ProjectedAsset = ImageProjection | VideoProjection
@@ -184,6 +190,16 @@ const posterRendering =
       })
     : null
 const isGated = Boolean(isVideo && posterRendering?.src)
+// Progressive loop: an ambient hero whose asset ships MP4 renditions plays
+// in a plain <video> with the browser's own loader — no mux-video chunk, no
+// manifest round trips. Presented (controls) and Gated frames keep HLS: the
+// scrubber wants the deeper ABR buffer, and a dormant frame must not
+// preload anything.
+const loopSources =
+  isVideo && plan.progressiveLoop && controls === 'none' && !isGated && asset?._type === 'mux.video'
+    ? progressiveLoopSources(asset.playbackId!, asset.staticRenditions)
+    : null
+const isProgressiveLoop = loopSources !== null
 /** Skeleton surface backdrop (ADR-0039): the image asset's own LQIP; for
  *  Gated Ambient video, the curated poster's LQIP (that poster is the layer
  *  that fades in over the skeleton). Ungated video has no LQIP, so it falls
@@ -298,7 +314,24 @@ const imageRendering =
        `disablepictureinpicture` keeps PiP out of the native context menus
        (desktop right-click, iPadOS long-press, the Firefox hover toggle) —
        the frame's custom controls are the whole interface. */
-    isVideo && (
+    isProgressiveLoop && loopSources && (
+      <video
+        class="media-frame__loop"
+        muted
+        loop
+        playsinline
+        disablepictureinpicture
+        preload={plan.priority ? 'auto' : 'none'}
+        aria-hidden="true"
+      >
+        {loopSources.map((source) => (
+          <source src={source.src} type="video/mp4" media={source.media} />
+        ))}
+      </video>
+    )
+  }
+  {
+    isVideo && !isProgressiveLoop && (
       <mux-video
         playback-id={asset?._type === 'mux.video' ? asset.playbackId ?? undefined : undefined}
         metadata-video-title={title ?? undefined}
@@ -499,16 +532,40 @@ const imageRendering =
     abrEwmaDefaultEstimate: 2_000_000,
   }
 
-  type NetworkInformationLike = { saveData?: boolean; effectiveType?: string }
+  type NetworkInformationLike = { saveData?: boolean; effectiveType?: string; downlink?: number }
+
+  const readConnection = (): NetworkInformationLike | undefined =>
+    (navigator as Navigator & { connection?: NetworkInformationLike }).connection
+
+  const cellularClass = (connection: NetworkInformationLike | undefined): boolean =>
+    Boolean(
+      connection?.saveData ||
+        (connection?.effectiveType && ['slow-2g', '2g', '3g'].includes(connection.effectiveType)),
+    )
 
   const constrainedNetwork = (): boolean => {
-    const connection = (navigator as Navigator & { connection?: NetworkInformationLike })
-      .connection
-    if (connection?.saveData) return true
-    if (connection?.effectiveType && ['slow-2g', '2g', '3g'].includes(connection.effectiveType)) {
-      return true
-    }
+    if (cellularClass(readConnection())) return true
     return window.matchMedia(`(max-width: ${BREAKPOINTS.smallMax}px)`).matches
+  }
+
+  /** The progressive loop has no ABR ladder to fall back on: its 720p
+   *  rendition runs ~3.9 Mbps, and on a 1.6 Mbps link it stalled four times
+   *  in 30s where HLS downshifted to 480p and played through (CDP probe,
+   *  2026-10-06). Under this reported downlink — or on save-data /
+   *  cellular-class connections — the hero holds its poster instead of
+   *  stuttering. Chrome caps the reported downlink at 10 Mbps, and Safari
+   *  has no Network Information API at all, so a missing value means "no
+   *  evidence, play". Unlike constrainedNetwork(), viewport size is not a
+   *  signal here: a phone on wifi plays the 720p rung fine. */
+  const PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS = 4
+
+  const holdProgressiveLoop = (): boolean => {
+    const connection = readConnection()
+    if (cellularClass(connection)) return true
+    return (
+      typeof connection?.downlink === 'number' &&
+      connection.downlink < PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS
+    )
   }
 
   /** Ambient loops are short and cyclic, so the hls.js defaults (30s forward
@@ -614,6 +671,10 @@ const imageRendering =
 
     connectedCallback() {
       const playerElement = this.querySelector('mux-video') as MuxVideoElement | null
+      // Progressive loop: a plain <video> over MP4 renditions. No chunk to
+      // import, no hls.js config — the browser's loader already started on
+      // the <source> list at parse time (preload="auto" on priority frames).
+      const loopElement = this.querySelector('video.media-frame__loop') as MuxVideoElement | null
       if (playerElement) {
         // Small viewports can't resolve 1080p (even 430px at DPR 3 is 1290
         // device px, inside the 720p rung), so drop the rendition cap before
@@ -696,7 +757,21 @@ const imageRendering =
       this.addEventListener('pointerdown', this.handleActivity)
       this.addEventListener('focusin', this.handleActivity)
 
-      if (!playerElement) return
+      if (!playerElement && !loopElement) return
+
+      // Constrained network: keep the poster rather than a loop that
+      // stutters. Priority frames carry preload="auto", so the browser
+      // already opened the MP4 at parse; dropping the sources and
+      // re-running the load algorithm aborts that fetch. With no player
+      // adopted, updatePlayback() is a no-op and data-video-ready never
+      // lands, so the poster stays painted.
+      if (loopElement && holdProgressiveLoop()) {
+        for (const source of loopElement.querySelectorAll('source')) source.remove()
+        loopElement.removeAttribute('preload')
+        loopElement.load()
+        this.setAttribute('data-loop-held', '')
+        return
+      }
 
       this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
       this.observer = new IntersectionObserver(
@@ -717,7 +792,15 @@ const imageRendering =
       // dormant frame must not fetch anything), everything else about one
       // viewport before it can scroll in.
       const isGated = this.hasAttribute('gated')
-      if (isGated) {
+      if (loopElement) {
+        // No poster copy (GH #172 — the player poster is gone everywhere):
+        // the loop fades in over the always-painted overlay poster via the
+        // same data-video-ready opacity gate as the HLS path.
+        this.wirePlayer(loopElement)
+        // Resolve the never-awaited promise so togglePlayback()'s "chunk in
+        // flight" branch can't fire for a frame that has no chunk.
+        this.playerLoading = Promise.resolve()
+      } else if (isGated) {
         if (this.hasAttribute('revealed')) void this.loadPlayer()
       } else if (this.hasAttribute('data-priority')) {
         void this.loadPlayer()
@@ -751,26 +834,7 @@ const imageRendering =
           if (!this.isConnected) return
           const player = this.querySelector('mux-video') as MuxVideoElement | null
           if (!player) return
-          this.player = player
-
-          // Safari regressed on the `disablepictureinpicture` attribute
-          // (mdn/browser-compat-data#24399) but still honors the property,
-          // so set it here too; the template attribute covers the rest.
-          this.player.disablePictureInPicture = true
-
-          this.player.addEventListener('play', this.handlePlay)
-          this.player.addEventListener('pause', this.handlePause)
-          this.player.addEventListener('volumechange', this.handleVolumeChange)
-          // The video layer sits at opacity 0 until `data-video-ready` and
-          // fades in over the poster (which never fades — GH #172). The
-          // readiness stamp itself is frame-accurate: see handleReady.
-          this.player.addEventListener('playing', this.handleReady)
-          // playback-core attaches hls.js to the <video> asynchronously after
-          // upgrade. A play() issued before that attach is voided by the media
-          // load algorithm (paused resets to true, the promise rejects), so a
-          // visible frame would sit on its poster until the next intersection
-          // change. Re-evaluate once the source is really in.
-          this.player.addEventListener('loadedmetadata', this.handleSourceReady)
+          this.wirePlayer(player)
 
           if (import.meta.env.DEV) {
             // Startup quality and the buffer cap ride on two contracts:
@@ -781,7 +845,7 @@ const imageRendering =
             // instead of silently regressing to a low-res start or 30s
             // buffers. `_hls` is undefined under native HLS (Safari), where
             // none of this applies — the check is a no-op there.
-            this.player.addEventListener(
+            player.addEventListener(
               'playing',
               () => {
                 const hlsConfig = this.player?._hls?.config
@@ -811,23 +875,53 @@ const imageRendering =
               {once: true},
             )
           }
-
-          if (this.isFullControls) {
-            this.player.addEventListener('timeupdate', this.handleTimeUpdate)
-            this.player.addEventListener('durationchange', this.handleDurationChange)
-            this.player.addEventListener('loadedmetadata', this.handleLoadedMeta)
-            this.player.addEventListener('progress', this.handleProgress)
-            this.player.addEventListener('seeked', this.handleSeeked)
-          }
-
-          this.updateControl()
-          this.updateMute()
-          this.updatePlayback()
-          this.refreshScrubber()
         })()
       }
       return this.playerLoading
     }
+
+    /** Adopts an HTMLVideoElement surface (an upgraded `<mux-video>` or the
+     *  progressive-loop `<video>`) as `this.player` and attaches the shared
+     *  listeners. Everything above this layer — visibility gating, controls,
+     *  the poster crossfade — drives the element surface only, so the two
+     *  delivery paths diverge nowhere else. */
+    private wirePlayer(player: MuxVideoElement) {
+      this.player = player
+
+      // Safari regressed on the `disablepictureinpicture` attribute
+      // (mdn/browser-compat-data#24399) but still honors the property,
+      // so set it here too; the template attribute covers the rest.
+      player.disablePictureInPicture = true
+
+      player.addEventListener('play', this.handlePlay)
+      player.addEventListener('pause', this.handlePause)
+      player.addEventListener('volumechange', this.handleVolumeChange)
+      // The video layer sits at opacity 0 until `data-video-ready` and
+      // fades in over the poster (which never fades — GH #172). The
+      // readiness stamp itself is frame-accurate: see handleReady.
+      player.addEventListener('playing', this.handleReady)
+      // playback-core attaches hls.js to the <video> asynchronously after
+      // upgrade. A play() issued before that attach is voided by the media
+      // load algorithm (paused resets to true, the promise rejects), so a
+      // visible frame would sit on its poster until the next intersection
+      // change. Re-evaluate once the source is really in. (Harmless on the
+      // progressive loop, where the source is in from parse.)
+      player.addEventListener('loadedmetadata', this.handleSourceReady)
+
+      if (this.isFullControls) {
+        player.addEventListener('timeupdate', this.handleTimeUpdate)
+        player.addEventListener('durationchange', this.handleDurationChange)
+        player.addEventListener('loadedmetadata', this.handleLoadedMeta)
+        player.addEventListener('progress', this.handleProgress)
+        player.addEventListener('seeked', this.handleSeeked)
+      }
+
+      this.updateControl()
+      this.updateMute()
+      this.updatePlayback()
+      this.refreshScrubber()
+    }
+
 
     /** Restores a deferred poster's src/srcset so it fetches (see the
      *  `deferPoster` prop). Idempotent, so callers can prefetch the next
@@ -1205,6 +1299,7 @@ const imageRendering =
   }
 
   .media-frame img,
+  .media-frame__loop,
   .media-frame :global(mux-video) {
     width: 100%;
     height: 100%;
@@ -1288,6 +1383,7 @@ const imageRendering =
      the dissolve reads still → motion and can never reveal a blank/gray
      video (Safari fires `playing` before compositing the first frame). */
   .media-frame :global(mux-video),
+  .media-frame__loop,
   .media-frame__poster {
     position: absolute;
     inset: 0;
@@ -1300,12 +1396,14 @@ const imageRendering =
     pointer-events: none;
   }
 
-  .media-frame :global(mux-video) {
+  .media-frame :global(mux-video),
+  .media-frame__loop {
     opacity: 0;
     transition: opacity var(--motion-standard) var(--motion-ease-out);
   }
 
-  .media-frame[data-video-ready] :global(mux-video) {
+  .media-frame[data-video-ready] :global(mux-video),
+  .media-frame[data-video-ready] .media-frame__loop {
     opacity: 1;
   }
 
@@ -1321,6 +1419,7 @@ const imageRendering =
     .media-frame[data-hero-entrance] .media-frame__skeleton,
     .media-frame[data-hero-entrance] .media-frame__poster,
     .media-frame[data-hero-entrance] .media-frame__image,
+    .media-frame[data-hero-entrance] .media-frame__loop,
     .media-frame[data-hero-entrance] :global(mux-video) {
       animation: media-frame-settle 1200ms var(--motion-ease-out) both;
     }
@@ -1616,6 +1715,7 @@ const imageRendering =
     .media-frame__curated-poster,
     .media-frame img[data-loaded],
     .media-frame :global(mux-video),
+    .media-frame .media-frame__loop,
     .media-frame[revealed] .media-frame__curated-poster,
     .media-controls,
     .media-controls__icon svg,

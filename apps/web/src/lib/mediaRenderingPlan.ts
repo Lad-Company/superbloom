@@ -45,7 +45,21 @@ export interface MediaRenderingPlan {
    *  intersection starts fast; `auto` pulled whole renditions up front. */
   preload: 'metadata' | 'none'
   maxResolution: MuxMaxResolution
+  /** Whether the placement may play a short ambient loop as a progressive
+   *  MP4 (Mux static rendition) in a plain `<video>` instead of HLS through
+   *  `<mux-video>`. Only the hero: it is the one priority frame on the
+   *  page, so the HLS handshake (player chunk + three manifest round trips)
+   *  sits squarely on first landing, and its asset is the only one with
+   *  renditions enabled. Takes effect only when the asset actually carries
+   *  ready MP4 renditions; otherwise the frame streams as usual. */
+  progressiveLoop: boolean
 }
+
+/** Static rendition rung served under the small breakpoint. Mirrors the
+ *  HLS mobile cap (`data-mobile-max-resolution`): no phone viewport
+ *  resolves 1080p. */
+export const PROGRESSIVE_LOOP_SMALL_RESOLUTION = '720p'
+export const PROGRESSIVE_LOOP_LARGE_RESOLUTION = '1080p'
 
 const CARD_WIDTH_FRACTIONS: Record<CardWidth, number> = {
   '1/4': 1 / 4,
@@ -163,7 +177,43 @@ export const planMediaRendering = (
     fetchpriority: priority ? 'high' : 'auto',
     preload: priority ? 'metadata' : 'none',
     maxResolution: options?.maxResolution ?? maxResolutionFor(placement),
+    progressiveLoop: placement.context === 'hero',
   }
+}
+
+export interface StaticRenditionRef {
+  resolution?: string | null
+  name?: string | null
+}
+
+export interface ProgressiveLoopSource {
+  src: string
+  /** `<source media>` query; undefined for the default (last) source. */
+  media?: string
+}
+
+/** Resolves the `<source>` list for a progressive loop from the asset's ready
+ *  MP4 renditions: the 720p file under the small breakpoint, 1080p above,
+ *  each falling back to whatever single rendition exists. Returns null when
+ *  the asset has no usable MP4, so the caller streams instead. */
+export const progressiveLoopSources = (
+  playbackId: string,
+  renditions: readonly StaticRenditionRef[] | null | undefined,
+): ProgressiveLoopSource[] | null => {
+  const files = (renditions ?? []).filter((r): r is {resolution: string; name: string} =>
+    Boolean(r.resolution && r.name),
+  )
+  if (files.length === 0) return null
+  const url = (name: string) => `https://stream.mux.com/${playbackId}/${name}`
+  const small = files.find((f) => f.resolution === PROGRESSIVE_LOOP_SMALL_RESOLUTION)
+  const large = files.find((f) => f.resolution === PROGRESSIVE_LOOP_LARGE_RESOLUTION)
+  const fallback = large ?? small ?? files[0]
+  const sources: ProgressiveLoopSource[] = []
+  if (small && small !== fallback) {
+    sources.push({src: url(small.name), media: `(max-width: ${BREAKPOINTS.smallMax}px)`})
+  }
+  sources.push({src: url(fallback.name)})
+  return sources
 }
 
 export interface MuxPosterRendering {

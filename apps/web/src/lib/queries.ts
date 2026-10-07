@@ -19,7 +19,10 @@ const mediaProjection = `{
     _type == "mux.video" => {
       "playbackId": asset->playbackId,
       "aspectRatio": asset->data.aspect_ratio,
-      "thumbTime": asset->thumbTime
+      "thumbTime": asset->thumbTime,
+      "staticRenditions": asset->data.static_renditions.files[status == "ready" && ext == "mp4"]{
+        resolution, name, width, height
+      }
     }
   },
   "poster": poster{
