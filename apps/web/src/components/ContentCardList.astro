@@ -1,11 +1,11 @@
 ---
 interface Props {
-  class?: string;
-  featured?: boolean;
-  columnPack?: boolean;
+  class?: string
+  featured?: boolean
+  columnPack?: boolean
 }
 
-const {class: className, featured = false, columnPack = false} = Astro.props;
+const {class: className, featured = false, columnPack = false} = Astro.props
 ---
 
 <content-card-list
@@ -18,107 +18,112 @@ const {class: className, featured = false, columnPack = false} = Astro.props;
 
 <script>
   class ContentCardListElement extends HTMLElement {
-    private observer?: ResizeObserver;
+    private observer?: ResizeObserver
 
     connectedCallback() {
       if (this.hasAttribute('data-column-pack')) {
-        this.packColumns();
-        this.observer = new ResizeObserver(() => this.syncPack());
-        this.observer.observe(this);
-        const lead = this.querySelector(':scope > .content-card') as HTMLElement | null;
-        const leadMedia = lead?.querySelector('.media-frame') as HTMLElement | null;
+        this.packColumns()
+        this.observer = new ResizeObserver(() => this.syncPack())
+        this.observer.observe(this)
+        const lead = this.querySelector(':scope > .content-card') as HTMLElement | null
+        const leadMedia = lead?.querySelector('.media-frame') as HTMLElement | null
         if (leadMedia) {
-          this.observer.observe(leadMedia);
-          this.watchLeadMedia(leadMedia);
+          this.observer.observe(leadMedia)
+          this.watchLeadMedia(leadMedia)
         }
-        this.syncPack();
-        return;
+        this.syncPack()
+        return
       }
-      if (!this.hasAttribute('data-featured')) return;
-      this.observer = new ResizeObserver(() => this.layout());
-      this.observer.observe(this);
-      Array.from(this.children).forEach((card) => this.observer?.observe(card));
-      this.layout();
+      if (!this.hasAttribute('data-featured')) return
+      this.observer = new ResizeObserver(() => this.layout())
+      this.observer.observe(this)
+      Array.from(this.children).forEach((card) => this.observer?.observe(card))
+      this.layout()
     }
 
     disconnectedCallback() {
-      this.observer?.disconnect();
+      this.observer?.disconnect()
     }
 
     private packColumns() {
-      if (this.querySelector(':scope > .pack-stack')) return;
-      const cards = Array.from(this.children) as HTMLElement[];
-      if (cards.length < 2) return;
-      const stack = document.createElement('div');
-      stack.className = 'pack-stack';
-      cards.slice(1).forEach((card) => stack.appendChild(card));
-      this.appendChild(stack);
+      if (this.querySelector(':scope > .pack-stack')) return
+      const cards = Array.from(this.children) as HTMLElement[]
+      if (cards.length < 2) return
+      const stack = document.createElement('div')
+      stack.className = 'pack-stack'
+      cards.slice(1).forEach((card) => stack.appendChild(card))
+      this.appendChild(stack)
     }
 
     private watchLeadMedia(leadMedia: HTMLElement) {
-      const assets = Array.from(
-        leadMedia.querySelectorAll('img, mux-video'),
-      ) as HTMLElement[];
+      const assets = Array.from(leadMedia.querySelectorAll('img, mux-video')) as HTMLElement[]
       assets.forEach((asset) => {
         if (asset instanceof HTMLImageElement) {
           if (!asset.complete) {
-            asset.addEventListener('load', () => this.syncPack(), {once: true});
+            asset.addEventListener('load', () => this.syncPack(), {once: true})
           }
         } else {
-          asset.addEventListener('loadedmetadata', () => this.syncPack(), {once: true});
+          asset.addEventListener('loadedmetadata', () => this.syncPack(), {once: true})
         }
-      });
+      })
     }
 
     private syncPack() {
-      const stack = this.querySelector(':scope > .pack-stack') as HTMLElement | null;
-      const lead = this.querySelector(':scope > .content-card') as HTMLElement | null;
-      if (!stack || !lead) return;
+      const stack = this.querySelector(':scope > .pack-stack') as HTMLElement | null
+      const lead = this.querySelector(':scope > .content-card') as HTMLElement | null
+      if (!stack || !lead) return
       const mediaFrames = Array.from(stack.children).map(
         (card) => card.querySelector('.media-frame') as HTMLElement | null,
-      );
-      const mobile = window.innerWidth < 1024;
+      )
+      const mobile = window.innerWidth < 1024
       if (mobile) {
         mediaFrames.forEach((media) => {
-          media?.style.removeProperty('height');
-          media?.style.removeProperty('width');
-        });
-        return;
+          media?.style.removeProperty('height')
+          media?.style.removeProperty('width')
+        })
+        return
       }
-      const leadMedia = lead.querySelector('.media-frame') as HTMLElement | null;
-      if (!leadMedia) return;
-      const gap = Number.parseFloat(getComputedStyle(stack).rowGap) || 0;
-      const count = mediaFrames.length;
-      const perMedia = (leadMedia.getBoundingClientRect().height - gap * (count - 1)) / count;
-      if (perMedia <= 0) return;
+      const leadMedia = lead.querySelector('.media-frame') as HTMLElement | null
+      if (!leadMedia) return
+      const gap = Number.parseFloat(getComputedStyle(stack).rowGap) || 0
+      const count = mediaFrames.length
+      const perMedia = (leadMedia.getBoundingClientRect().height - gap * (count - 1)) / count
+      if (perMedia <= 0) return
       Array.from(stack.children).forEach((card) => {
-        const media = card.querySelector('.media-frame') as HTMLElement | null;
-        if (!media) return;
-        media.style.height = `${perMedia}px`;
-        const info = card.getAttribute('data-info-position');
+        const media = card.querySelector('.media-frame') as HTMLElement | null
+        if (!media) return
+        media.style.height = `${perMedia}px`
+        const info = card.getAttribute('data-info-position')
         if (info === 'right' || info === 'left') {
-          media.style.width = `${perMedia}px`;
+          media.style.width = `${perMedia}px`
         } else {
-          media.style.removeProperty('width');
+          media.style.removeProperty('width')
         }
-      });
+      })
     }
 
     private layout() {
-      const mobile = window.innerWidth < 1024;
+      const mobile = window.innerWidth < 1024
+      // The packed row gap — mirrors --featured-pack-gap in the styles so
+      // the SSR auto-row grid and the packed masonry share one gap source.
       const gap =
-        Number.parseFloat(getComputedStyle(this).getPropertyValue('--space-2xl')) || 32;
+        Number.parseFloat(getComputedStyle(this).getPropertyValue('--featured-pack-gap')) || 32
       Array.from(this.children).forEach((card) => {
-        const element = card as HTMLElement;
+        const element = card as HTMLElement
         element.style.gridRowEnd = mobile
           ? 'auto'
-          : `span ${Math.ceil(element.getBoundingClientRect().height + gap)}`;
-      });
+          : `span ${Math.ceil(element.getBoundingClientRect().height + gap)}`
+      })
+      // Flip into the 1px-row packing only after the spans are written: SSR
+      // ships a plain auto-row grid (a valid final-looking layout — see the
+      // [data-featured] styles), so hydration refines the packing instead of
+      // rescuing a 1px-tall placeholder (GH #187 CLS).
+      this.toggleAttribute('data-packed', !mobile)
     }
   }
 
   if (!customElements.get('content-card-list')) {
-    customElements.define('content-card-list', ContentCardListElement);
+    customElements.define('content-card-list', ContentCardListElement)
   }
 </script>
 
@@ -133,21 +138,52 @@ const {class: className, featured = false, columnPack = false} = Astro.props;
     width: 100%;
   }
 
+  /* Featured SSR ships as a plain auto-row grid — a valid final-looking
+     layout that paints at full height before any JS runs (GH #187: the
+     1px-row masonry collapsed the grid to 1px until hydration, a 0.159 CLS
+     hit on /work). Row gap and padding-bottom stand in for the packed
+     grid's gaps (each packed card spans its height + one gap, trailing gap
+     included), so a neatly tiling featured set — e.g. a single full-width
+     card — has identical height before and after hydration, and larger
+     sets shift only by the masonry packing delta. --featured-pack-gap is
+     the single source for that gap: layout() reads it back for the span
+     math (reading --space-2xl, a clamp(), returns the raw function, which
+     is why the shipped masonry always packed at the 32px fallback). */
   .content-card-list[data-featured] {
-    grid-auto-rows: 1px;
+    --featured-pack-gap: 32px;
     grid-auto-flow: row dense;
+    row-gap: var(--featured-pack-gap);
+    padding-bottom: var(--featured-pack-gap);
+  }
+
+  /* JS sets data-packed once layout() has measured and written the row
+     spans; only then does the 1px-row packing take over. */
+  .content-card-list[data-featured][data-packed] {
+    grid-auto-rows: 1px;
     row-gap: 0;
+    padding-bottom: 0;
   }
 
   .content-card-list[data-column-pack] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-auto-flow: row;
     align-items: start;
-    gap: var(--page-gutter);
+    /* Row gap matches the hydrated .pack-stack gap so the SSR stack spacing
+       survives hydration. */
+    gap: var(--space-xs) var(--page-gutter);
   }
 
   .content-card-list[data-column-pack] > :global(.content-card:first-child) {
     grid-column: 1;
+  }
+
+  /* Before hydration there is no .pack-stack wrapper yet (JS reparents the
+     non-lead cards in packColumns()); park them in column 2 so the SSR
+     geometry already matches the packed structure. */
+  @media (--bp-desktop) {
+    .content-card-list[data-column-pack] > :global(.content-card:not(:first-child)) {
+      grid-column: 2;
+    }
   }
 
   .content-card-list[data-column-pack] > :global(.pack-stack) {
@@ -201,6 +237,7 @@ const {class: className, featured = false, columnPack = false} = Astro.props;
     .content-card-list[data-featured] {
       grid-auto-rows: auto;
       row-gap: var(--stack-gap);
+      padding-bottom: 0;
     }
 
     .content-card-list > :global(.content-card[data-card-width]) {

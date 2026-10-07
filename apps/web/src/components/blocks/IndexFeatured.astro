@@ -32,10 +32,10 @@ const SIDE_SETTINGS = {
 
 {
   lead && (
-    <index-featured class="index-featured">
-      <div class="stick">
-        <div class="grid">
-          <div class="lead">
+    <div class="index-featured">
+      <div class="grid">
+        <div class="lead">
+          <div class="stick">
             {/* The lead card owns the /index LCP — load its media eager. */}
             <MixedArticleCard
               item={lead}
@@ -45,98 +45,25 @@ const SIDE_SETTINGS = {
               minimal
             />
           </div>
-          {side.length > 0 && (
-            <div class="rail-slot">
-              <div class="rail">
-                {side.slice(0, 3).map((item) => (
-                  <MixedArticleCard
-                    item={item}
-                    settings={SIDE_SETTINGS}
-                    globalSettings={globalSettings}
-                    minimal
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
+        {side.length > 0 && (
+          <div class="rail-slot">
+            <div class="rail">
+              {side.slice(0, 3).map((item) => (
+                <MixedArticleCard
+                  item={item}
+                  settings={SIDE_SETTINGS}
+                  globalSettings={globalSettings}
+                  minimal
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </index-featured>
+    </div>
   )
 }
-
-<script>
-  // Scroll-jacked side rail, position-driven (no wheel interception): the
-  // element reserves pin distance (its height = grid height + rail overhang)
-  // and the grid sticks to the viewport top. Once the lead card hits the top
-  // of the scroll window, further page scroll translates the rail instead —
-  // the rail cannot be scrolled independently, and pointer position is
-  // irrelevant. The jack ends when the last side card's bottom aligns with
-  // the bottom edge of the lead media; scrolling up reverses it until the
-  // first side card locks back to the lead's top edge. The rail just reads
-  // the native scroll position — no smooth-scroll library involved.
-  class IndexFeaturedElement extends HTMLElement {
-    private grid: HTMLElement | null = null
-    private rail: HTMLElement | null = null
-    private leadMedia: HTMLElement | null = null
-    private maxOffset = 0
-    private observer?: ResizeObserver
-    private desktop = window.matchMedia('(min-width: 1024px)')
-
-    connectedCallback() {
-      this.grid = this.querySelector(':scope > .stick > .grid')
-      this.rail = this.querySelector(':scope .rail')
-      this.leadMedia = this.querySelector(':scope .lead .media-frame')
-      if (!this.grid || !this.rail || !this.leadMedia) return
-      this.observer = new ResizeObserver(() => this.measure())
-      this.observer.observe(this.grid)
-      this.observer.observe(this.rail)
-      this.desktop.addEventListener('change', this.handleBreakpoint)
-      window.addEventListener('scroll', this.handleScroll, {passive: true})
-      this.measure()
-    }
-
-    disconnectedCallback() {
-      this.observer?.disconnect()
-      this.desktop.removeEventListener('change', this.handleBreakpoint)
-      window.removeEventListener('scroll', this.handleScroll)
-    }
-
-    private handleBreakpoint = () => {
-      this.measure()
-      this.handleScroll()
-    }
-
-    private measure() {
-      if (!this.grid || !this.rail || !this.leadMedia) return
-      if (!this.desktop.matches) {
-        this.maxOffset = 0
-        this.style.removeProperty('height')
-        this.rail.style.removeProperty('transform')
-        return
-      }
-      // Rail overhang past the bottom edge of the lead media — the distance
-      // the rail (and the pinned page) travels.
-      this.maxOffset = Math.max(0, this.rail.offsetHeight - this.leadMedia.offsetHeight)
-      this.style.height = `${this.grid.offsetHeight + this.maxOffset}px`
-      this.handleScroll()
-    }
-
-    private handleScroll = () => {
-      if (!this.rail) return
-      const offset = Math.min(Math.max(-this.getBoundingClientRect().top, 0), this.maxOffset)
-      if (offset > 0) {
-        this.rail.style.transform = `translateY(${-offset}px)`
-      } else {
-        this.rail.style.removeProperty('transform')
-      }
-    }
-  }
-
-  if (!customElements.get('index-featured')) {
-    customElements.define('index-featured', IndexFeaturedElement)
-  }
-</script>
 
 <style>
   .index-featured {
@@ -162,17 +89,23 @@ const SIDE_SETTINGS = {
     gap: var(--stack-gap);
   }
 
+  /* Scroll-jacked side rail with no JS (GH #187): the rail sits in normal
+     flow, so when it overhangs the lead it owns the row height and reserves
+     the pin distance by itself; the lead card sticks to the viewport top
+     while the rail scrolls past. The rail cannot be scrolled independently
+     and pointer position is irrelevant — it just reads the native scroll
+     position. The jack ends when the last side card's bottom meets the lead
+     card's bottom; scrolling up reverses it until the first side card locks
+     back to the lead's top edge. Because CSS reserves the height, SSR and
+     hydrated geometry are identical — the old JS version wrote
+     el.style.height = grid + railOverhang only after hydration, growing the
+     section and shifting everything below it. */
   @media (--bp-desktop) {
-    .stick {
-      position: sticky;
-      top: 0;
-    }
-
     .grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: var(--page-gutter);
-      /* The lead card alone owns the row height; the absolute rail cannot
-         stretch it. */
+      /* The taller column owns the row height; the lead's grid area
+         stretches so the sticky card has room to travel. */
       align-items: stretch;
     }
 
@@ -180,23 +113,17 @@ const SIDE_SETTINGS = {
       grid-column: span 3;
     }
 
+    .stick {
+      position: sticky;
+      top: 0;
+    }
+
     .rail-slot {
       grid-column: span 1;
-      position: relative;
-      /* Clip only above the top edge: side cards scrolling up vanish at the
-         grid's top line, while the resting overhang stays visible past the
-         lead's bottom edge. */
-      clip-path: inset(0 -100vmax -100vmax -100vmax);
     }
 
     .rail {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
       gap: var(--space-xs);
-      overflow: visible;
-      will-change: transform;
     }
   }
 </style>
