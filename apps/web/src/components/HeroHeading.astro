@@ -12,10 +12,13 @@ interface Props {
 const { heading, headingSize, reveal, id } = Astro.props;
 
 // Entry Type Reveal (design-system §5): the words are split here, at render,
-// and animated by CSS alone once `html[data-fonts-ready]` lands (Layout's
-// inline stamp). No JS touches the heading after paint — a runtime split
-// created new nodes after first paint and made the LCP element a coin flip
-// between the h1, a split line, and the nav logo (ARCHITECTURE.md ADR-0040).
+// held clipped at translateY(110%) from the first frame on cold loads
+// (html.js:not([data-fonts-ready)]), and animated by CSS alone once
+// `html[data-fonts-ready]` lands (Layout's inline stamp). No JS touches the
+// heading after paint — a runtime split created new nodes after first paint
+// and made the LCP element a coin flip between the h1, a split line, and the
+// nav logo (ARCHITECTURE.md ADR-0040, amended by GH #171: first-frame hidden
+// state, so LCP moves off the heading to the subheading or nav logo).
 const words = reveal ? splitHeroWords(heading) : null;
 ---
 
@@ -61,10 +64,12 @@ const words = reveal ? splitHeroWords(heading) : null;
 
   /* Word wrappers clip the rising inner span. The padding/margin pair lifts
      the clip edge 0.1em above the line box without shifting layout, so the
-     overshoot settle never clips ascenders. Both spans are painted content
-     from the first frame: no opacity 0, no resting transform — the hidden
-     state exists only inside the keyframes, which start when the fonts
-     stamp lands. */
+     overshoot settle never clips ascenders. On cold loads the inner spans
+     start clipped at translateY(110%) (the rule below), so the rise plays
+     from hidden instead of paint-at-rest-then-jump (GH #171). The gate is
+     html.js:not([data-fonts-ready]): no-JS renders (no html.js class) keep
+     the heading visible, and View Transitions (stamp pre-applied on the
+     incoming document) never re-hide it. */
   .word {
     display: inline-block;
     overflow: clip;
@@ -75,6 +80,15 @@ const words = reveal ? splitHeroWords(heading) : null;
 
   .word__inner {
     display: inline-block;
+  }
+
+  /* First-frame hidden state (GH #171, ADR-0040 amendment): the hidden
+     state lives in a real rule, not only inside the keyframes, so the words
+     are clipped from the very first paint and the rise plays once the fonts
+     stamp lands. The animation's `both` fill takes over from the same
+     translateY(110%) start, so the stamp hand-off is seamless. */
+  :global(html.js:not([data-fonts-ready])) .hero-heading--reveal .word__inner {
+    transform: translateY(110%);
   }
 
   :global(html.js[data-fonts-ready]) .hero-heading--reveal .word__inner {
@@ -92,6 +106,12 @@ const words = reveal ? splitHeroWords(heading) : null;
   }
 
   @media (prefers-reduced-motion: reduce) {
+    /* Reduced motion keeps the heading visible from the first frame: no
+       hidden state, no rise — the words are simply there. */
+    :global(html.js:not([data-fonts-ready])) .hero-heading--reveal .word__inner {
+      transform: none;
+    }
+
     :global(html.js[data-fonts-ready]) .hero-heading--reveal .word__inner {
       animation: none;
     }

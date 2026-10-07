@@ -40,6 +40,7 @@
     "backup:capability-contextual-copy": "sanity exec migrations/backup-capability-contextual-copy.ts --with-user-token",
     "migrate:capability-contextual-copy": "pnpm run backup:capability-contextual-copy && sanity exec migrations/remove-capability-contextual-copy.ts --with-user-token",
     "migrate:who-we-are-thumb-time": "sanity exec migrations/set-who-we-are-lead-thumb-time.ts --with-user-token",
+    "migrate:mux-plus-sweep": "sanity exec migrations/mux-plus-sweep.ts --with-user-token",
     "seed:capabilities": "sanity dataset import seed-capabilities.ndjson production --replace",
     "seed:tyson": "sanity exec migrations/seed-tyson.ts"
   },
