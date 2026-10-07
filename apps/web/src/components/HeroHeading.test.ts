@@ -34,3 +34,15 @@ describe('hero heading first-frame hidden state (GH #171)', () => {
     expect(reduce).toContain('animation: none')
   })
 })
+
+// The heading's measure must be face-independent: ch is the active face's
+// zero-glyph advance, which differs ~19% between PP Neue Corp Tight and its
+// caps-matched fallback, so a ch measure rewrapped the heading when the real
+// font swapped in — the cold-load layout shift on /work (Lighthouse CLS 0.4,
+// h1 + "Web font loaded"). em scales with font-size only.
+describe('hero heading measure is font-independent', () => {
+  it('uses an em measure, never ch', () => {
+    expect(source).toContain('max-width: 10.6em')
+    expect(source).not.toMatch(/max-width:\s*[\d.]+ch/)
+  })
+})

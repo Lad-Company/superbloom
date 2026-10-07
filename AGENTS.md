@@ -1,4 +1,4 @@
-> **Where things live** - Client: Lad | Bucket: `clients/Lad/` | Dropbox: `_Clients/Lad/Superbloom/` | Registry: `~/Code/toolhub/CoS/REGISTRY.md`
+> **Where things live** - Client: Lad | Bucket: `clients/Lad/` | Dropbox: `_Clients/Lad/Superbloom/` | Registry: Notion "Repos" DB (IDs in `~/Code/toolhub/CoS/NOTION.md`)
 
 # Superbloom House — Agent Instructions
 

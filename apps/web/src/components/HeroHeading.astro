@@ -46,9 +46,17 @@ const words = reveal ? splitHeroWords(heading) : null;
      wrap to every line instead of truncation. */
   .hero-heading {
     margin: 0;
-    /* 28ch floor: titles get at least ~28 characters of flow per line before
-       wrapping (the old 21ch broke even mid-length titles too early). */
-    max-width: 28ch;
+    /* ~28-character flow floor, expressed in em: titles get at least ~28
+       characters per line before wrapping (the old 21ch broke even mid-length
+       titles too early). The unit must NOT be ch — ch is the active face's
+       zero-glyph advance, and the caps-matched fallback's zero is ~19%
+       narrower than PP Neue Corp Tight's (0.305em vs 0.378em), so a ch
+       measure shrank while the fallback was on screen and rewrapped the
+       heading when the real font swapped in (the cold-load CLS this
+       component's fonts.css fallback matching exists to prevent). 10.6em ≈
+       28ch in the real face (28 × 0.378), so the designed measure is
+       unchanged and identical under either face. */
+    max-width: 10.6em;
     display: block;
     overflow: visible;
     /* Balance multi-line headings so a long CMS title can't strand a lone
