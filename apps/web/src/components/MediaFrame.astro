@@ -1500,21 +1500,38 @@ const imageRendering =
     opacity: 1;
   }
 
-  /* Media settle (GH #172, home hero only): a slow scale(1.04 → 1) on the
-     hero media layers over ~1.2s so the load sequence reads blur → still →
-     motion with one continuous settle. Compositor-only (transform), runs
-     once from first paint like the hero Type Reveal (ADR-0040 — the
-     animation moves existing nodes, it never gates a paint); the frame's
-     overflow: clip contains the 4% overshoot. Off entirely under
-     prefers-reduced-motion. 1200ms is a literal — the motion tokens stop at
-     --motion-deliberate (800ms) and this beat is deliberately slower. */
+  /* GH #183 (home hero only): the hero ready-fade runs a beat slower than
+     the shared --motion-standard (480ms) — a slow dissolve to match the
+     hero settle below. Presented media and cards keep 480ms. Scoped inside
+     no-preference so the reduced-motion block's instant swap (transition:
+     none) is never trumped by this higher-specificity rule, and so the
+     whole hero ceremony stays a motion-preference affair. The
+     data-video-ready gate is untouched — the readiness stamp still waits
+     on requestVideoFrameCallback (GH #172); only the fade duration
+     changes. */
+  @media (prefers-reduced-motion: no-preference) {
+    .media-frame[data-hero-entrance][data-video-ready] :global(mux-video),
+    .media-frame[data-hero-entrance][data-video-ready] .media-frame__loop {
+      transition: opacity var(--motion-deliberate) var(--motion-ease-out);
+    }
+  }
+
+  /* Media settle (GH #172, home hero only; lengthened in GH #183): a slow
+     scale(1.04 → 1) on the hero media layers over ~1.8s so the load
+     sequence reads blur → still → motion with one continuous settle.
+     Compositor-only (transform), runs once from first paint like the hero
+     Type Reveal (ADR-0040 — the animation moves existing nodes, it never
+     gates a paint); the frame's overflow: clip contains the 4% overshoot.
+     Off entirely under prefers-reduced-motion. 1800ms is a literal — the
+     motion tokens stop at --motion-deliberate (800ms) and this beat is
+     deliberately slower. */
   @media (prefers-reduced-motion: no-preference) {
     .media-frame[data-hero-entrance] .media-frame__skeleton,
     .media-frame[data-hero-entrance] .media-frame__poster,
     .media-frame[data-hero-entrance] .media-frame__image,
     .media-frame[data-hero-entrance] .media-frame__loop,
     .media-frame[data-hero-entrance] :global(mux-video) {
-      animation: media-frame-settle 1200ms var(--motion-ease-out) both;
+      animation: media-frame-settle 1800ms var(--motion-ease-out) both;
     }
   }
 
