@@ -209,6 +209,27 @@ describe('MediaFrame playback profiles', () => {
         /\.media-frame :global\(mux-video\),\s*\.media-frame__loop,\s*\.media-frame__poster \{/,
       )
     })
+
+    it('holds the poster on constrained networks instead of a stuttering fixed-bitrate loop', () => {
+      // No ABR ladder on the MP4 path: the 720p rendition (~3.9 Mbps)
+      // stalled four times in 30s on a 1.6 Mbps link where HLS downshifted
+      // and played through (2026-10-06). Save-data, cellular-class, or a
+      // reported downlink under the floor keeps the poster; a missing
+      // Network Information API (Safari) plays. Viewport size is not a
+      // signal — unlike the HLS constrained seed, a phone on wifi is fine.
+      expect(source).toContain('const PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS = 4')
+      expect(source).toContain('const holdProgressiveLoop = (): boolean => {')
+      expect(source).toContain('connection.downlink < PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS')
+      const holdFn = source.match(/const holdProgressiveLoop = \(\): boolean => \{[\s\S]*?\n {2}\}/)?.[0]
+      expect(holdFn).toBeDefined()
+      expect(holdFn).not.toContain('matchMedia')
+      expect(holdFn).toContain('cellularClass(connection)')
+      expect(source).toContain('if (loopElement && holdProgressiveLoop()) {')
+      // Abort the parse-time fetch and never adopt the element as the player.
+      expect(source).toContain("for (const source of loopElement.querySelectorAll('source')) source.remove()")
+      expect(source).toContain('loopElement.load()')
+      expect(source).toContain("this.setAttribute('data-loop-held', '')")
+    })
   })
 
   it('emits no SSR poster attribute on mux-video — the player poster is copied from the overlay img at upgrade', () => {

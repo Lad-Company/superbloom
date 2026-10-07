@@ -505,16 +505,40 @@ const imageRendering =
     abrEwmaDefaultEstimate: 2_000_000,
   }
 
-  type NetworkInformationLike = { saveData?: boolean; effectiveType?: string }
+  type NetworkInformationLike = { saveData?: boolean; effectiveType?: string; downlink?: number }
+
+  const readConnection = (): NetworkInformationLike | undefined =>
+    (navigator as Navigator & { connection?: NetworkInformationLike }).connection
+
+  const cellularClass = (connection: NetworkInformationLike | undefined): boolean =>
+    Boolean(
+      connection?.saveData ||
+        (connection?.effectiveType && ['slow-2g', '2g', '3g'].includes(connection.effectiveType)),
+    )
 
   const constrainedNetwork = (): boolean => {
-    const connection = (navigator as Navigator & { connection?: NetworkInformationLike })
-      .connection
-    if (connection?.saveData) return true
-    if (connection?.effectiveType && ['slow-2g', '2g', '3g'].includes(connection.effectiveType)) {
-      return true
-    }
+    if (cellularClass(readConnection())) return true
     return window.matchMedia(`(max-width: ${BREAKPOINTS.smallMax}px)`).matches
+  }
+
+  /** The progressive loop has no ABR ladder to fall back on: its 720p
+   *  rendition runs ~3.9 Mbps, and on a 1.6 Mbps link it stalled four times
+   *  in 30s where HLS downshifted to 480p and played through (CDP probe,
+   *  2026-10-06). Under this reported downlink — or on save-data /
+   *  cellular-class connections — the hero holds its poster instead of
+   *  stuttering. Chrome caps the reported downlink at 10 Mbps, and Safari
+   *  has no Network Information API at all, so a missing value means "no
+   *  evidence, play". Unlike constrainedNetwork(), viewport size is not a
+   *  signal here: a phone on wifi plays the 720p rung fine. */
+  const PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS = 4
+
+  const holdProgressiveLoop = (): boolean => {
+    const connection = readConnection()
+    if (cellularClass(connection)) return true
+    return (
+      typeof connection?.downlink === 'number' &&
+      connection.downlink < PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS
+    )
   }
 
   /** Ambient loops are short and cyclic, so the hls.js defaults (30s forward
@@ -690,6 +714,20 @@ const imageRendering =
       this.addEventListener('focusin', this.handleActivity)
 
       if (!playerElement && !loopElement) return
+
+      // Constrained network: keep the poster rather than a loop that
+      // stutters. Priority frames carry preload="auto", so the browser
+      // already opened the MP4 at parse; dropping the sources and
+      // re-running the load algorithm aborts that fetch. With no player
+      // adopted, updatePlayback() is a no-op and data-video-ready never
+      // lands, so the poster stays painted.
+      if (loopElement && holdProgressiveLoop()) {
+        for (const source of loopElement.querySelectorAll('source')) source.remove()
+        loopElement.removeAttribute('preload')
+        loopElement.load()
+        this.setAttribute('data-loop-held', '')
+        return
+      }
 
       this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
       this.observer = new IntersectionObserver(
