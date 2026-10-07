@@ -92,8 +92,12 @@ const words = reveal ? splitHeroWords(heading) : null;
   }
 
   :global(html.js[data-fonts-ready]) .hero-heading--reveal .word__inner {
-    animation: hero-word-rise var(--motion-quick) var(--motion-ease-reveal) both;
-    animation-delay: calc(var(--i) * var(--motion-stagger-standard));
+    /* GH #181: ease-out (no overshoot) instead of ease-reveal, and a
+       400ms/32ms literal pair — between --motion-quick (240ms) and
+       --motion-standard (480ms) / --motion-stagger-standard (24ms) — so the
+       rise reads as one composed gesture instead of a rapid bounce. */
+    animation: hero-word-rise 400ms var(--motion-ease-out) both;
+    animation-delay: calc(var(--i) * 32ms);
   }
 
   @keyframes hero-word-rise {

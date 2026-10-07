@@ -24,7 +24,7 @@ describe('hero heading first-frame hidden state (GH #171)', () => {
       ':global(html.js[data-fonts-ready]) .hero-heading--reveal .word__inner',
     )
     expect(source).toContain(
-      'animation: hero-word-rise var(--motion-quick) var(--motion-ease-reveal) both',
+      'animation: hero-word-rise 400ms var(--motion-ease-out) both',
     )
   })
 
