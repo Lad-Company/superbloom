@@ -255,8 +255,15 @@ const gaMode = preview
       import { prefersReducedMotion } from '../lib/motion/config';
       import { initAnalytics } from '../lib/analytics';
       import { initDeferredSentry } from '../lib/sentryDeferred';
+      import { installChunkErrorReload } from '../lib/chunkErrorReload';
 
       initAnalytics();
+
+      // Stale-chunk recovery (Sentry SUPERBLOOM-WEB-5/-6): a visitor holding
+      // pre-deploy HTML 404s when deferred code lazy-imports a re-hashed
+      // _astro chunk; reload once per tab session so fresh HTML arrives.
+      // Independent of Sentry — resilience shouldn't depend on telemetry.
+      installChunkErrorReload();
 
       // Sentry browser SDK: deferred to after `window load` so it never
       // competes with first paint (GH #164); a static no-op when Sentry is
