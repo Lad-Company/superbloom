@@ -619,13 +619,28 @@ describe('MediaFrame hero entrance ceremony (GH #172)', () => {
     expect(plan).toContain('export const HERO_POSTER_WIDTHS = [1280, 2560] as const')
   })
 
+  it('slows the hero ready-fade to --motion-deliberate without touching the shared 480ms rule (GH #183)', () => {
+    // The global ready-fade stays --motion-standard (480ms) for Presented
+    // media and cards; the home hero overrides it to --motion-deliberate
+    // (~800ms), scoped to data-hero-entrance + data-video-ready and gated
+    // on no-preference so the reduced-motion instant swap still wins.
+    expect(source).toMatch(
+      /\.media-frame\[data-hero-entrance\]\[data-video-ready\] :global\(mux-video\),\s*\.media-frame\[data-hero-entrance\]\[data-video-ready\] \.media-frame__loop\s*\{[^}]*transition:\s*opacity var\(--motion-deliberate\) var\(--motion-ease-out\)/,
+    )
+    const heroOverride = source.slice(
+      source.indexOf('.media-frame[data-hero-entrance][data-video-ready]') - 200,
+    )
+    expect(heroOverride).toContain('@media (prefers-reduced-motion: no-preference)')
+  })
+
   it('settles the hero media with a slow compositor-only scale, gated on no-preference', () => {
-    // scale(1.04 → 1) over ~1.2s on --motion-ease-out; transform/opacity
-    // only, and the whole ceremony lives inside a no-preference media query
-    // so prefers-reduced-motion never sees it.
+    // scale(1.04 → 1) over ~1.8s on --motion-ease-out (lengthened from
+    // 1.2s in GH #183); transform/opacity only, and the whole ceremony
+    // lives inside a no-preference media query so prefers-reduced-motion
+    // never sees it.
     expect(source).toContain('@media (prefers-reduced-motion: no-preference)')
     expect(source).toMatch(
-      /\.media-frame\[data-hero-entrance\][^{]*\{[^}]*animation:\s*media-frame-settle 1200ms var\(--motion-ease-out\) both/,
+      /\.media-frame\[data-hero-entrance\][^{]*\{[^}]*animation:\s*media-frame-settle 1800ms var\(--motion-ease-out\) both/,
     )
     // The settle is a pure transform — no layout-affecting properties.
     const settle =
