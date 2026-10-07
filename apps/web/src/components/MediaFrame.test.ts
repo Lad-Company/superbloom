@@ -276,6 +276,22 @@ describe('MediaFrame playback profiles', () => {
       expect(source).toContain('this.disarmLoopStallWatchdog()')
       expect(source).toContain("this.player?.removeEventListener('waiting', this.armLoopStallWatchdog)")
     })
+
+    it('retries playback on the first user gesture after a play() rejection', () => {
+      // Safari's per-site "Never Auto-Play" (or a similar policy) rejects
+      // even muted play() with NotAllowedError on a visible, buffered video;
+      // a real user gesture lifts the block. Rejected plays arm one-time
+      // pointerdown/keydown listeners that re-run updatePlayback().
+      expect(source).toContain('private armPlaybackGestureRetry')
+      expect(source).toContain("this.player.play?.().catch(() => this.armPlaybackGestureRetry())")
+      expect(source).toContain("document.addEventListener('pointerdown', this.handlePlaybackGesture")
+      expect(source).toContain("document.addEventListener('keydown', this.handlePlaybackGesture")
+      expect(source).toContain('once: true')
+      // The armed listeners leave with the element (View Transition swap
+      // teardown), or a dead frame would retry into a detached player.
+      expect(source).toContain("document.removeEventListener('pointerdown', this.handlePlaybackGesture")
+      expect(source).toContain("document.removeEventListener('keydown', this.handlePlaybackGesture")
+    })
   })
 
   it('emits no poster attribute on mux-video and never copies one — the opacity gate covers the first-frame gap (GH #172)', () => {

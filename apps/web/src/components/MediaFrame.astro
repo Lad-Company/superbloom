@@ -639,6 +639,7 @@ const imageRendering =
     /** One revival per element: a re-wedged loop after a forced reload means
      *  something deeper is wrong — never loop load() calls. */
     private loopRevived = false
+    private gestureRetryArmed = false
 
     private handleVisibilityChange = () => this.updatePlayback()
     private handleMotionChange = () => this.updatePlayback()
@@ -695,7 +696,7 @@ const imageRendering =
         this.loopRevived = true
         this.setAttribute('data-loop-revived', '')
         player.load()
-        player.play?.().catch(() => {})
+        player.play?.().catch(() => this.armPlaybackGestureRetry())
       }, LOOP_STALL_MS)
     }
     private disarmLoopStallWatchdog = () => {
@@ -703,6 +704,29 @@ const imageRendering =
         clearTimeout(this.loopStallTimer)
         this.loopStallTimer = null
       }
+    }
+    /** Autoplay-policy recovery: a per-site "Never Auto-Play" setting (or a
+     *  similar policy) rejects even muted play() with NotAllowedError, which
+     *  the callers must swallow. The block is policy, not failure — the
+     *  first real user gesture lifts it, so retry updatePlayback() once on
+     *  the next pointerdown/keydown anywhere in the document. */
+    private armPlaybackGestureRetry = () => {
+      if (this.gestureRetryArmed) return
+      this.gestureRetryArmed = true
+      document.addEventListener('pointerdown', this.handlePlaybackGesture, {
+        once: true,
+        capture: true,
+      })
+      document.addEventListener('keydown', this.handlePlaybackGesture, {
+        once: true,
+        capture: true,
+      })
+    }
+    private handlePlaybackGesture = () => {
+      this.gestureRetryArmed = false
+      document.removeEventListener('pointerdown', this.handlePlaybackGesture, {capture: true})
+      document.removeEventListener('keydown', this.handlePlaybackGesture, {capture: true})
+      this.updatePlayback()
     }
     private handleMuteClick = () => this.toggleMute()
     private handleVolumeChange = () => this.updateMute()
@@ -1055,6 +1079,9 @@ const imageRendering =
       for (const event of LOOP_STALL_DISARM_EVENTS) {
         this.player?.removeEventListener(event, this.disarmLoopStallWatchdog)
       }
+      document.removeEventListener('pointerdown', this.handlePlaybackGesture, {capture: true})
+      document.removeEventListener('keydown', this.handlePlaybackGesture, {capture: true})
+      this.gestureRetryArmed = false
       if (this.dragPointerId !== null) {
         try {
           this.trackElement?.releasePointerCapture(this.dragPointerId)
@@ -1091,7 +1118,7 @@ const imageRendering =
       }
 
       if (shouldPlay && isPaused) {
-        this.player.play?.().catch(() => {})
+        this.player.play?.().catch(() => this.armPlaybackGestureRetry())
       } else if (!shouldPlay && !isPaused) {
         this.player.pause?.()
       }
