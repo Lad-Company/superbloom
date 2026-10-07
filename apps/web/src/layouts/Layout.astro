@@ -186,22 +186,31 @@ const gaMode = preview
       // Fonts-ready stamp: the hero Type Reveal (HeroHeading) is pure CSS
       // keyed on html[data-fonts-ready], so the words rise in the real
       // glyphs instead of swapping faces mid-animation. Inline with no
-      // imports so it never waits on the bundle; the heading is painted
-      // content from the first frame either way (the stamp starts an
-      // animation, it never gates a paint — ARCHITECTURE.md ADR-0040). The
-      // cap keeps a slow font from holding the reveal indefinitely.
+      // imports so it never waits on the bundle. Until the stamp lands the
+      // heading's words are clipped at translateY(110%)
+      // (html.js:not([data-fonts-ready]) in HeroHeading), so the cold-load
+      // rise plays from hidden — GH #171, amending ADR-0040's
+      // visible-at-first-paint invariant. The wait is on fonts.load() for
+      // the display face itself, not document.fonts.ready: WebKit can
+      // resolve fonts.ready before the preloaded Neue Corp Tight is
+      // applied, which rose the words in Arial Narrow and swapped faces
+      // mid-flight. The cap keeps a hung font load from hiding the heading
+      // forever.
       (function () {
         const stamp = function () {
           document.documentElement.setAttribute('data-fonts-ready', '');
         };
-        if (!document.fonts || !document.fonts.ready) {
+        if (!document.fonts || !document.fonts.load) {
           stamp();
           return;
         }
         const capped = new Promise(function (resolve) {
           window.setTimeout(resolve, 1000);
         });
-        Promise.race([document.fonts.ready, capped]).then(stamp, stamp);
+        Promise.race([document.fonts.load('750 1em "PP Neue Corp Tight"'), capped]).then(
+          stamp,
+          stamp,
+        );
       })();
     </script>
     <style is:global>
