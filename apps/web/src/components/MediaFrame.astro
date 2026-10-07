@@ -1,6 +1,7 @@
 ---
 import {buildImageRendering, type CropRatio} from '../lib/imageCropping'
 import {
+  HERO_POSTER_WIDTHS,
   muxPosterRendering,
   muxSkeletonThumbUrl,
   planMediaRendering,
@@ -91,6 +92,18 @@ interface Props {
    *  stack, whose eight lazy frames all sit inside the browser's lazy-load
    *  threshold and would otherwise fetch eight thumbnails at first layout. */
   deferPoster?: boolean
+  /** Home-hero entrance ceremony (GH #172), three bundled opt-ins:
+   *  1. the poster joins the ADR-0039 load crossfade despite the frame's
+   *     priority status — the GH #162 exemption exists because priority
+   *     posters are the LCP element on /work and /index, but a
+   *     full-viewport hero poster is excluded from LCP candidacy (Chrome
+   *     112+), so it can dissolve in over the blur-up instead of popping;
+   *  2. the poster srcset pins to HERO_POSTER_WIDTHS (two rungs) so every
+   *     visitor warms the same on-demand Mux thumbnail URLs;
+   *  3. the media layers play a slow scale(1.04 → 1) settle (~1.2s,
+   *     compositor-only, off under prefers-reduced-motion).
+   *  Only the homepage hero should set this. */
+  heroEntrance?: boolean
   controls?: MediaPlaybackProfile
   class?: string
 }
@@ -104,6 +117,7 @@ const {
   maxResolution,
   active = true,
   deferPoster = false,
+  heroEntrance = false,
   controls = 'none',
   class: className,
 } = Astro.props
@@ -148,7 +162,12 @@ const hasAsset =
   (asset?._type === 'mux.video' && Boolean(asset.playbackId))
 const videoPoster =
   asset?._type === 'mux.video' && asset.playbackId
-    ? muxPosterRendering(asset.playbackId, placement, asset.thumbTime)
+    ? muxPosterRendering(
+        asset.playbackId,
+        placement,
+        asset.thumbTime,
+        heroEntrance ? HERO_POSTER_WIDTHS : undefined,
+      )
     : undefined
 const isVideo = asset?._type === 'mux.video' && Boolean(asset.playbackId)
 const showControls = isVideo && controls !== 'none'
@@ -230,6 +249,7 @@ const imageRendering =
   active={active ? true : undefined}
   gated={isGated ? true : undefined}
   data-priority={plan.priority ? true : undefined}
+  data-hero-entrance={heroEntrance ? true : undefined}
   data-mobile-max-resolution={mobileMaxResolution}
   class:list={[
     'media-frame',
@@ -279,12 +299,16 @@ const imageRendering =
     )
   }
   {
-    /* No SSR `poster` attribute: it takes exactly one URL (no srcset), so it
-       fetched a second copy of every frame's thumbnail. loadPlayer() instead
-       copies the overlay poster's resolved currentSrc onto the element
-       before upgrade — guaranteed cache hit — which still covers the
-       fade-to-first-frame gap (visual QA: poster="" flashed a blank frame
-       there). `playsinline` is load-bearing on iOS: without it Safari throws
+    /* No `poster` attribute, ever: it takes exactly one URL (no srcset), so
+       it fetched a second copy of every frame's thumbnail — and WebKit
+       ignores `object-fit: cover` on the shadow <video> poster, so the
+       browser's own letterboxed 16:9 poster painted on top of the covering
+       3:2 overlay image (a visible scale jump, then another when real
+       frames started — GH #172). The overlay poster stays painted
+       underneath and the player itself sits at opacity 0 until
+       `data-video-ready` (a presented frame, not just `playing`), which
+       covers the fade-to-first-frame gap the player poster used to guard.
+       `playsinline` is load-bearing on iOS: without it Safari throws
        any gesture-driven play() (gated-card reveal tap, Presented play/mute
        buttons) into the fullscreen native player, hijacking the page.
        `disablepictureinpicture` keeps PiP out of the native context menus
@@ -468,6 +492,9 @@ const imageRendering =
     _hls?: {
       config: Record<string, unknown>
     }
+    /** Declared optionally so the feature detect narrows correctly even
+     *  where lib.dom predates it (Firefox < 132). */
+    requestVideoFrameCallback?: (callback: () => void) => number
   }
 
   /** Startup selection: disable hls.js's lowest-rung bandwidth test and give
@@ -604,7 +631,24 @@ const imageRendering =
     }
     private handleActivity = () => this.markActivity()
     private handleControlClick = () => this.togglePlayback()
-    private handleReady = () => this.setAttribute('data-video-ready', '')
+    /** Frame-accurate readiness (GH #172): `playing` only means the playback
+     *  pipeline started — Safari (native HLS) fires it before compositing the
+     *  first frame, and Chrome can show the same gap for a frame or two, so
+     *  stamping on `playing` dissolved the poster onto a blank/gray video.
+     *  Stamp only once a frame has actually been presented:
+     *  requestVideoFrameCallback where it exists (Chrome, Safari, Firefox
+     *  132+), falling back to `playing` + one rAF. The `playing` trigger is
+     *  kept so non-playing frames (reduced motion, paused before the first
+     *  frame) hold the poster and never mark ready. */
+    private handleReady = () => {
+      if (this.hasAttribute('data-video-ready')) return
+      const stamp = () => this.setAttribute('data-video-ready', '')
+      if (this.player && typeof this.player.requestVideoFrameCallback === 'function') {
+        this.player.requestVideoFrameCallback(stamp)
+      } else {
+        requestAnimationFrame(stamp)
+      }
+    }
     private handleSourceReady = () => this.updatePlayback()
     private handleMuteClick = () => this.toggleMute()
     private handleVolumeChange = () => this.updateMute()
@@ -749,9 +793,9 @@ const imageRendering =
       // viewport before it can scroll in.
       const isGated = this.hasAttribute('gated')
       if (loopElement) {
-        // Poster first, same as the HLS path: the player's own poster covers
-        // the fade-to-first-frame gap and is a cache hit on the overlay img.
-        this.applyPlayerPoster(loopElement)
+        // No poster copy (GH #172 — the player poster is gone everywhere):
+        // the loop fades in over the always-painted overlay poster via the
+        // same data-video-ready opacity gate as the HLS path.
         this.wirePlayer(loopElement)
         // Resolve the never-awaited promise so togglePlayback()'s "chunk in
         // flight" branch can't fire for a frame that has no chunk.
@@ -784,16 +828,11 @@ const imageRendering =
           // the full build still pulled gstatic cast_sender.js. Base doesn't
           // self-define, so register the element here.
           const {MuxVideoBaseElement} = await import('@mux/mux-video/base')
-          // Set the player poster before upgrade so playback-core forwards
-          // it to the native video element: the overlay poster's resolved
-          // rung, i.e. bytes the frame already fetched (see the mux-video
-          // comment in the template).
-          const player = this.querySelector('mux-video') as MuxVideoElement | null
-          if (player) this.applyPlayerPoster(player)
           if (!customElements.get('mux-video')) {
             customElements.define('mux-video', MuxVideoBaseElement)
           }
           if (!this.isConnected) return
+          const player = this.querySelector('mux-video') as MuxVideoElement | null
           if (!player) return
           this.wirePlayer(player)
 
@@ -857,10 +896,9 @@ const imageRendering =
       player.addEventListener('play', this.handlePlay)
       player.addEventListener('pause', this.handlePause)
       player.addEventListener('volumechange', this.handleVolumeChange)
-      // Keep the static poster painted until playback actually starts
-      // ('playing', not 'canplay') so non-playing frames (reduced motion,
-      // paused before first frame) hold the adaptive still; the player's
-      // own poster covers the fade-to-first-frame gap.
+      // The video layer sits at opacity 0 until `data-video-ready` and
+      // fades in over the poster (which never fades — GH #172). The
+      // readiness stamp itself is frame-accurate: see handleReady.
       player.addEventListener('playing', this.handleReady)
       // playback-core attaches hls.js to the <video> asynchronously after
       // upgrade. A play() issued before that attach is voided by the media
@@ -884,15 +922,6 @@ const imageRendering =
       this.refreshScrubber()
     }
 
-    /** The player poster is the overlay poster's resolved rung — the same
-     *  bytes, so a cache hit instead of a second thumbnail request. A
-     *  deferred poster has no URL yet; promotePoster() reapplies then. */
-    private applyPlayerPoster(player?: MuxVideoElement | null) {
-      const target = player ?? this.player
-      if (!target || target.hasAttribute('poster')) return
-      const url = this.posterImg?.currentSrc || this.posterImg?.src
-      if (url) target.setAttribute('poster', url)
-    }
 
     /** Restores a deferred poster's src/srcset so it fetches (see the
      *  `deferPoster` prop). Idempotent, so callers can prefetch the next
@@ -905,7 +934,6 @@ const imageRendering =
       img.setAttribute('src', img.dataset.src)
       delete img.dataset.src
       delete img.dataset.srcset
-      this.applyPlayerPoster()
     }
 
     attributeChangedCallback(name: string) {
@@ -1332,13 +1360,15 @@ const imageRendering =
 
   /* Load crossfade (ADR-0039): non-priority layers start transparent over
      the skeleton and fade in on their load event (priority frames are
-     exempt — GH #162, they paint on decode for LCP) — but the rules
-     themselves live in styles/motion.css. The html.js gate can't survive
+     exempt — GH #162, they paint on decode for LCP; the home hero opts back
+     in via data-hero-entrance — GH #172, its poster can't be the LCP
+     element) — but the rules themselves live in styles/motion.css. The
+     html.js gate can't survive
      Astro's scoped-style compiler (a bare :where(html.js) gets the scope
      attribute fused onto html, and :where(:global(html.js)) emits an empty
      :where(); both silently deaden the selector), and unscoped the
-     specificity also stays below the video-ready / revealed fade-outs below
-     so those keep winning, priority frames included. The element side
+     specificity also stays below the revealed fade-out below so it keeps
+     winning, priority frames included. The element side
      (data-loaded stamping) is in the script. */
 
 
@@ -1346,9 +1376,12 @@ const imageRendering =
     height: auto;
   }
 
-  /* Video frames stack a static poster under the player so the frame paints an
-     image at first load instead of a blank box; the poster fades out once
-     playback starts (see `data-video-ready`). */
+  /* Video frames stack a static poster under the player so the frame paints
+     an image at first load instead of a blank box. The poster NEVER fades:
+     the player itself starts transparent and fades in over the poster once
+     a frame has actually been presented (data-video-ready — GH #172), so
+     the dissolve reads still → motion and can never reveal a blank/gray
+     video (Safari fires `playing` before compositing the first frame). */
   .media-frame :global(mux-video),
   .media-frame__loop,
   .media-frame__poster {
@@ -1361,15 +1394,44 @@ const imageRendering =
 
   .media-frame__poster {
     pointer-events: none;
+  }
+
+  .media-frame :global(mux-video),
+  .media-frame__loop {
+    opacity: 0;
     transition: opacity var(--motion-standard) var(--motion-ease-out);
   }
 
-  .media-frame[data-video-ready] .media-frame__poster {
-    opacity: 0;
-    /* Restated so the load-crossfade's --motion-quick transition (which
-       outranks the base poster rule once data-loaded is set) can't
-       shorten the tuned fade-to-video. */
-    transition: opacity var(--motion-standard) var(--motion-ease-out);
+  .media-frame[data-video-ready] :global(mux-video),
+  .media-frame[data-video-ready] .media-frame__loop {
+    opacity: 1;
+  }
+
+  /* Media settle (GH #172, home hero only): a slow scale(1.04 → 1) on the
+     hero media layers over ~1.2s so the load sequence reads blur → still →
+     motion with one continuous settle. Compositor-only (transform), runs
+     once from first paint like the hero Type Reveal (ADR-0040 — the
+     animation moves existing nodes, it never gates a paint); the frame's
+     overflow: clip contains the 4% overshoot. Off entirely under
+     prefers-reduced-motion. 1200ms is a literal — the motion tokens stop at
+     --motion-deliberate (800ms) and this beat is deliberately slower. */
+  @media (prefers-reduced-motion: no-preference) {
+    .media-frame[data-hero-entrance] .media-frame__skeleton,
+    .media-frame[data-hero-entrance] .media-frame__poster,
+    .media-frame[data-hero-entrance] .media-frame__image,
+    .media-frame[data-hero-entrance] .media-frame__loop,
+    .media-frame[data-hero-entrance] :global(mux-video) {
+      animation: media-frame-settle 1200ms var(--motion-ease-out) both;
+    }
+  }
+
+  @keyframes media-frame-settle {
+    from {
+      transform: scale(1.04);
+    }
+    to {
+      transform: scale(1);
+    }
   }
 
   /* Poster Punch (design-system §5, Content Card family): the poster zooms
@@ -1644,13 +1706,16 @@ const imageRendering =
   }
 
   @media (prefers-reduced-motion: reduce) {
-    /* Poster Punch and the load crossfade off; the reveal/conceal and
-       loaded state changes survive as instant swaps (design-system §5
-       reduced-motion rule). The last two selectors restate the state
-       rules above so their newly-explicit transitions are cleared too. */
+    /* Poster Punch, the video ready-fade, and the load crossfade off; the
+       reveal/conceal, ready, and loaded state changes survive as instant
+       swaps (design-system §5 reduced-motion rule). The revealed selector
+       restates the state rule above so its newly-explicit transition is
+       cleared too. (The hero settle needs no entry here — it only exists
+       inside a no-preference media query.) */
     .media-frame__curated-poster,
     .media-frame img[data-loaded],
-    .media-frame[data-video-ready] .media-frame__poster,
+    .media-frame :global(mux-video),
+    .media-frame .media-frame__loop,
     .media-frame[revealed] .media-frame__curated-poster,
     .media-controls,
     .media-controls__icon svg,

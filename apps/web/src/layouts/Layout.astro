@@ -186,22 +186,31 @@ const gaMode = preview
       // Fonts-ready stamp: the hero Type Reveal (HeroHeading) is pure CSS
       // keyed on html[data-fonts-ready], so the words rise in the real
       // glyphs instead of swapping faces mid-animation. Inline with no
-      // imports so it never waits on the bundle; the heading is painted
-      // content from the first frame either way (the stamp starts an
-      // animation, it never gates a paint — ARCHITECTURE.md ADR-0040). The
-      // cap keeps a slow font from holding the reveal indefinitely.
+      // imports so it never waits on the bundle. Until the stamp lands the
+      // heading's words are clipped at translateY(110%)
+      // (html.js:not([data-fonts-ready]) in HeroHeading), so the cold-load
+      // rise plays from hidden — GH #171, amending ADR-0040's
+      // visible-at-first-paint invariant. The wait is on fonts.load() for
+      // the display face itself, not document.fonts.ready: WebKit can
+      // resolve fonts.ready before the preloaded Neue Corp Tight is
+      // applied, which rose the words in Arial Narrow and swapped faces
+      // mid-flight. The cap keeps a hung font load from hiding the heading
+      // forever.
       (function () {
         const stamp = function () {
           document.documentElement.setAttribute('data-fonts-ready', '');
         };
-        if (!document.fonts || !document.fonts.ready) {
+        if (!document.fonts || !document.fonts.load) {
           stamp();
           return;
         }
         const capped = new Promise(function (resolve) {
           window.setTimeout(resolve, 1000);
         });
-        Promise.race([document.fonts.ready, capped]).then(stamp, stamp);
+        Promise.race([document.fonts.load('750 1em "PP Neue Corp Tight"'), capped]).then(
+          stamp,
+          stamp,
+        );
       })();
     </script>
     <style is:global>
@@ -255,6 +264,14 @@ const gaMode = preview
       // buffer and are replayed with their original timestamps.
       initDeferredSentry();
 
+      // The motion stack (gsap core + split-type; ScrollTrigger layered on
+      // via loadScrollTrigger) loads only for visitors who can see it:
+      // reduced-motion sessions skip the bundle entirely — this script then
+      // reveals anything the html.js gate hid, and the 1.2s CSS fallback is
+      // the safety net. The import is kicked off immediately so the fetch
+      // overlaps first paint instead of starting after it.
+      const motionModule = prefersReducedMotion() ? null : import('../lib/motion');
+
       // Lazy gtag/js: the library is ~170 KB gz and only ever receives queued
       // dataLayer pushes, so it loads on first interaction only — never on an
       // idle timer — so it can't compete with the critical path or the
@@ -278,7 +295,6 @@ const gaMode = preview
       }
 
       let destroyMotion = () => {};
-      let destroySmoothScroll = () => {};
       // Supersede guard: setup() awaits the motion chunk, and a View
       // Transition can land mid-flight; the newer setup must win.
       let setupGeneration = 0;
@@ -289,82 +305,86 @@ const gaMode = preview
       let navigationType: 'push' | 'replace' | 'traverse' = 'push';
 
       // Fresh route navigations land at the top of the new page; a URL hash
-      // lands on its section. Scrolling goes through Lenis (when active) so its
-      // internal scroll state resets too — otherwise Lenis re-applies the
-      // previous page's offset on the next frame and the new page appears to
-      // load scrolled down (e.g. at the footer). The Lenis instance comes from
-      // the lazily-imported motion module, so callers pass it in.
-      const settleScrollPosition = (
-        lenis: { scrollTo: (target: HTMLElement | number, options?: { immediate?: boolean; force?: boolean }) => void } | null,
-      ) => {
+      // lands on its section. Instant behavior, so the CSS `scroll-behavior:
+      // smooth` used for in-page anchor glides never turns a route landing
+      // into a long smooth scroll from the previous page's offset.
+      const settleScrollPosition = () => {
         if (navigationType === 'traverse') return;
         const hash = window.location.hash;
         const target = hash ? document.getElementById(hash.slice(1)) : null;
-        if (lenis) {
-          lenis.scrollTo(target ?? 0, { immediate: true, force: true });
-        } else if (target) {
-          target.scrollIntoView();
+        if (target) {
+          target.scrollIntoView({ block: 'start', behavior: 'instant' });
         } else {
-          window.scrollTo(0, 0);
+          window.scrollTo({ top: 0, behavior: 'instant' });
         }
       };
 
-      const setup = async () => {
-        const generation = ++setupGeneration;
-        // Motion (GSAP + Lenis + split-type) ships as its own chunk so the
-        // eager base bundle isn't half-unused motion/scroll code on first
-        // paint. The hero entry reveal does not depend on it (HeroHeading is
-        // CSS-only); this chunk owns below-fold scroll reveals, smooth
-        // scroll, and the deferred scroll systems.
-        const [motion, { ScrollTrigger }] = await Promise.all([
-          import('../lib/motion'),
-          import('gsap/ScrollTrigger'),
-        ]);
-        // A navigation superseded this setup while the chunk was in flight;
-        // the new page's own setup owns motion now.
-        if (generation !== setupGeneration) return;
+      // Heavier scroll systems (Capes pin, parallax rAF) listen for this and
+      // init only once the hero reveal has had the first frames to itself, so
+      // their pin-spacer/refresh reflow never competes with the reveal.
+      const runDeferredMotion = async () => {
+        const motion = await motionModule;
+        // ScrollTrigger must be registered before the deferred systems create
+        // their triggers in response to this event.
+        if (motion) await motion.loadScrollTrigger();
+        document.dispatchEvent(new CustomEvent('sbh:motion-deferred'));
+        // Re-assert after ScrollTrigger measures: pin spacers and splits shift
+        // layout, and the settled scroll position must not drift.
+        if (motion) (await motion.loadScrollTrigger()).refresh();
+        settleScrollPosition();
+      };
 
-        destroySmoothScroll = motion.initSmoothScroll();
-        settleScrollPosition(motion.getLenis());
-        destroyMotion = motion.initMotion();
-
-        // Heavier scroll systems (Capes pin, parallax rAF) listen for
-        // sbh:motion-deferred and init only once the hero reveal has had the
-        // first frames to itself, so their pin-spacer/refresh reflow never
-        // competes with the reveal.
-        const runDeferredMotion = () => {
-          document.dispatchEvent(new CustomEvent('sbh:motion-deferred'));
-          // Re-assert after ScrollTrigger measures: pin spacers and splits
-          // shift layout, and Lenis must not drift back to a stale offset.
-          ScrollTrigger.refresh();
-          settleScrollPosition(motion.getLenis());
-        };
+      const scheduleDeferredMotion = () => {
         // No reveal competes under reduced motion, so bring everything up
         // now; otherwise defer to idle (fixed beat where idle is
         // unavailable).
         if (prefersReducedMotion()) {
           runDeferredMotion();
-        } else {
-          const idle = (
-            window as Window & {
-              requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-            }
-          ).requestIdleCallback;
-          if (idle) {
-            idle(runDeferredMotion, { timeout: 1200 });
-          } else {
-            window.setTimeout(runDeferredMotion, 800);
-          }
+          return;
         }
+        const idle = (
+          window as Window & {
+            requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+          }
+        ).requestIdleCallback;
+        if (idle) {
+          idle(runDeferredMotion, { timeout: 1200 });
+        } else {
+          window.setTimeout(runDeferredMotion, 800);
+        }
+      };
+
+      const setup = async () => {
+        const generation = ++setupGeneration;
+        settleScrollPosition();
+        const motion = await motionModule;
+        // A navigation superseded this setup while the chunk was in flight;
+        // the new page's own setup owns motion now.
+        if (generation !== setupGeneration) return;
+        if (motion) {
+          // The full page-entry Type Reveal plays on the genuine first load and
+          // on every View Transition navigation.
+          destroyMotion = motion.initMotion();
+        } else {
+          // Reduced motion: the motion bundle never loads, so reveal targets
+          // hidden by the html.js CSS gate are shown directly (the 1.2s CSS
+          // fallback covers the failure paths).
+          document
+            .querySelectorAll<HTMLElement>('[data-motion-text]')
+            .forEach((el) => {
+              el.style.opacity = '1';
+            });
+        }
+        // Let the reveal own the first frames, then bring up the heavy scroll
+        // systems and re-measure on idle (fixed beat where idle is unavailable).
+        scheduleDeferredMotion();
       };
 
       const teardown = () => {
         // Supersede any in-flight setup still awaiting the motion chunk.
         setupGeneration++;
         destroyMotion();
-        destroySmoothScroll();
         destroyMotion = () => {};
-        destroySmoothScroll = () => {};
       };
 
       // Runs on the initial load and after every View Transition navigation.

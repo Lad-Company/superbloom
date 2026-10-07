@@ -158,7 +158,7 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
   second on a good connection; on save-data / cellular-class / low-downlink
   connections it holds the poster rather than stutter. Every other
   `mux.video` frame streams HLS through `<mux-video>` (ARCHITECTURE.md
-  ADR-0041, ADR-0038).
+  ADR-0042, ADR-0038).
 - **`PageHero`** — the single page-header block. One shared H1 (`--type-h1`,
   80→200 on the fluid ramp, 82% leading, ≤4 lines) with three modes
   derived from props: text (default), media (home 3/2, zine 16:9 + optional
@@ -458,9 +458,13 @@ linear reveals, expressed only through reusable primitives (never page-specific
 animation). Motion is **built and active** (`apps/web/src/lib/motion/`), not
 deferred.
 
-**Non-negotiables.** GSAP + ScrollTrigger + the shared **Lenis** smooth-scroll
-module (per ADR-0021, which supersedes ADR-0007's no-smooth-scroll clause). No
-Motion/Framer. Every timeline lives inside `gsap.matchMedia()` with a
+**Non-negotiables.** GSAP + ScrollTrigger, no Motion/Framer (per ADR-0041,
+which retires ADR-0021's Lenis smooth scroll — anchor glides are native
+`scroll-behavior: smooth`). Nothing in the motion stack loads eagerly: the
+Layout dynamic-imports the bundle only for `prefers-reduced-motion:
+no-preference` sessions, and ScrollTrigger layers on via
+`loadScrollTrigger()` at the deferred-motion idle beat. Every timeline lives
+inside `gsap.matchMedia()` with a
 reduced-motion path. Animate only transforms / opacity / clip-path / CSS vars —
 never top/left/width/height/margin/padding. No whole-page generic fades. Motion
 never obscures readable type. Reuse a primitive before writing a page-local timeline.
@@ -494,13 +498,17 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    springing rather than smacking to a stop. Two implementations, one look:
    - *Hero entry reveal* (`HeroHeading`, via `PageHero` on navbar / sitemap
      destinations: home, work, who-we-are, index, zine, shop) is **SSR
-     word-split + CSS keyframes**. Every word span exists in the HTML and is
-     painted on the first frame; the rise starts when Layout's inline script
-     stamps `html[data-fonts-ready]` (fonts ready, 1s cap) so words rise in
-     the real glyphs. No JavaScript touches the heading after paint — that
-     is what keeps the LCP element deterministic (ARCHITECTURE.md ADR-0040).
-     Detail routes (case studies, articles, past zine issues) render their
-     heading as plain text via `PageHero reveal={false}`.
+     word-split + CSS keyframes**. Every word span exists in the HTML; on
+     cold loads the words start clipped at `translateY(110%)` from the first
+     frame (`html.js:not([data-fonts-ready])`, GH #171), and the rise plays
+     from hidden when Layout's inline script stamps
+     `html[data-fonts-ready]` (display face loaded via `document.fonts.load`,
+     1s cap) so words rise in the real glyphs. No JavaScript touches the
+     heading after paint — that is what keeps the LCP element deterministic
+     (ARCHITECTURE.md ADR-0040; the heading is now clipped at first paint,
+     so LCP moves to the subheading or nav logo). Detail routes (case
+     studies, articles, past zine issues) render their heading as plain
+     text via `PageHero reveal={false}`.
    - *Scroll reveals* (`data-motion-text`, `MotionText`) below the fold use
      the GSAP + split-type primitive in `lib/motion/reveal.ts`, split on
      intersection. Chars are not a unit anywhere.

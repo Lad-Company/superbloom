@@ -73,8 +73,8 @@ const SIDE_SETTINGS = {
   // the rail cannot be scrolled independently, and pointer position is
   // irrelevant. The jack ends when the last side card's bottom aligns with
   // the bottom edge of the lead media; scrolling up reverses it until the
-  // first side card locks back to the lead's top edge. Lenis drives the page
-  // scroll as usual — the rail just reads the scroll position.
+  // first side card locks back to the lead's top edge. The rail just reads
+  // the native scroll position — no smooth-scroll library involved.
   class IndexFeaturedElement extends HTMLElement {
     private grid: HTMLElement | null = null
     private rail: HTMLElement | null = null

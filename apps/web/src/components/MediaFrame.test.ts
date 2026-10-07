@@ -198,10 +198,24 @@ describe('MediaFrame playback profiles', () => {
 
     it('adopts the loop element synchronously and never imports the mux-video chunk for it', () => {
       expect(source).toContain("this.querySelector('video.media-frame__loop')")
-      expect(source).toContain('this.applyPlayerPoster(loopElement)')
       expect(source).toContain('this.wirePlayer(loopElement)')
       expect(source).toContain('this.playerLoading = Promise.resolve()')
       expect(source).toContain('if (!playerElement && !loopElement) return')
+    })
+
+    it('rides the GH #172 opacity gate — no player poster, the loop fades in over the overlay poster', () => {
+      // The loop follows the same contract as mux-video: no poster attribute
+      // ever, opacity 0 until data-video-ready (a presented frame), fading
+      // in over the overlay poster, which never fades.
+      expect(source).not.toMatch(/<video[^>]*\sposter=/s)
+      expect(source).toMatch(/\.media-frame__loop\s*\{[^}]*opacity:\s*0/)
+      expect(source).toMatch(/\.media-frame\[data-video-ready\] \.media-frame__loop\s*\{[^}]*opacity:\s*1/)
+      // The loop joins the hero settle so the media layers stay locked
+      // together while the scale(1.04 → 1) plays.
+      expect(source).toContain('.media-frame[data-hero-entrance] .media-frame__loop,')
+      // Reduced motion: the loop's ready-fade collapses to an instant swap.
+      const reduceBlock = source.slice(source.indexOf('@media (prefers-reduced-motion: reduce)'))
+      expect(reduceBlock).toContain('.media-frame .media-frame__loop')
     })
 
     it('shares the layer geometry with mux-video and the poster', () => {
@@ -232,13 +246,31 @@ describe('MediaFrame playback profiles', () => {
     })
   })
 
-  it('emits no SSR poster attribute on mux-video — the player poster is copied from the overlay img at upgrade', () => {
+  it('emits no poster attribute on mux-video and never copies one — the opacity gate covers the first-frame gap (GH #172)', () => {
     // A SSR `poster` takes one URL (no srcset), so every frame fetched its
-    // thumbnail twice. loadPlayer() copies the overlay poster's currentSrc
-    // instead — guaranteed cache hit.
+    // thumbnail twice — and WebKit ignores object-fit: cover on the shadow
+    // <video> poster, so the browser's letterboxed 16:9 poster painted on
+    // top of the covering overlay image (the Safari letterbox jump). The
+    // video layer's own opacity gate (below) covers the fade-to-first-frame
+    // gap instead, so the player poster is gone entirely.
     expect(source).not.toMatch(/<mux-video[^>]*\sposter=/s)
-    expect(source).toContain('applyPlayerPoster')
-    expect(source).toContain("this.posterImg?.currentSrc || this.posterImg?.src")
+    expect(source).not.toContain('applyPlayerPoster')
+    expect(source).not.toContain("setAttribute('poster'")
+  })
+
+  it('gates data-video-ready on a presented frame, not on playing (GH #172)', () => {
+    // Safari (native HLS) fires `playing` before compositing the first
+    // frame, and Chrome can show the same gap for a frame or two — stamping
+    // ready on `playing` dissolved the poster onto a blank/gray video.
+    // requestVideoFrameCallback fires only when a frame has actually been
+    // presented (Chrome, Safari, Firefox 132+); the fallback is `playing`
+    // plus one rAF. The `playing` listener remains the trigger so
+    // non-playing frames (reduced motion, paused pre-first-frame) never
+    // mark ready.
+    expect(source).toContain("addEventListener('playing', this.handleReady)")
+    expect(source).toContain('requestVideoFrameCallback')
+    expect(source).toContain('requestAnimationFrame')
+    expect(source).toContain("this.hasAttribute('data-video-ready')")
   })
 
   it('supports deferPoster: src-less poster with data-* until promotePoster()', () => {
@@ -482,13 +514,26 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
     expect(source).toContain("img.removeEventListener('load', this.handleImgLoad)")
   })
 
-  it('preserves the tuned fade-out timings against the quick load crossfade', () => {
-    // The data-loaded transition would otherwise outrank the base rules:
-    // video-ready keeps --motion-standard, the Poster Punch keeps
-    // deliberate zoom + delayed 560ms fade.
+  it('fades the video in over the poster — the poster never fades (GH #172)', () => {
+    // The old design faded the poster OUT on data-video-ready; Safari fires
+    // `playing` before compositing the first frame, so the dissolve revealed
+    // the blank skeleton. Now both video surfaces (mux-video and the
+    // progressive-loop <video>) start at opacity 0 and fade in at
+    // --motion-standard once a frame has actually been presented, with the
+    // poster staying painted underneath.
     expect(source).toMatch(
-      /\.media-frame\[data-video-ready\] \.media-frame__poster\s*\{[^}]*transition:\s*opacity var\(--motion-standard\)/,
+      /\.media-frame :global\(mux-video\),\s*\.media-frame__loop\s*\{[^}]*opacity:\s*0/,
     )
+    expect(source).toMatch(
+      /\.media-frame :global\(mux-video\),\s*\.media-frame__loop\s*\{[^}]*transition:\s*opacity var\(--motion-standard\) var\(--motion-ease-out\)/,
+    )
+    expect(source).toMatch(
+      /\.media-frame\[data-video-ready\] :global\(mux-video\),\s*\.media-frame\[data-video-ready\] \.media-frame__loop\s*\{[^}]*opacity:\s*1/,
+    )
+    // No poster fade-out rule survives anywhere (state or reduced-motion).
+    expect(source).not.toMatch(/\.media-frame\[data-video-ready\] \.media-frame__poster/)
+    // The Poster Punch keeps its deliberate zoom + delayed 560ms fade
+    // restated against the quick load crossfade.
     expect(source).toMatch(
       /\.media-frame\[revealed\] \.media-frame__curated-poster\s*\{[^}]*transform var\(--motion-deliberate\)/,
     )
@@ -497,5 +542,57 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
   it('is instant under prefers-reduced-motion', () => {
     const reduceBlock = source.slice(source.indexOf('@media (prefers-reduced-motion: reduce)'))
     expect(reduceBlock).toContain('.media-frame img[data-loaded]')
+    // The video ready-fade also collapses to an instant swap.
+    expect(reduceBlock).toContain('.media-frame :global(mux-video)')
+  })
+})
+
+describe('MediaFrame hero entrance ceremony (GH #172)', () => {
+  it('exposes a heroEntrance prop that stamps data-hero-entrance', () => {
+    expect(source).toContain('heroEntrance?: boolean')
+    expect(source).toContain('data-hero-entrance={heroEntrance ? true : undefined}')
+  })
+
+  it('opts the hero poster into the load crossfade in motion.css — the GH #162 exemption stands elsewhere', () => {
+    // The home hero's full-viewport poster is excluded from LCP candidacy
+    // (Chrome 112+), so it can dissolve in over the blur-up; /work and
+    // /index priority posters keep painting on decode.
+    const motionCss = readFileSync(new URL('../styles/motion.css', import.meta.url), 'utf8')
+    expect(motionCss).toMatch(/html\.js media-frame\[data-hero-entrance\] img\s*\{[^}]*opacity:\s*0/)
+    expect(motionCss).toMatch(/html\.js media-frame:not\(\[data-priority\]\) img\s*\{[^}]*opacity:\s*0/)
+  })
+
+  it('pins the hero poster srcset to two shared Mux thumbnail rungs', () => {
+    // Mux generates thumbnails on demand per width × time; cold rungs
+    // measured 0.7–1.0s TTFB. Two rungs (1280/2560) mean every visitor warms
+    // the same URLs instead of spreading across the eight-rung ladder.
+    expect(source).toContain('heroEntrance ? HERO_POSTER_WIDTHS : undefined')
+    const plan = readFileSync(new URL('../lib/mediaRenderingPlan.ts', import.meta.url), 'utf8')
+    expect(plan).toContain('export const HERO_POSTER_WIDTHS = [1280, 2560] as const')
+  })
+
+  it('settles the hero media with a slow compositor-only scale, gated on no-preference', () => {
+    // scale(1.04 → 1) over ~1.2s on --motion-ease-out; transform/opacity
+    // only, and the whole ceremony lives inside a no-preference media query
+    // so prefers-reduced-motion never sees it.
+    expect(source).toContain('@media (prefers-reduced-motion: no-preference)')
+    expect(source).toMatch(
+      /\.media-frame\[data-hero-entrance\][^{]*\{[^}]*animation:\s*media-frame-settle 1200ms var\(--motion-ease-out\) both/,
+    )
+    // The settle is a pure transform — no layout-affecting properties.
+    const settle =
+      source.match(/@keyframes media-frame-settle\s*\{(?:[^{}]|\{[^}]*\})*\}/)?.[0] ?? ''
+    expect(settle).toContain('transform: scale(1.04)')
+    expect(settle).toContain('transform: scale(1)')
+    expect(settle).not.toMatch(/width|height|inset|top|left/)
+  })
+
+  it('only the homepage hero opts in — zine media hero stays plain', () => {
+    const home = readFileSync(new URL('./home/HomepageComposition.astro', import.meta.url), 'utf8')
+    expect(home).toContain('heroEntrance')
+    const pageHero = readFileSync(new URL('./PageHero.astro', import.meta.url), 'utf8')
+    expect(pageHero).toContain('heroEntrance={heroEntrance}')
+    const zine = readFileSync(new URL('./zine/IssueDetail.astro', import.meta.url), 'utf8')
+    expect(zine).not.toContain('heroEntrance')
   })
 })

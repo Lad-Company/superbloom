@@ -3,6 +3,15 @@
    remain active under reduced motion. Type Reveal and scroll choreography are
    JavaScript primitives in src/lib/motion and are gated by reduced motion. */
 
+/* In-page anchor navigation (the case-study spine nav, hash links) glides
+   via native smooth scrolling. Route landings stay instant: Layout settles
+   the scroll position with behavior:'instant', which overrides this. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Text Link — Underline Draw */
 .underline-draw {
   position: relative;
@@ -161,10 +170,22 @@ html.js [data-motion-text] {
    (`[data-astro-cid-*]:where(html.js)`, never matches), and
    :where(:global(html.js)) emits as an empty :where() — both silently deaden
    the rules (verified in-browser 2026-10-02). Even with the :not() bump
-   (0,2,3), the specificity stays below MediaFrame's scoped fade-out states
-   (video-ready 0,3,0, revealed 0,3,0), so those tuned transitions still win
+   (0,2,3), the specificity stays below MediaFrame's scoped fade-out state
+   (revealed 0,3,0 — the video-ready fade targets mux-video, which these img
+   rules never match), so that tuned transition still wins
    on priority frames, and below the component's reduced-motion override. */
 html.js media-frame:not([data-priority]) img {
+  opacity: 0;
+}
+
+/* GH #172: the home hero (data-hero-entrance) opts back into the crossfade
+   despite being a priority frame. The GH #162 exemption exists because
+   priority posters are the LCP element on /work and /index, but the hero
+   poster can't be the LCP element (Chrome 112+ excludes full-viewport
+   images), so it dissolves in over the blur-up — the first half of the
+   hero's blur → still → motion sequence. /work and /index priority frames
+   stay exempt. */
+html.js media-frame[data-hero-entrance] img {
   opacity: 0;
 }
 

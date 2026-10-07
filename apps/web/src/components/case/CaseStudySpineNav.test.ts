@@ -20,8 +20,8 @@ describe('CaseStudySpineNav shy-bar docking', () => {
     // document flow (always the case on mobile, where it starts inside the
     // first viewport) opens a --shy-bar-h gap between the strip and the
     // lead media above it. Tracked from the sentinel's rect on the rAF
-    // scroll path — an IntersectionObserver's batched deliveries lag
-    // Lenis's smooth scroll, so the dock engaged and released a beat late.
+    // scroll path — an IntersectionObserver's batched deliveries lag the
+    // scroll handler, so the dock engaged and released a beat late.
     expect(source).toContain('class="spine-sentinel"')
     expect(source).not.toContain('new IntersectionObserver')
     // Stuck at the top edge only: past the sentinel, but not bottomed out

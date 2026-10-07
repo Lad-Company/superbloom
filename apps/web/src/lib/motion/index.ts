@@ -10,8 +10,8 @@ export { revealStats } from './statReveal';
 export { initPressFeedback } from './hover';
 export { LoadingSurface, type LoadingPhase, type LoadingSurfaceOptions } from './loading';
 export { initPinnedStory, type PinnedStoryOptions } from './pinnedStory';
-export { initSmoothScroll, getLenis } from './smoothScroll';
 export { initDepthLayer } from './depthLayer';
+export { loadScrollTrigger } from './scrollTrigger';
 export {
   initHorizontalRail,
   initScrollDrivenTrack,

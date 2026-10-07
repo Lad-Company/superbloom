@@ -1,9 +1,7 @@
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { getLenis } from './smoothScroll';
-import { SCROLL } from './config';
-
-gsap.registerPlugin(ScrollTrigger);
+import type {ScrollTrigger} from 'gsap/ScrollTrigger';
+import {SCROLL} from './config';
+import {loadScrollTrigger} from './scrollTrigger';
 
 export interface ScrollDrivenTrackOptions {
   trigger: HTMLElement;
@@ -38,22 +36,28 @@ export function initScrollDrivenTrack({
   const mm = gsap.matchMedia();
 
   mm.add('(prefers-reduced-motion: no-preference)', () => {
-    const tween = gsap.to(track, {
-      x: getX,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: triggerElement,
-        start,
-        end,
-        scrub: SCROLL.scrubLag,
-        invalidateOnRefresh: true,
-      },
+    let killed = false;
+    let tween: gsap.core.Tween | null = null;
+    void loadScrollTrigger().then(() => {
+      if (killed) return;
+      tween = gsap.to(track, {
+        x: getX,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: triggerElement,
+          start,
+          end,
+          scrub: SCROLL.scrubLag,
+          invalidateOnRefresh: true,
+        },
+      });
+      trigger = tween.scrollTrigger ?? null;
     });
-    trigger = tween.scrollTrigger ?? null;
 
     return () => {
+      killed = true;
       trigger = null;
-      tween.kill();
+      tween?.kill();
     };
   });
 
@@ -62,13 +66,9 @@ export function initScrollDrivenTrack({
     scrollToProgress: (progress) => {
       if (!trigger) return;
       const position = trigger.start + (trigger.end - trigger.start) * gsap.utils.clamp(0, 1, progress);
-      const lenis = getLenis();
-
-      if (lenis) {
-        lenis.scrollTo(position);
-      } else {
-        window.scrollTo({ top: position, behavior: 'smooth' });
-      }
+      // Native smooth scroll: with Lenis retired there is no rAF loop for a
+      // programmatic scrollTo to race, so the browser owns the glide.
+      window.scrollTo({ top: position, behavior: 'smooth' });
     },
     destroy: () => mm.revert(),
   };

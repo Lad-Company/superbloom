@@ -131,9 +131,10 @@ const links = [
   document.addEventListener('shop:cart-updated', refreshCartCount)
 
   // Let's Chat scrolls to the contact band. When the band is on the current
-  // page the click falls through to the global smooth-scroll anchor handler
-  // (native anchor jump under reduced motion). Pages without a contact band
-  // (shop, cart) route to Who We Are, which always renders one.
+  // page the click falls through to native anchor navigation, which glides
+  // via CSS `scroll-behavior: smooth` (motion.css; instant under reduced
+  // motion). Pages without a contact band (shop, cart) route to Who We Are,
+  // which always renders one.
   document.addEventListener('click', (event) => {
     const trigger = (event.target as Element).closest<HTMLAnchorElement>('[data-lets-chat]')
     if (!trigger) return
