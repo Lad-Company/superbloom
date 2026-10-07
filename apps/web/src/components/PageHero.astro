@@ -19,6 +19,12 @@ interface Props {
    * routes pass false so their headings render as plain text.
    */
   reveal?: boolean;
+  /** Home-hero media ceremony (GH #172): poster dissolves in over the
+   *  blur-up, the poster srcset pins to two shared rungs, and the media
+   *  plays a slow scale settle. Home only — /work and /index keep the
+   *  GH #162 priority-paint exemption, and the zine media hero keeps the
+   *  plain load. */
+  heroEntrance?: boolean;
   id?: string;
 }
 
@@ -31,6 +37,7 @@ const {
   headingSize = 'h1',
   mediaRatio = '3:2',
   reveal = true,
+  heroEntrance = false,
   id,
 } = Astro.props;
 
@@ -48,7 +55,7 @@ const isCase = !isMedia && (Boolean(eyebrow) || Boolean(tags && tags.length > 0)
       style={control.onDark}
       data-nav-surface="dark"
     >
-      <MediaFrame media={media} ratio="fill" placement={{context: 'hero'}} title={heading}>
+      <MediaFrame media={media} ratio="fill" placement={{context: 'hero'}} title={heading} heroEntrance={heroEntrance}>
         <div class="scrim"></div>
         <div class="overlay">
           <div class="heading-stack">
