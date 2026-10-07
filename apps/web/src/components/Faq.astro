@@ -35,10 +35,13 @@ const { heading = 'FAQ', items } = Astro.props;
 </div>
 
 <script>
-  import gsap from 'gsap';
   import { EASE, MOTION, prefersReducedMotion } from '../lib/motion/config';
 
+  // gsap rides a dynamic import so the ~28 KB gz core only loads on pages
+  // with a FAQ, and never for reduced-motion visitors.
   if (!prefersReducedMotion()) {
+    const { default: gsap } = await import('gsap');
+
     document.querySelectorAll<HTMLDetailsElement>('[data-faq-item]').forEach((details) => {
       const summary = details.querySelector<HTMLElement>('.faq-question');
       const body = details.querySelector<HTMLElement>('[data-faq-body]');

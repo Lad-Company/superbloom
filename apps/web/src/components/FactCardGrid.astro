@@ -40,12 +40,19 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
 </div>
 
 <script>
-  import { revealStats } from '../lib/motion';
+  import { prefersReducedMotion } from '../lib/motion/config';
 
   const cleanups: Array<() => void> = [];
-  const initGrids = () =>
-    document.querySelectorAll<HTMLElement>('[data-fact-card-grid]').forEach((grid) => {
-      if (grid.dataset.statsInitialized) return;
+  const initGrids = async () => {
+    const grids = Array.from(document.querySelectorAll<HTMLElement>('[data-fact-card-grid]')).filter(
+      (grid) => !grid.dataset.statsInitialized,
+    );
+    // revealStats (gsap + ScrollTrigger) loads on demand; reduced-motion
+    // sessions keep the SSR'd final values and skip the motion stack.
+    if (!grids.length || prefersReducedMotion()) return;
+    const { revealStats } = await import('../lib/motion/statReveal');
+    grids.forEach((grid) => {
+      if (grid.dataset.statsInitialized || !grid.isConnected) return;
       grid.dataset.statsInitialized = 'true';
       // Static cards: skip the slide-up entrance, keep the stat count-up.
       const destroy = revealStats(grid, '.fact-card', {entrance: false});
@@ -54,13 +61,14 @@ const surfaceRoles = ['brand-muted', 'brand-deep', 'brand-accent'] as const;
         delete grid.dataset.statsInitialized;
       });
     });
+  };
 
   const cleanupAll = () => cleanups.splice(0).forEach((cleanup) => cleanup());
 
   // Deferred by Layout until after the hero reveal: the revealStats triggers
   // are once:true, so arming them on settled layout + scroll position keeps
   // the count-up from firing during load — it plays when the section enters.
-  document.addEventListener('sbh:motion-deferred', initGrids);
+  document.addEventListener('sbh:motion-deferred', () => void initGrids());
   document.addEventListener('astro:before-swap', cleanupAll);
 </script>
 

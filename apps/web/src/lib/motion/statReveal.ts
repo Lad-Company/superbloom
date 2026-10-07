@@ -1,8 +1,6 @@
 import gsap from 'gsap'
-import {ScrollTrigger} from 'gsap/ScrollTrigger'
 import {EASE, MOTION, STAGGER, prefersReducedMotion} from './config'
-
-gsap.registerPlugin(ScrollTrigger)
+import {loadScrollTrigger} from './scrollTrigger'
 
 /**
  * Stat Reveal primitive. Items rise into place fast with a slight overshoot
@@ -14,6 +12,9 @@ gsap.registerPlugin(ScrollTrigger)
  *
  * Pass `entrance: false` to skip the rise-in movement and keep only the
  * count-up (Who We Are fact cards sit static; the stats still animate).
+ *
+ * Triggers arm on the lazily loaded ScrollTrigger chunk; values are zeroed
+ * synchronously so the SSR'd final value never flashes before arming.
  *
  * Returns a cleanup that kills the triggers/tweens; wire it to
  * `astro:before-swap`. Triggers are `once`, so they self-kill after firing.
@@ -28,56 +29,68 @@ export function revealStats(
   const items = Array.from(container.querySelectorAll<HTMLElement>(itemSelector))
   if (!items.length) return () => {}
 
-  const entrance =
-    options.entrance === false
-      ? null
-      : gsap.fromTo(
-          items,
-          {y: 40},
-          {
-            y: 0,
-            duration: MOTION.quick,
-            stagger: STAGGER.standard,
-            ease: EASE.snap,
-            scrollTrigger: {trigger: container, start: 'top 80%', once: true},
-          },
-        )
-
-  const counters: gsap.core.Tween[] = []
-  items.forEach((item) => {
+  // Parse and zero the counters synchronously so the scroll-in reads as a
+  // count-up rather than the SSR'd final value snapping to 0 when the
+  // trigger fires.
+  const counters = items.flatMap((item) => {
     const valueEl = item.querySelector<HTMLElement>('.value')
-    if (!valueEl) return
+    if (!valueEl) return []
 
     const raw = valueEl.textContent?.trim() ?? ''
     const match = raw.match(/^(\d+(?:\.\d+)?)(.*)$/)
-    if (!match) return
+    if (!match) return []
 
     const target = parseFloat(match[1])
     const decimals = match[1].includes('.') ? (match[1].split('.')[1] ?? '').length : 0
     const suffix = match[2] ?? ''
-    const counter = {val: 0}
 
-    // Start at zero so the scroll-in reads as a count-up rather than the
-    // SSR'd final value snapping to 0 when the trigger fires.
     valueEl.textContent = `${(0).toFixed(decimals)}${suffix}`
+    return [{item, valueEl, target, decimals, suffix}]
+  })
 
-    counters.push(
-      gsap.to(counter, {
-        val: target,
-        duration: MOTION.deliberate,
-        ease: EASE.linear,
-        onUpdate() {
-          valueEl.textContent = `${counter.val.toFixed(decimals)}${suffix}`
-        },
-        scrollTrigger: {trigger: item, start: 'top 80%', once: true},
-      }),
-    )
+  let destroyed = false
+  let entrance: gsap.core.Tween | null = null
+  const counterTweens: gsap.core.Tween[] = []
+
+  void loadScrollTrigger().then(() => {
+    if (destroyed) return
+
+    entrance =
+      options.entrance === false
+        ? null
+        : gsap.fromTo(
+            items,
+            {y: 40},
+            {
+              y: 0,
+              duration: MOTION.quick,
+              stagger: STAGGER.standard,
+              ease: EASE.snap,
+              scrollTrigger: {trigger: container, start: 'top 80%', once: true},
+            },
+          )
+
+    for (const {item, valueEl, target, decimals, suffix} of counters) {
+      const counter = {val: 0}
+      counterTweens.push(
+        gsap.to(counter, {
+          val: target,
+          duration: MOTION.deliberate,
+          ease: EASE.linear,
+          onUpdate() {
+            valueEl.textContent = `${counter.val.toFixed(decimals)}${suffix}`
+          },
+          scrollTrigger: {trigger: item, start: 'top 80%', once: true},
+        }),
+      )
+    }
   })
 
   return () => {
+    destroyed = true
     entrance?.scrollTrigger?.kill()
     entrance?.kill()
-    counters.forEach((tween) => {
+    counterTweens.forEach((tween) => {
       tween.scrollTrigger?.kill()
       tween.kill()
     })

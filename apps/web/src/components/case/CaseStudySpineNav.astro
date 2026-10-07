@@ -24,8 +24,6 @@ import { caseStudySections } from '../../lib/caseStudySections';
 </nav>
 
 <script>
-  import { getLenis } from '../../lib/motion';
-
   const nav = document.querySelector<HTMLElement>('.spine-nav');
   const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-spine-link]')];
   const sections = links
@@ -115,11 +113,11 @@ import { caseStudySections } from '../../lib/caseStudySections';
   // viewport. The sentinel sits at the strip's flow position; once it
   // crosses above the top edge, the strip is stuck. Checked synchronously on
   // the scroll path, not with an IntersectionObserver: IO deliveries are
-  // batched and can lag Lenis's rAF-driven smooth scroll by several frames,
-  // so the dock engaged late — the revealed bar covered the strip, then the
-  // strip jumped down a beat later (and symmetrically lingered docked after
-  // unsticking, reopening the in-flow gap). The reading-line scrollspy above
-  // replaced an IO for the same flakiness.
+  // batched and can lag the scroll handler by several frames, so the dock
+  // engaged late — the revealed bar covered the strip, then the strip jumped
+  // down a beat later (and symmetrically lingered docked after unsticking,
+  // reopening the in-flow gap). The reading-line scrollspy above replaced an
+  // IO for the same flakiness.
   const sentinel = document.querySelector('.spine-sentinel');
   const updateStuck = () => {
     if (!nav || !sentinel) return;
@@ -132,8 +130,8 @@ import { caseStudySections } from '../../lib/caseStudySections';
     nav.toggleAttribute('data-stuck', pastTop && parentBottom >= nav.offsetHeight);
   };
 
-  // Lenis smooth-scroll drives the native scroll position, so plain scroll
-  // events stay in sync with the animated motion.
+  // Anchor glides ride native `scroll-behavior: smooth` (motion.css), so
+  // plain scroll events stay in sync with the animated motion.
   window.addEventListener('scroll', queueUpdate, { passive: true });
   window.addEventListener('resize', queueUpdate);
   updateActive();
@@ -144,17 +142,10 @@ import { caseStudySections } from '../../lib/caseStudySections';
       const section = document.getElementById(link.dataset.spineLink ?? '');
       if (!section) return;
       event.preventDefault();
-      // Scroll through Lenis when smooth scroll is active: a native
-      // scrollIntoView races Lenis's raf loop and the scroll stalls.
-      const lenis = getLenis();
-      if (lenis) {
-        lenis.scrollTo(section);
-      } else {
-        section.scrollIntoView({
-          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-          block: 'start',
-        });
-      }
+      section.scrollIntoView({
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        block: 'start',
+      });
       history.replaceState(null, '', link.hash);
       section.focus({ preventScroll: true });
       setActive(section.id);

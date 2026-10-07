@@ -207,13 +207,26 @@ const displayedCapabilities = capabilities.slice(0, 8);
 </style>
 
 <script>
-  import gsap from 'gsap';
-  import { initDepthLayer, initPinnedStory } from '../../lib/motion';
-
   const cleanups: Array<() => void> = [];
 
-  const initCapes = () => document.querySelectorAll<HTMLElement>('[data-capes]').forEach((section) => {
-    if (section.dataset.capesInitialized) return;
+  const initCapes = async () => {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-capes]')).filter(
+      (section) => !section.dataset.capesInitialized,
+    );
+    if (!sections.length) return;
+
+    // gsap (the list glide's quickTo) and the pinned-story/depth-layer
+    // primitives load on demand, on the Layout's deferred-motion beat —
+    // never on the critical path.
+    const [{ default: gsap }, { initPinnedStory }, { initDepthLayer }] = await Promise.all([
+      import('gsap'),
+      import('../../lib/motion/pinnedStory'),
+      import('../../lib/motion/depthLayer'),
+    ]);
+
+    sections.forEach((section) => {
+    // A View Transition swap may have detached the section while the chunks loaded.
+    if (section.dataset.capesInitialized || !section.isConnected) return;
     const frames = section.querySelectorAll<HTMLElement>('[data-capes-frame]');
     const listItems = section.querySelectorAll<HTMLElement>('[data-cap]');
     const list = section.querySelector<HTMLElement>('[data-capes-list]');
@@ -310,12 +323,13 @@ const displayedCapabilities = capabilities.slice(0, 8);
       destroyDepthLayer();
       delete section.dataset.capesInitialized;
     });
-  });
+    });
+  };
 
   const cleanupAll = () => cleanups.splice(0).forEach((cleanup) => cleanup());
 
   // Deferred by Layout until after the hero reveal so pin creation + refresh
   // never reflow on the same frames as the Type Reveal.
-  document.addEventListener('sbh:motion-deferred', initCapes);
+  document.addEventListener('sbh:motion-deferred', () => void initCapes());
   document.addEventListener('astro:before-swap', cleanupAll);
 </script>

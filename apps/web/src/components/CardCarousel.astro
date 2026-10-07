@@ -91,7 +91,7 @@ const mergedNextProps = {
 </card-carousel>
 
 <script>
-  import { initHorizontalRail, type HorizontalRailHandle } from '../lib/motion'
+  import type { HorizontalRailHandle } from '../lib/motion/horizontalRail'
 
   class CardCarouselElement extends HTMLElement {
     private railHandle?: HorizontalRailHandle
@@ -102,8 +102,15 @@ const mergedNextProps = {
       this.dataset.enhanced = 'true'
 
       const railContainer = (this.querySelector('.rail') as HTMLElement | null) ?? this
-      if (this.track && this.dataset.scrollJack !== 'false') {
-        this.railHandle = initHorizontalRail(this, railContainer, this.track)
+      const track = this.track
+      if (track && this.dataset.scrollJack !== 'false') {
+        // The scroll-jack (gsap + ScrollTrigger) loads on demand so pages
+        // without a jacked rail never pay for the scroll-motion stack.
+        void import('../lib/motion/horizontalRail').then(({ initHorizontalRail }) => {
+          // The element may have disconnected while the chunk loaded.
+          if (!this.isConnected || this.railHandle) return
+          this.railHandle = initHorizontalRail(this, railContainer, track)
+        })
       }
 
       this.querySelector('.previous')?.addEventListener('click', (e) => {

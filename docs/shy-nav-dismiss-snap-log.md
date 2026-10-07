@@ -71,6 +71,10 @@ is still there (and/or the wipe still doesn't read). Paused here.
   hypothesis should come from a frame-level capture (Chrome DevTools
   Performance trace or `PerformanceObserver` + transform sampling), not
   another code theory.
+  - **Update (2026-10-06):** Lenis is retired (ADR-0041, PR #170); scrolling
+    is native everywhere. The Lenis-interpolation half of this question is
+    now cheap to close — if the snap still reproduces on current main, the
+    bar's own transition is the only remaining suspect.
 - Capture the dismiss with `getComputedStyle(nav).transform` sampled per
   rAF to see whether the transform itself jumps or completes smoothly.
 - Consider whether the exit wipe's prominence change is even perceptible

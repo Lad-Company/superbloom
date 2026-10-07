@@ -3,6 +3,15 @@
    remain active under reduced motion. Type Reveal and scroll choreography are
    JavaScript primitives in src/lib/motion and are gated by reduced motion. */
 
+/* In-page anchor navigation (the case-study spine nav, hash links) glides
+   via native smooth scrolling. Route landings stay instant: Layout settles
+   the scroll position with behavior:'instant', which overrides this. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* Text Link — Underline Draw */
 .underline-draw {
   position: relative;
