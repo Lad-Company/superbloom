@@ -93,7 +93,7 @@ domain is ever in scope.)
      staging-URL hook was deleted.
    - [x] GitHub repo webhook (`deployment_status` → `api/hooks/github`)
      repointed to `https://www.superbloomhouse.com`.
-   - Watch Discord `#site-alerts` / Sentry `sbh-web`.
+   - Watch Discord `#site-alerts` / Sentry `superbloom-web`.
    - Smoke-test: homepage, a Case Study, `/shop` cart flow, contact form
      (lands as a Sanity `formSubmission`), newsletter signup, draft preview
      from the Studio Presentation pane.

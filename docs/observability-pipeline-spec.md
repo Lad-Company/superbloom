@@ -223,9 +223,9 @@ and keeps no copy of any payload.
 
 ## 6. Sentry configuration
 
-- **Project:** one new project (Astro platform) in the existing business org.
-  Plan quota is shared across the org; this site's volume is negligible
-  against it.
+- **Project:** `superbloom-web` (Astro platform) in org `huge-tool-llc`,
+  created 2026-10-01. Plan quota is shared across the org; this site's volume
+  is negligible against it.
 - **SDK:** `@sentry/astro` with `sentry.client.config.ts` and
   `sentry.server.config.ts` at the `apps/web` root, registered as an Astro
   integration in `astro.config.mjs`.
@@ -239,6 +239,10 @@ and keeps no copy of any payload.
 - **Discord alert rule:** for the new project, "new issue created" (plus
   regression/spike conditions as tuned) → Discord action → `#site-alerts`,
   addressed by channel ID. The Sentry bot must have access to the channel.
+  **Status 2026-10-08:** not yet created — the project's only rule is Seer's
+  "PR ready for review" notification (no actions). Until this rule exists,
+  new Sentry issues do not post to `#site-alerts`; only relay-sourced deploy
+  failures land there.
 
 ## 7. Environment variables
 

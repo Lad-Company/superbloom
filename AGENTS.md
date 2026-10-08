@@ -20,9 +20,11 @@ the settled decisions in `ARCHITECTURE.md`.
   `packages/schemas`.
 - **Deploys:** merging to `main` deploys the site to production on Vercel.
   The Studio deploys separately (`sanity deploy` from `apps/studio`).
-- **Observability:** errors aggregate in Sentry project `sbh-web` and alert to
-  Discord `#site-alerts`; deploys and content publishes post to
-  `#site-activity`. Pipeline details: `docs/observability-pipeline-spec.md`.
+- **Observability:** errors aggregate in Sentry project `superbloom-web` (org
+  `huge-tool-llc`); deploys and content publishes post to Discord
+  `#site-activity`, deploy failures to `#site-alerts`. The Sentry new-issue →
+  `#site-alerts` Discord alert rule is not yet created (spec §6). Pipeline
+  details: `docs/observability-pipeline-spec.md`.
 - **Open investigations:** the shy-nav dismiss "snap" bug is paused; read
   `docs/shy-nav-dismiss-snap-log.md` before retrying it (note its code-drift
   warning — the code it describes has moved on).
