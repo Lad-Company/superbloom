@@ -256,15 +256,20 @@ describe('MediaFrame playback profiles', () => {
       expect(start).toContain('this.stallMonitor.notifyPlaying()')
     })
 
-    it('un-wedges a Firefox-adopted loop at connect by signature, keeping the timer as backstop (GH #196)', () => {
-      // The GH #178 wedge reports NETWORK_NO_SOURCE with its <source> list
-      // intact at adoption — deterministic, so reload now instead of
-      // holding the poster for the 4s watchdog.
+    it('reloads a swap-adopted loop at connect, keeping the timer as backstop (GH #196)', () => {
+      // A loop adopted across a ClientRouter swap has a load that started
+      // in an inert document; no browser reliably resumes it (Firefox
+      // NETWORK_NO_SOURCE, Chrome/Safari NETWORK_IDLE with no data) and
+      // each otherwise waits out the 4s watchdog. The navigation stamp is
+      // the signature — never set on a cold load, so the parser-started
+      // first-paint fetch is never aborted.
       const start = source.slice(
         source.indexOf('private startLoop('),
         source.indexOf('private swapLoopToHls()'),
       )
-      expect(start).toContain('loopElement.networkState === HTMLMediaElement.NETWORK_NO_SOURCE')
+      expect(start).toContain("document.documentElement.hasAttribute('data-nav')")
+      expect(start).toContain('loopElement.readyState < HTMLMediaElement.HAVE_CURRENT_DATA')
+      expect(start).not.toContain('loopElement.networkState === HTMLMediaElement.NETWORK_NO_SOURCE')
       expect(start).toContain("loopElement.querySelector('source')")
       expect(start).toContain("this.setAttribute('data-loop-revived', 'adopt')")
       expect(start).toContain('loopElement.load()')

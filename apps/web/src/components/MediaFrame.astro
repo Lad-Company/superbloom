@@ -1065,19 +1065,25 @@ const imageRendering =
       // autoplay before first data arrives, so the attribute path can
       // never autostart motion the JS play() gate would have withheld.
       this.syncAutoplayGate()
-      // Connect-time un-wedge (GH #196): the GH #178 adoption wedge has a
-      // deterministic signature in Firefox — the adopted <video> reports
-      // NETWORK_NO_SOURCE while it still holds its <source> list — so
-      // re-run the load algorithm now instead of waiting out the 4s timer
-      // below (which stays as the backstop for the unknown case). No
-      // browser reports NETWORK_NO_SOURCE mid-fetch, so this never aborts a
-      // live load; Chrome and Safari report NETWORK_LOADING/NETWORK_IDLE
-      // here and skip it. Declarative `autoplay` restarts the reloaded
-      // element (updatePlayback() covers the JS-gated case). Deliberately
-      // does not consume the one-shot `loopRevived` budget; the "adopt"
-      // value distinguishes this path from the timer's "" for probes.
+      // Connect-time un-wedge (GH #196): a loop adopted from the
+      // ClientRouter's inert parsed document has a load algorithm that
+      // started without a browsing context, and no browser reliably
+      // resumes it in the live document — Firefox reports
+      // NETWORK_NO_SOURCE, Chrome and Safari sit at NETWORK_IDLE/EMPTY with
+      // paused=false and no data, and every one of them otherwise waits
+      // out the 4s timer below (which stays as the backstop). The
+      // navigation itself is the signature: Layout stamps html[data-nav]
+      // on every swap and never on a cold load, so this never aborts the
+      // parser-started fetch of a first paint. Skipped when data already
+      // arrived (readyState >= HAVE_CURRENT_DATA — the adopt-already-
+      // playing case wirePlayer() stamped ready). Declarative `autoplay`
+      // restarts the reloaded element (updatePlayback() covers the
+      // JS-gated case). Deliberately does not consume the one-shot
+      // `loopRevived` budget; the "adopt" value distinguishes this path
+      // from the timer's "" for probes.
       if (
-        loopElement.networkState === HTMLMediaElement.NETWORK_NO_SOURCE &&
+        document.documentElement.hasAttribute('data-nav') &&
+        loopElement.readyState < HTMLMediaElement.HAVE_CURRENT_DATA &&
         loopElement.querySelector('source')
       ) {
         this.setAttribute('data-loop-revived', 'adopt')
