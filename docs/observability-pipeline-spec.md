@@ -264,7 +264,7 @@ Vercel project settings for deployed environments.
 
 > Hosting-plan context: the project + domains transferred to the
 > SBH-owned **Pro** team `superbloom` on 2026-09-29, ahead of the
-> 2026-09-30 launch (see `docs/dns-cutover-runbook.md`). The Hobby
+> 2026-09-30 launch (ADR-0037). The Hobby
 > constraints below are therefore **retired**; the Pro options noted here are
 > now available — still optional, no relay contract change either way.
 

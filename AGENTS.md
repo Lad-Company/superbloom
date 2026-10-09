@@ -25,9 +25,6 @@ the settled decisions in `ARCHITECTURE.md`.
   `#site-activity`, deploy failures to `#site-alerts`. The Sentry new-issue →
   `#site-alerts` Discord alert rule is not yet created (spec §6). Pipeline
   details: `docs/observability-pipeline-spec.md`.
-- **Open investigations:** the shy-nav dismiss "snap" bug is paused; read
-  `docs/shy-nav-dismiss-snap-log.md` before retrying it (note its code-drift
-  warning — the code it describes has moved on).
 
 ## Agent skills
 
