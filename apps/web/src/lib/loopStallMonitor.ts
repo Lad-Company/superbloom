@@ -27,7 +27,9 @@ export interface StallMonitorOptions {
 }
 
 export interface StallMonitor {
-  /** Arms the monitor (first `playing` only). */
+  /** Arms the monitor on `playing`; re-arms after a `notifyPause` so a
+   *  visibility-gate pause early in the session does not retire the
+   *  verdict. A `playing` that follows a stall while armed is ignored. */
   notifyPlaying: () => void
   /** Counts stalls while armed. */
   notifyWaiting: () => void
@@ -43,7 +45,6 @@ export const createStallMonitor = ({
   now = () => Date.now(),
 }: StallMonitorOptions): StallMonitor => {
   let armed = false
-  let everArmed = false
   let disposed = false
   let starved = false
   let armedAtMs = 0
@@ -111,8 +112,7 @@ export const createStallMonitor = ({
 
   return {
     notifyPlaying() {
-      if (disposed || starved || everArmed) return
-      everArmed = true
+      if (disposed || starved || armed) return
       armed = true
       armedAtMs = now()
       const current = readCurrentTime()

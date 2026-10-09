@@ -118,6 +118,39 @@ describe('createStallMonitor', () => {
     expect(onStarved).not.toHaveBeenCalled()
   })
 
+  it('re-arms on the next playing after a pause, with a fresh window and grace', () => {
+    // The visibility gate pauses the hero when it scrolls out; scrolling
+    // back must not leave the verdict permanently retired.
+    const {monitor, onStarved, advance} = setup()
+    monitor.notifyPlaying()
+    monitor.notifyWaiting()
+    advance(1_000, 1)
+    monitor.notifyPause()
+    expect(vi.getTimerCount()).toBe(0)
+    // Resume: startup buffering before `playing` is still ignored.
+    monitor.notifyWaiting()
+    monitor.notifyPlaying()
+    expect(vi.getTimerCount()).toBe(1)
+    // One stall after re-arm is not enough (the pre-pause stall was cleared).
+    monitor.notifyWaiting()
+    expect(onStarved).not.toHaveBeenCalled()
+    advance(1_000, 2)
+    monitor.notifyWaiting()
+    expect(onStarved).toHaveBeenCalledTimes(1)
+  })
+
+  it('ignores a playing that follows a stall while already armed', () => {
+    const {monitor, onStarved, advance} = setup()
+    monitor.notifyPlaying()
+    advance(STARVE_CHECK_MS, 5)
+    monitor.notifyWaiting()
+    monitor.notifyPlaying()
+    expect(vi.getTimerCount()).toBe(1)
+    advance(1_000, 6)
+    monitor.notifyWaiting()
+    expect(onStarved).toHaveBeenCalledTimes(1)
+  })
+
   it('dispose leaves no timers behind', () => {
     const {monitor} = setup()
     monitor.notifyPlaying()

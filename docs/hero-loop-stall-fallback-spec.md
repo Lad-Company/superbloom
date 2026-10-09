@@ -70,7 +70,9 @@ up front.
 3. **Stalling is judged on evidence, after startup.** Startup `waiting` events
    (before the first `playing`) are buffering, not failure — the probe showed
    three of them on a connection that then played smoothly. The stall monitor
-   arms at the first `playing` event.
+   arms at `playing`; an intentional pause disarms it and the next `playing`
+   re-arms it with a fresh window, so a visibility-gate pause early in the
+   session (scroll out, tab away) never retires the verdict.
 4. **The fallback on evidence of starvation is HLS, not the poster.** HLS is
    the delivery mechanism built for variable links and is proven on this exact
    asset class (ADR-0042: downshifted to 480p and played through at 1.6 Mbps).
@@ -92,7 +94,7 @@ and synthetic event sequences (the regression seam the current code lacks):
 
 ```
 createStallMonitor({ onStarved }): {
-  notifyPlaying(): void      // arms the monitor (first `playing` only)
+  notifyPlaying(): void      // arms the monitor (no-op while already armed)
   notifyWaiting(): void      // stalls counted only while armed
   notifyPause(): void        // intentional stops disarm
   dispose(): void
@@ -101,8 +103,9 @@ createStallMonitor({ onStarved }): {
 
 Verdict rules (constants exported for tests):
 
-- **Armed** at the first `playing` event. `waiting` before that is startup
-  buffering and is ignored.
+- **Armed** at `playing`. `waiting` while disarmed (startup buffering, or
+  the resume buffer after a pause) is ignored; a `playing` that follows a
+  stall while already armed is a no-op.
 - **Starved** when, while armed: `STALL_LIMIT` (2) or more `waiting` events
   land within `STALL_WINDOW_MS` (15s) — the ADR-0042 failure signature was 4
   stalls in 30s, so 2 in 15 is the same density with margin — **or** a
@@ -114,7 +117,8 @@ Verdict rules (constants exported for tests):
   to never fire `waiting` but too slow to ever show the loop as authored.)
 - `pause` (intentional stop — visibility gate, reduced-motion flip,
   userIntent) and `dispose()` disarm and clear all timers/listeners. The
-  visibility gate pausing the hero on scroll-out must not accumulate verdicts.
+  visibility gate pausing the hero on scroll-out must not accumulate verdicts,
+  and the next `playing` re-arms with a fresh stall window and grace period.
 
 ### 3.2 The HLS swap (MediaFrame.astro element)
 
@@ -182,8 +186,9 @@ Following the repo's two-layer convention (source-string contract tests in
 - 1 stall, then a clean 20s → no verdict.
 - Progress under 0.5× realtime past the grace window → verdict; at-or-above →
   none.
-- `notifyPause` mid-window resets the stall count; `dispose()` leaves no
-  timers (vitest fake-timer count).
+- `notifyPause` mid-window resets the stall count; the next `notifyPlaying`
+  re-arms with a fresh window; `dispose()` leaves no timers (vitest
+  fake-timer count).
 
 **`MediaFrame.test.ts` (revised source-string contracts):**
 
