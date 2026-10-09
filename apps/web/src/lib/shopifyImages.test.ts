@@ -71,6 +71,18 @@ describe('shop consumers ride the ladder', () => {
     expect(source).not.toContain('src={product.featuredImage.url}')
   })
 
+  it('shop pages preconnect to cdn.shopify.com via the Layout prop', () => {
+    const layout = readFileSync(new URL('../layouts/Layout.astro', import.meta.url), 'utf8')
+    expect(layout).toContain('preconnects?: string[]')
+    const grid = readFileSync(new URL('../pages/shop/index.astro', import.meta.url), 'utf8')
+    expect(grid).toContain("preconnects={['https://cdn.shopify.com']}")
+    const detail = readFileSync(
+      new URL('../pages/shop/products/[handle].astro', import.meta.url),
+      'utf8',
+    )
+    expect(detail).toContain("preconnects={['https://cdn.shopify.com']}")
+  })
+
   it('the cart drawer renders small-rung thumbnails, not full-size URLs', () => {
     const source = readFileSync(
       new URL('../components/cart/CartDrawer.astro', import.meta.url),
