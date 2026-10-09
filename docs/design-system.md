@@ -155,8 +155,9 @@ Shared, composable building blocks. Each has a strict boundary ("does not own").
   **Delivery** is a MediaFrame concern, not a profile: the Home hero (Ambient,
   ungated, asset carries MP4 static renditions) plays a short Mux clip as a
   plain progressive `<video>` loop — no player chunk, first frame in under a
-  second on a good connection; on save-data / cellular-class / low-downlink
-  connections it holds the poster rather than stutter. Every other
+  second on a good connection. Only explicit save-data holds the poster up
+  front; everyone else plays the loop, and measured starvation swaps once to
+  HLS rather than parking a static frame (GH #192). Every other
   `mux.video` frame streams HLS through `<mux-video>` (ARCHITECTURE.md
   ADR-0042, ADR-0038).
 - **`PageHero`** — the single page-header block. One shared H1 (`--type-h1`,

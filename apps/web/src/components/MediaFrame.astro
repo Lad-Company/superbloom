@@ -200,6 +200,10 @@ const loopSources =
     ? progressiveLoopSources(asset.playbackId!, asset.staticRenditions)
     : null
 const isProgressiveLoop = loopSources !== null
+// The runtime starvation fallback (GH #192) rebuilds this frame as HLS, so
+// the loop path alone carries the playback id + rendition cap on the host.
+const loopPlaybackId =
+  isProgressiveLoop && asset?._type === 'mux.video' ? (asset.playbackId ?? null) : null
 /** Skeleton surface backdrop (ADR-0039): the image asset's own LQIP; for
  *  Gated Ambient video, the curated poster's LQIP (that poster is the layer
  *  that fades in over the skeleton). Ungated video has no LQIP, so it falls
@@ -251,6 +255,8 @@ const imageRendering =
   data-priority={plan.priority ? true : undefined}
   data-hero-entrance={heroEntrance ? true : undefined}
   data-mobile-max-resolution={mobileMaxResolution}
+  data-playback-id={loopPlaybackId ?? undefined}
+  data-max-resolution={isProgressiveLoop ? plan.maxResolution : undefined}
   class:list={[
     'media-frame',
     className,
@@ -487,6 +493,7 @@ const imageRendering =
 
 <script>
   import { BREAKPOINTS } from '../lib/breakpoints'
+  import { createStallMonitor, type StallMonitor } from '../lib/loopStallMonitor'
 
   const AUTO_HIDE_MS = 2500
   /** Stall watchdog budget for the progressive loop (GH #178): healthy loads
@@ -571,7 +578,13 @@ const imageRendering =
     abrEwmaDefaultEstimate: 2_000_000,
   }
 
-  type NetworkInformationLike = { saveData?: boolean; effectiveType?: string; downlink?: number }
+  type NetworkInformationLike = {
+    saveData?: boolean
+    effectiveType?: string
+    downlink?: number
+    addEventListener?: (type: string, listener: EventListener) => void
+    removeEventListener?: (type: string, listener: EventListener) => void
+  }
 
   const readConnection = (): NetworkInformationLike | undefined =>
     (navigator as Navigator & { connection?: NetworkInformationLike }).connection
@@ -587,25 +600,15 @@ const imageRendering =
     return window.matchMedia(`(max-width: ${BREAKPOINTS.smallMax}px)`).matches
   }
 
-  /** The progressive loop has no ABR ladder to fall back on: its 720p
-   *  rendition runs ~3.9 Mbps, and on a 1.6 Mbps link it stalled four times
-   *  in 30s where HLS downshifted to 480p and played through (CDP probe,
-   *  2026-10-06). Under this reported downlink — or on save-data /
-   *  cellular-class connections — the hero holds its poster instead of
-   *  stuttering. Chrome caps the reported downlink at 10 Mbps, and Safari
-   *  has no Network Information API at all, so a missing value means "no
-   *  evidence, play". Unlike constrainedNetwork(), viewport size is not a
-   *  signal here: a phone on wifi plays the 720p rung fine. */
-  const PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS = 4
-
-  const holdProgressiveLoop = (): boolean => {
-    const connection = readConnection()
-    if (cellularClass(connection)) return true
-    return (
-      typeof connection?.downlink === 'number' &&
-      connection.downlink < PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS
-    )
-  }
+  /** Save-data is the only predictive hold left (GH #192): explicit user
+   *  intent parks the poster up front. The downlink / cellular-class clauses
+   *  were deleted — Chrome's Network Information API downlink is a lagging
+   *  EWMA read mid-parse, and on 2026-10-08 it parked the hero on a
+   *  connection that then played the 720p loop smoothly in a forced probe.
+   *  Everyone else plays the MP4; if playback actually starves, the stall
+   *  monitor swaps once to HLS. Unlike constrainedNetwork(), viewport size
+   *  is not a signal here: a phone on wifi plays the 720p rung fine. */
+  const shouldHoldForSaveData = (): boolean => Boolean(readConnection()?.saveData)
 
   /** Ambient loops are short and cyclic, so the hls.js defaults (30s forward
    *  buffer, unbounded cap growth) download far more of the stream than the
@@ -661,6 +664,18 @@ const imageRendering =
     /** One revival per element: a re-wedged loop after a forced reload means
      *  something deeper is wrong — never loop load() calls. */
     private loopRevived = false
+    /** MP4 → HLS starvation fallback (GH #192) is one-way per element. */
+    private loopFallback = false
+    private stallMonitor: StallMonitor | null = null
+    /** Sources retained while a save-data hold parks the loop, so a later
+     *  saveData flip-off restores them without a reload. */
+    private heldLoopSources: Array<{src: string; type: string | null; media: string | null}> | null =
+      null
+    private heldLoopPreload: string | null = null
+    private connectionRecoveryTarget: NetworkInformationLike | null = null
+    /** Set once the visibility / motion / pageshow gates exist; the held
+     *  path skips them at connect and recovery adds them without doubling. */
+    private playbackGatesReady = false
     private gestureRetryArmed = false
     /** False until the visibility observer delivers its first reading. The
      *  pause branch waits for it so a browser-started declarative autoplay
@@ -720,6 +735,41 @@ const imageRendering =
       }
     }
     private handleSourceReady = () => this.updatePlayback()
+
+    private handleLoopPlaying = () => this.stallMonitor?.notifyPlaying()
+    private handleLoopWaiting = () => this.stallMonitor?.notifyWaiting()
+    private handleLoopPause = () => this.stallMonitor?.notifyPause()
+    private handleLoopStarved = () => this.swapLoopToHls()
+
+    /** saveData recovery (GH #192): the hold is the only predictive gate
+     *  left, so when explicit data-saving intent clears we restore the
+     *  retained sources and join the standard loop contract without a
+     *  reload. Chromium fires `change` on navigator.connection; the
+     *  `connectionchange` alias keeps the spec wording and older shims
+     *  honest. */
+    private handleConnectionChange = () => {
+      if (!this.hasAttribute('data-loop-held')) return
+      if (readConnection()?.saveData) return
+      const loopElement = this.querySelector('video.media-frame__loop') as MuxVideoElement | null
+      if (!loopElement || !this.heldLoopSources) return
+      for (const held of this.heldLoopSources) {
+        const source = document.createElement('source')
+        source.src = held.src
+        if (held.type) source.type = held.type
+        if (held.media) source.setAttribute('media', held.media)
+        loopElement.appendChild(source)
+      }
+      if (this.heldLoopPreload !== null) {
+        loopElement.setAttribute('preload', this.heldLoopPreload)
+      }
+      this.heldLoopSources = null
+      this.heldLoopPreload = null
+      this.removeAttribute('data-loop-held')
+      this.setConnectionRecovery(false)
+      loopElement.load()
+      this.ensurePlaybackGates()
+      this.startLoop(loopElement)
+    }
 
     /** Firefox wedged-load recovery (GH #178): a progressive-loop <video>
      *  adopted from the ClientRouter's inert parsed document can deadlock in
@@ -908,34 +958,19 @@ const imageRendering =
 
       if (!playerElement && !loopElement) return
 
-      // Constrained network: keep the poster rather than a loop that
-      // stutters. Priority frames carry preload="auto", so the browser
-      // already opened the MP4 at parse; dropping the sources and
-      // re-running the load algorithm aborts that fetch. With no player
-      // adopted, updatePlayback() is a no-op and data-video-ready never
-      // lands, so the poster stays painted.
-      if (loopElement && holdProgressiveLoop()) {
-        for (const source of loopElement.querySelectorAll('source')) source.remove()
-        loopElement.removeAttribute('preload')
-        loopElement.load()
-        this.setAttribute('data-loop-held', '')
+      // Save-data hold (GH #192): explicit data-saving intent keeps the
+      // poster. Priority frames carry preload="auto", so the browser already
+      // opened the MP4 at parse; dropping the sources and re-running the
+      // load algorithm aborts that fetch. With no player adopted,
+      // updatePlayback() is a no-op and data-video-ready never lands, so the
+      // poster stays painted. setConnectionRecovery (armed only here)
+      // restores the sources if saveData clears.
+      if (loopElement && shouldHoldForSaveData()) {
+        this.holdLoopForSaveData(loopElement)
         return
       }
 
-      this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
-      this.observer = new IntersectionObserver(
-        ([entry]) => {
-          this.observedOnce = true
-          this.isVisible = entry.isIntersecting
-          this.updatePlayback()
-        },
-        {threshold: 0},
-      )
-      this.observer.observe(this)
-
-      document.addEventListener('visibilitychange', this.handleVisibilityChange)
-      this.motionPreference.addEventListener('change', this.handleMotionChange)
-      window.addEventListener('pageshow', this.handlePageShow)
+      this.ensurePlaybackGates()
 
       // The mux-video chunk (~1MB raw with media-chrome on mux-player) is the
       // largest JS cost on media pages, so it loads lazily: priority frames
@@ -944,24 +979,7 @@ const imageRendering =
       // viewport before it can scroll in.
       const isGated = this.hasAttribute('gated')
       if (loopElement) {
-        // No poster copy (GH #172 — the player poster is gone everywhere):
-        // the loop fades in over the always-painted overlay poster via the
-        // same data-video-ready opacity gate as the HLS path.
-        this.wirePlayer(loopElement)
-        // Reduced-motion connect guard (GH #190): strip the declarative
-        // autoplay before first data arrives, so the attribute path can
-        // never autostart motion the JS play() gate would have withheld.
-        this.syncAutoplayGate()
-        // Firefox wedged-load watchdog (GH #178): loop path only — the HLS
-        // path fetches through hls.js, which manages its own stalls.
-        loopElement.addEventListener('waiting', this.armLoopStallWatchdog)
-        for (const event of LOOP_STALL_DISARM_EVENTS) {
-          loopElement.addEventListener(event, this.disarmLoopStallWatchdog)
-        }
-        this.armLoopStallWatchdog()
-        // Resolve the never-awaited promise so togglePlayback()'s "chunk in
-        // flight" branch can't fire for a frame that has no chunk.
-        this.playerLoading = Promise.resolve()
+        this.startLoop(loopElement)
       } else if (isGated) {
         if (this.hasAttribute('revealed')) void this.loadPlayer()
       } else if (this.hasAttribute('data-priority')) {
@@ -978,6 +996,167 @@ const imageRendering =
         )
         this.loadObserver.observe(this)
       }
+    }
+
+    /** Visibility / reduced-motion / pageshow gates shared by both delivery
+     *  paths. Extracted so the save-data hold can skip them at connect and
+     *  the recovery path can install them later without double-registering. */
+    private ensurePlaybackGates() {
+      if (this.playbackGatesReady) return
+      this.playbackGatesReady = true
+      this.motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
+      this.observer = new IntersectionObserver(
+        ([entry]) => {
+          this.observedOnce = true
+          this.isVisible = entry.isIntersecting
+          this.updatePlayback()
+        },
+        {threshold: 0},
+      )
+      this.observer.observe(this)
+
+      document.addEventListener('visibilitychange', this.handleVisibilityChange)
+      this.motionPreference.addEventListener('change', this.handleMotionChange)
+      window.addEventListener('pageshow', this.handlePageShow)
+    }
+
+    private setConnectionRecovery(armed: boolean) {
+      if (armed) {
+        const connection = readConnection()
+        if (!connection?.addEventListener || this.connectionRecoveryTarget) return
+        connection.addEventListener('change', this.handleConnectionChange)
+        connection.addEventListener('connectionchange', this.handleConnectionChange)
+        this.connectionRecoveryTarget = connection
+        return
+      }
+      const connection = this.connectionRecoveryTarget
+      if (!connection?.removeEventListener) return
+      connection.removeEventListener('change', this.handleConnectionChange)
+      connection.removeEventListener('connectionchange', this.handleConnectionChange)
+      this.connectionRecoveryTarget = null
+    }
+
+    private holdLoopForSaveData(loopElement: MuxVideoElement) {
+      this.heldLoopSources = Array.from(loopElement.querySelectorAll('source')).map((source) => ({
+        src: source.src,
+        type: source.getAttribute('type'),
+        media: source.getAttribute('media'),
+      }))
+      this.heldLoopPreload = loopElement.getAttribute('preload')
+      for (const source of loopElement.querySelectorAll('source')) source.remove()
+      loopElement.removeAttribute('preload')
+      loopElement.load()
+      this.setAttribute('data-loop-held', '')
+      this.setConnectionRecovery(true)
+    }
+
+    /** Adopts the progressive loop and arms its two disjoint watchdogs.
+     *  GH #178's signature is playback requested with zero data
+     *  (`!paused && readyState < 2` — a wedged load); GH #192's stall
+     *  monitor is playback achieved, then starved (post-`playing` waiting
+     *  density or sub-realtime progress). Neither may trigger the other. */
+    private startLoop(loopElement: MuxVideoElement) {
+      if (this.player === loopElement) return
+      // No poster copy (GH #172 — the player poster is gone everywhere):
+      // the loop fades in over the always-painted overlay poster via the
+      // same data-video-ready opacity gate as the HLS path.
+      this.wirePlayer(loopElement)
+      // Reduced-motion connect guard (GH #190): strip the declarative
+      // autoplay before first data arrives, so the attribute path can
+      // never autostart motion the JS play() gate would have withheld.
+      this.syncAutoplayGate()
+      // Firefox wedged-load watchdog (GH #178): loop path only — the HLS
+      // path fetches through hls.js, which manages its own stalls.
+      loopElement.addEventListener('waiting', this.armLoopStallWatchdog)
+      for (const event of LOOP_STALL_DISARM_EVENTS) {
+        loopElement.addEventListener(event, this.disarmLoopStallWatchdog)
+      }
+      this.armLoopStallWatchdog()
+      this.stallMonitor = createStallMonitor({
+        onStarved: this.handleLoopStarved,
+        readCurrentTime: () => this.player?.currentTime ?? 0,
+        readDuration: () => this.player?.duration ?? Number.NaN,
+      })
+      loopElement.addEventListener('playing', this.handleLoopPlaying)
+      loopElement.addEventListener('waiting', this.handleLoopWaiting)
+      loopElement.addEventListener('pause', this.handleLoopPause)
+      // Resolve the never-awaited promise so togglePlayback()'s "chunk in
+      // flight" branch can't fire for a frame that has no chunk.
+      this.playerLoading = Promise.resolve()
+    }
+
+    /** Evidence-based fallback (GH #192): the MP4 loop played and then
+     *  starved, so swap once to HLS (ABR owns quality from there) and never
+     *  back. The poster stays painted until the HLS path presents a frame
+     *  via the unchanged data-video-ready gate, so the swap reads as
+     *  still → still → low-res motion, never still → gray box. */
+    private swapLoopToHls() {
+      if (this.loopFallback) return
+      const loopElement = this.player?.classList.contains('media-frame__loop')
+        ? this.player
+        : (this.querySelector('video.media-frame__loop') as MuxVideoElement | null)
+      const playbackId = this.dataset.playbackId
+      if (!loopElement || !playbackId) return
+      this.loopFallback = true
+      this.setAttribute('data-loop-fallback', 'hls')
+      // Re-arm the GH #172 opacity gate for the new element: without this,
+      // a host already stamped by the MP4 loop would show the HLS surface
+      // before its first presented frame.
+      this.removeAttribute('data-video-ready')
+      this.teardownLoopMonitors(loopElement)
+      this.unwirePlayer(loopElement)
+      this.player = null
+      // startLoop() resolved this for the no-chunk MP4 path; reset it so the
+      // fallback actually imports mux-video.
+      this.playerLoading = null
+
+      const fallback = document.createElement('mux-video') as MuxVideoElement
+      fallback.setAttribute('playback-id', playbackId)
+      fallback.setAttribute('stream-type', 'on-demand')
+      fallback.setAttribute('muted', '')
+      fallback.setAttribute('loop', '')
+      fallback.setAttribute('playsinline', '')
+      fallback.setAttribute('disablepictureinpicture', '')
+      const mobileMaxResolution = this.dataset.mobileMaxResolution
+      const maxResolution =
+        mobileMaxResolution &&
+        window.matchMedia(`(max-width: ${BREAKPOINTS.smallMax}px)`).matches
+          ? mobileMaxResolution
+          : this.dataset.maxResolution
+      if (maxResolution) fallback.setAttribute('max-resolution', maxResolution)
+      // The frame just proved the link constrained: start hls.js on the 2
+      // Mbps seed instead of re-proving from the 20 Mbps startup estimate.
+      fallback._hlsConfig = CONSTRAINED_AMBIENT_HLS_CONFIG
+      loopElement.replaceWith(fallback)
+      void this.loadPlayer()
+    }
+
+    private unwirePlayer(player: MuxVideoElement) {
+      player.removeEventListener('play', this.handlePlay)
+      player.removeEventListener('pause', this.handlePause)
+      player.removeEventListener('playing', this.handleReady)
+      player.removeEventListener('loadedmetadata', this.handleSourceReady)
+      player.removeEventListener('volumechange', this.handleVolumeChange)
+      player.removeEventListener('timeupdate', this.handleTimeUpdate)
+      player.removeEventListener('durationchange', this.handleDurationChange)
+      player.removeEventListener('loadedmetadata', this.handleLoadedMeta)
+      player.removeEventListener('progress', this.handleProgress)
+      player.removeEventListener('seeked', this.handleSeeked)
+    }
+
+    private teardownLoopMonitors(player: MuxVideoElement | null) {
+      this.disarmLoopStallWatchdog()
+      if (player) {
+        player.removeEventListener('waiting', this.armLoopStallWatchdog)
+        for (const event of LOOP_STALL_DISARM_EVENTS) {
+          player.removeEventListener(event, this.disarmLoopStallWatchdog)
+        }
+        player.removeEventListener('playing', this.handleLoopPlaying)
+        player.removeEventListener('waiting', this.handleLoopWaiting)
+        player.removeEventListener('pause', this.handleLoopPause)
+      }
+      this.stallMonitor?.dispose()
+      this.stallMonitor = null
     }
 
     /** Imports the mux-video chunk and wires the player. Idempotent; safe to
@@ -1131,16 +1310,11 @@ const imageRendering =
       document.removeEventListener('visibilitychange', this.handleVisibilityChange)
       this.motionPreference?.removeEventListener('change', this.handleMotionChange)
       window.removeEventListener('pageshow', this.handlePageShow)
-      this.player?.removeEventListener('play', this.handlePlay)
-      this.player?.removeEventListener('pause', this.handlePause)
-      this.player?.removeEventListener('playing', this.handleReady)
-      this.player?.removeEventListener('loadedmetadata', this.handleSourceReady)
-      this.player?.removeEventListener('volumechange', this.handleVolumeChange)
-      this.player?.removeEventListener('timeupdate', this.handleTimeUpdate)
-      this.player?.removeEventListener('durationchange', this.handleDurationChange)
-      this.player?.removeEventListener('loadedmetadata', this.handleLoadedMeta)
-      this.player?.removeEventListener('progress', this.handleProgress)
-      this.player?.removeEventListener('seeked', this.handleSeeked)
+      if (this.player) {
+        this.teardownLoopMonitors(this.player)
+        this.unwirePlayer(this.player)
+      }
+      this.setConnectionRecovery(false)
       this.control?.removeEventListener('click', this.handleControlClick)
       this.mute?.removeEventListener('click', this.handleMuteClick)
       this.scrubberRoot?.removeEventListener('pointerdown', this.handleScrubberPointerDown)
@@ -1152,14 +1326,9 @@ const imageRendering =
         clearTimeout(this.autoHideTimer)
         this.autoHideTimer = null
       }
-      this.disarmLoopStallWatchdog()
       if (this.transientRetryTimer !== null) {
         clearTimeout(this.transientRetryTimer)
         this.transientRetryTimer = null
-      }
-      this.player?.removeEventListener('waiting', this.armLoopStallWatchdog)
-      for (const event of LOOP_STALL_DISARM_EVENTS) {
-        this.player?.removeEventListener(event, this.disarmLoopStallWatchdog)
       }
       document.removeEventListener('pointerdown', this.handlePlaybackGesture, {capture: true})
       document.removeEventListener('keydown', this.handlePlaybackGesture, {capture: true})
