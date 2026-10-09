@@ -168,7 +168,14 @@ still → gray box.
 - The GH #178 wedged-load watchdog for the loop path. Its signature
   (playback requested, zero data, `readyState < 2`) is disjoint from the
   stall monitor's (playback achieved, then starved); document that split in
-  code comments so the two never "help" each other.
+  code comments so the two never "help" each other. **Amended (GH #198):**
+  the watchdog's known reproduction — adoption of a parser-started loop
+  from the ClientRouter's inert parsed document — is closed at the root:
+  `startLoop()` replaces the adopted `<video>` with a fresh
+  `cloneNode(true)` clone created in the live document whenever
+  `html[data-nav]` is set, before wiring. The watchdog stays one release
+  as a probe for any wedge a live-document element can still hit, then is
+  removed if none reproduces.
 - `constrainedNetwork()` and the HLS startup seeds — still used for the HLS
   path's initial config, now also on the fallback swap (§3.2.4).
 - Mux static renditions stay 720p + 1080p, hero only.

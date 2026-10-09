@@ -256,27 +256,33 @@ describe('MediaFrame playback profiles', () => {
       expect(start).toContain('this.stallMonitor.notifyPlaying()')
     })
 
-    it('reloads a swap-adopted loop at connect, keeping the timer as backstop (GH #196)', () => {
+    it('replaces a swap-adopted loop with a fresh clone instead of adopting it (GH #198)', () => {
       // A loop adopted across a ClientRouter swap has a load that started
       // in an inert document; no browser reliably resumes it (Firefox
-      // NETWORK_NO_SOURCE, Chrome/Safari NETWORK_IDLE with no data) and
-      // each otherwise waits out the 4s watchdog. The navigation stamp is
-      // the signature — never set on a cold load, so the parser-started
-      // first-paint fetch is never aborted.
+      // NETWORK_NO_SOURCE, Chrome/Safari NETWORK_IDLE with no data, warm
+      // cache playing unobserved). startLoop() replaces it with a fresh
+      // clone created in the live document — cloneNode(true) carries the
+      // attributes (autoplay included, for bfcache self-resume) and the
+      // <source> children — so the clone's load starts clean. The
+      // navigation stamp is the signature: never set on a cold load, so
+      // the parser-started first-paint fetch is never aborted.
       const start = source.slice(
         source.indexOf('private startLoop('),
         source.indexOf('private swapLoopToHls()'),
       )
       expect(start).toContain("document.documentElement.hasAttribute('data-nav')")
-      expect(start).toContain('loopElement.readyState < HTMLMediaElement.HAVE_CURRENT_DATA')
-      expect(start).not.toContain('loopElement.networkState === HTMLMediaElement.NETWORK_NO_SOURCE')
-      expect(start).toContain("loopElement.querySelector('source')")
-      expect(start).toContain("this.setAttribute('data-loop-revived', 'adopt')")
-      expect(start).toContain('loopElement.load()')
-      // Does not spend the timer path's one-shot budget.
-      expect(start).not.toContain('this.loopRevived = true')
-      // The signature check runs before the watchdog arms.
-      expect(start.indexOf("'adopt'")).toBeLessThan(start.indexOf('this.armLoopStallWatchdog()'))
+      expect(start).toContain('loopElement.cloneNode(true)')
+      expect(start).toContain('loopElement.replaceWith(fresh)')
+      // The clone is wired, not the adopted element.
+      expect(start.indexOf('cloneNode(true)')).toBeLessThan(
+        start.indexOf('this.wirePlayer(loopElement)'),
+      )
+      // The retired GH #196 signature patch: no adopt-time reload and no
+      // 'adopt' stamp — the clone makes both dead.
+      expect(start).not.toContain("'adopt'")
+      expect(start).not.toContain('loopElement.load()')
+      // The GH #178 watchdog stays (one release, as a probe) as backstop.
+      expect(start).toContain('this.armLoopStallWatchdog()')
     })
 
     it('retries playback on the first user gesture after a policy rejection, and on a timer after a transient one (GH #190)', () => {
