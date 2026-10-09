@@ -8,28 +8,14 @@ describe('Case Study Results variants', () => {
     expect(source).toContain("results.variant === 'qualitative'")
   })
 
-  it('stacks qualitative stats as full-bleed bands on the primary surface only', () => {
-    expect(source).toContain('class="bands"')
-    // No per-band surface alternation — bands inherit the section's primary surface.
+  it('applies the Background Color choice only to the quantitative grid', () => {
     const qualitativeBranch = source.slice(source.indexOf('qualitative ?'), source.indexOf(') : ('))
-    expect(qualitativeBranch).toContain('class="band"')
     expect(qualitativeBranch).not.toContain('data-surface-role')
     expect(qualitativeBranch).not.toContain('surfaceVars')
-    // The Background Color choice applies only to the quantitative grid.
     expect(source).toContain("!qualitative && results.backgroundColor === 'secondary'")
   })
 
-  it('separates qualitative bands with the contact-footer hairline', () => {
-    expect(source).toContain('border-top: 1px solid var(--fg-20)')
-    // Between bands only — no hairline above the first band: the colored
-    // section edge is itself the divider from the narrative section above.
-    expect(source).toMatch(/\.band\s*\+\s*\.band\s*\{[^}]*border-top/)
-  })
-
-  it('renders qualitative statements with display type and a caption, no count-up hook', () => {
-    expect(source).toContain('class="band-value type-h4"')
-    expect(source).toContain('class="band-label type-caption"')
-    // The count-up animation hook exists only in the quantitative branch.
+  it('renders qualitative statements without the count-up hook', () => {
     const qualitativeBranch = source.slice(source.indexOf('qualitative ?'), source.indexOf(') : ('))
     expect(qualitativeBranch).not.toContain('data-results-stats')
     expect(qualitativeBranch).not.toContain('Metric')

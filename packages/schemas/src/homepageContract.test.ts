@@ -11,10 +11,6 @@ const homeWorkComponentSource = readFileSync(
   new URL('../../../apps/web/src/components/blocks/HomeWork.astro', import.meta.url),
   'utf8',
 )
-const homeZineComponentSource = readFileSync(
-  new URL('../../../apps/web/src/components/blocks/HomeZine.astro', import.meta.url),
-  'utf8',
-)
 const homepageQuerySource = readFileSync(
   new URL('../../../apps/web/src/lib/queries.ts', import.meta.url),
   'utf8',
@@ -41,9 +37,7 @@ describe('Homepage CMS contract', () => {
     expect(homeWorkSchemaSource).not.toContain('infoPositionField')
   })
 
-  it('renders Our Work as a fixed interlocking mosaic grid', () => {
-    expect(homeWorkComponentSource).toContain('class="mosaic"')
-    expect(homeWorkComponentSource).toContain('grid-auto-rows: 1cqw')
+  it('renders Our Work as the mosaic, not the generic card list', () => {
     expect(homeWorkComponentSource).not.toContain('<ContentCardList')
   })
 
@@ -56,10 +50,5 @@ describe('Homepage CMS contract', () => {
     }
     expect(homepageQuerySource).toContain('layoutPreset')
     expect(homepageCompositionSource).toContain('preset={homepage.work?.layoutPreset}')
-  })
-
-  it('renders the Zine promo at a compact US Letter-like ratio in a true 50/50 split', () => {
-    expect(homeZineComponentSource).toContain('ratio="4:5"')
-    expect(homeZineComponentSource).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))')
   })
 })

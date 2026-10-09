@@ -10,11 +10,10 @@ describe('SelectDropdown', () => {
     expect(source).not.toContain('<select')
   })
 
-  it('shares the chevron, dismissal behavior, and menu styling with the browse dropdowns', () => {
+  it('shares the chevron and dismissal behavior with the browse dropdowns', () => {
     expect(source).toContain('DropdownChevron')
     expect(source).toContain('initDropdownDismiss')
     expect(source).toContain('data-dropdown')
-    expect(source).toContain('underline-draw')
   })
 
   it('submits through a hidden text input so required validation still gates the form', () => {

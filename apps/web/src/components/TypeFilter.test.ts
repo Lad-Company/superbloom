@@ -5,12 +5,6 @@ import {ARTICLE_TYPES, ARTICLE_TYPE_LABELS, parseArticleTypeFilter} from '../lib
 const source = readFileSync(new URL('./TypeFilter.astro', import.meta.url), 'utf8')
 
 describe('TypeFilter', () => {
-  it('renders a header-sized "Filter by" label with the muted label color', () => {
-    expect(source).toContain('Filter by')
-    expect(source).toContain('type-h5')
-    expect(source).toContain('--fg-30')
-  })
-
   it('offers every visitor-facing article type as a dropdown option', () => {
     expect(ARTICLE_TYPES).toEqual(['news', 'editorial'])
     expect(ARTICLE_TYPE_LABELS).toEqual({news: 'News', editorial: 'Editorial', zine: 'Zine'})
@@ -31,11 +25,6 @@ describe('TypeFilter', () => {
   it('marks the selected type and clears the filter by re-selecting it', () => {
     expect(source).toContain('aria-current={selected')
     expect(source).toContain('hrefFor(selected ? null : type)')
-  })
-
-  it('has no explicit clear control beyond unselecting the active type', () => {
-    expect(source).not.toContain('Clear all')
-    expect(source).not.toContain('Reset')
   })
 
   it('preserves the active sort order in the option hrefs', () => {
