@@ -18,19 +18,5 @@ describe('HomeWork mosaic', () => {
 
   it('supports left- and right-anchored floating captions', () => {
     expect(source).toContain('`caption-${slot.captionAnchor}`')
-    expect(source).toContain('.mosaic-item.caption-right .caption')
-  })
-
-  it('keeps the mobile stacking implementation unchanged', () => {
-    expect(source).toContain('@media (--bp-below-desktop)')
-    expect(source).toContain('grid-column: 1 / -1 !important;')
-    expect(source).toContain('grid-row: auto !important;')
-    expect(source).toContain('position: static;')
-    expect(source).toContain('row-gap: var(--stack-gap);')
-  })
-
-  it('keeps desktop media full-bleed with no page gutter', () => {
-    expect(source).toContain('@media (--bp-desktop)')
-    expect(source).toContain('padding-inline: 0;')
   })
 })

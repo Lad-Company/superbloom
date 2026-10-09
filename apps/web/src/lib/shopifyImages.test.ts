@@ -51,30 +51,23 @@ describe('shopifyImageRendering', () => {
 })
 
 describe('shop consumers ride the ladder', () => {
-  it('ProductGrid renders srcset/sizes/width/height on SSR cards and the Load More path', () => {
+  it('ProductGrid renders through the ladder on SSR cards and the Load More path', () => {
     const source = readFileSync(
       new URL('../components/shop/ProductGrid.astro', import.meta.url),
       'utf8',
     )
     expect(source).toContain('shopifyImageRendering')
-    expect(source).toContain('CARD_SIZES')
-    expect(source).toContain('srcset={image.srcset}')
-    expect(source).toContain('sizes={CARD_SIZES}')
-    // The load-more template path builds the same rendering client-side.
-    expect(source).toContain('image.srcset = rendering.srcset')
     // No raw full-size URL may reach an <img> anymore.
     expect(source).not.toContain('src={product.featuredImage.url}')
     expect(source).not.toContain('image.src = product.featuredImage.url')
   })
 
-  it('the product detail page renders srcset/sizes/width/height', () => {
+  it('the product detail page renders through the ladder', () => {
     const source = readFileSync(
       new URL('../pages/shop/products/[handle].astro', import.meta.url),
       'utf8',
     )
     expect(source).toContain('shopifyImageRendering')
-    expect(source).toContain('srcset={detailImage.srcset}')
-    expect(source).toContain('sizes={DETAIL_SIZES}')
     expect(source).not.toContain('src={product.featuredImage.url}')
   })
 

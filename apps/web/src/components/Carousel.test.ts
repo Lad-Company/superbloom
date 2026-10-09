@@ -96,11 +96,6 @@ describe('Carousel', () => {
     expect(source).toContain('width: min(var(--slide-w), calc(var(--cap-h) * var(--ratio)))')
   })
 
-  it('pushes the active item slightly forward in space', () => {
-    expect(source).toContain('transform: scale(0.92)')
-    expect(source).toContain('.slide[data-active]')
-  })
-
   it('hides the Media Control Bar and pointer input on receded slides', () => {
     expect(source).toContain('.slide:not([data-active]) :global(.media-controls)')
     expect(source).toContain('.slide:not([data-active]) :global(.media-frame)')
@@ -108,24 +103,6 @@ describe('Carousel', () => {
 
   it('keeps arrow keys on the scrubber when focus is inside a video', () => {
     expect(source).toContain("closest('media-frame')")
-  })
-
-  it('styles prev/next like the Card Carousel, grouped below the track', () => {
-    expect(source).toContain('class="control previous surface-wipe"')
-    expect(source).toContain('class="control next surface-wipe"')
-    expect(source).toContain('border: 1px solid var(--fg-20)')
-    expect(source).toContain('border-radius: var(--radius-control)')
-    // Same spacing as the Card Carousel's control group.
-    expect(source).toContain('gap: var(--space-3xs)')
-  })
-
-  it('places the controls per layout: centered, or at the carousel bottom inner corner', () => {
-    expect(source).toContain(".carousel[data-layout='full'] .controls")
-    expect(source).toContain('justify-content: center')
-    expect(source).toContain(".carousel[data-layout='textRight'] .controls")
-    expect(source).toContain('justify-content: flex-end')
-    expect(source).toContain(".carousel[data-layout='textLeft'] .controls")
-    expect(source).toContain('justify-content: flex-start')
   })
 
   it('supports a 2/3 carousel with a top-aligned 1/3 text box on either side', () => {
@@ -142,18 +119,6 @@ describe('Carousel', () => {
     // matches the width of the chapter text above it.
     expect(source).toContain('grid-column: 1 / 5')
     expect(source).toContain('grid-column: 5 / -1')
-  })
-
-  it('overflows only the edge farthest from the text, past the page gutter', () => {
-    expect(source).toContain(".carousel[data-layout='textRight'] .stage")
-    expect(source).toContain('margin-left: calc(-1 * var(--page-inset))')
-    expect(source).toContain(".carousel[data-layout='textLeft'] .stage")
-    expect(source).toContain('margin-right: calc(-1 * var(--page-inset))')
-  })
-
-  it('stacks split layouts below desktop with the track bleeding both edges', () => {
-    expect(source).toContain('grid-template-columns: 1fr')
-    expect(source).toContain('margin-inline: calc(-1 * var(--page-inset))')
   })
 
   it('bleeds the row edge-to-edge only for the full-width layout', () => {

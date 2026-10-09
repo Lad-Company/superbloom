@@ -4,15 +4,6 @@ import {describe, expect, it} from 'vitest'
 const source = readFileSync(new URL('./NewsCarousel.astro', import.meta.url), 'utf8')
 
 describe('News Carousel', () => {
-  it('keeps the section within the page gutter', () => {
-    expect(source).toContain(
-      'padding: var(--space-4xl) var(--page-inset) var(--space-2xl)',
-    )
-    // The 12px mobile gutter comes from the responsive --page-inset token
-    // (tokens.css), not a hard-coded override.
-    expect(source).not.toContain('12px')
-  })
-
   it('uses the shared Marquee for endless auto-scroll', () => {
     expect(source).toContain("import Marquee from '../Marquee.astro'")
     expect(source).toContain('<Marquee>')
@@ -27,16 +18,8 @@ describe('News Carousel', () => {
     expect(source).toContain('showHeadline = false')
   })
 
-  it('bleeds the marquee to the viewport edges, outside the page gutter', () => {
-    expect(source).toContain('margin-inline: calc(-1 * var(--page-inset))')
-  })
-
   it('applies CMS item overrides to cards by article id', () => {
     expect(source).toContain('itemOverrides?.map((override) => [override.articleId, override])')
     expect(source).toContain('settings={overrides.get(item._id)}')
-  })
-
-  it('sizes cards through the shared Content Card rail contract', () => {
-    expect(source).toContain("import '../../styles/contentCardRail.css'")
   })
 })

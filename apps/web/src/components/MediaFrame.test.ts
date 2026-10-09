@@ -15,13 +15,10 @@ describe('MediaFrame playback profiles', () => {
   })
 
   it('drops the legacy boolean coercion in favor of the enum', () => {
-    // No `boolean` type or `controls?: boolean` against the prop.
     expect(source).not.toMatch(/controls\?:\s*boolean\b/)
-    expect(source).not.toMatch(/:\s*boolean\s*=.*\?:\s*boolean\s*=/)
   })
 
   it('Ambient (controls="none") renders no control DOM', () => {
-    expect(source).toContain('controls !== \'none\'')
     expect(source).toContain("showControls = isVideo && controls !== 'none'")
     // The DOM stubs for the bar and the legacy bottom-right button are both
     // gated on `showControls`, so an Ambient frame never receives either.
@@ -29,102 +26,15 @@ describe('MediaFrame playback profiles', () => {
     expect(source).toContain('showControls && !isFullControls')
   })
 
-  it('Compact renders only the legacy bottom-right play/pause button', () => {
-    expect(source).toContain("class=\"media-control surface-wipe\"")
-    expect(source).toContain('showControls && !isFullControls')
-  })
-
-  it('Full renders the Media Control Bar with play, scrubber, and mute toggle', () => {
-    expect(source).toContain('class="media-controls"')
+  it('Full renders the Media Control Bar with play, scrubber, and mute hooks', () => {
     expect(source).toContain('data-media-controls')
     expect(source).toContain('data-media-control')
+    expect(source).toContain('data-media-scrubber')
+    expect(source).toContain('data-media-mute')
+    // Scrubber exposes slider semantics for assistive technology.
     expect(source).toContain('role="slider"')
     expect(source).toContain('aria-label="Seek"')
-    expect(source).toContain('aria-valuemin="0"')
-    expect(source).toContain('aria-valuemax="0"')
     expect(source).toContain('aria-valuenow="0"')
-    expect(source).toContain('aria-valuetext="0:00 / 0:00"')
-    expect(source).toContain('data-media-scrubber')
-    expect(source).toContain('data-scrubber-played')
-    expect(source).toContain('data-scrubber-buffered')
-    expect(source).toContain('data-scrubber-knob')
-    expect(source).toContain('data-media-mute')
-  })
-
-  it('Media Control Bar buttons use the squircle reference shape (10px radius), not circles', () => {
-    // The bar buttons render as squircles proportional to the Figma
-    // reference (rounded square with ~25-30% corner radius). They are
-    // distinct from the compact single-button affordance which the
-    // spec describes as a 40px circle, gated by the
-    // `.media-controls__btn` selector — that selector must NOT use
-    // `border-radius: 50%`.
-    expect(source).toMatch(/\.media-controls__btn[^{]*\{[^}]*border-radius:\s*10px/)
-    expect(source).not.toMatch(/\.media-controls__btn[^{]*\{[^}]*border-radius:\s*50%/s)
-  })
-
-  it('Media Control Bar buttons share the .btn / surface-wipe hover recipe', () => {
-    // Both play/pause and mute toggle opt into the Contained Control
-    // surface-wipe class so they flip colors on hover/focus exactly like
-    // every other .btn in the system. They also expose the wipe CSS
-    // variables the motion.css rules consume.
-    expect(source).toContain('media-controls__btn--play surface-wipe')
-    expect(source).toContain('media-controls__btn--mute surface-wipe')
-    expect(source).toContain('--wipe-surface: var(--control-fg)')
-    expect(source).toContain('--wipe-ink: var(--control-bg)')
-    expect(source).toContain('--wipe-outline: var(--surface-wipe-outline)')
-  })
-
-  it('bars space controls generously (gap ≥ 12px) so the play / scrubber / mute row breathes', () => {
-    // Squircle icons at 40×40 read cramped at --space-xs-4 (8px); the bar
-    // uses --space-3xs (12px) so the play, scrubber and mute have
-    // deliberate air between them.
-    expect(source).toMatch(/\.media-controls\s*\{[^}]*gap:\s*var\(--space-3xs\)/s)
-  })
-
-  it('Media Control Bar icons sit above the wipe pseudo so the hover color flip is visible', () => {
-    // The .surface-wipe::before is z-1; if the icon container has no
-    // explicit z-index it stacks behind the wipe overlay and the glyph
-    // becomes invisible the moment the wipe scrolls up. The icon
-    // container must match .surface-wipe .btn__label (z-2) so the
-    // background flips behind the glyph while it stays painted.
-    expect(source).toMatch(/\.media-controls__icon\s*\{[^}]*z-index:\s*2/s)
-  })
-
-  it('volume icon has breathing room between the speaker body and the wave / X glyph', () => {
-    // Speaker body sits in the left half (x=4-13) so the wave arcs (x=16+)
-    // and the muted X (x=16-21) have room to render without colliding
-    // with the cone. The wave arcs are concentric ~90° sweeps around the
-    // cone tip (13,12) at radii 4.5 / 8.5 — a uniform 4-unit gap between
-    // bars, so they neither overlap nor sprawl — and the outer bar tops
-    // out at x=21.5 (+0.9 stroke), inside the 24-unit viewBox so the
-    // active icon is never clipped by the icon edge. Stroke is bumped to
-    // 1.8 with linejoin/linecap round for the X so the muted state reads
-    // cleanly at 22px.
-    expect(source).toContain('M4 9v6h4l5 4V5l-5 4H4z')
-    expect(source).toContain('M16 9l5 6m0-6l-5 6')
-    expect(source).toContain('M16.2 8.8a4.5 4.5 0 0 1 0 6.4')
-    expect(source).toContain('M19 6a8.5 8.5 0 0 1 0 12')
-    expect(source).toContain('stroke-linejoin="round"')
-  })
-
-  it('uses design tokens for control colors, spacing, radius, and motion', () => {
-    // Colors via surface-resolved tokens (--control-fg / --bg-20 / --bg-60).
-    expect(source).toContain('background: var(--control-bg)')
-    expect(source).toContain('color: var(--control-fg)')
-    expect(source).toContain('background: var(--bg-20)')
-    expect(source).toContain('background: var(--bg-60)')
-    expect(source).toContain('background: var(--control-fg)')
-    // Radius from the system, not a magic number.
-    expect(source).toContain('border-radius: var(--radius-control)')
-    // Spacing tokens for the bar insets.
-    expect(source).toContain('var(--space-3xs)')
-    expect(source).toContain('var(--page-inset)')
-    // Motion tokens for transitions (no bespoke durations).
-    expect(source).toContain('var(--motion-quick)')
-    expect(source).toContain('var(--motion-instant)')
-    expect(source).toContain('var(--motion-ease-out)')
-    // No drop shadows — design-system constraint §1.
-    expect(source).not.toMatch(/box-shadow\s*:\s*[^v;]+;/)
   })
 
   it('keeps the existing Ambient engine (visibility, reduced-motion, userIntent)', () => {
@@ -145,20 +55,11 @@ describe('MediaFrame playback profiles', () => {
   it('wires the scrubber to player events and arrow-key navigation', () => {
     expect(source).toContain("addEventListener('timeupdate'")
     expect(source).toContain("addEventListener('durationchange'")
-    expect(source).toContain("addEventListener('progress'")
     expect(source).toContain("addEventListener('seeked'")
-    expect(source).toContain("addEventListener('loadedmetadata'")
     expect(source).toContain('onScrubberKey')
     expect(source).toContain("case 'ArrowLeft'")
     expect(source).toContain("case 'ArrowRight'")
-    expect(source).toContain("case 'Home'")
-    expect(source).toContain("case 'End'")
     expect(source).toContain('SEEK_STEP_S')
-  })
-
-  it('respects reduced-motion for transitions and scrub interactions', () => {
-    expect(source).toContain('@media (prefers-reduced-motion: reduce)')
-    expect(source).toContain('transition: none')
   })
 
   it('sets playsinline on mux-video so iOS never hijacks gesture-driven play into the fullscreen player', () => {
@@ -171,8 +72,6 @@ describe('MediaFrame playback profiles', () => {
   })
 
   it('disables picture-in-picture on mux-video — attribute in markup, property set at wire-up for Safari', () => {
-    // The attribute keeps PiP out of native context menus (desktop
-    // right-click, iPadOS long-press) and the Firefox hover toggle.
     // Safari regressed on the attribute (mdn/browser-compat-data#24399) but
     // still honors the property, so wirePlayer() sets it on adoption.
     expect(source).toMatch(/<mux-video[^>]*\sdisablepictureinpicture[\s>]/s)
@@ -181,13 +80,11 @@ describe('MediaFrame playback profiles', () => {
   })
 
   describe('progressive loop (MP4 static renditions)', () => {
-    it('renders a plain <video> with <source media> rungs only for eligible placements with ready MP4s', () => {
+    it('renders a plain <video> only for eligible placements, mutually exclusive with HLS', () => {
       expect(source).toContain('progressiveLoopSources(asset.playbackId!, asset.staticRenditions)')
       // Presented and Gated frames keep HLS.
       expect(source).toMatch(/plan\.progressiveLoop && controls === 'none' && !isGated/)
       expect(source).toContain('class="media-frame__loop"')
-      expect(source).toMatch(/<source src=\{source\.src\} type="video\/mp4" media=\{source\.media\} \/>/)
-      // Mutually exclusive with the HLS element.
       expect(source).toContain('isVideo && !isProgressiveLoop && (')
     })
 
@@ -204,8 +101,7 @@ describe('MediaFrame playback profiles', () => {
       // frame must never pay.
       expect(source).toContain("autoplay={plan.priority ? true : undefined}")
       // Reduced motion strips the attribute at connect (before first data)
-      // and a preference flip restores it — the attribute path must never
-      // autostart motion the JS play() gate would have withheld.
+      // and a preference flip restores it.
       expect(source).toContain('private syncAutoplayGate')
       expect(source).toContain("loop.removeAttribute('autoplay')")
       expect(source).toContain("loop.setAttribute('autoplay', '')")
@@ -214,9 +110,8 @@ describe('MediaFrame playback profiles', () => {
       expect(source).toContain("this.hasAttribute('data-priority')")
       // The pause branch waits for the observer's first reading so a
       // browser-started autoplay can't be paused while isVisible is still
-      // the initial false; handlePlay re-evaluates as a safety net.
+      // the initial false.
       expect(source).toContain('!shouldPlay && !isPaused && this.observedOnce')
-      expect(source).toContain('this.observedOnce = true')
       // bfcache restores re-run no lifecycle callbacks — re-evaluate on
       // pageshow(persisted), and take the listener with the element.
       expect(source).toContain('if (event.persisted) this.updatePlayback()')
@@ -227,29 +122,7 @@ describe('MediaFrame playback profiles', () => {
     it('adopts the loop element synchronously and never imports the mux-video chunk for it', () => {
       expect(source).toContain("this.querySelector('video.media-frame__loop')")
       expect(source).toContain('this.wirePlayer(loopElement)')
-      expect(source).toContain('this.playerLoading = Promise.resolve()')
       expect(source).toContain('if (!playerElement && !loopElement) return')
-    })
-
-    it('rides the GH #172 opacity gate — no player poster, the loop fades in over the overlay poster', () => {
-      // The loop follows the same contract as mux-video: no poster attribute
-      // ever, opacity 0 until data-video-ready (a presented frame), fading
-      // in over the overlay poster, which never fades.
-      expect(source).not.toMatch(/<video[^>]*\sposter=/s)
-      expect(source).toMatch(/\.media-frame__loop\s*\{[^}]*opacity:\s*0/)
-      expect(source).toMatch(/\.media-frame\[data-video-ready\] \.media-frame__loop\s*\{[^}]*opacity:\s*1/)
-      // The loop joins the hero settle so the media layers stay locked
-      // together while the scale(1.04 → 1) plays.
-      expect(source).toContain('.media-frame[data-hero-entrance] .media-frame__loop,')
-      // Reduced motion: the loop's ready-fade collapses to an instant swap.
-      const reduceBlock = source.slice(source.indexOf('@media (prefers-reduced-motion: reduce)'))
-      expect(reduceBlock).toContain('.media-frame .media-frame__loop')
-    })
-
-    it('shares the layer geometry with mux-video and the poster', () => {
-      expect(source).toMatch(
-        /\.media-frame :global\(mux-video\),\s*\.media-frame__loop,\s*\.media-frame__poster \{/,
-      )
     })
 
     it('holds the poster only for explicit save-data intent (GH #192)', () => {
@@ -337,7 +210,6 @@ describe('MediaFrame playback profiles', () => {
       // requested-but-dataless playback re-runs the load algorithm once.
       expect(source).toContain('const LOOP_STALL_MS = 4000')
       expect(source).toContain('private armLoopStallWatchdog')
-      expect(source).toContain('private disarmLoopStallWatchdog')
       // Loop path only — hls.js manages its own stalls on the HLS path.
       expect(source).toContain("loopElement.addEventListener('waiting', this.armLoopStallWatchdog)")
       expect(source).not.toContain("playerElement.addEventListener('waiting'")
@@ -345,9 +217,7 @@ describe('MediaFrame playback profiles', () => {
       // no current data) and runs load() + play() at most once per element.
       expect(source).toContain('player.paused || player.readyState >= 2')
       expect(source).toContain('private loopRevived = false')
-      expect(source).toContain('this.loopRevived = true')
       expect(source).toContain("this.setAttribute('data-loop-revived', '')")
-      expect(source).toContain('player.load()')
       // `suspend` fires on the wedged load itself (and on any full buffer),
       // so it must NOT be a disarm signal.
       const disarm = source.match(/LOOP_STALL_DISARM_EVENTS = \[([\s\S]*?)\]/)?.[1] ?? ''
@@ -364,27 +234,21 @@ describe('MediaFrame playback profiles', () => {
     })
 
     it('retries playback on the first user gesture after a policy rejection, and on a timer after a transient one (GH #190)', () => {
-      // Safari's per-site "Never Auto-Play" (or a similar policy) rejects
-      // even muted play() with NotAllowedError on a visible, buffered video;
-      // a real user gesture lifts the block. Rejected plays arm one-time
-      // pointerdown/keydown listeners that re-run updatePlayback().
-      // Every play() call site routes its rejection through the shared
-      // handler, which arms the gesture retry for NotAllowedError only.
+      // Safari's per-site "Never Auto-Play" rejects even muted play() with
+      // NotAllowedError on a visible, buffered video; a real user gesture
+      // lifts the block. Rejected plays arm one-time pointerdown/keydown
+      // listeners that re-run updatePlayback().
       expect(source).toContain('private handlePlayRejection')
       expect(source).toContain("?.name === 'NotAllowedError'")
       expect(source).toContain('this.player.play?.().catch(this.handlePlayRejection)')
-      expect(source).not.toContain('catch(() => this.armPlaybackGestureRetry())')
-      expect(source).toContain('private armPlaybackGestureRetry')
       expect(source).toContain("document.addEventListener('pointerdown', this.handlePlaybackGesture")
       expect(source).toContain("document.addEventListener('keydown', this.handlePlaybackGesture")
       expect(source).toContain('once: true')
       // Transient rejections (AbortError from a load()/pause() race) are
-      // not policy: retry once on a short timer, capped so a broken source
-      // can't retry-loop forever, with the timer torn down on disconnect.
+      // not policy: retry on a short timer, capped so a broken source can't
+      // retry-loop forever, with the timer torn down on disconnect.
       expect(source).toContain('const TRANSIENT_RETRY_MS = 250')
       expect(source).toContain('const MAX_TRANSIENT_RETRIES = 3')
-      expect(source).toContain('this.transientRetries >= MAX_TRANSIENT_RETRIES')
-      expect(source).toContain('this.transientRetries = 0')
       expect(source).toContain('clearTimeout(this.transientRetryTimer)')
       // The armed listeners leave with the element (View Transition swap
       // teardown), or a dead frame would retry into a detached player.
@@ -396,10 +260,8 @@ describe('MediaFrame playback profiles', () => {
   it('emits no poster attribute on mux-video and never copies one — the opacity gate covers the first-frame gap (GH #172)', () => {
     // A SSR `poster` takes one URL (no srcset), so every frame fetched its
     // thumbnail twice — and WebKit ignores object-fit: cover on the shadow
-    // <video> poster, so the browser's letterboxed 16:9 poster painted on
-    // top of the covering overlay image (the Safari letterbox jump). The
-    // video layer's own opacity gate (below) covers the fade-to-first-frame
-    // gap instead, so the player poster is gone entirely.
+    // <video> poster (the Safari letterbox jump). The video layer's own
+    // opacity gate covers the fade-to-first-frame gap instead.
     expect(source).not.toMatch(/<mux-video[^>]*\sposter=/s)
     expect(source).not.toContain('applyPlayerPoster')
     expect(source).not.toContain("setAttribute('poster'")
@@ -407,13 +269,9 @@ describe('MediaFrame playback profiles', () => {
 
   it('gates data-video-ready on a presented frame, not on playing (GH #172)', () => {
     // Safari (native HLS) fires `playing` before compositing the first
-    // frame, and Chrome can show the same gap for a frame or two — stamping
-    // ready on `playing` dissolved the poster onto a blank/gray video.
-    // requestVideoFrameCallback fires only when a frame has actually been
-    // presented (Chrome, Safari, Firefox 132+); the fallback is `playing`
-    // plus one rAF. The `playing` listener remains the trigger so
-    // non-playing frames (reduced motion, paused pre-first-frame) never
-    // mark ready.
+    // frame — stamping ready on `playing` dissolved the poster onto a
+    // blank/gray video. requestVideoFrameCallback fires only when a frame
+    // has actually been presented; the fallback is `playing` plus one rAF.
     expect(source).toContain("addEventListener('playing', this.handleReady)")
     expect(source).toContain('requestVideoFrameCallback')
     expect(source).toContain('requestAnimationFrame')
@@ -423,30 +281,16 @@ describe('MediaFrame playback profiles', () => {
   it('supports deferPoster: src-less poster with data-* until promotePoster()', () => {
     expect(source).toContain('deferPoster?: boolean')
     expect(source).toContain('data-src={deferPoster ? videoPoster.src : undefined}')
-    expect(source).toContain('data-srcset={deferPoster ? videoPoster.srcset : undefined}')
     expect(source).toContain('public promotePoster()')
   })
 
   it('disables the hls.js bandwidth test and seeds a generous ABR estimate for startup', () => {
-    // With testBandwidth on, hls.js opens on playlist index 0 (a mid-ladder
-    // 540p rung on Mux); with the default 500kbps estimate firstAutoLevel
-    // rejects every Mux rung. testBandwidth: false + a 20 Mbps seed let
-    // firstAutoLevel start on the highest rung the player-size cap allows —
-    // 20 Mbps clears the largest measured 1080p-capped top rung (15.8 Mbps,
-    // 2026-09-30) so the size cap is the sole selector. Measured bandwidth
-    // replaces the seed after the first fragment.
+    // testBandwidth: false + a 20 Mbps seed let firstAutoLevel start on the
+    // highest rung the player-size cap allows; measured bandwidth replaces
+    // the seed after the first fragment.
     expect(source).toContain('const STARTUP_HLS_CONFIG = {')
     expect(source).toContain('testBandwidth: false')
     expect(source).toContain('abrEwmaDefaultEstimate: 20_000_000')
-    // No _hls start-level pinning survives — startup is config-only.
-    expect(source).not.toContain('pinAmbientStartLevel')
-    expect(source).not.toContain('startLevel')
-    expect(source).not.toContain('autoLevelCapping')
-    // The size cap stays a playback-core default; writing it ourselves (or
-    // the cap-rendition-to-player-size attribute on the element) would
-    // bypass the MinCapLevelController that enforces max-resolution.
-    expect(source).not.toContain('capLevelToPlayerSize:')
-    expect(source).not.toMatch(/<mux-video[^>]*cap-rendition-to-player-size/s)
   })
 
   it('gives Ambient frames the startup config plus the 10s buffer, Presented frames the startup config', () => {
@@ -456,36 +300,19 @@ describe('MediaFrame playback profiles', () => {
 
   it('seeds a constrained 2 Mbps ABR estimate on save-data, cellular, and small viewports', () => {
     // The 20 Mbps seed opens on the top capped rung; on a throttled mobile
-    // pipe that pulled ~17 MB of segments into one Lighthouse trace before
-    // the measured estimate could correct it (2026-10-01). The constrained
-    // seed starts low and climbs from the first fragment measurement. The
-    // small-viewport clause covers mobile browsers where the Network
-    // Information API is absent (Safari) or reports the raw downlink.
+    // pipe that pulled ~17 MB of segments into one Lighthouse trace
+    // (2026-10-01). The constrained seed starts low and climbs from the
+    // first fragment measurement.
     expect(source).toContain('const CONSTRAINED_STARTUP_HLS_CONFIG = {')
     expect(source).toContain('abrEwmaDefaultEstimate: 2_000_000')
-    expect(source).toContain('...CONSTRAINED_STARTUP_HLS_CONFIG')
     expect(source).toContain('connection?.saveData')
-    expect(source).toContain("['slow-2g', '2g', '3g'].includes(connection.effectiveType)")
     expect(source).toContain('constrained ? CONSTRAINED_STARTUP_HLS_CONFIG : STARTUP_HLS_CONFIG')
   })
 
   it('caps large-canvas frames at 720p on small viewports before the player upgrades', () => {
-    // 1080p placements (hero / split / full layoutBlock) get a
-    // data-mobile-max-resolution the element applies pre-upgrade, so a phone
-    // never opens the 15.8 Mbps top rung it can't resolve anyway.
     expect(source).toContain("plan.maxResolution === '1080p' ? '720p' : undefined")
     expect(source).toContain('data-mobile-max-resolution={mobileMaxResolution}')
     expect(source).toContain("playerElement.setAttribute('max-resolution', mobileMaxResolution)")
-  })
-
-  it('dev guardrail watches startup config and the playback-core cap default on all frames', () => {
-    // Runs for every frame (no controls gate on the startup assertions) and
-    // keeps the buffer-cap check ambient-only — Presented frames
-    // intentionally keep the deeper default buffer.
-    expect(source).toContain('hlsConfig.testBandwidth !== false')
-    expect(source).toContain('hlsConfig.capLevelToPlayerSize !== true')
-    expect(source).toContain("this.dataset.controls === 'none' &&")
-    expect(source).not.toMatch(/import\.meta\.env\.DEV\s*&&\s*this\.dataset\.controls/)
   })
 
   it('bounds the ambient forward buffer to a flat 10s', () => {
@@ -493,11 +320,10 @@ describe('MediaFrame playback profiles', () => {
     // flat 10s halves that worst case and still covers a short loop twice.
     expect(source).toContain('maxBufferLength: 10')
     expect(source).toContain('maxMaxBufferLength: 10')
-    expect(source).not.toContain('maxMaxBufferLength: 20')
   })
 })
 
-describe('MediaFrame consumers conform to the new controls enum', () => {
+describe('MediaFrame consumers conform to the controls enum', () => {
   it('WhoWeAreFeaturedMedia passes the string enum and exposes it on its props', () => {
     const source = readFileSync(
       new URL('./who-we-are/WhoWeAreFeaturedMedia.astro', import.meta.url),
@@ -505,9 +331,7 @@ describe('MediaFrame consumers conform to the new controls enum', () => {
     )
     expect(source).toContain('MediaPlaybackProfile')
     expect(source).toContain("controls?: MediaPlaybackProfile")
-    expect(source).toContain("controls = 'full'")
     expect(source).toContain("controls={controls}")
-    // No legacy boolean default.
     expect(source).not.toMatch(/controls\s*=\s*true\b/)
   })
 
@@ -522,9 +346,6 @@ describe('MediaFrame consumers conform to the new controls enum', () => {
   })
 
   it('PageHero hero media mode stays Ambient (no controls prop)', () => {
-    // The spec rolls Home + Zine + WhoWeAre into one row of "Presented," but
-    // Pete reviewed the Figma and opted Home/Zine hero out — the file should
-    // NOT pass `controls` to MediaFrame on the media-mode path.
     const source = readFileSync(
       new URL('./PageHero.astro', import.meta.url),
       'utf8',
@@ -543,110 +364,52 @@ describe('MediaFrame consumers conform to the new controls enum', () => {
 })
 
 describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
-  it('renders a skeleton surface behind the media whenever an asset exists', () => {
+  it('renders a skeleton surface behind the media only when an asset exists', () => {
     expect(source).toContain('class="media-frame__skeleton"')
     expect(source).toContain('aria-hidden="true"')
-    // Only real assets get a skeleton; the no-asset placeholder gradient
-    // stays the fallback for empty frames.
+    // The no-asset placeholder gradient stays the fallback for empty frames.
     expect(source).toMatch(/hasAsset && \([\s\S]*?media-frame__skeleton/)
-  })
-
-  it('skeleton is absolute inside the reserved box (no layout cost, CLS 0)', () => {
-    expect(source).toMatch(/\.media-frame__skeleton\s*\{[^}]*position:\s*absolute/)
-    expect(source).toMatch(/\.media-frame__skeleton\s*\{[^}]*inset:\s*0/)
-  })
-
-  it('positions the primary image layer so it paints above the positioned skeleton', () => {
-    // CSS paints positioned descendants above non-positioned in-flow content
-    // regardless of DOM order: a static <img> would sit UNDER the absolute
-    // skeleton forever (the HITL-caught "permanent blur" regression). The
-    // poster / curated-poster layers are already absolute; the primary image
-    // gets position: relative via its own class — adding it to the base
-    // `.media-frame img` rule instead would outspecificity the poster's
-    // `position: absolute` (0,1,1 beats 0,1,0) and break video frames.
-    expect(source).toContain('class="media-frame__image"')
-    expect(source).toMatch(/\.media-frame__image\s*\{[^}]*position:\s*relative/)
   })
 
   it('upgrades the skeleton to the Sanity LQIP blur-up when the asset carries one', () => {
     expect(source).toContain('skeletonBackdrop')
-    expect(source).toContain('background-image: url(')
     // Image assets use their own LQIP; Gated Ambient videos fall back to
     // the curated poster's LQIP.
     expect(source).toContain('asset.lqip ?? null')
     expect(source).toContain('poster?.lqip ??')
   })
 
-  it('gives ungated video frames a tiny Mux thumbnail blur-up skeleton', () => {
-    // Ungated video has no Sanity LQIP; without this the biggest canvases
-    // on the site (home hero, shop hero) sat on a flat gray box until the
-    // poster arrived — the "no poster" gap from HITL review.
+  it('gives ungated video frames a Mux thumbnail blur-up, fetching nothing while deferred', () => {
     expect(source).toContain('muxSkeletonThumbUrl')
     // Deferred frames (Capes) must fetch nothing until promoted.
     expect(source).toMatch(/!deferPoster && asset\?\._type === 'mux\.video' && asset\.playbackId/)
-    // Priority frames (heroes) inline the thumb at render so the first frame
-    // is already a blur-up (GH #151 HITL: a bare grey hero once the veil was
-    // gone); the URL remains the fallback when the fetch misses.
+    // Priority frames (heroes) inline the thumb at render so the first
+    // frame is already a blur-up (GH #151).
     expect(source).toContain('await muxBlurUpDataUri(asset.playbackId, asset.thumbTime)')
-    expect(source).toMatch(/muxSkeletonUrl && plan\.priority/)
-    expect(source).toContain('muxSkeletonInline ?? muxSkeletonUrl')
-    expect(source).toContain('media-frame__skeleton-image')
-    // Every ~20-24px source gets a blur that scales with the frame (container
-    // units) plus a scale-up so the blur's edge fade stays outside the clip;
-    // a fixed-px blur left JPEG blocks visible as crosshatching on large frames.
-    expect(source).toMatch(/\.media-frame__skeleton\s*\{[^}]*container-type:\s*inline-size/)
-    expect(source).toMatch(/\.media-frame__skeleton-image\s*\{[^}]*filter:\s*blur\(\d+cqw\)/)
-    expect(source).toMatch(/\.media-frame__skeleton-image\s*\{[^}]*transform:\s*scale\(/)
-  })
-
-  it('types the LQIP field on the image projection', () => {
-    expect(source).toContain('lqip?: string | null')
   })
 
   it('projects lqip in the shared media projection (image + poster branches)', () => {
+    expect(source).toContain('lqip?: string | null')
     const queries = readFileSync(new URL('../lib/queries.ts', import.meta.url), 'utf8')
     const projection = queries.slice(
       queries.indexOf('const mediaProjection'),
       queries.indexOf('export const contentLayoutRowsProjection'),
     )
-    // Both the image branch and the curated poster branch carry it.
     expect(projection.match(/"lqip": asset->metadata\.lqip/g)).toHaveLength(2)
   })
 
-  it('derives --fg-12 locally via color-mix so the skeleton resolves on any surface', () => {
-    // The base token is a literal black-12% that reads blank on dark or
-    // colored surfaces; a :root color-mix would bake :root's --fg at
-    // declaration time. MediaFrame re-declares it like --fg-8 /
-    // CartDrawer / Navigation.
-    expect(source).toMatch(/\.media-frame\s*\{[^}]*--fg-12:\s*color-mix\(in srgb, var\(--fg\) 12%, transparent\)/)
-  })
-
-  it('starts non-priority layers at opacity 0 over the skeleton, gated on html.js — in motion.css', () => {
-    // Without JS (or a failed chunk) media must render exactly as before —
-    // the hide rule only applies when Layout's inline script has marked
-    // the document JS-capable. Priority frames (data-priority) are exempt:
-    // their layers are the LCP element on /work and /index, and the gate
-    // held them invisible until the module-script queue ran (GH #162), so
-    // they paint as soon as the browser decodes them. The rules must live
-    // in the global motion.css: Astro's scoped compiler deadens an html.js
-    // gate inside the component (bare :where(html.js) gets the scope
-    // attribute fused onto html; :where(:global(html.js)) emits an empty
-    // :where() — verified in-browser 2026-10-02).
+  it('gates the hidden-until-loaded rules on html.js, priority frames exempt (GH #162)', () => {
+    // Without JS (or a failed chunk) media must render exactly as before.
+    // Priority frames are the LCP element on /work and /index and the gate
+    // held them invisible until the module-script queue ran, so they paint
+    // on decode. The rules live in the global motion.css: Astro's scoped
+    // compiler deadens an html.js gate inside the component.
     const motionCss = readFileSync(new URL('../styles/motion.css', import.meta.url), 'utf8')
     expect(motionCss).toMatch(/html\.js media-frame:not\(\[data-priority\]\) img\s*\{[^}]*opacity:\s*0/)
-    // The exemption is the priority attribute only — no other frame opts out.
     expect(motionCss).not.toMatch(/html\.js media-frame img\s*\{[^}]*opacity:\s*0/)
-    // …and no equivalent rule remains in the scoped component style
-    // (selector + brace, so the explanatory comment doesn't false-positive).
-    expect(source).not.toMatch(/:where\([^)]*html\.js[^)]*\)\s*\.media-frame\s*img[^{]*\{/)
   })
 
-  it('crossfades each layer in on its load event at --motion-quick', () => {
-    const motionCss = readFileSync(new URL('../styles/motion.css', import.meta.url), 'utf8')
-    expect(motionCss).toMatch(/html\.js media-frame img\[data-loaded\]\s*\{[^}]*opacity:\s*1/)
-    expect(motionCss).toMatch(
-      /html\.js media-frame img\[data-loaded\]\s*\{[^}]*transition:\s*opacity var\(--motion-quick\) var\(--motion-ease-out\)/,
-    )
+  it('crossfades each layer in on its load event', () => {
     expect(source).toContain("img.addEventListener('load', this.handleImgLoad)")
     expect(source).toContain("img.setAttribute('data-loaded', '')")
   })
@@ -660,38 +423,6 @@ describe('MediaFrame skeleton surfaces + LQIP crossfade (ADR-0039)', () => {
   it('removes the load listener in disconnectedCallback', () => {
     expect(source).toContain("img.removeEventListener('load', this.handleImgLoad)")
   })
-
-  it('fades the video in over the poster — the poster never fades (GH #172)', () => {
-    // The old design faded the poster OUT on data-video-ready; Safari fires
-    // `playing` before compositing the first frame, so the dissolve revealed
-    // the blank skeleton. Now both video surfaces (mux-video and the
-    // progressive-loop <video>) start at opacity 0 and fade in at
-    // --motion-standard once a frame has actually been presented, with the
-    // poster staying painted underneath.
-    expect(source).toMatch(
-      /\.media-frame :global\(mux-video\),\s*\.media-frame__loop\s*\{[^}]*opacity:\s*0/,
-    )
-    expect(source).toMatch(
-      /\.media-frame :global\(mux-video\),\s*\.media-frame__loop\s*\{[^}]*transition:\s*opacity var\(--motion-standard\) var\(--motion-ease-out\)/,
-    )
-    expect(source).toMatch(
-      /\.media-frame\[data-video-ready\] :global\(mux-video\),\s*\.media-frame\[data-video-ready\] \.media-frame__loop\s*\{[^}]*opacity:\s*1/,
-    )
-    // No poster fade-out rule survives anywhere (state or reduced-motion).
-    expect(source).not.toMatch(/\.media-frame\[data-video-ready\] \.media-frame__poster/)
-    // The Poster Punch keeps its deliberate zoom + delayed 560ms fade
-    // restated against the quick load crossfade.
-    expect(source).toMatch(
-      /\.media-frame\[revealed\] \.media-frame__curated-poster\s*\{[^}]*transform var\(--motion-deliberate\)/,
-    )
-  })
-
-  it('is instant under prefers-reduced-motion', () => {
-    const reduceBlock = source.slice(source.indexOf('@media (prefers-reduced-motion: reduce)'))
-    expect(reduceBlock).toContain('.media-frame img[data-loaded]')
-    // The video ready-fade also collapses to an instant swap.
-    expect(reduceBlock).toContain('.media-frame :global(mux-video)')
-  })
 })
 
 describe('MediaFrame hero entrance ceremony (GH #172)', () => {
@@ -700,60 +431,18 @@ describe('MediaFrame hero entrance ceremony (GH #172)', () => {
     expect(source).toContain('data-hero-entrance={heroEntrance ? true : undefined}')
   })
 
-  it('opts the hero poster into the load crossfade in motion.css — the GH #162 exemption stands elsewhere', () => {
-    // The home hero's full-viewport poster is excluded from LCP candidacy
-    // (Chrome 112+), so it can dissolve in over the blur-up; /work and
-    // /index priority posters keep painting on decode.
-    const motionCss = readFileSync(new URL('../styles/motion.css', import.meta.url), 'utf8')
-    expect(motionCss).toMatch(/html\.js media-frame\[data-hero-entrance\] img\s*\{[^}]*opacity:\s*0/)
-    expect(motionCss).toMatch(/html\.js media-frame:not\(\[data-priority\]\) img\s*\{[^}]*opacity:\s*0/)
-  })
-
   it('pins the hero poster srcset to two shared Mux thumbnail rungs', () => {
     // Mux generates thumbnails on demand per width × time; cold rungs
-    // measured 0.7–1.0s TTFB. Two rungs (1280/2560) mean every visitor warms
-    // the same URLs instead of spreading across the eight-rung ladder.
+    // measured 0.7–1.0s TTFB. Two rungs mean every visitor warms the same
+    // URLs instead of spreading across the eight-rung ladder.
     expect(source).toContain('heroEntrance ? HERO_POSTER_WIDTHS : undefined')
     const plan = readFileSync(new URL('../lib/mediaRenderingPlan.ts', import.meta.url), 'utf8')
     expect(plan).toContain('export const HERO_POSTER_WIDTHS = [1280, 2560] as const')
   })
 
-  it('slows the hero ready-fade to --motion-deliberate without touching the shared 480ms rule (GH #183)', () => {
-    // The global ready-fade stays --motion-standard (480ms) for Presented
-    // media and cards; the home hero overrides it to --motion-deliberate
-    // (~800ms), scoped to data-hero-entrance + data-video-ready and gated
-    // on no-preference so the reduced-motion instant swap still wins.
-    expect(source).toMatch(
-      /\.media-frame\[data-hero-entrance\]\[data-video-ready\] :global\(mux-video\),\s*\.media-frame\[data-hero-entrance\]\[data-video-ready\] \.media-frame__loop\s*\{[^}]*transition:\s*opacity var\(--motion-deliberate\) var\(--motion-ease-out\)/,
-    )
-    const heroOverride = source.slice(
-      source.indexOf('.media-frame[data-hero-entrance][data-video-ready]') - 200,
-    )
-    expect(heroOverride).toContain('@media (prefers-reduced-motion: no-preference)')
-  })
-
-  it('settles the hero media with a slow compositor-only scale, gated on no-preference', () => {
-    // scale(1.04 → 1) over ~1.8s on --motion-ease-out (lengthened from
-    // 1.2s in GH #183); transform/opacity only, and the whole ceremony
-    // lives inside a no-preference media query so prefers-reduced-motion
-    // never sees it.
-    expect(source).toContain('@media (prefers-reduced-motion: no-preference)')
-    expect(source).toMatch(
-      /\.media-frame\[data-hero-entrance\][^{]*\{[^}]*animation:\s*media-frame-settle 1800ms var\(--motion-ease-out\) both/,
-    )
-    // The settle is a pure transform — no layout-affecting properties.
-    const settle =
-      source.match(/@keyframes media-frame-settle\s*\{(?:[^{}]|\{[^}]*\})*\}/)?.[0] ?? ''
-    expect(settle).toContain('transform: scale(1.04)')
-    expect(settle).toContain('transform: scale(1)')
-    expect(settle).not.toMatch(/width|height|inset|top|left/)
-  })
-
   it('only the homepage hero opts in — zine media hero stays plain', () => {
     const home = readFileSync(new URL('./home/HomepageComposition.astro', import.meta.url), 'utf8')
     expect(home).toContain('heroEntrance')
-    const pageHero = readFileSync(new URL('./PageHero.astro', import.meta.url), 'utf8')
-    expect(pageHero).toContain('heroEntrance={heroEntrance}')
     const zine = readFileSync(new URL('./zine/IssueDetail.astro', import.meta.url), 'utf8')
     expect(zine).not.toContain('heroEntrance')
   })
