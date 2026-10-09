@@ -252,25 +252,80 @@ describe('MediaFrame playback profiles', () => {
       )
     })
 
-    it('holds the poster on constrained networks instead of a stuttering fixed-bitrate loop', () => {
-      // No ABR ladder on the MP4 path: the 720p rendition (~3.9 Mbps)
-      // stalled four times in 30s on a 1.6 Mbps link where HLS downshifted
-      // and played through (2026-10-06). Save-data, cellular-class, or a
-      // reported downlink under the floor keeps the poster; a missing
-      // Network Information API (Safari) plays. Viewport size is not a
-      // signal — unlike the HLS constrained seed, a phone on wifi is fine.
-      expect(source).toContain('const PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS = 4')
-      expect(source).toContain('const holdProgressiveLoop = (): boolean => {')
-      expect(source).toContain('connection.downlink < PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS')
-      const holdFn = source.match(/const holdProgressiveLoop = \(\): boolean => \{[\s\S]*?\n {2}\}/)?.[0]
+    it('holds the poster only for explicit save-data intent (GH #192)', () => {
+      // The downlink / cellular-class clauses were deleted: Chrome's Network
+      // Information API downlink is a lagging EWMA read mid-parse, and on
+      // 2026-10-08 it parked the hero on a connection that then played the
+      // 720p loop smoothly in a forced probe. Viewport size is not a signal
+      // — unlike the HLS constrained seed, a phone on wifi is fine.
+      expect(source).not.toContain('PROGRESSIVE_LOOP_MIN_DOWNLINK_MBPS')
+      const holdFn = source.match(/const shouldHoldForSaveData = \(\): boolean =>[^\n]*/)?.[0]
       expect(holdFn).toBeDefined()
+      expect(holdFn).toContain('readConnection()?.saveData')
+      expect(holdFn).not.toContain('downlink')
+      expect(holdFn).not.toContain('effectiveType')
       expect(holdFn).not.toContain('matchMedia')
-      expect(holdFn).toContain('cellularClass(connection)')
-      expect(source).toContain('if (loopElement && holdProgressiveLoop()) {')
+      expect(holdFn).not.toContain('cellularClass')
+      expect(source).toContain('if (loopElement && shouldHoldForSaveData()) {')
       // Abort the parse-time fetch and never adopt the element as the player.
       expect(source).toContain("for (const source of loopElement.querySelectorAll('source')) source.remove()")
       expect(source).toContain('loopElement.load()')
       expect(source).toContain("this.setAttribute('data-loop-held', '')")
+    })
+
+    it('carries playback id and rendition cap on the loop host for the starvation swap', () => {
+      expect(source).toContain('const loopPlaybackId =')
+      expect(source).toContain('data-playback-id={loopPlaybackId ?? undefined}')
+      expect(source).toContain('data-max-resolution={isProgressiveLoop ? plan.maxResolution : undefined}')
+      // HLS frames keep their SSR playback-id attribute; the data-* pair is
+      // the loop path's bridge to a runtime-built mux-video.
+      expect(source).toMatch(/<media-frame[\s\S]*data-playback-id=\{loopPlaybackId/)
+    })
+
+    it('swaps a starved loop to constrained HLS exactly once (GH #192)', () => {
+      expect(source).toContain('private loopFallback = false')
+      expect(source).toContain('this.loopFallback = true')
+      expect(source).toContain("this.setAttribute('data-loop-fallback', 'hls')")
+      // Re-arm the opacity gate so the already-stamped host can't show the
+      // new HLS surface before its first presented frame.
+      expect(source).toContain("this.removeAttribute('data-video-ready')")
+      expect(source).toContain("document.createElement('mux-video')")
+      expect(source).toContain("fallback.setAttribute('playback-id', playbackId)")
+      expect(source).toContain("fallback.setAttribute('stream-type', 'on-demand')")
+      expect(source).toContain('fallback._hlsConfig = CONSTRAINED_AMBIENT_HLS_CONFIG')
+      expect(source).toContain('loopElement.replaceWith(fallback)')
+      // startLoop() resolves playerLoading for the no-chunk MP4 path; the
+      // fallback must reset it or loadPlayer() would never import mux-video.
+      expect(source).toContain('this.playerLoading = null')
+      expect(source).toContain('void this.loadPlayer()')
+      expect(source).toContain('this.teardownLoopMonitors(loopElement)')
+      expect(source).toContain('this.unwirePlayer(loopElement)')
+    })
+
+    it('monitors starvation only after playback starts (GH #192)', () => {
+      expect(source).toContain('createStallMonitor')
+      expect(source).toContain('onStarved: this.handleLoopStarved')
+      expect(source).toContain("loopElement.addEventListener('playing', this.handleLoopPlaying)")
+      expect(source).toContain("loopElement.addEventListener('waiting', this.handleLoopWaiting)")
+      expect(source).toContain("loopElement.addEventListener('pause', this.handleLoopPause)")
+      // The GH #178 watchdog stays disjoint: playback requested with zero
+      // data (readyState < 2) is a wedged load; the monitor's signature is
+      // playback achieved, then starved.
+      expect(source).toContain('player.paused || player.readyState >= 2')
+    })
+
+    it('recovers a save-data hold without a reload when saveData clears', () => {
+      expect(source).toContain('private handleConnectionChange')
+      expect(source).toContain("connection.addEventListener('change', this.handleConnectionChange)")
+      expect(source).toContain("connection.addEventListener('connectionchange', this.handleConnectionChange)")
+      expect(source).toContain("connection.removeEventListener('change', this.handleConnectionChange)")
+      expect(source).toContain("connection.removeEventListener('connectionchange', this.handleConnectionChange)")
+      expect(source).toContain('this.heldLoopSources')
+      expect(source).toContain("this.removeAttribute('data-loop-held')")
+      expect(source).toContain('this.startLoop(loopElement)')
+      // Armed only in the held branch and always torn down.
+      expect(source).toContain('this.setConnectionRecovery(true)')
+      expect(source).toContain('this.setConnectionRecovery(false)')
     })
 
     it('recovers a wedged loop load exactly once (GH #178)', () => {
@@ -301,8 +356,11 @@ describe('MediaFrame playback profiles', () => {
       expect(disarm).not.toContain("'suspend'")
       // The timer and its listeners leave with the element (View Transition
       // swap teardown), or an armed watchdog would fire into a dead frame.
+      // Loop monitors share one teardown used by disconnect and the GH #192
+      // HLS fallback swap.
       expect(source).toContain('this.disarmLoopStallWatchdog()')
-      expect(source).toContain("this.player?.removeEventListener('waiting', this.armLoopStallWatchdog)")
+      expect(source).toContain('this.teardownLoopMonitors(this.player)')
+      expect(source).toContain("player.removeEventListener('waiting', this.armLoopStallWatchdog)")
     })
 
     it('retries playback on the first user gesture after a policy rejection, and on a timer after a transient one (GH #190)', () => {
