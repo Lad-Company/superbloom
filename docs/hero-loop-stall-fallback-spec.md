@@ -239,7 +239,12 @@ Following the repo's two-layer convention (source-string contract tests in
 ## 7. Out of scope
 
 - **Safari refresh-no-autoplay-until-scroll.** Separate mechanism (the hold
-  can't fire in Safari). To be diagnosed on its own thread after this lands.
+  can't fire in Safari). ~~To be diagnosed on its own thread after this
+  lands.~~ Closed by GH #196 (Finding A): the loop was playing, invisibly —
+  with a warm media cache the browser starts it before `<media-frame>` is
+  defined, `playing` has already fired, and nothing stamped
+  `data-video-ready` until a scroll out/in restarted playback. `wirePlayer()`
+  now stamps readiness from state as well as from the event.
 - **Minting a low (360p/480p) MP4 static rendition.** Rejected for this fix:
   it keeps a predictive gate (just with more rungs), needs Mux-side work
   (precedent: `apps/studio/migrations/mux-hero-clip.ts`), and 480p is

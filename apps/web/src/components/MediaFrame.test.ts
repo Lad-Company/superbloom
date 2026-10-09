@@ -233,6 +233,47 @@ describe('MediaFrame playback profiles', () => {
       expect(source).toContain("player.removeEventListener('waiting', this.armLoopStallWatchdog)")
     })
 
+    it('stamps a loop the browser already started before adoption as ready (GH #196)', () => {
+      // With autoplay + preload="auto" and a warm media cache the loop
+      // starts during parse, before the element is defined: `playing` has
+      // already fired and updatePlayback() never calls play(), so the
+      // video ran at opacity 0 behind the poster until a scroll out/in.
+      // Readiness is a state check too, not only an event.
+      const wire = source.slice(
+        source.indexOf('private wirePlayer('),
+        source.indexOf('public promotePoster()'),
+      )
+      expect(wire).toContain(
+        'if (!player.paused && player.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA)',
+      )
+      expect(wire).toContain('this.handleReady()')
+      // The stall monitor is created after wirePlayer(); arm it from the
+      // same state or an already-playing loop runs unmonitored.
+      const start = source.slice(
+        source.indexOf('private startLoop('),
+        source.indexOf('private swapLoopToHls()'),
+      )
+      expect(start).toContain('this.stallMonitor.notifyPlaying()')
+    })
+
+    it('un-wedges a Firefox-adopted loop at connect by signature, keeping the timer as backstop (GH #196)', () => {
+      // The GH #178 wedge reports NETWORK_NO_SOURCE with its <source> list
+      // intact at adoption — deterministic, so reload now instead of
+      // holding the poster for the 4s watchdog.
+      const start = source.slice(
+        source.indexOf('private startLoop('),
+        source.indexOf('private swapLoopToHls()'),
+      )
+      expect(start).toContain('loopElement.networkState === HTMLMediaElement.NETWORK_NO_SOURCE')
+      expect(start).toContain("loopElement.querySelector('source')")
+      expect(start).toContain("this.setAttribute('data-loop-revived', 'adopt')")
+      expect(start).toContain('loopElement.load()')
+      // Does not spend the timer path's one-shot budget.
+      expect(start).not.toContain('this.loopRevived = true')
+      // The signature check runs before the watchdog arms.
+      expect(start.indexOf("'adopt'")).toBeLessThan(start.indexOf('this.armLoopStallWatchdog()'))
+    })
+
     it('retries playback on the first user gesture after a policy rejection, and on a timer after a transient one (GH #190)', () => {
       // Safari's per-site "Never Auto-Play" rejects even muted play() with
       // NotAllowedError on a visible, buffered video; a real user gesture
@@ -445,5 +486,25 @@ describe('MediaFrame hero entrance ceremony (GH #172)', () => {
     expect(home).toContain('heroEntrance')
     const zine = readFileSync(new URL('./zine/IssueDetail.astro', import.meta.url), 'utf8')
     expect(zine).not.toContain('heroEntrance')
+  })
+
+  it('plays the media settle and slow ready-fade on cold loads only (GH #196)', () => {
+    // Layout stamps html[data-nav] on every ClientRouter swap; replaying
+    // the ceremony over the route fade read as a full-screen flicker. The
+    // gate is :global(html:not(...)) — the HeroHeading pattern that
+    // survives Astro's scoped compiler.
+    const style = source.slice(source.lastIndexOf('<style>'))
+    const settle = style.match(/^\s*([^\n]*)\{\s*animation: media-frame-settle/m)?.[1] ?? ''
+    expect(settle).toContain(':global(html:not([data-nav]))')
+    const settleBlock = style.slice(
+      style.indexOf('@media (prefers-reduced-motion: no-preference)', style.indexOf('Media settle')),
+      style.indexOf('@keyframes media-frame-settle'),
+    )
+    for (const line of settleBlock.split('\n').filter((l) => l.includes('[data-hero-entrance]'))) {
+      expect(line.trim().startsWith(':global(html:not([data-nav]))')).toBe(true)
+    }
+    const fade = style.match(/^\s*([^\n]*)\{\s*transition: opacity var\(--motion-deliberate\)/m)?.[1] ?? ''
+    expect(fade).toContain(':global(html:not([data-nav]))')
+    expect(fade).toContain('[data-hero-entrance][data-video-ready]')
   })
 })

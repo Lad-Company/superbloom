@@ -1065,6 +1065,24 @@ const imageRendering =
       // autoplay before first data arrives, so the attribute path can
       // never autostart motion the JS play() gate would have withheld.
       this.syncAutoplayGate()
+      // Connect-time un-wedge (GH #196): the GH #178 adoption wedge has a
+      // deterministic signature in Firefox — the adopted <video> reports
+      // NETWORK_NO_SOURCE while it still holds its <source> list — so
+      // re-run the load algorithm now instead of waiting out the 4s timer
+      // below (which stays as the backstop for the unknown case). No
+      // browser reports NETWORK_NO_SOURCE mid-fetch, so this never aborts a
+      // live load; Chrome and Safari report NETWORK_LOADING/NETWORK_IDLE
+      // here and skip it. Declarative `autoplay` restarts the reloaded
+      // element (updatePlayback() covers the JS-gated case). Deliberately
+      // does not consume the one-shot `loopRevived` budget; the "adopt"
+      // value distinguishes this path from the timer's "" for probes.
+      if (
+        loopElement.networkState === HTMLMediaElement.NETWORK_NO_SOURCE &&
+        loopElement.querySelector('source')
+      ) {
+        this.setAttribute('data-loop-revived', 'adopt')
+        loopElement.load()
+      }
       // Firefox wedged-load watchdog (GH #178): loop path only — the HLS
       // path fetches through hls.js, which manages its own stalls.
       loopElement.addEventListener('waiting', this.armLoopStallWatchdog)
@@ -1080,6 +1098,12 @@ const imageRendering =
       loopElement.addEventListener('playing', this.handleLoopPlaying)
       loopElement.addEventListener('waiting', this.handleLoopWaiting)
       loopElement.addEventListener('pause', this.handleLoopPause)
+      // A loop the browser already started before adoption (GH #196) has
+      // had its `playing` event; arm the monitor from state so it is not
+      // left unmonitored until the first pause/play cycle.
+      if (!loopElement.paused && loopElement.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+        this.stallMonitor.notifyPlaying()
+      }
       // Resolve the never-awaited promise so togglePlayback()'s "chunk in
       // flight" branch can't fire for a frame that has no chunk.
       this.playerLoading = Promise.resolve()
@@ -1261,6 +1285,18 @@ const imageRendering =
       this.updateMute()
       this.updatePlayback()
       this.refreshScrubber()
+
+      // Adopt-already-playing (GH #196): readiness is a state, not only an
+      // event. With `autoplay preload="auto"` and a warm media cache the
+      // browser starts the loop during parse, before this element is
+      // defined — `playing` has already fired, and updatePlayback() sees
+      // paused === false so it never calls play(). Without this the video
+      // runs at opacity 0 behind the poster until the next pause/play cycle
+      // (scroll out and back in). handleReady is idempotent and still waits
+      // on a presented frame via requestVideoFrameCallback.
+      if (!player.paused && player.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+        this.handleReady()
+      }
     }
 
 
@@ -1781,10 +1817,16 @@ const imageRendering =
      whole hero ceremony stays a motion-preference affair. The
      data-video-ready gate is untouched — the readiness stamp still waits
      on requestVideoFrameCallback (GH #172); only the fade duration
-     changes. */
+     changes.
+     Cold loads only (GH #196): Layout stamps html[data-nav] on every
+     ClientRouter swap, so after a navigation the loop takes the standard
+     480ms fade — the hero ceremony is a cold-load ceremony, and replaying
+     it over the route fade read as a full-screen flicker. The gate is
+     written as :global(html:not(...)) (the HeroHeading pattern), which
+     survives Astro's scoped compiler where :where(html...) does not. */
   @media (prefers-reduced-motion: no-preference) {
-    .media-frame[data-hero-entrance][data-video-ready] :global(mux-video),
-    .media-frame[data-hero-entrance][data-video-ready] .media-frame__loop {
+    :global(html:not([data-nav])) .media-frame[data-hero-entrance][data-video-ready] :global(mux-video),
+    :global(html:not([data-nav])) .media-frame[data-hero-entrance][data-video-ready] .media-frame__loop {
       transition: opacity var(--motion-deliberate) var(--motion-ease-out);
     }
   }
@@ -1797,13 +1839,14 @@ const imageRendering =
      gates a paint); the frame's overflow: clip contains the 4% overshoot.
      Off entirely under prefers-reduced-motion. 1800ms is a literal — the
      motion tokens stop at --motion-deliberate (800ms) and this beat is
-     deliberately slower. */
+     deliberately slower. Cold loads only (GH #196, html[data-nav] gate as
+     above): on a ClientRouter swap the hero renders settled. */
   @media (prefers-reduced-motion: no-preference) {
-    .media-frame[data-hero-entrance] .media-frame__skeleton,
-    .media-frame[data-hero-entrance] .media-frame__poster,
-    .media-frame[data-hero-entrance] .media-frame__image,
-    .media-frame[data-hero-entrance] .media-frame__loop,
-    .media-frame[data-hero-entrance] :global(mux-video) {
+    :global(html:not([data-nav])) .media-frame[data-hero-entrance] .media-frame__skeleton,
+    :global(html:not([data-nav])) .media-frame[data-hero-entrance] .media-frame__poster,
+    :global(html:not([data-nav])) .media-frame[data-hero-entrance] .media-frame__image,
+    :global(html:not([data-nav])) .media-frame[data-hero-entrance] .media-frame__loop,
+    :global(html:not([data-nav])) .media-frame[data-hero-entrance] :global(mux-video) {
       animation: media-frame-settle 1800ms var(--motion-ease-out) both;
     }
   }

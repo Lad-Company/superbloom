@@ -408,6 +408,13 @@ const gaMode = preview
         // document directly: the hero word reveal plays alongside the route
         // swipe without waiting for the head script to re-run.
         newDocument?.documentElement.setAttribute('data-fonts-ready', '');
+        // Navigation stamp (GH #196): the home hero's entrance ceremony
+        // (poster dissolve, 1.8s media settle, slow ready-fade) is a
+        // cold-load ceremony. Mark swapped-in documents so the CSS gates
+        // (motion.css, MediaFrame) render the hero settled on client
+        // navigations. Absent on cold loads and hard refreshes by
+        // construction — only this handler ever sets it.
+        newDocument?.documentElement.setAttribute('data-nav', 'swap');
         // The preview flag rides the SSR'd <html>, but a prerendered surface
         // can't vary by cookie — propagate it so draft content and GA-off
         // survive every View Transition navigation of the preview session.

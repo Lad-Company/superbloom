@@ -524,7 +524,12 @@ never obscures readable type. Reuse a primitive before writing a page-local time
    crossfade the real media in on load, so nothing renders blank and alt text
    is never shown visually while loading. There is no first-load veil: the
    page is the loading surface, text is painted from the first frame, and the
-   only entry ceremony is the hero word rise above.
+   only entry ceremony is the hero word rise above. The home hero's media
+   ceremony (poster dissolve over the blur-up, 1.8s `scale(1.04 → 1)` settle,
+   slow video ready-fade — GH #172/#183) is a **cold-load ceremony**: Layout
+   stamps `html[data-nav]` on every ClientRouter swap and the hero then
+   renders settled (poster at full opacity from the first frame, standard
+   480ms video fade). The word rise still plays on navigations (GH #196).
 5. **Route Transition** — full-viewport, reserved exclusively for navbar
    destinations; other navigations keep local motion.
 6. **Pinned Storytelling** — bounded ScrollTrigger chapter sequence (2–4 chapters,

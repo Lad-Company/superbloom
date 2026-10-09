@@ -40,6 +40,16 @@ describe('fonts-ready stamp (GH #151, GH #171)', () => {
     expect(source).toContain("newDocument?.documentElement.setAttribute('data-fonts-ready', '')")
   })
 
+  it('marks swapped-in documents with html[data-nav] so the hero ceremony stays cold-load only (GH #196)', () => {
+    const swap = source.slice(
+      source.indexOf("addEventListener('astro:before-swap'"),
+      source.indexOf("addEventListener('astro:before-preparation'"),
+    )
+    expect(swap).toContain("newDocument?.documentElement.setAttribute('data-nav', 'swap')")
+    // Only the swap handler sets it: absent on cold loads and hard refreshes.
+    expect(source.match(/setAttribute\('data-nav'/g)).toHaveLength(1)
+  })
+
   it('carries no trace of the first-load veil', () => {
     expect(source).not.toContain('PageLoader')
     expect(source).not.toContain('data-veil')
