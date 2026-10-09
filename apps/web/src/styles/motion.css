@@ -184,8 +184,11 @@ html.js media-frame:not([data-priority]) img {
    poster can't be the LCP element (Chrome 112+ excludes full-viewport
    images), so it dissolves in over the blur-up — the first half of the
    hero's blur → still → motion sequence. /work and /index priority frames
-   stay exempt. */
-html.js media-frame[data-hero-entrance] img {
+   stay exempt. Cold loads only (GH #196): Layout stamps html[data-nav] on
+   every ClientRouter swap, and a swapped-in hero keeps the GH #162
+   exemption — poster at opacity 1 from the first styled frame — so the
+   dissolve never replays over the route fade. */
+html.js:not([data-nav]) media-frame[data-hero-entrance] img {
   opacity: 0;
 }
 
