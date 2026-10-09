@@ -76,7 +76,7 @@ const editorialCardProjection = `
   mediaAspectRatio,
   infoPosition,
   "issueSlug": *[_type == "zineIssue" && references(^._id)][0].slug.current,
-  tags[]->{ title, color },
+  tags[]->{ title },
   "cardMedia": cardMedia${mediaProjection}
 `
 
@@ -123,7 +123,7 @@ export const homepageQuery = defineQuery(`
           client,
           "slug": slug.current,
           summary,
-          tags[]->{ title, color },
+          tags[]->{ title },
           "media": cardMedia${mediaProjection}
         }
       }
@@ -216,7 +216,7 @@ export const workIndexQuery = defineQuery(`
         cardWidth,
         mediaAspectRatio,
         infoPosition,
-        tags[]->{ title, color },
+        tags[]->{ title },
         "media": cardMedia${mediaProjection}
       }
     },
@@ -244,7 +244,7 @@ export const caseStudiesNewestQuery = defineQuery(`
     cardWidth,
     mediaAspectRatio,
     infoPosition,
-    tags[]->{ title, color },
+    tags[]->{ title },
     "media": cardMedia${mediaProjection}
   }
 `)
@@ -260,7 +260,7 @@ export const caseStudiesOldestQuery = defineQuery(`
     cardWidth,
     mediaAspectRatio,
     infoPosition,
-    tags[]->{ title, color },
+    tags[]->{ title },
     "media": cardMedia${mediaProjection}
   }
 `)
@@ -315,7 +315,7 @@ export const caseStudyBySlugQuery = defineQuery(`
       cardWidth,
       mediaAspectRatio,
       infoPosition,
-      tags[]->{ title, color },
+      tags[]->{ title },
       "media": cardMedia${mediaProjection},
       "primaryColor": primaryColor.hex
     },
@@ -342,7 +342,7 @@ const articleProjection = `
     overview,
     destination,
     source,
-    tags[]->{ title, color },
+    tags[]->{ title },
     "leadMedia": leadMedia${mediaProjection},
     ${articleBodyProjection}
 `
@@ -363,7 +363,7 @@ const relatedItemsProjection = `
       cardWidth,
       mediaAspectRatio,
       infoPosition,
-      tags[]->{ title, color },
+      tags[]->{ title },
       "cardMedia": cardMedia${mediaProjection}
     },
     "globalCardDefaults": *[_type == "siteSettings"][0].cardDefaults
@@ -389,7 +389,7 @@ const zineArticleCardProjection = `
   cardWidth,
   mediaAspectRatio,
   infoPosition,
-  tags[]->{ title, color },
+  tags[]->{ title },
   "cardMedia": cardMedia${mediaProjection}
 `
 

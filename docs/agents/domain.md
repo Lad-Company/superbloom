@@ -20,7 +20,9 @@ If any of these files don't exist, proceed silently.
 ├── docs/
 │   ├── design-system.md
 │   ├── *-spec.md       — specs for work in flight; landed specs are folded
-│   │                     into ARCHITECTURE.md ADRs and deleted
+│   │                     into ARCHITECTURE.md ADRs and deleted (exception:
+│   │                     observability-pipeline-spec.md stays as the
+│   │                     pipeline's reference doc)
 │   └── agents/
 ├── packages/
 │   └── schemas/        — shared Sanity schemas + contract/migration tests
@@ -31,7 +33,7 @@ If any of these files don't exist, proceed silently.
 
 ## Use the glossary's vocabulary
 
-When naming domain concepts (in issue titles, refactor proposals, test names), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids — e.g., say "Creator" not "freelancer", "Case Study" not "project", "Team Member" not "employee".
+When naming domain concepts (in issue titles, refactor proposals, test names), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids — e.g., say "Case Study" not "project", "Work" not "portfolio", "Zine" not "blog", "Media Asset" not "file".
 
 ## Flag decision conflicts
 
