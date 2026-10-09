@@ -772,15 +772,17 @@ const imageRendering =
     }
 
     /** Firefox wedged-load recovery (GH #178): a progressive-loop <video>
-     *  adopted from the ClientRouter's inert parsed document can deadlock in
-     *  Firefox — metadata lands from the media cache, the fetch suspends,
-     *  play() resolves, then `waiting` and nothing else, forever (no
-     *  `progress`, readyState stuck < 2, paused=false; the poster sits
-     *  because data-video-ready never lands). Chrome and Safari survive the
-     *  adoption. Re-running the load algorithm in the live document
-     *  (load() + play()) unwedges it. Armed at connect and re-armed on
-     *  `waiting`; disarmed by any LOOP_STALL_DISARM_EVENTS signal, so a
-     *  genuinely slow network (which emits `progress`) never triggers it. */
+     *  whose load algorithm deadlocks before any data — metadata lands from
+     *  the media cache, the fetch suspends, play() resolves, then `waiting`
+     *  and nothing else, forever (no `progress`, readyState stuck < 2,
+     *  paused=false; the poster sits because data-video-ready never lands).
+     *  The known reproduction (adoption from the ClientRouter's inert parsed
+     *  document) is closed by the startLoop() clone-on-swap (GH #198); this
+     *  stays one release as a probe for any wedge a live-document element
+     *  can still hit. Re-running the load algorithm (load() + play())
+     *  unwedges it. Armed at connect and re-armed on `waiting`; disarmed by
+     *  any LOOP_STALL_DISARM_EVENTS signal, so a genuinely slow network
+     *  (which emits `progress`) never triggers it. */
     private armLoopStallWatchdog = () => {
       if (this.loopRevived) return
       if (this.loopStallTimer !== null) clearTimeout(this.loopStallTimer)
@@ -1057,6 +1059,26 @@ const imageRendering =
      *  density or sub-realtime progress). Neither may trigger the other. */
     private startLoop(loopElement: MuxVideoElement) {
       if (this.player === loopElement) return
+      // Never adopt a parser-started loop across a ClientRouter swap
+      // (GH #198): its load algorithm started in the inert parsed
+      // document without a browsing context, and no browser reliably
+      // resumes it in the live one — Firefox wedges at NETWORK_NO_SOURCE
+      // (GH #178), Chrome and Safari sit at NETWORK_IDLE/EMPTY with
+      // paused=false and no data, and a warm cache can fire `playing`
+      // before anything observes it (GH #196). Replace the adopted
+      // element with a fresh clone created in the live document:
+      // cloneNode(true) copies every attribute (autoplay, muted, loop,
+      // playsinline, preload) and the <source> children, and the clone's
+      // load algorithm starts clean, so all three signatures disappear
+      // together. Layout stamps html[data-nav] on every swap and never on
+      // a cold load, so the parser-started first-paint fetch is never
+      // aborted. The GH #178 watchdog below stays one release as a probe
+      // for the wedge this should make unreachable.
+      if (document.documentElement.hasAttribute('data-nav')) {
+        const fresh = loopElement.cloneNode(true) as MuxVideoElement
+        loopElement.replaceWith(fresh)
+        loopElement = fresh
+      }
       // No poster copy (GH #172 — the player poster is gone everywhere):
       // the loop fades in over the always-painted overlay poster via the
       // same data-video-ready opacity gate as the HLS path.
@@ -1065,30 +1087,6 @@ const imageRendering =
       // autoplay before first data arrives, so the attribute path can
       // never autostart motion the JS play() gate would have withheld.
       this.syncAutoplayGate()
-      // Connect-time un-wedge (GH #196): a loop adopted from the
-      // ClientRouter's inert parsed document has a load algorithm that
-      // started without a browsing context, and no browser reliably
-      // resumes it in the live document — Firefox reports
-      // NETWORK_NO_SOURCE, Chrome and Safari sit at NETWORK_IDLE/EMPTY with
-      // paused=false and no data, and every one of them otherwise waits
-      // out the 4s timer below (which stays as the backstop). The
-      // navigation itself is the signature: Layout stamps html[data-nav]
-      // on every swap and never on a cold load, so this never aborts the
-      // parser-started fetch of a first paint. Skipped when data already
-      // arrived (readyState >= HAVE_CURRENT_DATA — the adopt-already-
-      // playing case wirePlayer() stamped ready). Declarative `autoplay`
-      // restarts the reloaded element (updatePlayback() covers the
-      // JS-gated case). Deliberately does not consume the one-shot
-      // `loopRevived` budget; the "adopt" value distinguishes this path
-      // from the timer's "" for probes.
-      if (
-        document.documentElement.hasAttribute('data-nav') &&
-        loopElement.readyState < HTMLMediaElement.HAVE_CURRENT_DATA &&
-        loopElement.querySelector('source')
-      ) {
-        this.setAttribute('data-loop-revived', 'adopt')
-        loopElement.load()
-      }
       // Firefox wedged-load watchdog (GH #178): loop path only — the HLS
       // path fetches through hls.js, which manages its own stalls.
       loopElement.addEventListener('waiting', this.armLoopStallWatchdog)
